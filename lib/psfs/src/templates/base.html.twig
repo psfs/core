@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="{{ doc_lang|default('es') }}">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+{% block head %}
+    {% block seo %}
+        <title>{% block doc_title %}PSFS{% endblock doc_title %}</title>
+        <meta name="description" content="Php Simple Fast & Secure">
+    {% endblock seo %}
+{% endblock head %}
+    </head>
+    <body>
+{% block body %}
+    {% block body_header %}
+    {% endblock body_header %}
+    {% block body_content %}
+    {% endblock body_content %}
+    {% block body_footer %}
+    {% endblock body_footer %}
+{% endblock body %}
+{% block scripts %}
+{% endblock scripts %}
+    </body>
+</html>
