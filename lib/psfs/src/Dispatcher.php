@@ -2,22 +2,20 @@
 
 namespace PSFS;
 
-use PSFS\base\Singleton;
-use PSFS\base\Router;
-use PSFS\base\Request;
-use PSFS\base\Security;
-use PSFS\base\Logger;
-use PSFS\Base\Template;
+use PSFS\base\Forms;
+use PSFS\exception\ConfigException;
+use PSFS\exception\LoggerException;
 
 /**
  * Class Dispatcher
  * @package PSFS
  */
-class Dispatcher extends Singleton{
+class Dispatcher extends \PSFS\base\Singleton{
     private $router;
     private $parser;
     private $security;
     private $log;
+    private $config;
 
     protected $ts;
     protected $mem;
@@ -27,12 +25,13 @@ class Dispatcher extends Singleton{
      * @param $mem
      */
     public function __construct($mem = 0){
-        $this->router = Router::getInstance();
-        $this->parser = Request::getInstance();
-        $this->security = Security::getInstance();
-        $this->log = Logger::getInstance();
+        $this->router = \PSFS\base\Router::getInstance();
+        $this->parser = \PSFS\base\Request::getInstance();
+        $this->security = \PSFS\base\Security::getInstance();
+        $this->log = \PSFS\base\Logger::getInstance();
         $this->ts = $this->parser->getTs();
         $this->mem = memory_get_usage();
+        $this->config = \PSFS\config\Config::getInstance();
     }
 
     /**
@@ -41,14 +40,22 @@ class Dispatcher extends Singleton{
     public function run()
     {
         $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
+        if(!$this->config->isConfigured()) return $this->splashConfigure();
+        //
         try{
-            return Template::getInstance()->render("welcome.html.twig", array("text" => 'Hola que ase'));
-        }catch(Exception $e)
+            if(!$this->parser->isFile())
+            {
+                pre("HOla que ase");
+            }else $this->router->httpNotFound();
+        }catch(ConfigException $ce)
+        {
+            return $this->splashConfigure();
+        }
+        catch(Exception $e)
         {
             $this->log->errorLog($e);
             return $this->router->httpNotFound();
         }
-        //
     }
 
     /**
@@ -70,8 +77,20 @@ class Dispatcher extends Singleton{
         return $use;
     }
 
+    /**
+     * Método que devuelve el tiempo pasado desde el inicio del script
+     * @return mixed
+     */
     public function getTs()
     {
         return microtime(true) - $this->ts;
+    }
+
+    private function splashConfigure()
+    {
+        $this->log->infoLog("Arranque del Config Loader al solicitar ".$this->parser->getrequestUri());
+        return \PSFS\Base\Template::getInstance()->render('welcome.html.twig', array(
+            'text' => _("Bienvenido a PSFS"),
+        ));
     }
 }

@@ -36,5 +36,3 @@ while(false !== ($dir = $d->read()))
         include_once($lib_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php");
     }
 }
-require_once $lib_path . '/Twig/Autoloader.php';
-\Twig_Autoloader::register();

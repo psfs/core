@@ -89,4 +89,14 @@ class Request extends Singleton{
     {
 
     }
+
+    /**
+     * Método que determina si se ha solicitado un fichero
+     * @return bool
+     */
+    public function isFile()
+    {
+        $file = (preg_match("/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip)$/", $this->getrequestUri()) != 0);
+        return $file;
+    }
 }

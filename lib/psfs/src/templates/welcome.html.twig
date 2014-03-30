@@ -1,4 +1,9 @@
 {% extends 'base.html.twig' %}
-{% block body %}
-    {{ text }}
-{% endblock body%}
+{% block body_header %}
+    <div class="page-header">
+        <h1>{{ "Herramienta de configuración de PSFS" }}</h1>
+    </div>
+{% endblock body_header %}
+{% block body_content %}
+    {{ text }}<br>
+{% endblock body_content %}

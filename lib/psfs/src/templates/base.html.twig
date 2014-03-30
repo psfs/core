@@ -2,6 +2,8 @@
 <html lang="{{ doc_lang|default('es') }}">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link href="{{ asset('/lib/psfs/src/public/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('/lib/psfs/src/public/css/bootstrap-theme.min.css') }}" type="text/css" rel="stylesheet">
 {% block head %}
     {% block seo %}
         <title>{% block doc_title %}PSFS{% endblock doc_title %}</title>
@@ -10,15 +12,22 @@
 {% endblock head %}
     </head>
     <body>
-{% block body %}
-    {% block body_header %}
-    {% endblock body_header %}
-    {% block body_content %}
-    {% endblock body_content %}
-    {% block body_footer %}
-    {% endblock body_footer %}
-{% endblock body %}
-{% block scripts %}
-{% endblock scripts %}
+        <header>{% block header %}{% endblock header %}</header>
+        <section class="container">
+        {% block body %}
+            <article class="row">
+                {% block body_header %}
+                {% endblock body_header %}
+                {% block body_content %}
+                {% endblock body_content %}
+                {% block body_footer %}
+                {% endblock body_footer %}
+            </article>
+        {% endblock body %}
+        </section>
+        <footer>{% block footer %}{% endblock footer %}</footer>
+    <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/bootstrap.min.js') }}"
+    {% block scripts %}
+    {% endblock scripts %}
     </body>
 </html>
