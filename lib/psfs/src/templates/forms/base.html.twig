@@ -23,6 +23,8 @@
     {% endfor %}
     </fieldset>
     <div class="form-group">
-        <button class="btn btn-primary" type="submit">Guardar</button>
+    {% for button in form.buttons %}
+        {{ form_button(button) }}
+    {% endfor %}
     </div>
 </form>

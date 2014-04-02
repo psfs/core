@@ -2,6 +2,9 @@
 
 namespace PSFS\types;
 
+use PSFS\base\Request;
+use \PSFS\exception\FormException;
+
 abstract class Form{
 
     /**
@@ -9,7 +12,7 @@ abstract class Form{
      */
     const SEPARATOR = "__SEPARATOR__";
     const VALID_NUMBER = "^[0-9]+$";
-    const VALID_ALPHANUMERIC = "[a-zA-Z0-9]+";
+    const VALID_ALPHANUMERIC = "[A-Za-z0-9-_\",'\s]+";
     const VALID_DATETIME = "/([0-2][0-9]{3})\-([0-1][0-9])\-([0-3][0-9])T([0-5][0-9])\:([0-5][0-9])\:([0-5][0-9])(Z|([\-\+]([0-1][0-9])\:00))/";
     const VALID_DATE = "(?:19|20)[0-9]{2}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31))"; //YYYY-MM-DD
     const VALID_COLOR = "^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";
@@ -29,6 +32,8 @@ abstract class Form{
     protected $fields = array();
     protected $crfs;
     protected $errors;
+    protected $buttons;
+    protected $extra;
 
     abstract function getName();
 
@@ -52,6 +57,7 @@ abstract class Form{
     public function getMethod(){ return $this->method; }
     public function getFields(){ return $this->fields; }
     public function getAttrs(){ return $this->attrs; }
+    public function getButtons(){ return $this->buttons; }
 
     /**
      * Método que genera un CRFS token para los formularios
@@ -153,12 +159,85 @@ abstract class Form{
      */
     public function hydrate()
     {
-        $data = (\PSFS\base\Request::getInstance()->get($this->getName())) ?: null;
-        //Hidratamos los campos conlo que venga del formulario
-        if(!empty($data)) foreach($this->fields as $key => &$field)
+        $data = Request::getInstance()->getData() ?: null;
+        //Hidratamos los campos con lo que venga del formulario
+        $form_name = $this->getName();
+        if(!empty($data[$form_name])) foreach($this->fields as $key => &$field)
         {
-            if(isset($data[$key])) $field["value"] = $data[$key];
+            if(isset($data[$form_name][$key])) $field["value"] = $data[$form_name][$key];
         }
+        //Limpiamos los datos
+        if(isset($data[$form_name])) unset($data[$form_name]);
+        //Cargamos los campos extras
+        $this->extra = $data;
+        return $this;
+    }
+
+    /**
+     * Método que devuelve un array con los datos del formulario
+     * @return array
+     */
+    public function getData()
+    {
+        $data = array();
+        if(!empty($this->fields)) foreach($this->fields as $key => $field)
+        {
+            if(self::SEPARATOR !== $key && $key != ($this->getName()."_token")) $data[$key] = $field["value"];
+        }
+        return $data;
+    }
+
+    /**
+     * Método que devuelve los datos extras que vienen en la petición
+     * @return array
+     */
+    public function getExtraData(){ return $this->extra ?: array(); }
+
+    /**
+     * Mëtodo que pre hidrata el formulario para su modificación
+     * @param $data
+     */
+    public function setData($data)
+    {
+        if(empty($this->fields)) throw new FormException('Se tienen que configurar previamente los campos del formulario', 500);
+        /** @var $field array */
+        foreach($this->fields as $key => &$field)
+        {
+            if(isset($data[$key])) $field['value'] = $data[$key];
+        }
+    }
+
+    /**
+     * Método que añade un botón al formulario
+     * @param string $value
+     * @param string $type
+     * @param null $action
+     *
+     * @return $this
+     */
+    public function addButton($id, $value = 'Guardar', $type = 'submit', $attrs = null)
+    {
+        $this->buttons[$id] = array(
+            "value" => $value,
+            "type" => $type,
+            "id" => $id,
+        );
+        if(!empty($attrs)) foreach($attrs as $key => $attr)
+        {
+            $this->buttons[$id][$key] = $attr;
+        }
+        return $this;
+    }
+
+    /**
+     * Método que elimina un botón del formulario
+     * @param $id
+     *
+     * @return $this
+     */
+    public function dropButton($id)
+    {
+        if(isset($this->buttons[$id])) unset($this->buttons[$id]);
         return $this;
     }
 }

@@ -112,4 +112,32 @@ class Request extends Singleton{
     {
         return $this->data[$param] ?: null;
     }
+
+    /**
+     * Método que devuelve todo los datos del Request
+     * @return mixed
+     */
+    public function getData(){ return $this->data; }
+
+    /**
+     * Método que realiza una redirección a la url dada
+     * @param string $url
+     */
+    public function redirect($url = null)
+    {
+        if(empty($url)) $url = $this->server['HTTP_ORIGIN'];
+        header('Location: ' . $url);
+        exit;
+    }
+
+    /**
+     * Devuelve un parámetro de $_SERVER
+     * @param $param
+     *
+     * @return null
+     */
+    public function getServer($param)
+    {
+        return $this->server[$param] ?: null;
+    }
 }

@@ -19,12 +19,14 @@ class Template extends Singleton{
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => Config::getInstance()->getCachePath(),
-            'debug' => $this->debug,
+            'debug' => (bool)$this->debug,
         ));
         //Asignamos las funciones especiales
         $this->addAssetFunction()
             ->addFormsFunction()
-            ->addFormWidgetFunction();
+            ->addFormWidgetFunction()
+            ->addFormButtonFunction()
+            ->addConfigFunction();
     }
 
     /**
@@ -130,6 +132,36 @@ class Template extends Singleton{
             return $tpl->display('forms/field.html.twig', array(
                 'field' => $field,
             ));
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Función que pinta un botón de un formulario
+     * @return $this
+     */
+    private function addFormButtonFunction()
+    {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('form_button', function(array $button) use ($tpl) {
+            return $tpl->display('forms/button.html.twig', array(
+                'button' => $button,
+            ));
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Método que devuelve un parámetro de configuración en la plantilla
+     * @return $this
+     */
+    private function addConfigFunction()
+    {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('get_config', function($param){
+            return \PSFS\config\Config::getInstance()->get($param) ?: '';
         });
         $this->tpl->addFunction($function);
         return $this;

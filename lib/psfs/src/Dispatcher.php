@@ -40,12 +40,12 @@ class Dispatcher extends \PSFS\base\Singleton{
     public function run()
     {
         $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
-        if(!$this->config->isConfigured()) return $this->splashConfigure();
+        if(!$this->config->isConfigured()) return $this->config->index();
         //
         try{
             if(!$this->parser->isFile())
             {
-                pre("HOla que ase");
+                if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
             }else $this->router->httpNotFound();
         }catch(ConfigException $ce)
         {
@@ -84,24 +84,5 @@ class Dispatcher extends \PSFS\base\Singleton{
     public function getTs()
     {
         return microtime(true) - $this->ts;
-    }
-
-    private function splashConfigure()
-    {
-        $this->log->infoLog("Arranque del Config Loader al solicitar ".$this->parser->getrequestUri());
-        $form = new \PSFS\config\ConfigForm;
-        $form->build();
-        if($this->parser->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                pre($form, true);
-            }
-        }
-        return \PSFS\base\Template::getInstance()->render('welcome.html.twig', array(
-            'text' => _("Bienvenido a PSFS"),
-            'config' => $form,
-        ));
     }
 }

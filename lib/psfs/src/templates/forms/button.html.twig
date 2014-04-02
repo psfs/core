@@ -1,0 +1,12 @@
+{% spaceless %}
+<button
+{% for name,value in button %}
+    {% if name not in ['class', 'value'] %}
+        {{ name ~ '=' ~ value }}
+    {% endif %}
+{% endfor %}
+class="btn {{ button.class|default('btn-primary') }}"
+>
+    {{ button.value|default('Guardar') }}
+</button>
+{% endspaceless %}

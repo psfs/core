@@ -1,9 +1,12 @@
+{% if field.type == "hidden" %}
+<input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+{% else %}
 <div class="form-group{% if field.error %} has-error{% endif %}">
 {% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
     <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
     <input
 {% for name,value in field %}
-    {% if name not in ['required', 'label', 'class'] and value|length > 0 %}
+    {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
         {{ name ~ '=' ~ value }}
     {% endif %}
 {% endfor %}
@@ -14,9 +17,8 @@
 {% if field.error %}
         onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
 {% endif %}
+        value="{{ field.value }}"
     >
-{% elseif field.type == 'hidden' %}
-<input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
 {% elseif field.type == 'textarea' %}
     <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
     <textarea id="{{ field.id}}" name="{{ field.form }}[{{field.name}}]" class="form-control" placeholder="{{ field.placeholder|default(field.name) }}">{{ field.value | raw }}</textarea>
@@ -29,3 +31,4 @@
     </div>
 {% endif %}
 </div>
+{% endif %}
