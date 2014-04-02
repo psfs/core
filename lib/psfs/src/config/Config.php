@@ -17,7 +17,9 @@ class Config extends Singleton{
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     protected $config;
-    static public $required = array('db_host', 'db_port', 'db_user', 'db_password');
+    static public $required = array('db_host', 'db_port', 'db_user', 'db_password',);
+
+    static public $optional = array('platform_name',);
     protected $debug = false;
 
     function __construct()

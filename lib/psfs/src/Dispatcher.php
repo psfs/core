@@ -89,8 +89,19 @@ class Dispatcher extends \PSFS\base\Singleton{
     private function splashConfigure()
     {
         $this->log->infoLog("Arranque del Config Loader al solicitar ".$this->parser->getrequestUri());
-        return \PSFS\Base\Template::getInstance()->render('welcome.html.twig', array(
+        $form = new \PSFS\config\ConfigForm;
+        $form->build();
+        if($this->parser->getMethod() == 'POST')
+        {
+            $form->hydrate();
+            if($form->isValid())
+            {
+                pre($form, true);
+            }
+        }
+        return \PSFS\base\Template::getInstance()->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
+            'config' => $form,
         ));
     }
 }

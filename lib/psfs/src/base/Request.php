@@ -13,12 +13,14 @@ class Request extends Singleton{
     protected $cookies;
     protected $upload;
     protected $header;
+    protected $data;
 
     public function __construct(){
         $this->server = $_SERVER;
         $this->cookies = $_COOKIE;
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
+        $this->data = $_REQUEST;
     }
 
     /**
@@ -98,5 +100,16 @@ class Request extends Singleton{
     {
         $file = (preg_match("/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip)$/", $this->getrequestUri()) != 0);
         return $file;
+    }
+
+    /**
+     * Método que devuelve un parámetro de la solicitud
+     * @param string $param
+     *
+     * @return null
+     */
+    public function get($param)
+    {
+        return $this->data[$param] ?: null;
     }
 }

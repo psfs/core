@@ -21,7 +21,10 @@ class Template extends Singleton{
             'cache' => Config::getInstance()->getCachePath(),
             'debug' => $this->debug,
         ));
-        $this->addAssetFunction();
+        //Asignamos las funciones especiales
+        $this->addAssetFunction()
+            ->addFormsFunction()
+            ->addFormWidgetFunction();
     }
 
     /**
@@ -90,7 +93,43 @@ class Template extends Singleton{
                     file_put_contents($base . $file_path, $data);
                 }
             }
-            return $file_path;
+            return '/' . $file_path;
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Función que pinta un formulario
+     * @return $this
+     */
+    private function addFormsFunction()
+    {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('form', function(\PSFS\types\Form $form) use ($tpl) {
+            return $tpl->display('forms/base.html.twig', array(
+                'form' => $form,
+            ));
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Función que pinta un campo de un formulario
+     * @return $this
+     */
+    private function addFormWidgetFunction()
+    {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('form_widget', function(array $field, string $label = null) use ($tpl) {
+            if(!empty($label)) $field["label"] = $label;
+            //Limpiamos los campos obligatorios
+            if(!isset($field["required"])) $field["required"] = true;
+            elseif(isset($field["required"]) && (bool)$field["required"] === false) unset($field["required"]);
+            return $tpl->display('forms/field.html.twig', array(
+                'field' => $field,
+            ));
         });
         $this->tpl->addFunction($function);
         return $this;

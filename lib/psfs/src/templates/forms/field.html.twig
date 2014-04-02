@@ -1,0 +1,31 @@
+<div class="form-group{% if field.error %} has-error{% endif %}">
+{% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
+    <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <input
+{% for name,value in field %}
+    {% if name not in ['required', 'label', 'class'] and value|length > 0 %}
+        {{ name ~ '=' ~ value }}
+    {% endif %}
+{% endfor %}
+{% if field.required %}
+        required="required"
+{% endif %}
+        class="form-control {{ field.class }}"
+{% if field.error %}
+        onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
+{% endif %}
+    >
+{% elseif field.type == 'hidden' %}
+<input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+{% elseif field.type == 'textarea' %}
+    <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <textarea id="{{ field.id}}" name="{{ field.form }}[{{field.name}}]" class="form-control" placeholder="{{ field.placeholder|default(field.name) }}">{{ field.value | raw }}</textarea>
+{% endif %}
+{% if field.error %}
+    <div class="clearfix"></div>
+    <div class="alert alert-danger">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="javascript:$(this).parent().remove();">×</button>
+        <p>{{ field.error | raw }}</p>
+    </div>
+{% endif %}
+</div>
