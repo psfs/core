@@ -11,7 +11,7 @@ class ConfigForm extends Form{
      */
     function __construct()
     {
-        $this->setAction('/Config/');
+        $this->setAction('/Config');
         //Añadimos los campos obligatorios
         foreach(Config::$required as $field)
         {

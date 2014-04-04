@@ -46,7 +46,7 @@ class Config extends Singleton{
         }else{
             $this->debug = true;
         }
-        return this;
+        return $this;
     }
 
     /**
@@ -130,7 +130,7 @@ class Config extends Singleton{
 
     /**
      * Método que gestiona la configuración de las variables
-     * @Route ^/Config$
+     * @Route /Config
      * @return mixed
      * @throws \HttpException
      */

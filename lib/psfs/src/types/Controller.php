@@ -36,7 +36,7 @@ class Controller extends \PSFS\base\Singleton implements ControllerInterface{
      * @param $response
      * @param string $type
      */
-    public function response(string $response, $type = "text/html")
+    public function response($response, $type = "text/html")
     {
         ob_start();
         header("Content-type: " . $type);
