@@ -102,10 +102,15 @@ class Config extends Singleton{
         //En caso de tener parámetros nuevos los guardamos
         if(!empty($extra["label"])) foreach($extra["label"] as $index => $field)
         {
-            if(isset($extra["value"][$index])) /** @var $data array */
+            if(isset($extra["value"][$index]) && !empty($extra["value"][$index])) /** @var $data array */
                 $data[$field] = $extra["value"][$index];
         }
-        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json', json_encode($data)));
+        $final_data = array();
+        if(!empty($data)) foreach($data as $key => $value)
+        {
+            if(!empty($value)) $final_data[$key] = $value;
+        }
+        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json', json_encode($final_data)));
     }
 
     /**
@@ -130,7 +135,7 @@ class Config extends Singleton{
 
     /**
      * Método que gestiona la configuración de las variables
-     * @Route /Config
+     * @Route /admin/config
      * @return mixed
      * @throws \HttpException
      */
@@ -145,6 +150,7 @@ class Config extends Singleton{
             {
                 if(self::save($form->getData(), $form->getExtraData()))
                 {
+                    Logger::getInstance()->infoLog("Configuración guardada correctamente");
                     return Request::getInstance()->redirect();
                 }
                 throw new \HttpException('Error al guardar la configuración, prueba a cambiar los permisos', 403);

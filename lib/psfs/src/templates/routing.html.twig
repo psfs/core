@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+{% block body_header %}
+    <div class="page-header">
+        <h1>{{ "Rutas definidas en el sistema" }}</h1>
+        <h2>{{ get_config('platform_name') }}</h2>
+    </div>
+{% endblock body_header %}
+{% block body_content %}
+    <ul class="list-group">
+    {% for url, route in routes %}
+        <li class="list-group-item">
+            <span class="label label-danger">{{ url }}</span> <a href="{{ route }}">{{ route }}</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock body_content %}

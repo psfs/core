@@ -1,6 +1,7 @@
 <?php
 
 namespace PSFS\config;
+use PSFS\base\Router;
 use PSFS\config\Config;
 use PSFS\types\Form;
 
@@ -11,7 +12,7 @@ class ConfigForm extends Form{
      */
     function __construct()
     {
-        $this->setAction('/Config');
+        $this->setAction(Router::getInstance()->getRoute('admin-config'));
         //Añadimos los campos obligatorios
         foreach(Config::$required as $field)
         {

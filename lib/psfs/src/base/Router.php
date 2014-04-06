@@ -4,6 +4,9 @@ namespace PSFS\base;
 
 use PSFS\base\Singleton;
 use PSFS\config\Config;
+use PSFS\exception\ConfigException;
+use PSFS\config\AdminForm;
+use PSFS\base\Security;
 
 /**
  * Class Router
@@ -12,6 +15,7 @@ use PSFS\config\Config;
 class Router extends Singleton{
 
     protected $routing;
+    protected $slugs;
 
     function __construct()
     {
@@ -19,6 +23,7 @@ class Router extends Singleton{
         {
             $this->hydrateRouting();
         }else $this->routing = file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
+        $this->simpatize();
     }
 
     /**
@@ -38,6 +43,13 @@ class Router extends Singleton{
      */
     public function execute($route)
     {
+        if(preg_match("/^\/admin\//i", $route) && !Security::getInstance()->checkAdmin())
+        {
+            header('HTTP/1.1 401 Unauthorized');
+            header('WWW-Authenticate: Basic Realm="PSFS"');
+            echo _("Es necesario ser administrador para ver ésta zona");
+            exit();
+        }
         foreach($this->routing as $pattern => $action)
         {
             if(preg_match("/".preg_quote($pattern, "/")."$/i", $route))
@@ -160,5 +172,76 @@ class Router extends Singleton{
             }
         }
         return $routing;
+    }
+
+    /**
+     * Método que genera las urls amigables para usar dentro del framework
+     * @return $this
+     */
+    private function simpatize()
+    {
+        foreach($this->routing as $key => $info)
+        {
+            $this->slugs[$this->slugify($key)] = $key;
+        }
+        return $this;
+    }
+
+    /**
+     * Método que devuelve el slug de un string dado
+     * @param $text
+     *
+     * @return mixed|string
+     */
+    private function slugify($text)
+    {
+        // replace non letter or digits by -
+        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
+
+        // trim
+        $text = trim($text, '-');
+
+        // transliterate
+        if (function_exists('iconv'))
+        {
+            $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        }
+
+        // lowercase
+        $text = strtolower($text);
+
+        // remove unwanted characters
+        $text = preg_replace('~[^-\w]+~', '', $text);
+
+        if (empty($text))
+        {
+            return 'n-a';
+        }
+
+        return $text;
+    }
+
+    /**
+     * Método que devuelve una ruta del framework
+     * @param $slug
+     *
+     * @return mixed
+     * @throws \PSFS\exception\ConfigException
+     */
+    public function getRoute($slug)
+    {
+        if(!isset($this->slugs[$slug])) throw new ConfigException("No existe la ruta especificada");
+        return $this->slugs[$slug];
+    }
+
+    /**
+     * Método que pinta por pantalla todas las rutas del sistema
+     * @route /admin/routes
+     */
+    public function printRoutes()
+    {
+        return Template::getInstance()->render('routing.html.twig', array(
+            'routes' => $this->slugs,
+        ));
     }
 }
