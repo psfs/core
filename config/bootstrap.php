@@ -27,6 +27,7 @@ $lib_path = realpath(__DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."lib".
 $src_path = realpath(__DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."modules".DIRECTORY_SEPARATOR);
 set_include_path(get_include_path().PATH_SEPARATOR.$lib_path.PATH_SEPARATOR.$src_path);
 
+//Autoload de librerías
 $d = dir($lib_path);
 while(false !== ($dir = $d->read()))
 {
@@ -34,5 +35,16 @@ while(false !== ($dir = $d->read()))
     if(!is_dir($lib_path.$dir) && file_exists($lib_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php"))
     {
         include_once($lib_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php");
+    }
+}
+
+//Autoload de módulos
+$d = dir($src_path);
+while(false !== ($dir = $d->read()))
+{
+    $file = str_replace(".php","",$dir);
+    if(!is_dir($src_path.$dir) && file_exists($src_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php"))
+    {
+        include_once($src_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php");
     }
 }
