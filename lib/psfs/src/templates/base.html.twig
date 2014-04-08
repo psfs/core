@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="{{ doc_lang|default('es') }}">
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="{{ asset('/lib/psfs/src/public/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
         <link href="{{ asset('/lib/psfs/src/public/css/bootstrap-theme.min.css') }}" type="text/css" rel="stylesheet">
 {% block head %}
@@ -12,7 +14,7 @@
 {% endblock head %}
     </head>
     <body>
-        <header>{% block header %}{% endblock header %}</header>
+        <header role="banner">{% block header %}{% endblock header %}</header>
         <section class="container">
         {% block body %}
             <article class="row">
@@ -25,9 +27,9 @@
             </article>
         {% endblock body %}
         </section>
-        <footer>{% block footer %}{% endblock footer %}</footer>
-    <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/jquery.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/bootstrap.min.js') }}"></script>
+        <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/jquery.min.js') }}"></script>
+        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/bootstrap.min.js') }}"></script>
     {% block scripts %}
     {% endblock scripts %}
     </body>

@@ -52,7 +52,7 @@ class ConfigForm extends Form{
         $this->setData($data);
         //Añadimos las acciones del formulario
         $this->addButton('submit')
-            ->addButton('add_field', 'Añadir nuevo parámetro', 'button', array(
+            ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
                "onclick" => "javascript:addNewField(document.getElementById('". $this->getName() ."'));",
                "class" => "btn-success",
             ));

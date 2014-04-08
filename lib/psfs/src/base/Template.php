@@ -5,13 +5,14 @@ namespace PSFS\Base;
 use PSFS\base\Singleton;
 use PSFS\config\Config;
 use PSFS\Dispatcher;
+use PSFS\base\Router;
 
 class Template extends Singleton{
 
     protected $tpl;
     protected $filters = array();
 
-    private $debug = false;
+    protected $debug = false;
 
     function __construct()
     {
@@ -26,7 +27,9 @@ class Template extends Singleton{
             ->addFormsFunction()
             ->addFormWidgetFunction()
             ->addFormButtonFunction()
-            ->addConfigFunction();
+            ->addConfigFunction()
+            ->addTranslationFilter()
+            ->addRouteFunction();
     }
 
     /**
@@ -88,9 +91,44 @@ class Template extends Singleton{
                     $html_base = "image";
                 }
                 $file_path = $html_base . $file;
+                //Creamos el directorio si no existe
                 if(!file_exists($base . $html_base)) @mkdir($base . $html_base, 0775);
+                //Si se ha modificado
                 if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime(BASE_DIR . $string))
                 {
+                    if($html_base == 'css')
+                    {
+                        $handle = @fopen(BASE_DIR . $string, 'r');
+                        if($handle)
+                        {
+                            while (!feof($handle)) {
+                                $line = fgets($handle);
+                                $urls = array();
+                                if(preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER))
+                                {
+                                    foreach($urls as $source)
+                                    {
+                                        $source_file = preg_replace("/'/", "", $source[1]);
+                                        if(preg_match("/\#/", $source_file))
+                                        {
+                                            $source_file = explode("#", $source_file);
+                                            $source_file = $source_file[0];
+                                        }
+                                        if(preg_match("/\?/", $source_file))
+                                        {
+                                            $source_file = explode("?", $source_file);
+                                            $source_file = $source_file[0];
+                                        }
+                                        $orig = realpath(dirname(BASE_DIR . $string) . DIRECTORY_SEPARATOR . $source_file);
+                                        $dest = BASE_DIR . DIRECTORY_SEPARATOR . 'html' . DIRECTORY_SEPARATOR . 'css' .DIRECTORY_SEPARATOR . $source_file;
+                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest));
+                                        @copy($orig, $dest);
+                                    }
+                                }
+                            }
+                            fclose($handle);
+                        }
+                    }
                     $data = file_get_contents(BASE_DIR . $string);
                     file_put_contents($base . $file_path, $data);
                 }
@@ -114,6 +152,20 @@ class Template extends Singleton{
             ));
         });
         $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Método que añade una nueva ruta al path de Twig
+     * @param $path
+     * @param $domain
+     *
+     * @return $this
+     */
+    public function addPath($path, $domain = '')
+    {
+        $loader = $this->tpl->getLoader();
+        $loader->addPath($path, $domain);
         return $this;
     }
 
@@ -162,6 +214,32 @@ class Template extends Singleton{
         $tpl = $this->tpl;
         $function = new \Twig_SimpleFunction('get_config', function($param){
             return \PSFS\config\Config::getInstance()->get($param) ?: '';
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Método que añade el filtro de traducción a Twig
+     * @return $this
+     */
+    private function addTranslationFilter()
+    {
+        $filter = new \Twig_SimpleFilter('trans', function ($string) {
+            return _($string);
+        });
+        $this->tpl->addFilter($filter);
+        return $this;
+    }
+
+    /**
+     * Método que añade la función path a Twig
+     * @return $this
+     */
+    private function addRouteFunction()
+    {
+        $function = new \Twig_SimpleFunction('path', function($path = ''){
+            return Router::getInstance()->getRoute($path);
         });
         $this->tpl->addFunction($function);
         return $this;

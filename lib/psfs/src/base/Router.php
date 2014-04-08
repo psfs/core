@@ -43,6 +43,7 @@ class Router extends Singleton{
      */
     public function execute($route)
     {
+        //Chequeamos si entramos en el admin
         if(preg_match("/^\/admin\//i", $route) && !Security::getInstance()->checkAdmin())
         {
             header('HTTP/1.1 401 Unauthorized');
@@ -50,11 +51,15 @@ class Router extends Singleton{
             echo _("Es necesario ser administrador para ver ésta zona");
             exit();
         }
+
+        //Revisamos si tenemos la ruta registrada
         foreach($this->routing as $pattern => $action)
         {
             if(preg_match("/".preg_quote($pattern, "/")."$/i", $route))
             {
-                return call_user_func_array(array($action["class"], $action["method"]), array());
+                /** @var $class PSFS\types\Controller */
+                $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
+                return call_user_func_array(array($class, $action["method"]), array());
             }
         }
 
@@ -116,6 +121,16 @@ class Router extends Singleton{
         $modules = BASE_DIR . DIRECTORY_SEPARATOR . 'modules';
         $this->routing = $this->inspectDir($base, "PSFS", array());
         $this->routing = $this->inspectDir($modules, "", $this->routing);
+        $home = Config::getInstance()->get('home_action');
+        if(!empty($home))
+        {
+            $home_params = null;
+            foreach($this->routing as $pattern => $params)
+            {
+                if(preg_match("/".preg_quote($pattern, "/")."$/i", "/".$home)) $home_params = $params;
+            }
+            if(!empty($home_params)) $this->routing['/'] = $home_params;
+        }
     }
 
     /**
@@ -228,8 +243,9 @@ class Router extends Singleton{
      * @return mixed
      * @throws \PSFS\exception\ConfigException
      */
-    public function getRoute($slug)
+    public function getRoute($slug = '')
     {
+        if(strlen($slug) == 0) return '/';
         if(!isset($this->slugs[$slug])) throw new ConfigException("No existe la ruta especificada");
         return $this->slugs[$slug];
     }

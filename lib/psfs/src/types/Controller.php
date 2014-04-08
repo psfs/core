@@ -3,12 +3,24 @@
 namespace PSFS\types;
 
 use PSFS\types\interfaces\ControllerInterface;
+use PSFS\base\Template;
+use PSFS\base\Request;
 
 /**
  * Class Controller
  * @package PSFS\types
  */
-class Controller extends \PSFS\base\Singleton implements ControllerInterface{
+abstract class Controller extends \PSFS\base\Singleton implements ControllerInterface{
+
+    protected $tpl;
+    protected $domain = '';
+
+    /**
+     * Constructor por defecto
+     */
+    function __construct(){
+        $this->tpl = Template::getInstance();
+    }
 
     /**
      * Método que renderiza una plantilla
@@ -19,17 +31,14 @@ class Controller extends \PSFS\base\Singleton implements ControllerInterface{
      */
     public function render($template, array $vars = array())
     {
-        return \PSFS\base\Template::getInstance()->render($template, $vars);
+        return $this->tpl->render($this->getDomain() . $template, $vars);
     }
 
     /**
      * Método que devuelve un modelo
      * @param $model
      */
-    public function getModel($model)
-    {
-
-    }
+    public function getModel($model){}
 
     /**
      * Método que devuelve una respuesta con formato
@@ -51,6 +60,37 @@ class Controller extends \PSFS\base\Singleton implements ControllerInterface{
      * Método que devuelve el objeto de petición
      * @return \PSFS\base\Singleton
      */
-    protected function getRequest(){ return \PSFS\base\Request::getInstance(); }
+    protected function getRequest(){ return Request::getInstance(); }
+
+    /**
+     * Método que añade la ruta del controlador a los path de plantillas Twig
+     * @return mixed
+     */
+    protected function setTemplatePath($path)
+    {
+        $this->tpl->addPath($path, $this->domain);
+        return $this;
+    }
+
+    /**
+     * Método que setea el dominio del controlador para las plantillas
+     * @param $domain
+     *
+     * @return $this
+     */
+    protected function setDomain($domain)
+    {
+        $this->domain = $domain;
+        return $this;
+    }
+
+    /**
+     * Método que devuelve el dominio del controlador
+     * @return string
+     */
+    public function getDomain()
+    {
+        return "@{$this->domain}/";
+    }
 
 }
