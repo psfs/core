@@ -13,6 +13,7 @@ class Template extends Singleton{
     protected $filters = array();
 
     protected $debug = false;
+    protected $public_zone = true;
 
     function __construct()
     {
@@ -33,6 +34,18 @@ class Template extends Singleton{
     }
 
     /**
+     * Método que activa la zona pública
+     * @param bool $public
+     *
+     * @return $this
+     */
+    public function setPublicZone($public = true)
+    {
+        $this->public_zone = $public;
+        return $this;
+    }
+
+    /**
      * Método que procesa la plantilla
      * @param $tpl
      * @param array $vars
@@ -47,6 +60,13 @@ class Template extends Singleton{
             header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
             header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
             header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
+        }
+        if($this->public_zone)
+        {
+            unset($_SERVER["PHP_AUTH_USER"]);
+            unset($_SERVER["PHP_AUTH_PW"]);
+            header_remove("Authorization");
+            header('Authorization:');
         }
         echo $this->dump($tpl, $vars);
         ob_flush();

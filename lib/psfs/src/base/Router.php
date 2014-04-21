@@ -44,12 +44,26 @@ class Router extends Singleton{
     public function execute($route)
     {
         //Chequeamos si entramos en el admin
-        if(preg_match("/^\/admin\//i", $route) && !Security::getInstance()->checkAdmin())
+        if(preg_match("/^\/admin\//i", $route))
         {
-            header('HTTP/1.1 401 Unauthorized');
-            header('WWW-Authenticate: Basic Realm="PSFS"');
-            echo _("Es necesario ser administrador para ver ésta zona");
-            exit();
+            if(!Security::getInstance()->checkAdmin())
+            {
+                header('HTTP/1.1 401 Unauthorized');
+                header('WWW-Authenticate: Basic Realm="PSFS"');
+                echo _("Es necesario ser administrador para ver ésta zona");
+                exit();
+            }
+        }
+        //Restricción de la web por contraseña
+        if(!preg_match("/^\/(admin|setup\-admin)/i", $route) && null !== Config::getInstance()->get('restricted'))
+        {
+            if(!Security::getInstance()->checkAdmin())
+            {
+                header('HTTP/1.1 401 Unauthorized');
+                header('WWW-Authenticate: Basic Realm="Zona Restringida"');
+                echo _("Espacio web restringido");
+                exit();
+            }
         }
 
         //Revisamos si tenemos la ruta registrada

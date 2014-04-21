@@ -3,6 +3,12 @@
 namespace PSFS;
 
 use PSFS\base\Forms;
+use PSFS\base\Logger;
+use PSFS\base\Request;
+use PSFS\base\Router;
+use PSFS\base\Security;
+use PSFS\base\Singleton;
+use PSFS\config\Config;
 use PSFS\exception\ConfigException;
 use PSFS\exception\LoggerException;
 
@@ -10,7 +16,7 @@ use PSFS\exception\LoggerException;
  * Class Dispatcher
  * @package PSFS
  */
-class Dispatcher extends \PSFS\base\Singleton{
+class Dispatcher extends Singleton{
     private $router;
     private $parser;
     private $security;
@@ -26,13 +32,13 @@ class Dispatcher extends \PSFS\base\Singleton{
      * @param $mem
      */
     public function __construct($mem = 0){
-        $this->router = \PSFS\base\Router::getInstance();
-        $this->parser = \PSFS\base\Request::getInstance();
-        $this->security = \PSFS\base\Security::getInstance();
-        $this->log = \PSFS\base\Logger::getInstance();
+        $this->router = Router::getInstance();
+        $this->parser = Request::getInstance();
+        $this->security = Security::getInstance();
+        $this->log = Logger::getInstance();
         $this->ts = $this->parser->getTs();
         $this->mem = memory_get_usage();
-        $this->config = \PSFS\config\Config::getInstance();
+        $this->config = Config::getInstance();
         $this->setLocale();
     }
 

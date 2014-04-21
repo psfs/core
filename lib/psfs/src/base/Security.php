@@ -23,6 +23,16 @@ class Security extends Singleton{
     public function adminers()
     {
         $admins = $this->getAdmins();
+        if(!empty($admins))
+        {
+            if(!$this->checkAdmin())
+            {
+                header('HTTP/1.1 401 Unauthorized');
+                header('WWW-Authenticate: Basic Realm="PSFS"');
+                echo _("Es necesario ser administrador para ver ésta zona");
+                exit();
+            }
+        }
         $form = new AdminForm();
         $form->build();
         if(Request::getInstance()->getMethod() == 'POST')

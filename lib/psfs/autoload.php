@@ -17,7 +17,7 @@ function PSFSAutoloader( $class ){
     if (strpos($class,'PSFS') !== false){
 
         // Change order src
-        $class = str_replace('PSFS', 'PSFS\\src', $class);
+        $class = str_replace('PSFS', 'psfs\\src', $class);
         // transform the namespace in path
         $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
 
