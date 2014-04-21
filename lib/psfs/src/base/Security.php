@@ -5,6 +5,7 @@ namespace PSFS\base;
 use PSFS\base\Singleton;
 use PSFS\base\Request;
 use PSFS\base\Logger;
+use PSFS\base\Router;
 use PSFS\config\AdminForm;
 use PSFS\config\Config;
 
@@ -84,7 +85,7 @@ class Security extends Singleton{
         $request = Request::getInstance();
         if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
         {
-            return $request->redirect($this->getRoute('setup-admin'));
+            return $request->redirect(Router::getInstance()->getRoute('setup-admin'));
         }
         $admins = $this->getAdmins();
         //Sacamos las credenciales de la petición

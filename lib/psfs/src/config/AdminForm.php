@@ -5,6 +5,7 @@ namespace PSFS\config;
 use PSFS\types\Form;
 use PSFS\config\Config;
 use PSFS\base\Router;
+use PSFS\base\Security;
 
 class AdminForm extends Form{
 
@@ -17,7 +18,7 @@ class AdminForm extends Form{
             'type' => 'password',
             'label' => _('Contraseña'),
         ));
-        $data = Config::getInstance()->getAdmins();
+        $data = Security::getInstance()->getAdmins();
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
             "class" => "col-md-6",
