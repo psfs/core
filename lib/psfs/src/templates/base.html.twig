@@ -6,6 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="{{ asset('/lib/psfs/src/public/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
         <link href="{{ asset('/lib/psfs/src/public/css/bootstrap-theme.min.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('/lib/psfs/src/public/css/timeline.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('/lib/psfs/src/public/css/shadowbox.css') }}" type="text/css" rel="stylesheet">
 {% block head %}
     {% block seo %}
         <title>{% block doc_title %}{{ get_config('platform_name') }}{% endblock doc_title %}</title>
@@ -30,6 +32,8 @@
         <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
         <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/bootstrap.min.js') }}"></script>
+        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/timeline.js') }}"></script>
+        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/shadowbox.js') }}"></script>
     {% block scripts %}
     {% endblock scripts %}
     </body>
