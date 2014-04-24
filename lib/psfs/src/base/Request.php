@@ -140,4 +140,35 @@ class Request extends Singleton{
     {
         return $this->server[$param] ?: null;
     }
+
+    /**
+     * Devuelve el nombre del servidor
+     * @return null
+     */
+    public function getServerName()
+    {
+        return $this->getServer("SERVER_NAME");
+    }
+
+    /**
+     * Devuelve el protocolo de la conexión
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->getServer("https") ? 'https://' : 'http://';
+    }
+
+    /**
+     * Devuelve la url completa de base
+     * @return string
+     */
+    public function getRootUrl()
+    {
+        $host = $this->getServerName();
+        $protocol = $this->getProtocol();
+        $url = '';
+        if(!empty($host) && !empty($protocol)) $url = $protocol . $host;
+        return $url;
+    }
 }

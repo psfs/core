@@ -6,6 +6,7 @@ use PSFS\base\Singleton;
 use PSFS\config\Config;
 use PSFS\Dispatcher;
 use PSFS\base\Router;
+use PSFS\base\Request;
 
 class Template extends Singleton{
 
@@ -153,7 +154,7 @@ class Template extends Singleton{
                     file_put_contents($base . $file_path, $data);
                 }
             }
-            return '/' . $file_path;
+            return Request::getInstance()->getRootUrl() . '/' . $file_path;
         });
         $this->tpl->addFunction($function);
         return $this;
