@@ -171,4 +171,15 @@ class Request extends Singleton{
         if(!empty($host) && !empty($protocol)) $url = $protocol . $host;
         return $url;
     }
+
+    /**
+     * Método que devuelve si la petición es ajax o no
+     * @return bool
+     */
+    public function isAjax()
+    {
+        $requested =$this->getServer("HTTP_X_REQUESTED_WITH");
+        return (!empty($requested) && strtolower($requested) == 'xmlhttprequest');
+    }
+
 }

@@ -141,8 +141,9 @@ class Template extends Singleton{
                                             $source_file = $source_file[0];
                                         }
                                         $orig = realpath(dirname(BASE_DIR . $string) . DIRECTORY_SEPARATOR . $source_file);
-                                        $dest = BASE_DIR . DIRECTORY_SEPARATOR . 'html' . DIRECTORY_SEPARATOR . 'css' .DIRECTORY_SEPARATOR . $source_file;
-                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest));
+                                        $orig_part = explode("Public", $orig);
+                                        $dest = BASE_DIR . DIRECTORY_SEPARATOR . 'html' . $orig_part[1];
+                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
                                         @copy($orig, $dest);
                                     }
                                 }
