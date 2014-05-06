@@ -110,6 +110,11 @@ class Template extends Singleton{
                     $ext = explode(".", $string);
                     $file = "/". sha1($string) . "." . $ext[count($ext) - 1];
                     $html_base = "image";
+                }elseif(preg_match("/(doc|pdf)/i", mime_content_type(BASE_DIR . $string)))
+                {
+                    $ext = explode(".", $string);
+                    $file = "/". sha1($string) . "." . $ext[count($ext) - 1];
+                    $html_base = "docs";
                 }
                 $file_path = $html_base . $file;
                 //Creamos el directorio si no existe
