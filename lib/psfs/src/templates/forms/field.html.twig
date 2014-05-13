@@ -21,7 +21,17 @@
     >
 {% elseif field.type == 'textarea' %}
     <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-    <textarea id="{{ field.id}}" name="{{ field.form }}[{{field.name}}]" class="form-control" placeholder="{{ field.placeholder|default(field.name) }}">{{ field.value | raw }}</textarea>
+    <textarea id="{{ field.id }}"
+      name="{{ field.name }}"
+{% if field.required %}
+      required="required"
+{% endif %}
+      class="form-control {{ field.class }}"
+{% if field.error %}
+      onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
+{% endif %}
+      placeholder="{{ field.placeholder|default(field.name) }}"
+    >{{ field.value | raw }}</textarea>
 {% endif %}
 {% if field.error %}
     <div class="clearfix"></div>

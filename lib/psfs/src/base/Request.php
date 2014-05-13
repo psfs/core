@@ -138,7 +138,7 @@ class Request extends Singleton{
      */
     public function getServer($param)
     {
-        return $this->server[$param] ?: null;
+        return isset($this->server[$param]) ?$this->server[$param] : null;
     }
 
     /**

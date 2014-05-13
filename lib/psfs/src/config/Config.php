@@ -59,7 +59,7 @@ class Config extends Singleton{
      * Método que devuelve el path de la carpeta lib
      * @return string
      */
-    public function getLibPath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' - DIRECTORY_SEPARATOR); }
+    public function getLibPath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR); }
 
     /**
      * Método que devuelve el path de cache

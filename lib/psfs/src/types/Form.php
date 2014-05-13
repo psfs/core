@@ -102,6 +102,23 @@ abstract class Form{
     public function getField($name){ return (isset($this->fields[$name])) ? $this->fields[$name] : null; }
 
     /**
+     * Método que devuelve el valor de un campo
+     * @param $name
+     *
+     * @return null
+     */
+    public function getFieldValue($name)
+    {
+        $field = $this->getField($name);
+        $value = null;
+        if(!empty($field))
+        {
+            $value = $field["value"] ?: null;
+        }
+        return $value;
+    }
+
+    /**
      * Método que construye el formulario asignando
      */
     public function build()

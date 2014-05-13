@@ -1,0 +1,72 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-07 19:53+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/Dispatcher.php:116
+msgid "Compilando traducciones"
+msgstr "Prueba"
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/Dispatcher.php:141
+msgid "Revisando directorio: "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/Dispatcher.php:142
+msgid "Comando ejecutado: "
+msgstr "UNo que va y dice"
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/Dispatcher.php:144
+msgid "Con salida:"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/base/Router.php:51
+msgid "Es necesario ser administrador para ver ésta zona"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/config/AdminForm.php:15
+msgid "Alias de usuario"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/config/AdminForm.php:18
+msgid "Contraseña"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/config/AdminForm.php:37
+msgid "Gestión de Usuarios Administradores"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/config/Config.php:160
+msgid "Bienvenido a PSFS"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/config/ConfigForm.php:55
+msgid "Añadir nuevo parámetro"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/types/Form.php:124
+msgid "Formulario no válido"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/types/Form.php:137
+#, php-format
+msgid "El campo %s es oligatorio"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/lib/psfs/src/types/Form.php:146
+#, php-format
+msgid "El campo %s no tiene un formato válido"
+msgstr ""

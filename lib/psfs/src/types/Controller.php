@@ -29,9 +29,10 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
      *
      * @return mixed
      */
-    public function render($template, array $vars = array())
+    public function render($template, array $vars = array(), $dump = false)
     {
-        return $this->tpl->render($this->getDomain() . $template, $vars);
+        if($dump) return $this->tpl->dump($this->getDomain() . $template, $vars);
+        else return $this->tpl->render($this->getDomain() . $template, $vars);
     }
 
     /**
@@ -54,6 +55,16 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
         ob_flush();
         ob_end_clean();
         exit();
+    }
+
+    /**
+     * Método que devuelve una salida en formato JSON
+     * @param $response
+     */
+    public function json($response)
+    {
+        $data = json_encode($response, JSON_UNESCAPED_UNICODE);
+        return $this->response($data, "text/json");
     }
 
     /**
