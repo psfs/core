@@ -181,7 +181,7 @@ abstract class Form{
         $form_name = $this->getName();
         if(!empty($data[$form_name])) foreach($this->fields as $key => &$field)
         {
-            if(isset($data[$form_name][$key]) && !empty($data[$form_name][$key])) $field["value"] = $data[$form_name][$key];
+            if(isset($data[$form_name][$key]) && isset($data[$form_name][$key])) $field["value"] = $data[$form_name][$key];
         }
         //Limpiamos los datos
         if(isset($data[$form_name])) unset($data[$form_name]);

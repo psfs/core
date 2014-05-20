@@ -20,7 +20,7 @@ class Request extends Singleton{
         $this->cookies = $_COOKIE;
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
-        $this->data = $_REQUEST;
+        $this->data = (count($_REQUEST)) ? $_REQUEST : file_get_contents("php://input");
     }
 
     /**

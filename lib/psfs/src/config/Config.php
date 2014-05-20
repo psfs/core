@@ -141,6 +141,7 @@ class Config extends Singleton{
      */
     public function index(){
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".Request::getInstance()->getrequestUri());
+        /* @var $form \PSFS\config\ConfigForm */
         $form = new ConfigForm;
         $form->build();
         if(Request::getInstance()->getMethod() == 'POST')

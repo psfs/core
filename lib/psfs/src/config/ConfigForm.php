@@ -2,7 +2,6 @@
 
 namespace PSFS\config;
 use PSFS\base\Router;
-use PSFS\config\Config;
 use PSFS\types\Form;
 
 class ConfigForm extends Form{
