@@ -55,6 +55,7 @@ class Template extends Singleton{
     public function render($tpl, array $vars = array())
     {
         ob_start();
+        header("X-Powered-By: @c15k0");
         if($this->debug)
         {
             $vars["__DEBUG__"]["includes"] = get_included_files();
@@ -67,6 +68,7 @@ class Template extends Singleton{
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
+        }else{
             header('Authorization:');
         }
         echo $this->dump($tpl, $vars);
