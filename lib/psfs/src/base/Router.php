@@ -22,7 +22,7 @@ class Router extends Singleton{
         if(Config::getInstance()->getDebugMode() || !file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"))
         {
             $this->hydrateRouting();
-        }else $this->routing = file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
+        }else $this->routing = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
         $this->simpatize();
     }
 
@@ -145,6 +145,7 @@ class Router extends Singleton{
             }
             if(!empty($home_params)) $this->routing['/'] = $home_params;
         }
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode($this->routing));
     }
 
     /**
