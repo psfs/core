@@ -7,6 +7,7 @@ use PSFS\config\Config;
 use PSFS\Dispatcher;
 use PSFS\base\Router;
 use PSFS\base\Request;
+use PSFS\base\extension\AssetsTokenParser;
 
 class Template extends Singleton{
 
@@ -32,6 +33,13 @@ class Template extends Singleton{
             ->addConfigFunction()
             ->addTranslationFilter()
             ->addRouteFunction();
+
+        //Añadimos las extensiones de los tags
+        $this->tpl->addTokenParser(new AssetsTokenParser("css"));
+        $this->tpl->addTokenParser(new AssetsTokenParser("js"));
+
+        //Optimizamos
+        $this->tpl->addExtension(new \Twig_Extension_Optimizer());
     }
 
     /**
@@ -96,27 +104,34 @@ class Template extends Singleton{
     {
         $function = new \Twig_SimpleFunction('asset', function($string){
             $file_path = "";
+            $debug = Config::getInstance()->get("debug");
             if(file_exists(BASE_DIR . $string))
             {
+                $ppath = explode("/", $string);
+                $original_filename = $ppath[count($ppath) -1];
                 $base = BASE_DIR . "/html/";
                 if(preg_match("/\.css$/i", $string))
                 {
-                    $file = "/". sha1($string) . ".css";
+                    $file = "/". substr(md5($string), 0, 8) . ".css";
                     $html_base = "css";
+                    if($debug) $file = str_replace(".css", "_" . $original_filename, $file);
                 }elseif(preg_match("/\.js$/i", $string))
                 {
-                    $file = "/". sha1($string) . ".js";
+                    $file = "/". substr(md5($string), 0, 8) . ".js";
                     $html_base = "js";
+                    if($debug) $file = str_replace(".js", "_" . $original_filename, $file);
                 }elseif(preg_match("/image/i", mime_content_type(BASE_DIR . $string)))
                 {
                     $ext = explode(".", $string);
-                    $file = "/". sha1($string) . "." . $ext[count($ext) - 1];
+                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "image";
+                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
                 }elseif(preg_match("/(doc|pdf)/i", mime_content_type(BASE_DIR . $string)))
                 {
                     $ext = explode(".", $string);
-                    $file = "/". sha1($string) . "." . $ext[count($ext) - 1];
+                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "docs";
+                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
                 }
                 $file_path = $html_base . $file;
                 //Creamos el directorio si no existe

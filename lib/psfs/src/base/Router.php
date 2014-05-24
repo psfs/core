@@ -44,7 +44,7 @@ class Router extends Singleton{
     public function execute($route)
     {
         //Chequeamos si entramos en el admin
-        if(preg_match("/^\/admin\//i", $route))
+        if(preg_match("/^\/admin/i", $route))
         {
             if(!Security::getInstance()->checkAdmin())
             {
@@ -69,13 +69,15 @@ class Router extends Singleton{
         //Revisamos si tenemos la ruta registrada
         foreach($this->routing as $pattern => $action)
         {
-            if(preg_match("/".preg_quote($pattern, "/")."$/i", $route))
+            if(preg_match("/^".preg_quote($pattern, "/")."$/i", $route))
             {
                 /** @var $class PSFS\types\Controller */
                 $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
                 return call_user_func_array(array($class, $action["method"]), array());
             }
         }
+
+        if(preg_match("/\/$/", $route)) return $this->execute(substr($route, 0, strlen($route) -1));
 
         return false;
     }

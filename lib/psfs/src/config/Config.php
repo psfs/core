@@ -139,7 +139,7 @@ class Config extends Singleton{
      * @return mixed
      * @throws \HttpException
      */
-    public function index(){
+    public function config(){
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".Request::getInstance()->getrequestUri());
         /* @var $form \PSFS\config\ConfigForm */
         $form = new ConfigForm;
@@ -160,6 +160,18 @@ class Config extends Singleton{
         return Template::getInstance()->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
             'config' => $form,
+        ));
+    }
+
+    /**
+     * Método que gestiona el menú de administración
+     * @route /admin
+     * @route /admin/
+     * @return mixed
+     */
+    public function index(){
+        return Template::getInstance()->render("index.html.twig", array(
+
         ));
     }
 }

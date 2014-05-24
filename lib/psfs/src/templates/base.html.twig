@@ -30,10 +30,12 @@
         {% endblock body %}
         </section>
         <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
-        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/jquery.min.js') }}"></script>
-        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/bootstrap.min.js') }}"></script>
-        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/timeline.js') }}"></script>
-        <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/shadowbox.js') }}"></script>
+        {% scripts
+        "/lib/psfs/src/public/js/jquery.min.js"
+        "/lib/psfs/src/public/js/bootstrap.min.js"
+        "/lib/psfs/src/public/js/timeline.js"
+        "/lib/psfs/src/public/js/shadowbox.js"
+        %}{% endscript %}
     {% block scripts %}
     {% endblock scripts %}
     </body>
