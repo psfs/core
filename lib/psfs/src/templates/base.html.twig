@@ -4,10 +4,12 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="{{ asset('/lib/psfs/src/public/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
-        <link href="{{ asset('/lib/psfs/src/public/css/bootstrap-theme.min.css') }}" type="text/css" rel="stylesheet">
-        <link href="{{ asset('/lib/psfs/src/public/css/timeline.css') }}" type="text/css" rel="stylesheet">
-        <link href="{{ asset('/lib/psfs/src/public/css/shadowbox.css') }}" type="text/css" rel="stylesheet">
+        {% styles
+            '/lib/psfs/src/public/css/bootstrap.min.css'
+            '/lib/psfs/src/public/css/bootstrap-theme.min.css'
+            '/lib/psfs/src/public/css/timeline.css'
+            '/lib/psfs/src/public/css/shadowbox.css'
+        %}{% endstyles %}
 {% block head %}
     {% block seo %}
         <title>{% block doc_title %}{{ get_config('platform_name') }}{% endblock doc_title %}</title>
