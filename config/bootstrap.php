@@ -40,7 +40,7 @@ while(false !== ($dir = $d->read()))
 
 //Autoload de módulos
 $d = dir($src_path);
-while(false !== ($dir = $d->read()))
+while(!empty($d) && false !== ($dir = $d->read()))
 {
     $file = str_replace(".php","",$dir);
     if(!is_dir($src_path.$dir) && file_exists($src_path.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR."autoload.php"))
