@@ -159,14 +159,17 @@ class Router extends Singleton{
      */
     private function inspectDir($origen, $namespace = "PSFS", $routing)
     {
-        $d = dir($origen);
-        while(false !== ($dir = $d->read()))
+        if(file_exists($origen))
         {
-            if(is_dir($origen.DIRECTORY_SEPARATOR.$dir) && preg_match("/^\./",$dir) == 0)
+            $d = dir($origen);
+            while(!empty($d) && false !== ($dir = $d->read()))
             {
-                $routing = $this->inspectDir($origen.DIRECTORY_SEPARATOR.$dir, $namespace . '\\' . $dir, $routing);
-            }elseif(preg_match("/\.php$/",$dir)){
-                $routing = $this->addRouting($namespace . '\\' .str_replace(".php", "", $dir), $routing);
+                if(is_dir($origen.DIRECTORY_SEPARATOR.$dir) && preg_match("/^\./",$dir) == 0)
+                {
+                    $routing = $this->inspectDir($origen.DIRECTORY_SEPARATOR.$dir, $namespace . '\\' . $dir, $routing);
+                }elseif(preg_match("/\.php$/",$dir)){
+                    $routing = $this->addRouting($namespace . '\\' .str_replace(".php", "", $dir), $routing);
+                }
             }
         }
         return $routing;
