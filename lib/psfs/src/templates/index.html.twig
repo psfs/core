@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block body_header %}
+    <div class="page-header">
+        <h1>{{ "Herramienta de Gestión de Administradores PSFS"|trans }}</h1>
+        <h2>{{ get_config('platform_name') }}</h2>
+    </div>
+{% endblock body_header %}
+{% block body_content %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h2>Propiedades Propel</h2>
+        </div>
+    </div>
+{% endblock body_content %}
+{% block scripts %}
+    <script type="text/javascript">
+        var properties = {};
+    {% for prop, property in properties %}
+        properties['{{ prop }}'] = {};
+    {% for key, value in property %}
+        properties['{{ prop }}']['{{ key }}'] = "{{ value }}";
+    {% endfor %}
+    {% endfor %}
+    </script>
+{% endblock scripts %}

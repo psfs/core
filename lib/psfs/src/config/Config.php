@@ -163,6 +163,11 @@ class Config extends Singleton{
         ));
     }
 
+    public function getPropelParams()
+    {
+        return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json'), true);
+    }
+
     /**
      * Método que gestiona el menú de administración
      * @route /admin
@@ -171,7 +176,7 @@ class Config extends Singleton{
      */
     public function index(){
         return Template::getInstance()->render("index.html.twig", array(
-
+            'properties' => $this->getPropelParams(),
         ));
     }
 }

@@ -1,0 +1,216 @@
+{
+    "propel.project": {
+        "help": "Nombre del Módulo",
+        "type": "string",
+        "required": true
+    },
+    "propel.targetPackage": {
+        "help": "Nombre del paquete",
+        "type": "string",
+        "required": false,
+        "default": "propel.project"
+    },
+    "propel.packageObjectModel": {
+        "help": "Separar los modelos por paquetes",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.namespace.autoPackage": {
+        "help": "Usar namespaces",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.schema.autoPackage": {
+        "help": "Copiar atributos entre schemas",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.schema.autoNamespace": {
+        "help": "Copiar namespace entre schemas",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.schema.autoPrefix": {
+        "help": "Utiliza los atributos como prefijos de los schemas",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.schema.validate": {
+        "help": "Valida el schema",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.schema.transform": {
+        "help": "Usar transformador de schems XSL",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.database": {
+        "help": "Separar los modelos por paquetes",
+        "type": "enum",
+        "values": "pgsql|mysql|sqlite|mssql|oracle",
+        "required": true,
+        "default": "mysql"
+    },
+    "propel.database.url": {
+        "help": "Datos de conexión DB",
+        "type": "string",
+        "required": true
+    },
+    "propel.database.user": {
+        "help": "Usuario de conexión a DB",
+        "type": "string",
+        "required": true
+    },
+    "propel.database.password": {
+        "help": "Contraseña de conexión a DB",
+        "type": "password",
+        "required": true
+    },
+    "propel.database.buildUrl": {
+        "help": "Identico a propel.database.url",
+        "type": "string",
+        "required": false,
+        "default": "propel.database.url"
+    },
+    "propel.database.createUrl": {
+        "help": "Configuración PDO para creación de modelos",
+        "type": "string",
+        "required": false,
+        "default": "propel.database.url"
+    },
+    "propel.database.schema": {
+        "help": "string opcional del schema",
+        "type": "boolean",
+        "required": false,
+        "default": ""
+    },
+    "propel.database.encoding": {
+        "help": "Codificación de la DB",
+        "type": "string",
+        "required": false,
+        "default": "UTF-8"
+    },
+    "propel.tablePrefix": {
+        "help": "Prefijo a poner en todas las tablas de los modelos de DB",
+        "type": "string",
+        "required": false,
+        "default": ""
+    },
+    "propel.samePhpName": {
+        "help": "Mismo nombre de los modelos y tablas",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.addVendorInfo": {
+        "help": "Información adicional del paquete",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.addGenericAccessors": {
+        "help": "Añadir los getters por defecto",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.addGenericMutators": {
+        "help": "Añadir los setters por defecto",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.addTimeStamp": {
+        "help": "Añadir el timestmap a los ficheros generados",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.addIncludes": {
+        "help": "Usar include en vez de require para cargar clases",
+        "type": "boolean",
+        "required": false,
+        "default": false
+    },
+    "propel.addHooks": {
+        "help": "Añadir eventos de guardado(pre- post-)",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.basePrefix": {
+        "help": "Prefijo para las clases generadas",
+        "type": "string",
+        "required": false,
+        "default": "Base"
+    },
+    "propel.classPrefix": {
+        "help": "Prefijo para el namespace",
+        "type": "string",
+        "required": false,
+        "default": ""
+    },
+    "propel.useLeftJoinsInDoJoinMethods": {
+        "help": "Usar Left Joins en vez de Inner Joins",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.mysql.tableType": {
+        "help": "Tipo de tablas a generar",
+        "type": "enum",
+        "values": "MyISAM|InnoDB",
+        "required": false,
+        "default": "InnoDB"
+    },
+    "propel.useDateTimeClass": {
+        "help": "Usar clase Datetime en campos DB",
+        "type": "boolean",
+        "required": false,
+        "default": true
+    },
+    "propel.dateTimeClass": {
+        "help": "Clase Datetime",
+        "type": "string",
+        "required": false,
+        "default": "DateTime"
+    },
+    "propel.defaultTimeStampFormat": {
+        "help": "Formato de Timestamp",
+        "type": "string",
+        "required": false,
+        "default": "Y-m-d H:i:s"
+    },
+    "propel.defaultTimeFormat": {
+        "help": "Formato de Hora",
+        "type": "string",
+        "required": false,
+        "default": "%X"
+    },
+    "propel.defaultDateFormat": {
+        "help": "Formato de Fecha",
+        "type": "string",
+        "required": false,
+        "default": "Y-m-d H:i:s"
+    },
+    "propel.project.dir": {
+        "help": "Path en el que se encuentra la configuración de propel",
+        "type": "string",
+        "required": false,
+        "default": "__DIR__"
+    },
+    "propel.schema.dir": {
+        "help": "Nombre del direc",
+        "type": "string",
+        "required": false,
+        "default": "Y-m-d H:i:s"
+    }
+}
