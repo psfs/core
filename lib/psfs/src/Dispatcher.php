@@ -62,7 +62,7 @@ class Dispatcher extends Singleton{
     public function run()
     {
         $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
-        if(!$this->config->isConfigured()) return $this->config->index();
+        if(!$this->config->isConfigured()) return $this->config->config();
         //
         try{
             if(!$this->parser->isFile())

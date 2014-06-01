@@ -5,6 +5,7 @@ namespace PSFS\config;
 use PSFS\base\Singleton;
 use PSFS\exception\ConfigException;
 use PSFS\config\ConfigForm;
+use PSFS\config\ModuleForm;
 use PSFS\base\Logger;
 use PSFS\base\Template;
 use PSFS\base\Request;
@@ -163,6 +164,10 @@ class Config extends Singleton{
         ));
     }
 
+    /**
+     * Servicio que devuelve los parámetros de configuración de Propel para las BD
+     * @return mixed
+     */
     public function getPropelParams()
     {
         return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json'), true);
@@ -177,6 +182,70 @@ class Config extends Singleton{
     public function index(){
         return Template::getInstance()->render("index.html.twig", array(
             'properties' => $this->getPropelParams(),
+        ));
+    }
+
+    /**
+     * Método que genera un nuevo módulo
+     * @route /admin/module
+     * @return mixed
+     */
+    public function generateModule()
+    {
+        Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".Request::getInstance()->getrequestUri());
+        /* @var $form \PSFS\config\ConfigForm */
+        $form = new ModuleForm();
+        $form->build();
+        if(Request::getInstance()->getMethod() == 'POST')
+        {
+            $form->hydrate();
+            if($form->isValid())
+            {
+                $module = $form->getFieldValue("module");
+                try
+                {
+                    $mod_path = BASE_DIR . DIRECTORY_SEPARATOR . "modules" . DIRECTORY_SEPARATOR;
+                    //Creamos el directorio base de los módulos
+                    if(!file_exists($mod_path)) mkdir($mod_path, 0775);
+                    //Creamos la carpeta del módulo
+                    if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
+                    //Creamos las carpetas CORE del módulo
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
+                    //Creamos las carpetas de los assets
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
+                    //Generamos el controlador base
+                    $controller = Template::getInstance()->dump("generator/controller.template.twig", array(
+                        "module" => $module,
+                    ));
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
+                    //Generamos el autoloader del módulo
+                    $autoloader = Template::getInstance()->dump("generator/autoloader.template.twig", array(
+                        "module" => $module,
+                    ));
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
+                    //Generamos la plantilla de index
+                    $index = Template::getInstance()->dump("generator/index.template.twig");
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
+                    //Redireccionamos al home definido
+                    Logger::getInstance()->infoLog("Módulo generado correctamente");
+                    return Request::getInstance()->redirect();
+                }catch(\Exception $e)
+                {
+                    Logger::getInstance()->infoLog($e->getMessage());
+                    throw new \HttpException('Error al generar el módulo, prueba a cambiar los permisos', 403);
+                }
+            }
+        }
+        return Template::getInstance()->render("modules.html.twig", array(
+            'properties' => $this->getPropelParams(),
+            'form' => $form,
         ));
     }
 }

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block body_header %}
+    <div class="page-header">
+        <h1>{{ "Herramienta de Gestión de Módulos PSFS"|trans }}</h1>
+        <h2>{{ get_config('platform_name') }}</h2>
+    </div>
+{% endblock body_header %}
+{% block body_content %}
+    {{ form(form) }}
+{% endblock body_content %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ asset('/lib/psfs/src/public/js/admins.js') }}"></script>
+{% endblock scripts %}

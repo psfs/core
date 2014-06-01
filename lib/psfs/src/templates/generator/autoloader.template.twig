@@ -1,0 +1,35 @@
+<?php
+/**
+ * {{ module }} Project
+ * @author Fran López <fran.lopez84@hotmail.es>
+ * @version 0.1
+ */
+if(!defined("BASE_DIR"))
+define("BASE_DIR", dirname( dirname(__DIR__) ) );
+
+// register the autoloader
+spl_autoload_register( "{{ module }}Autoloader" );
+
+
+// autoloader
+function {{ module }}Autoloader( $class ){
+    // it only autoload class into the Rain scope
+    if (strpos($class,'{{ module }}') !== false){
+
+        // Change order src
+        $class = preg_replace('/^\\{{ module }}/', '{{ module }}', $class);
+        // transform the namespace in path
+        $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
+        // filepath
+        $abs_path = BASE_DIR . DIRECTORY_SEPARATOR . 'modules'. DIRECTORY_SEPARATOR . $path . ".php";
+        if (!file_exists($abs_path)) {
+            pre('&rarr;&nbsp;'.$class);
+            pre('&rarr;&nbsp;'.$path);
+            pre('&rarr;&nbsp;'.$abs_path);
+        }
+
+        // require the file
+        if(file_exists($abs_path)) require_once $abs_path;
+    }
+    return false;
+}
