@@ -263,11 +263,11 @@ class Router extends Singleton{
      * @return mixed
      * @throws \PSFS\exception\ConfigException
      */
-    public function getRoute($slug = '')
+    public function getRoute($slug = '', $absolute = false)
     {
-        if(strlen($slug) == 0) return '/';
+        if(strlen($slug) == 0) return (false !== $absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
         if(!isset($this->slugs[$slug])) throw new ConfigException("No existe la ruta especificada");
-        return $this->slugs[$slug];
+        return (false !== $absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
     }
 
     /**

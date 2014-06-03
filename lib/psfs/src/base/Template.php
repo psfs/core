@@ -282,8 +282,8 @@ class Template extends Singleton{
      */
     private function addRouteFunction()
     {
-        $function = new \Twig_SimpleFunction('path', function($path = ''){
-            return Router::getInstance()->getRoute($path);
+        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false){
+            return Router::getInstance()->getRoute($path, $absolute);
         });
         $this->tpl->addFunction($function);
         return $this;
