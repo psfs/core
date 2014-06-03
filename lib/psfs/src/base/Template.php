@@ -102,7 +102,7 @@ class Template extends Singleton{
      */
     private function addAssetFunction()
     {
-        $function = new \Twig_SimpleFunction('asset', function($string){
+        $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true){
             $file_path = "";
             $debug = Config::getInstance()->get("debug");
             if(file_exists(BASE_DIR . $string))
@@ -174,10 +174,12 @@ class Template extends Singleton{
                         }
                     }
                     $data = file_get_contents(BASE_DIR . $string);
-                    file_put_contents($base . $file_path, $data);
+                    if(!empty($name)) file_put_contents(BASE_DIR . DIRECTORY_SEPARATOR . "html" . DIRECTORY_SEPARATOR . $name, $data);
+                    else file_put_contents($base . $file_path, $data);
                 }
             }
-            return Request::getInstance()->getRootUrl() . '/' . $file_path;
+            $return_path = (empty($name)) ? Request::getInstance()->getRootUrl() . '/' . $file_path : $name;
+            return ($return) ? $return_path : '';
         });
         $this->tpl->addFunction($function);
         return $this;
