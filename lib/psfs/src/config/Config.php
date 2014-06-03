@@ -43,7 +43,7 @@ class Config extends Singleton{
         if(file_exists(CONFIG_DIR . '/config.json'))
         {
             $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json'), true) ?: array();
-            $this->debug = (bool)$this->config['debug'] ?: false;
+            $this->debug = (isset($this->config['debug'])) ? (bool)$this->config['debug'] : false;
         }else{
             $this->debug = true;
         }
@@ -122,7 +122,7 @@ class Config extends Singleton{
      */
     public function get($param)
     {
-        return $this->config[$param] ?: null;
+        return isset($this->config[$param]) ? $this->config[$param] : null;
     }
 
     /**
