@@ -24,7 +24,7 @@ class Config extends Singleton{
     protected $config;
     static public $required = array('db_host', 'db_port', 'db_user', 'db_password', 'home_action');
 
-    static public $optional = array('platform_name',);
+    static public $optional = array('platform_name');
     protected $debug = false;
 
     function __construct()

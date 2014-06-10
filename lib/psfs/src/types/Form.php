@@ -151,8 +151,8 @@ abstract class Form{
                 //Verificamos si es obligatorio
                 if((!isset($field["required"]) || false !== (bool)$field["required"]) && empty($field["value"]))
                 {
-                    $this->errors[$key] = str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio"));
-                    $field["error"] = $this->errors[$key];
+                    $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio")));
+                    $field["error"] = $this->getError($key);
                     $valid = false;
                 }
                 //Validamos en caso de tener validaciones
@@ -160,14 +160,39 @@ abstract class Form{
                 {
                     if(preg_match("/".$field["pattern"]."/", $field["value"]) == 0)
                     {
-                        $this->errors[$key] = str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido"));
-                        $field["error"] = $this->errors[$key];
+                        $this->setError($key,str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido")));
+                        $field["error"] = $this->getError($key);
                         $valid = false;
                     }
                 }
             }
         }
         return $valid;
+    }
+
+    /**
+     * Método que añade un error para un campo del formulario
+     * @param $field
+     * @param string $error
+     *
+     * @return $this
+     */
+    public function setError($field, $error = "Error de validación")
+    {
+        $this->fields[$field]["error"] = $error;
+        $this->errors[$field] = $error;
+        return $this;
+    }
+
+    /**
+     * Método que devuelve el error de un campo
+     * @param $field
+     *
+     * @return string
+     */
+    public function getError($field)
+    {
+        return isset($this->errors[$field]) ? $this->errors[$field] : '';
     }
 
     /**

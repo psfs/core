@@ -48,6 +48,7 @@ class Router extends Singleton{
         {
             if(!Security::getInstance()->checkAdmin())
             {
+                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin($route);
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Basic Realm="PSFS"');
                 echo _("Es necesario ser administrador para ver ésta zona");
@@ -59,6 +60,7 @@ class Router extends Singleton{
         {
             if(!Security::getInstance()->checkAdmin())
             {
+                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin($route);
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Basic Realm="Zona Restringida"');
                 echo _("Espacio web restringido");

@@ -60,7 +60,7 @@ class Template extends Singleton{
      * @param array $vars
      * @return mixed
      */
-    public function render($tpl, array $vars = array())
+    public function render($tpl, array $vars = array(), $cookies = array())
     {
         ob_start();
         header("X-Powered-By: @c15k0");
@@ -79,6 +79,18 @@ class Template extends Singleton{
         }else{
             header('Authorization:');
         }
+        if(!empty($cookies)) foreach($cookies as $cookie)
+        {
+            setcookie($cookie["name"],
+                $cookie["value"],
+                (isset($cookie["expire"])) ? $cookie["expire"] : null,
+                (isset($cookie["path"])) ? $cookie["path"] : "/",
+                (isset($cookie["domain"])) ? $cookie["domain"] : Request::getInstance()->getRootUrl(false),
+                (isset($cookie["secure"])) ? $cookie["secure"] : false,
+                (isset($cookie["http"])) ? $cookie["http"] : false
+            );
+        }
+
         echo $this->dump($tpl, $vars);
         ob_flush();
         ob_end_clean();
@@ -131,6 +143,12 @@ class Template extends Singleton{
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "docs";
+                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                }elseif(preg_match("/(video|audio)/i", mime_content_type(BASE_DIR . $string)))
+                {
+                    $ext = explode(".", $string);
+                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+                    $html_base = "media";
                     if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
                 }
                 $file_path = $html_base . $file;

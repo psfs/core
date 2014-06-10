@@ -8,6 +8,7 @@ use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\config\AdminForm;
 use PSFS\config\Config;
+use PSFS\config\LoginForm;
 
 /**
  * Class Security
@@ -89,7 +90,7 @@ class Security extends Singleton{
      * Método que devuelve si un usuario tiene privilegios para acceder a la zona de administración
      * @return bool
      */
-    public function checkAdmin()
+    public function checkAdmin($user = null, $pass = null)
     {
         $authorized = false;
         $request = Request::getInstance();
@@ -99,13 +100,66 @@ class Security extends Singleton{
         }
         $admins = $this->getAdmins();
         //Sacamos las credenciales de la petición
-        $user = $request->getServer('PHP_AUTH_USER');
-        $pass = $request->getServer('PHP_AUTH_PW');
+        $user = $user ?: $request->getServer('PHP_AUTH_USER');
+        $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
+        if(empty($user) && empty($admins[$user]))
+        {
+            $auth_cookie = $request->getCookie($this->getHash());
+            if(!empty($auth_cookie))
+            {
+                list($user, $pass) = explode(":", base64_decode($auth_cookie));
+            }
+        }
         if(!empty($user) && !empty($admins[$user]))
         {
             $auth = $admins[$user]["hash"];
             $authorized = ($auth == sha1($user.$pass));
         }
         return $authorized;
+    }
+
+    /**
+     * Método privado para la generación del hash de la cookie de administración
+     * @return string
+     */
+    private function getHash(){ return substr(md5("admin"), 0, 8); }
+
+    /**
+     * Acción que pinta un formulario genérico de login pra la zona restringida
+     * @params string $route
+     * @route /admin/login
+     * @return html
+     */
+    public function adminLogin($route = null)
+    {
+        $form = new LoginForm();
+        if(Request::getInstance()->getMethod() == "GET") $form->setData(array("route" => $route));
+        $form->build();
+        if(Request::getInstance()->getMethod() == 'POST')
+        {
+            $form->hydrate();
+            if($form->isValid())
+            {
+                if($this->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass")))
+                {
+                    $cookies = array(
+                        array(
+                            "name" => $this->getHash(),
+                            "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
+                            "expire" => mktime() + 3600,
+                            "http" => true,
+                        )
+                    );
+                    return Template::getInstance()->render("redirect.html.twig", array(
+                        'route' => $form->getFieldValue("route"),
+                    ), $cookies);
+                }else{
+                    $form->setError("user", "El usuario no tiene acceso a la web");
+                }
+            }
+        }
+        return Template::getInstance()->render("login.html.twig", array(
+            'form' => $form,
+        ));
     }
 }

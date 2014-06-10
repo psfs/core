@@ -4,6 +4,17 @@ namespace PSFS\base;
 
 use PSFS\base\Singleton;
 
+if(!function_exists("getallheaders"))
+{
+    function getallheaders()
+    {
+        foreach($_SERVER as $h=>$v)
+            if(ereg('HTTP_(.+)',$h,$hp))
+                $headers[$hp[1]]=$v;
+        return $headers;
+    }
+}
+
 /**
  * Class Request
  * @package PSFS
@@ -161,15 +172,27 @@ class Request extends Singleton{
 
     /**
      * Devuelve la url completa de base
+     * @param bollean $protocol
      * @return string
      */
-    public function getRootUrl()
+    public function getRootUrl($protocol = true)
     {
         $host = $this->getServerName();
-        $protocol = $this->getProtocol();
+        $protocol = $protocol ? $this->getProtocol() : '';
         $url = '';
         if(!empty($host) && !empty($protocol)) $url = $protocol . $host;
         return $url;
+    }
+
+    /**
+     * Método que devuelve el valor de una cookie en caso de que exista
+     * @param $name
+     *
+     * @return null
+     */
+    public function getCookie($name)
+    {
+        return isset($this->cookies[$name]) ? $this->cookies[$name] : null;
     }
 
     /**
