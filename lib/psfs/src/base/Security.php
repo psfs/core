@@ -28,6 +28,7 @@ class Security extends Singleton{
         {
             if(!$this->checkAdmin())
             {
+                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin("/setup-admin");
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Basic Realm="PSFS"');
                 echo _("Es necesario ser administrador para ver ésta zona");
@@ -146,7 +147,7 @@ class Security extends Singleton{
                         array(
                             "name" => $this->getHash(),
                             "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
-                            "expire" => mktime() + 3600,
+                            "expire" => time() + 3600,
                             "http" => true,
                         )
                     );
