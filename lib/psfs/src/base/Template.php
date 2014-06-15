@@ -144,7 +144,7 @@ class Template extends Singleton{
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "docs";
                     if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(preg_match("/(video|audio)/i", mime_content_type(BASE_DIR . $string)))
+                }elseif(preg_match("/(video|audio|ogg)/i", mime_content_type(BASE_DIR . $string)))
                 {
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
