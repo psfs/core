@@ -23,7 +23,7 @@
     ],
     "autoload": {
         "psr-0": {
-            "PSFS": "src/"
+            "PSFS\\": "src/"
         }
     },
     "minimum-stability": "dev"
