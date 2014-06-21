@@ -71,7 +71,7 @@ class Dispatcher extends Singleton{
             }else $this->router->httpNotFound();
         }catch(ConfigException $ce)
         {
-            return $this->splashConfigure();
+            return $this->config->config();
         }
         catch(Exception $e)
         {

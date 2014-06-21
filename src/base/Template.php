@@ -121,7 +121,7 @@ class Template extends Singleton{
             {
                 $ppath = explode("/", $string);
                 $original_filename = $ppath[count($ppath) -1];
-                $base = BASE_DIR . "/html/";
+                $base = BASE_DIR . DIRECTORY_SEPARATOR . "html" .DIRECTORY_SEPARATOR;
                 if(preg_match("/\.css$/i", $string))
                 {
                     $file = "/". substr(md5($string), 0, 8) . ".css";

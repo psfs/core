@@ -93,11 +93,11 @@ class Router extends Singleton{
     protected function findClass($class)
     {
         //Buscamos en PSFS en primera instancia
-        $class_namespace = $this->exploreDir(LIB_DIR . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'src', $class);
+        $class_namespace = $this->exploreDir(SOURCE_DIR, $class);
         //Si no tenemos la ruta buscamos en la carpeta de módulos
         if(is_null($class_namespace))
         {
-            $class_namespace = $this->exploreDir(BASE_DIR . DIRECTORY_SEPARATOR . 'modules', $class, 'Modules');
+            $class_namespace = $this->exploreDir(CORE_DIR, $class, 'Modules');
         }
         return $class_namespace;
     }
@@ -135,8 +135,8 @@ class Router extends Singleton{
      */
     private function hydrateRouting()
     {
-        $base = LIB_DIR . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'src';
-        $modules = BASE_DIR . DIRECTORY_SEPARATOR . 'modules';
+        $base = SOURCE_DIR;
+        $modules = realpath(CORE_DIR);
         $this->routing = $this->inspectDir($base, "PSFS", array());
         $this->routing = $this->inspectDir($modules, "", $this->routing);
         $home = Config::getInstance()->get('home_action');

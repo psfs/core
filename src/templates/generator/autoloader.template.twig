@@ -21,7 +21,7 @@ function {{ module }}Autoloader( $class ){
         // transform the namespace in path
         $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
         // filepath
-        $abs_path = BASE_DIR . DIRECTORY_SEPARATOR . 'modules'. DIRECTORY_SEPARATOR . $path . ".php";
+        $abs_path = CORE_DIR . DIRECTORY_SEPARATOR . $path . ".php";
         if (!file_exists($abs_path)) {
             pre('&rarr;&nbsp;'.$class);
             pre('&rarr;&nbsp;'.$path);
