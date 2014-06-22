@@ -303,7 +303,12 @@ class Template extends Singleton{
     private function addRouteFunction()
     {
         $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false){
-            return Router::getInstance()->getRoute($path, $absolute);
+            try{
+                return Router::getInstance()->getRoute($path, $absolute);
+            }catch(\Exception $e)
+            {
+                return Router::getInstance()->getRoute('', $absolute);
+            }
         });
         $this->tpl->addFunction($function);
         return $this;
