@@ -22,7 +22,7 @@ class Config extends Singleton{
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     protected $config;
-    static public $required = array('db_host', 'db_port', 'db_user', 'db_password', 'home_action');
+    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action');
 
     static public $optional = array('platform_name');
     protected $debug = false;
@@ -210,6 +210,7 @@ class Config extends Singleton{
                     //Creamos la carpeta del módulo
                     if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
                     //Creamos las carpetas CORE del módulo
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
@@ -230,6 +231,36 @@ class Config extends Singleton{
                         "module" => $module,
                     ));
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
+                    //Generamos el autoloader de propel
+                    $autoloader_propel = Template::getInstance()->dump("generator/autoload.propel.twig", array(
+                        "module" => $module,
+                        "host" => $this->get("db_host"),
+                        "port" => $this->get("db_port"),
+                        "user" => $this->get("db_user"),
+                        "pass" => $this->get("db_password"),
+                        "db" => $this->get("db_name"),
+                    ));
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php", $autoloader_propel);
+                    //Generamos el build.properties de propel
+                    $build_properties = Template::getInstance()->dump("generator/build.properties.twig", array(
+                        "module" => $module,
+                        "host" => $this->get("db_host"),
+                        "port" => $this->get("db_port"),
+                        "user" => $this->get("db_user"),
+                        "pass" => $this->get("db_password"),
+                        "db" => $this->get("db_name"),
+                    ));
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties", $build_properties);
+                    //Generamos el build.properties de propel
+                    $runtime_conf = Template::getInstance()->dump("generator/runtime.config.twig", array(
+                        "module" => $module,
+                        "host" => $this->get("db_host"),
+                        "port" => $this->get("db_port"),
+                        "user" => $this->get("db_user"),
+                        "pass" => $this->get("db_password"),
+                        "db" => $this->get("db_name"),
+                    ));
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml", $runtime_conf);
                     //Generamos la plantilla de index
                     $index = Template::getInstance()->dump("generator/index.template.twig");
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);

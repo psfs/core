@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <propel>
+        <datasources default="{{ module }}">
+            <datasource id="{{ module }}">
+                <adapter>mysql</adapter> <!-- sqlite, mysql, myssql, oracle, or pgsql -->
+                <connection>
+                    <dsn>mysql:host={{ host }};port={{ port }};dbname={{ db }}</dsn>
+                    <user>{{ user }}</user>
+                    <password>{{ pass }}</password>
+                </connection>
+            </datasource>
+        </datasources>
+    </propel>
+</config>
