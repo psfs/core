@@ -2,11 +2,18 @@ PSFS
 ====
 Framework Php Simple Fast & Secure
 
-Usa las librerías:
-* Propel ORM 2 --> Se encarga de la conexión con BD y del mapeo del modelo de datos
-* Twig --> Gestor de plantillas
-* Phing --> Extensión php necesaria para la ejecución de Propel, incluida en el proyecto para poder utilizarse en servidores low cost que no implementan Phing de manera nativa y no da la posibilidad de instalarlo.
+Componentes necesarios para su ejecución:
 
-Nativamente usa el Bootstrap de Twitter 3.0
+* "propel/propel": "2.0.*@dev",
+* "symfony/yaml": "2.6.*@dev",
+* "symfony/console": "2.6.*@dev",
+* "symfony/finder": "2.3.*@dev",
+* "symfony/filesystem": "2.6.*@dev",
+* "psr/log": "1.0.*@dev",
+* "symfony/validator": "2.6.*@dev",
+* "monolog/monolog": "1.10.*@dev",
+* "behat/behat": "3.0.*@dev",
+* "phpunit/phpunit": "4.3.*@dev",
+* "twig/twig": "1.*@dev"
 
-Actualmente en fase de desarrollo.
+Actualmente en fase de desarrollo
