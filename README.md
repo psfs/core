@@ -1,4 +1,5 @@
 PSFS
+[![Build Status](https://travis-ci.org/c15k0/psfs.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
 ====
 Framework Php Simple Fast & Secure
 
