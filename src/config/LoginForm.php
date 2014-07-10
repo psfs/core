@@ -14,13 +14,11 @@ class LoginForm extends Form{
         $this->setAction(Router::getInstance()->getRoute('admin-login'));
         $this->add("user", array(
             "label" => _("Usuario"),
-            "class" => "col-md-6",
             "required" => true,
             "pattern" => Form::VALID_ALPHANUMERIC,
         ))
         ->add("pass", array(
             "label" => _("Contraseña"),
-            "class" => "col-md-6",
             "required" => true,
             "type" => "password",
         ))

@@ -56,7 +56,7 @@ class Router extends Singleton{
             }
         }
         //Restricción de la web por contraseña
-        if(!preg_match("/^\/(admin|setup\-admin)/i", $route) && null !== Config::getInstance()->get('restricted'))
+        if(!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted'))
         {
             if(!Security::getInstance()->checkAdmin())
             {
@@ -71,17 +71,45 @@ class Router extends Singleton{
         //Revisamos si tenemos la ruta registrada
         foreach($this->routing as $pattern => $action)
         {
-            if(preg_match("/^".preg_quote($pattern, "/")."$/i", $route))
+            $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
+            $expr = preg_quote($expr, "/");
+            $expr = str_replace("###", "(.*)", $expr);
+            if(preg_match("/^". $expr ."$/i", $route))
             {
+                $get = $this->extractComponents($route, $pattern);
                 /** @var $class PSFS\types\Controller */
                 $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
-                return call_user_func_array(array($class, $action["method"]), array());
+                return call_user_func_array(array($class, $action["method"]), $get);
             }
         }
 
-        if(preg_match("/\/$/", $route)) return $this->execute(substr($route, 0, strlen($route) -1));
+        if(preg_match('/\/$/', $route)) return $this->execute(substr($route, 0, strlen($route) -1));
 
         return false;
+    }
+
+    /**
+     * Método que extrae de la url los parámetros REST
+     * @param $route
+     *
+     * @return array
+     */
+    protected function extractComponents($route, $pattern)
+    {
+        $url = parse_url($route);
+        $_route = explode("/", $url['path']);
+        $_pattern = explode("/", $pattern);
+        $get = array();
+        if(!empty($_pattern)) foreach($_pattern as $index => $component)
+        {
+            $_get = array();
+            preg_match_all('/^\{(.*)\}$/i', $component, $_get);
+            if(!empty($_get[1]))
+            {
+                $get[array_pop($_get[1])] = $_route[$index];
+            }
+        }
+        return $get;
     }
 
     /**
@@ -217,9 +245,11 @@ class Router extends Singleton{
      */
     private function simpatize()
     {
-        foreach($this->routing as $key => $info)
+        foreach($this->routing as $key => &$info)
         {
-            $this->slugs[$this->slugify($key)] = $key;
+            $slug = $this->slugify($key);
+            $this->slugs[$slug] = $key;
+            $info["slug"] = $slug;
         }
         return $this;
     }
@@ -261,15 +291,22 @@ class Router extends Singleton{
     /**
      * Método que devuelve una ruta del framework
      * @param $slug
+     * @param $absolute
+     * @param $params
      *
      * @return mixed
      * @throws \PSFS\exception\ConfigException
      */
-    public function getRoute($slug = '', $absolute = false)
+    public function getRoute($slug = '', $absolute = false, $params = null)
     {
         if(strlen($slug) == 0) return (false !== $absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
         if(!isset($this->slugs[$slug])) throw new ConfigException("No existe la ruta especificada");
-        return (false !== $absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
+        $url = (false !== $absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
+        if(!empty($params)) foreach($params as $key => $value)
+        {
+            $url = str_replace("{".$key."}", $value, $url);
+        }
+        return $url;
     }
 
     /**
@@ -281,5 +318,36 @@ class Router extends Singleton{
         return Template::getInstance()->render('routing.html.twig', array(
             'routes' => $this->slugs,
         ));
+    }
+
+    /**
+     * Servicio que devuelve los parámetros disponibles
+     * @route /admin/routes/show
+     * @return mixed
+     */
+    public function getRouting()
+    {
+        $response = json_encode(array_keys($this->slugs));
+        ob_start();
+        header("Content-type: text/json");
+        header("Content-length: " . count($response));
+        echo $response;
+        ob_flush();
+        ob_end_clean();
+        exit();
+    }
+
+    /**
+     * @route /admin/routes/admin
+     */
+    public function getAdminRoutes()
+    {
+        $routes = array();
+        foreach($this->slugs as $route)
+        {
+
+        }
+        pre($this->routing);
+        pre($this->slugs, true);
     }
 }

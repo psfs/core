@@ -22,9 +22,8 @@ class Config extends Singleton{
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     protected $config;
-    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action');
-
-    static public $optional = array('platform_name');
+    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'admin_action', 'default_language');
+    static public $optional = array('platform_name', "debug", "restricted", "admin_login");
     protected $debug = false;
 
     function __construct()
@@ -278,5 +277,22 @@ class Config extends Singleton{
             'properties' => $this->getPropelParams(),
             'form' => $form,
         ));
+    }
+
+    /**
+     * Servicio que devuelve los parámetros disponibles
+     * @route /admin/config/params
+     * @return mixed
+     */
+    public function getConfigParams()
+    {
+        $response = json_encode(array_merge(self::$required, self::$optional));
+        ob_start();
+        header("Content-type: text/json");
+        header("Content-length: " . count($response));
+        echo $response;
+        ob_flush();
+        ob_end_clean();
+        exit();
     }
 }

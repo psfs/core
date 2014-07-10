@@ -18,22 +18,26 @@ class ConfigForm extends Form{
             $this->add($field, array(
                 "label" => _($field),
                 "class" => "col-md-6",
+                "required" => true,
             ));
         }
         $this->add(Form::SEPARATOR);
+        $data = Config::getInstance()->dumpConfig();
         iF(!empty(Config::$optional)) foreach(Config::$optional as $field)
         {
-            $this->add($field, array(
-                "label" => _($field),
-                "class" => "col-md-6",
-                "required" => false,
-                "pattern" => Form::VALID_ALPHANUMERIC,
-            ));
+            if(array_key_exists($field, $data))
+            {
+                $this->add($field, array(
+                    "label" => _($field),
+                    "class" => "col-md-6",
+                    "required" => false,
+                    "pattern" => Form::VALID_ALPHANUMERIC,
+                ));
+            }
         }
-        $data = Config::getInstance()->dumpConfig();
         $extra = array();
-        if(!empty($data)) $extra = array_diff($data, array_merge(Config::$required, Config::$optional));
-        if(!empty($extra)) foreach($extra as $key => $field)
+        if(!empty($data)) $extra = array_diff(array_keys($data), array_merge(Config::$required, Config::$optional));
+        if(!empty($extra)) foreach($extra as $field)
         {
             $this->add($key, array(
                 "label" => _($key),
@@ -45,15 +49,17 @@ class ConfigForm extends Form{
         $this->add(Form::SEPARATOR);
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
-           "class" => "col-md-6",
+           "class" => "form-horizontal",
         ));
         //Hidratamos el formulario
         $this->setData($data);
         //Añadimos las acciones del formulario
-        $this->addButton('submit')
+        $this->addButton('submit', "Guardar configuración", "submit", array(
+                "class" => "btn-success col-md-offset-2"
+            ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
                "onclick" => "javascript:addNewField(document.getElementById('". $this->getName() ."'));",
-               "class" => "btn-success",
+               "class" => "btn-warning",
             ));
     }
 

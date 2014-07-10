@@ -121,7 +121,7 @@ class Request extends Singleton{
      */
     public function get($param)
     {
-        return $this->data[$param] ?: null;
+        return (isset($this->data[$param])) ? $this->data[$param] : null;
     }
 
     /**

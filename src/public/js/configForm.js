@@ -1,3 +1,4 @@
+var params = [], routing = [];
 /**
  * Función que añade un nuevo campo al formulario de configuración
  * @returns {boolean}
@@ -23,18 +24,22 @@ function addNewField(form)
     if(label_field_count + input_field_count > 0) return false;
 
     //Añadimos el label
-    prelabel.addClass('control-label col-md-12')
-    .text('Nuevo parámetro de configuración')
-    .appendTo(container);
+//    prelabel.addClass('control-label col-md-2')
+//    .text('Nuevo parámetro de configuración')
+//    .appendTo(container);
 
     //Añadimos le campo del nombre del campo
-    div_label.addClass("col-md-6")
+    div_label.addClass("control-label col-md-2")
+    .css("padding", 0)
     .appendTo(container);
     label.attr({
         "type": "text",
         "name": "label[]",
-        "for": ts,
-        "placeholder": "Introduce el nombre del nuevo campo"
+        "id": ts,
+        "placeholder": "Parámetro"
+    }).css({
+        "text-align": "right",
+        "font-weight": "bolder"
     }).addClass("form-control")
     .appendTo(div_label);
 
@@ -51,5 +56,34 @@ function addNewField(form)
 
     //Añadimos el contenedor
     container.addClass('form-group row').appendTo($(form).find("fieldset"));
+    return autocomplete(label);
+}
+
+function autocomplete(obj)
+{
+    $(obj).typeahead({
+        local: params
+    });
     return false;
 }
+
+(function(){
+    $("[data-toggle=tooltip]").tooltip();
+    //Hidratamos las opciones de configuración
+    $.ajax({
+        url: "/admin/config/params",
+        dataType: "JSON",
+        success: function(json){
+            params = json;
+        }
+    });
+    //Hidratamos las rutas de acceso
+    $.ajax({
+        url: "/admin/routes/show",
+        dataType: "JSON",
+        success: function(json){
+            routing = json;
+            $("input[name*=action]").typeahead({local:json});
+        }
+    });
+})();

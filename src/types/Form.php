@@ -3,7 +3,9 @@
 namespace PSFS\types;
 
 use PSFS\base\Request;
-use \PSFS\exception\FormException;
+use PSFS\exception\FormException;
+use PSFS\base\Logger;
+use PSFS\config\Config;
 
 abstract class Form{
 
@@ -34,8 +36,18 @@ abstract class Form{
     protected $errors;
     protected $buttons;
     protected $extra;
+    protected $model;
 
     abstract function getName();
+
+    /**
+     * Constructor por defecto
+     * @param null $model
+     */
+    public function __construct($model = null)
+    {
+        $this->model = $model;
+    }
 
     /**
      * Setters
@@ -281,5 +293,58 @@ abstract class Form{
     {
         if(isset($this->buttons[$id])) unset($this->buttons[$id]);
         return $this;
+    }
+
+    /**
+     * Método que hidrate un modelo de datos asociado a un formulario
+     * @return null
+     */
+    public function getHydratedModel()
+    {
+        if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
+        foreach($this->getData() as $key => $value)
+        {
+            $method = "set" . ucfirst($key);
+            if(method_exists($this->model, $method)) $this->model->$method($value);
+        }
+        return $this->model;
+    }
+
+    /**
+     * Método para setear los valores de los campos del formulario automáticamente desde el modelo que los guarda en BD
+     */
+    public function hydrateFromModel()
+    {
+        if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
+        foreach($this->fields as $key => &$field)
+        {
+            $method = "get" . ucfirst($key);
+            if(method_exists($this->model, $method))
+            {
+                $field['value'] = $this->model->$method();
+            }
+        }
+    }
+
+    /**
+     * Método que guarda los datos del formulario en el modelo de datos asociado al formulario
+     * @return bool
+     * @throws \FormException
+     */
+    public function save()
+    {
+        if(empty($this->model)) throw new FormException("No se ha asociado ningún modelo al formulario");
+        $this->model->fromArray(array($this->getData()));
+        $save = false;
+        try{
+            $model = $this->getHydratedModel();
+            $model->save();
+            $save = true;
+            Logger::getInstance()->infoLog("Noticia guardada con id " . $this->model->getIdNews());
+        }catch(\Exception $e)
+        {
+            Logger::getInstance()->errorLog($e->getMessage());
+        }
+        return $save;
     }
 }

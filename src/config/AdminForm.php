@@ -14,17 +14,23 @@ class AdminForm extends Form{
         $this->setAction(Router::getInstance()->getRoute('setup-admin'));
         $this->add('username', array(
             'label' => _('Alias de usuario'),
+            'autocomplete' => 'off',
         ))->add('password', array(
             'type' => 'password',
             'label' => _('Contraseña'),
+            'autocomplete' => 'off',
+        ))->add('profile', array(
+            'type' => 'select',
+            'label' => _("Perfil"),
+            'value' => sha1('admin'),
+            'autocomplete' => 'off',
+            'data' => Security::getProfiles(),
         ));
-        $data = Security::getInstance()->getAdmins();
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
             "class" => "col-md-6",
+            "autocomplete" => "off",
         ));
-        //Hidratamos el formulario
-        $this->setData($data);
         //Añadimos las acciones del formulario
         $this->addButton('submit');
     }

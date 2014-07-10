@@ -50,10 +50,27 @@ class Security extends Singleton{
                 throw new \HttpException('Error al guardar los administradores, prueba a cambiar los permisos', 403);
             }
         }
+        if(!empty($admins)) foreach($admins as &$admin)
+        {
+            $admin["class"] = $admin["profile"] == sha1("admin") ? 'primary' : "warning";
+        }
         return Template::getInstance()->render('admin.html.twig', array(
             'admins' => $admins,
             'form' => $form,
+            'profiles' => self::getProfiles(),
         ));
+    }
+
+    /**
+     * Método estático que devuelve los perfiles de la plataforma
+     * @return array
+     */
+    public static function getProfiles()
+    {
+        return array(
+            sha1('superadmin') => _('Administrador'),
+            sha1('admin') => _('Gestor'),
+        );
     }
 
     /**
@@ -70,6 +87,7 @@ class Security extends Singleton{
             $admins = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'), true);
         }
         $admins[$user['username']]['hash'] = sha1($user['username'].$user['password']);
+        $admins[$user['username']]['profile'] = $user['profile'];
         return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins)));;
     }
 

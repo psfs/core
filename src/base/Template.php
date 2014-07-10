@@ -32,7 +32,8 @@ class Template extends Singleton{
             ->addFormButtonFunction()
             ->addConfigFunction()
             ->addTranslationFilter()
-            ->addRouteFunction();
+            ->addRouteFunction()
+            ->dumpResource();
 
         //Añadimos las extensiones de los tags
         $this->tpl->addTokenParser(new AssetsTokenParser("css"));
@@ -302,9 +303,9 @@ class Template extends Singleton{
      */
     private function addRouteFunction()
     {
-        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false){
+        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false, $params = null){
             try{
-                return Router::getInstance()->getRoute($path, $absolute);
+                return Router::getInstance()->getRoute($path, $absolute, $params);
             }catch(\Exception $e)
             {
                 return Router::getInstance()->getRoute('', $absolute);
@@ -312,5 +313,56 @@ class Template extends Singleton{
         });
         $this->tpl->addFunction($function);
         return $this;
+    }
+
+    /**
+     * Método que copia directamente el recurso solicitado a la carpeta pública
+     * @return $this
+     */
+    private function dumpResource()
+    {
+        $function = new \Twig_SimpleFunction('resource', function($path, $dest){
+            $debug = Config::getInstance()->get("debug");
+            if(file_exists(BASE_DIR . $path))
+            {
+                if($debug)
+                {
+                    $destfolder = basename(BASE_DIR . $path);
+//                    if(!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder))
+//                    {
+                        @mkdir(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        self::copyr(BASE_DIR . $path, BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest);
+//                    }
+                }
+            }
+            return '';
+        });
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    static public function copyr($source, $dest)
+    {
+        // recursive function to copy
+        // all subdirectories and contents:
+        if(is_dir($source)) {
+            $dir_handle=opendir($source);
+            $sourcefolder = basename($source);
+            $destfolder = basename($dest);
+            @mkdir($dest."/".$sourcefolder);
+            while($file=readdir($dir_handle)){
+                if($file!="." && $file!=".."){
+                    if(is_dir($source."/".$file)){
+                        self::copyr($source."/".$file, $dest."/".$sourcefolder);
+                    } else {
+                        @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
+                    }
+                }
+            }
+            @closedir($dir_handle);
+        } else {
+            // can also handle simple copy commands
+            @copy($source, $dest);
+        }
     }
 }

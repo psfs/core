@@ -3,35 +3,61 @@
 {% else %}
 <div class="form-group{% if field.error %} has-error{% endif %}">
 {% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
-    <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-    <input
-{% for name,value in field %}
-    {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
+    <label class="control-label{% if field.class %} col-md-2{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <div class="{% if field.required %}required-field-block {% endif %}{{ field.class }}">
+        <input
+    {% for name,value in field %}
+        {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
         {{ name ~ '=' ~ value }}
-    {% endif %}
-{% endfor %}
-{% if field.required %}
+        {% endif %}
+    {% endfor %}
+    {% if field.required %}
         required="required"
-{% endif %}
+    {% endif %}
         class="form-control {{ field.class }}"
-{% if field.error %}
+    {% if field.error %}
         onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
-{% endif %}
+    {% endif %}
         value="{{ field.value }}"
-    >
+        >
+    {% if field.required %}
+        <div class="required-icon" data-toggle="tooltip" data-original-title="Required" title="Required">
+            <div class="text">*</div>
+        </div>
+    {% endif %}
+    </div>
 {% elseif field.type == 'textarea' %}
-    <label class="control-label" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-    <textarea id="{{ field.id }}"
+    <label class="control-label{% if field.class %} col-md-2{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <div class="{{ field.class }}">
+        <textarea id="{{ field.id }}"
       name="{{ field.name }}"
-{% if field.required %}
+    {% if field.required %}
       required="required"
-{% endif %}
+    {% endif %}
       class="form-control {{ field.class }}"
-{% if field.error %}
+    {% if field.error %}
       onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
-{% endif %}
+    {% endif %}
       placeholder="{{ field.placeholder|default(field.name) }}"
-    >{{ field.value | raw }}</textarea>
+        >{{ field.value | raw }}</textarea>
+    </div>
+{% elseif field.type == 'select' %}
+    <label class="control-label{% if field.class %} col-md-2{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <div class="{{ field.class }}">
+        <select id="{{ field.id }}"
+            name="{{ field.name }}"
+        {% if field.required %}
+            required="required"
+        {% endif %}
+            class="form-control {{ field.class }}"
+        {% if field.error %}
+            onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
+        {% endif %}>
+        {% for key, value in field.data %}
+            <option value="{{ key }}">{{ value }}</option>
+        {% endfor %}
+        </select>
+    </div>
 {% endif %}
 {% if field.error %}
     <div class="clearfix"></div>
