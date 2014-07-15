@@ -1,0 +1,43 @@
+{% set super_admin_routes = routes['superadmin']|default([]) %}
+{% set admin_routes = routes['admin']|default([]) %}
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ path('admin') }}">Hello <strong>{{ __user__.alias }}</strong></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                {% if __user__.profile == __profiles__.__SUPER_ADMIN__ %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin PSFS<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for route in super_admin_routes %}
+                            <li><a href="{{ path(route) }}">{{ route }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+                {% if __user__.profile == __profiles__.__SUPER_ADMIN__ or __user__.profile == __profiles__.__ADMIN__ %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for route in admin_routes %}
+                            <li><a href="{{ path(route) }}">{{ route }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<br>
