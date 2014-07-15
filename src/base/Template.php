@@ -7,6 +7,7 @@ use PSFS\config\Config;
 use PSFS\Dispatcher;
 use PSFS\base\Router;
 use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\extension\AssetsTokenParser;
 
 class Template extends Singleton{
@@ -106,6 +107,8 @@ class Template extends Singleton{
      */
     public function dump($tpl, array $vars = array())
     {
+        $vars["__user__"] = Security::getInstance()->getUser();
+        $vars["__profiles__"] = Security::getCleanProfiles();
         return $this->tpl->render($tpl, $vars);
     }
 

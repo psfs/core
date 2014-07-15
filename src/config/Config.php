@@ -2,6 +2,8 @@
 
 namespace PSFS\config;
 
+use PSFS\base\Router;
+use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\exception\ConfigException;
 use PSFS\config\ConfigForm;
@@ -160,6 +162,7 @@ class Config extends Singleton{
         return Template::getInstance()->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
             'config' => $form,
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 
@@ -178,9 +181,10 @@ class Config extends Singleton{
      * @route /admin/
      * @return mixed
      */
-    public function index(){
+    public function index()
+    {
         return Template::getInstance()->render("index.html.twig", array(
-            'properties' => $this->getPropelParams(),
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 
@@ -276,6 +280,7 @@ class Config extends Singleton{
         return Template::getInstance()->render("modules.html.twig", array(
             'properties' => $this->getPropelParams(),
             'form' => $form,
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 

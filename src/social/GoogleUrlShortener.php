@@ -7,6 +7,7 @@ namespace PSFS\social;
 use PSFS\base\Request;
 use PSFS\base\Template;
 use PSFS\base\Logger;
+use PSFS\base\Router;
 use PSFS\social\form\GoogleUrlShortenerForm;
 use PSFS\social\form\GenerateShortUrlForm;
 
@@ -58,6 +59,7 @@ class GoogleUrlShortener{
         return Template::getInstance()->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
             'config' => $form,
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 
@@ -99,6 +101,7 @@ class GoogleUrlShortener{
         return Template::getInstance()->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
             'config' => $form,
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 

@@ -44,7 +44,7 @@ class Router extends Singleton{
     public function execute($route)
     {
         //Chequeamos si entramos en el admin
-        if(preg_match("/^\/admin/i", $route))
+        if(preg_match('/^\/admin/i', $route))
         {
             if(!Security::getInstance()->checkAdmin())
             {
@@ -148,7 +148,7 @@ class Router extends Singleton{
             $d = dir($orig_dir);
             while(false !== ($dir = $d->read()))
             {
-                if(is_dir($orig_dir.DIRECTORY_SEPARATOR.$dir) && preg_match("/^\./",$dir) == 0)
+                if(is_dir($orig_dir.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
                 {
                     $class_namespace = $this->exploreDir($orig_dir.DIRECTORY_SEPARATOR.$dir, $class, $base . "\\" . $dir);
                     if(!is_null($class_namespace)) break;
@@ -194,10 +194,10 @@ class Router extends Singleton{
             $d = dir($origen);
             while(!empty($d) && false !== ($dir = $d->read()))
             {
-                if(is_dir($origen.DIRECTORY_SEPARATOR.$dir) && preg_match("/^\./",$dir) == 0)
+                if(is_dir($origen.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
                 {
                     $routing = $this->inspectDir($origen.DIRECTORY_SEPARATOR.$dir, $namespace . '\\' . $dir, $routing);
-                }elseif(preg_match("/\.php$/",$dir)){
+                }elseif(preg_match('/\.php$/',$dir)){
                     $routing = $this->addRouting($namespace . '\\' .str_replace(".php", "", $dir), $routing);
                 }
             }
@@ -316,7 +316,8 @@ class Router extends Singleton{
     public function printRoutes()
     {
         return Template::getInstance()->render('routing.html.twig', array(
-            'routes' => $this->slugs,
+            'slugs' => $this->slugs,
+            "routes" => Router::getInstance()->getAdminRoutes(),
         ));
     }
 
@@ -338,16 +339,27 @@ class Router extends Singleton{
     }
 
     /**
-     * @route /admin/routes/admin
+     * Método que devuelve las rutas de administración
+     * @return array
      */
     public function getAdminRoutes()
     {
         $routes = array();
-        foreach($this->slugs as $route)
+        foreach($this->routing as $route => $params)
         {
-
+            if(preg_match('/^\/admin(\/|$)/', $route))
+            {
+                if(preg_match('/^PSFS/', $params["class"]))
+                {
+                    $profile = "superadmin";
+                }else{
+                    $profile = "admin";
+                }
+                if(empty($params["params"])) $routes[$profile][] = $params["slug"];
+            }
         }
-        pre($this->routing);
-        pre($this->slugs, true);
+        asort($routes["superadmin"]);
+        asort($routes["admin"]);
+        return $routes;
     }
 }

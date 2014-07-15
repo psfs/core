@@ -17,6 +17,18 @@ use PSFS\config\LoginForm;
 class Security extends Singleton{
 
     /**
+     * @var  user
+     */
+    private $user;
+
+    private $authorized = false;
+
+    public function __construct()
+    {
+        $this->checkAdmin();
+    }
+
+    /**
      * Método que gestiona los usuarios administradores de la plataforma
      * @route /setup-admin
      * @return mixed
@@ -74,6 +86,18 @@ class Security extends Singleton{
     }
 
     /**
+     * Método estático que devuelve los perfiles disponibles
+     * @return array
+     */
+    public static function getCleanProfiles()
+    {
+        return array(
+            "__SUPER_ADMIN__" => sha1("superadmin"),
+            "__ADMIN__" => sha1("admin"),
+        );
+    }
+
+    /**
      * Método que guarda los administradores
      * @param $user
      *
@@ -111,30 +135,48 @@ class Security extends Singleton{
      */
     public function checkAdmin($user = null, $pass = null)
     {
-        $authorized = false;
-        $request = Request::getInstance();
-        if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
+        if(!$this->authorized)
         {
-            return $request->redirect(Router::getInstance()->getRoute('setup-admin'));
-        }
-        $admins = $this->getAdmins();
-        //Sacamos las credenciales de la petición
-        $user = $user ?: $request->getServer('PHP_AUTH_USER');
-        $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-        if(empty($user) && empty($admins[$user]))
-        {
-            $auth_cookie = $request->getCookie($this->getHash());
-            if(!empty($auth_cookie))
+            $request = Request::getInstance();
+            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
             {
-                list($user, $pass) = explode(":", base64_decode($auth_cookie));
+                //Si no hay fichero de usuarios redirigimos directamente al gestor
+                return $request->redirect(Router::getInstance()->getRoute('setup-admin'));
+            }
+            $admins = $this->getAdmins();
+            //Sacamos las credenciales de la petición
+            $user = $user ?: $request->getServer('PHP_AUTH_USER');
+            $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
+            if(empty($user) && empty($admins[$user]))
+            {
+                list($user, $pass) = $this->getAdminFromCookie();
+            }
+            if(!empty($user) && !empty($admins[$user]))
+            {
+                $auth = $admins[$user]["hash"];
+                $this->authorized = ($auth == sha1($user.$pass));
+                $this->user = array(
+                    "alias" => $user,
+                    "profile" => $admins[$user]["profile"],
+                );
             }
         }
-        if(!empty($user) && !empty($admins[$user]))
+        return $this->authorized;
+    }
+
+    /**
+     * Método que obtiene el usuario y contraseña de la cookie de sesión de administración
+     * @return array
+     */
+    protected function getAdminFromCookie()
+    {
+        $auth_cookie = Request::getInstance()->getCookie($this->getHash());
+        $user = $pass = array();
+        if(!empty($auth_cookie))
         {
-            $auth = $admins[$user]["hash"];
-            $authorized = ($auth == sha1($user.$pass));
+            list($user, $pass) = explode(":", base64_decode($auth_cookie));
         }
-        return $authorized;
+        return array($user, $pass);
     }
 
     /**
@@ -180,5 +222,14 @@ class Security extends Singleton{
         return Template::getInstance()->render("login.html.twig", array(
             'form' => $form,
         ));
+    }
+
+    /**
+     * Método que devuelve el usuario logado
+     * @return user
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }

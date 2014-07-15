@@ -7,7 +7,7 @@
 {% endblock body_header %}
 {% block body_content %}
     <ul class="list-group">
-    {% for url, route in routes %}
+    {% for url, route in slugs %}
         <li class="list-group-item">
             <span class="label label-danger">{{ url }}</span> <a href="{{ route }}">{{ route }}</a>
         </li>
