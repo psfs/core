@@ -67,16 +67,26 @@ class Dispatcher extends Singleton{
         try{
             if(!$this->parser->isFile())
             {
+                if(Config::getInstance()->getDebugMode())
+                {
+                    //Warning & Notice handler
+                    set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+                    }, E_WARNING);
+                    set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+                    }, E_NOTICE);
+                }
                 if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
             }else $this->router->httpNotFound();
         }catch(ConfigException $ce)
         {
             return $this->config->config();
         }
-        catch(Exception $e)
+        catch(\Exception $e)
         {
             $this->log->errorLog($e);
-            return $this->router->httpNotFound();
+            return $this->router->httpNotFound($e);
         }
     }
 

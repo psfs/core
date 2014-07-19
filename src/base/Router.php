@@ -7,6 +7,7 @@ use PSFS\config\Config;
 use PSFS\exception\ConfigException;
 use PSFS\config\AdminForm;
 use PSFS\base\Security;
+use PSFS\exception\RouterException;
 
 /**
  * Class Router
@@ -29,10 +30,13 @@ class Router extends Singleton{
     /**
      * Método que deriva un error HTTP de página no encontrada
      */
-    public function httpNotFound()
+    public function httpNotFound(\Exception $e = null)
     {
-        header("HTTP/1.0 404 Not Found");
-        exit();
+        if(empty($e)) $e = new \Exception('Página no encontrada', 404);
+        return Template::getInstance()->setStatus($e->getCode())->render('error.html.twig', array(
+            'exception' => $e,
+            'error_page' => true,
+        ));
     }
 
     /**
@@ -71,7 +75,7 @@ class Router extends Singleton{
         //Revisamos si tenemos la ruta registrada
         foreach($this->routing as $pattern => $action)
         {
-            $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
+            $expr = preg_replace('/\/\{(.*)\}/', "###", $pattern);
             $expr = preg_quote($expr, "/");
             $expr = str_replace("###", "(.*)", $expr);
             if(preg_match("/^". $expr ."$/i", $route))
@@ -79,7 +83,13 @@ class Router extends Singleton{
                 $get = $this->extractComponents($route, $pattern);
                 /** @var $class PSFS\types\Controller */
                 $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
-                return call_user_func_array(array($class, $action["method"]), $get);
+                try{
+
+                    return call_user_func_array(array($class, $action["method"]), $get);
+                }catch(\Exception $e)
+                {
+                    throw new RouterException($e->getMessage());
+                }
             }
         }
 
@@ -104,7 +114,7 @@ class Router extends Singleton{
         {
             $_get = array();
             preg_match_all('/^\{(.*)\}$/i', $component, $_get);
-            if(!empty($_get[1]))
+            if(!empty($_get[1]) && isset($_route[$index]))
             {
                 $get[array_pop($_get[1])] = $_route[$index];
             }
@@ -300,7 +310,7 @@ class Router extends Singleton{
     public function getRoute($slug = '', $absolute = false, $params = null)
     {
         if(strlen($slug) == 0) return (false !== $absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
-        if(!isset($this->slugs[$slug])) throw new ConfigException("No existe la ruta especificada");
+        if(!isset($this->slugs[$slug])) throw new RouterException("No existe la ruta especificada");
         $url = (false !== $absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
         if(!empty($params)) foreach($params as $key => $value)
         {

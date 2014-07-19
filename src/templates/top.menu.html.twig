@@ -1,5 +1,6 @@
 {% set super_admin_routes = routes['superadmin']|default([]) %}
 {% set admin_routes = routes['admin']|default([]) %}
+{% if error_page is not defined %}
 <nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
     <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -16,7 +17,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
-                {% if __user__.profile == __profiles__.__SUPER_ADMIN__ %}
+                {% if __user__.profile == __profiles__.__SUPER_ADMIN__ and super_admin_routes|length > 0 %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin PSFS<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
@@ -26,7 +27,7 @@
                     </ul>
                 </li>
                 {% endif %}
-                {% if __user__.profile == __profiles__.__SUPER_ADMIN__ or __user__.profile == __profiles__.__ADMIN__ %}
+                {% if (__user__.profile == __profiles__.__SUPER_ADMIN__ or __user__.profile == __profiles__.__ADMIN__) and admin_rutes|length > 0 %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
@@ -41,3 +42,4 @@
     </div><!-- /.container-fluid -->
 </nav>
 <br>
+{% endif %}

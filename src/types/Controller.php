@@ -64,7 +64,17 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
     public function json($response)
     {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
-        return $this->response($data, "text/json");
+        return $this->response($data, "application/json");
+    }
+
+    /**
+     * Método que devuelve una salida en formato JSON
+     * @param $response
+     */
+    public function jsonp($response)
+    {
+        $data = json_encode($response, JSON_UNESCAPED_UNICODE);
+        return $this->response($data, "application/javascript");
     }
 
     /**

@@ -17,6 +17,7 @@ class Template extends Singleton{
 
     protected $debug = false;
     protected $public_zone = true;
+    private $status_code = null;
 
     function __construct()
     {
@@ -57,6 +58,23 @@ class Template extends Singleton{
     }
 
     /**
+     * Método que establece un header de http status code
+     * @param null $status
+     *
+     * @return $this
+     */
+    public function setStatus($status = null)
+    {
+        switch($status)
+        {
+            case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
+            case '404': $this->status_code = "HTTP/1.0 404 Not Found"; break;
+            case '403': $this->status_code = "HTTP/1.0 403 Forbidden"; break;
+        }
+        return $this;
+    }
+
+    /**
      * Método que procesa la plantilla
      * @param $tpl
      * @param array $vars
@@ -69,10 +87,17 @@ class Template extends Singleton{
         if($this->debug)
         {
             $vars["__DEBUG__"]["includes"] = get_included_files();
+            $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
             header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
             header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
         }
+
+        if(null !== $this->status_code)
+        {
+            header($this->status_code);
+        }
+
         if($this->public_zone)
         {
             unset($_SERVER["PHP_AUTH_USER"]);
@@ -81,6 +106,7 @@ class Template extends Singleton{
         }else{
             header('Authorization:');
         }
+
         if(!empty($cookies)) foreach($cookies as $cookie)
         {
             setcookie($cookie["name"],
@@ -328,14 +354,18 @@ class Template extends Singleton{
             $debug = Config::getInstance()->get("debug");
             if(file_exists(BASE_DIR . $path))
             {
-                if($debug)
+                $destfolder = basename(BASE_DIR . $path);
+                if(!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug)
                 {
-                    $destfolder = basename(BASE_DIR . $path);
-//                    if(!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder))
-//                    {
+                    try
+                    {
                         @mkdir(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                        self::copyr(BASE_DIR . $path, BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest);
-//                    }
+                    }catch (\Exception $e)
+                    {
+                        Logger::getInstance()->errorLog($e->getMessage() . "[" . $e->getCode() . "]");
+                    }
+
+                    self::copyr(BASE_DIR . $path, BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest);
                 }
             }
             return '';
@@ -352,20 +382,20 @@ class Template extends Singleton{
             $dir_handle=opendir($source);
             $sourcefolder = basename($source);
             $destfolder = basename($dest);
-            @mkdir($dest."/".$sourcefolder);
+            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder);
             while($file=readdir($dir_handle)){
                 if($file!="." && $file!=".."){
                     if(is_dir($source."/".$file)){
                         self::copyr($source."/".$file, $dest."/".$sourcefolder);
                     } else {
-                        @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
+                        if(!file_exists($dest."/".$sourcefolder."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
                     }
                 }
             }
             @closedir($dir_handle);
         } else {
             // can also handle simple copy commands
-            @copy($source, $dest);
+            if(!file_exists($dest)) @copy($source, $dest);
         }
     }
 }
