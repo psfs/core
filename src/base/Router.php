@@ -88,7 +88,7 @@ class Router extends Singleton{
                     return call_user_func_array(array($class, $action["method"]), $get);
                 }catch(\Exception $e)
                 {
-                    throw new RouterException($e->getMessage());
+                    throw new $e;
                 }
             }
         }

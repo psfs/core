@@ -232,4 +232,17 @@ class Security extends Singleton{
     {
         return $this->user;
     }
+
+    /**
+     * Servicio que devuelve una pantalla de error porque se necesita estar authenticado
+     * @param $route
+     *
+     * @return mixed
+     */
+    public function notAuthorized($route)
+    {
+        return Template::getInstance()->render("notauthorized.html.twig", array(
+            'route' => $route,
+        ));
+    }
 }

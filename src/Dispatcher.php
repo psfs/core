@@ -11,6 +11,7 @@ use PSFS\base\Singleton;
 use PSFS\config\Config;
 use PSFS\exception\ConfigException;
 use PSFS\exception\LoggerException;
+use PSFS\exception\SecurityException;
 
 /**
  * Class Dispatcher
@@ -67,7 +68,7 @@ class Dispatcher extends Singleton{
         try{
             if(!$this->parser->isFile())
             {
-                if(Config::getInstance()->getDebugMode())
+                if($this->config->getDebugMode())
                 {
                     //Warning & Notice handler
                     set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
@@ -79,13 +80,18 @@ class Dispatcher extends Singleton{
                 }
                 if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
             }else $this->router->httpNotFound();
-        }catch(ConfigException $ce)
-        {
-            return $this->config->config();
         }
         catch(\Exception $e)
         {
-            $this->log->errorLog($e);
+            $error = array(
+                "error" => $e->getMessage(),
+                "file" => $e->getFile(),
+                "line" => $e->getLine(),
+            );
+            $this->log->errorLog($error);
+            unset($error);
+            if($e instanceof ConfigException) return $this->config->config();
+            if($e instanceof SecurityException) return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
             return $this->router->httpNotFound($e);
         }
     }
