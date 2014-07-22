@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ doc_lang|default('es') }}">
+<html lang="{{ get_config('default_language')|default('es') }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -42,6 +42,8 @@
         "/src/public/js/jquery.autocomplete.js"
         "/src/public/js/timeline.js"
         "/src/public/js/shadowbox.js"
+        "/src/public/js/bootstrap.slider.js"
+        "/src/public/js/bootbox.js"
         %}{% endscript %}
     {% block scripts %}
     {% endblock scripts %}

@@ -16,7 +16,7 @@
     {% endif %}
     {% for name, field in form.fields %}
     {% if name == '__SEPARATOR__' %}
-        <hr>
+        <hr class="col-md-12">
     {% else %}
         {{ form_widget(field) }}
     {% endif %}

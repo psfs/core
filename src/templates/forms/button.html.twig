@@ -7,6 +7,9 @@
 {% endfor %}
 class="btn {{ button.class|default('btn-primary') }}"
 >
+    {% if button.icon %}
+    <i class="{{ button.icon }}"></i>&nbsp;
+    {% endif %}
     {{ button.value|default('Guardar') }}
 </button>
 {% endspaceless %}

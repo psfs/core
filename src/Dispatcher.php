@@ -45,6 +45,7 @@ class Dispatcher extends Singleton{
 
     private function setLocale()
     {
+        $this->locale = $this->config->get("default_language");
         //Cargamos traducciones
         putenv("LC_ALL=" . $this->locale);
         setlocale(LC_ALL, $this->locale);
@@ -126,9 +127,9 @@ class Dispatcher extends Singleton{
 
     /**
      * Método que recorre los directorios para extraer las traducciones posibles
-     * @route /admin/translations
+     * @route /admin/translations/{locale}
      */
-    public function getTranslations($locale = 'es_ES')
+    public function getTranslations($locale = 'en_GB')
     {
         $locale_path = realpath(SOURCE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
@@ -136,8 +137,10 @@ class Dispatcher extends Singleton{
         $translations = self::findTranslations(SOURCE_DIR, $locale);
         echo "<hr>";
         echo _('Compilando traducciones');
+        pre("msgfmt {$locale_path}psfs.po -o {$locale_path}psfs.mo");
         $result = shell_exec("msgfmt {$locale_path}psfs.po -o {$locale_path}psfs.mo");
-        pre($result);
+        pre($result, true);
+        $translations = self::findTranslations(CACHE_DIR, $locale);
         echo "Fin";
         exit();
     }
@@ -157,13 +160,15 @@ class Dispatcher extends Singleton{
         while(false !== ($dir = $d->read()))
         {
             $join = (file_exists($locale_path . 'psfs.po')) ? '-j' : '';
+            if(!file_exists($locale_path)) mkdir($locale_path, 0775, true);
             $cmd = "xgettext --from-code=UTF-8 {$join} -o {$locale_path}psfs.po ".$path.DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR."*.php";
-            if(is_dir($path.DIRECTORY_SEPARATOR.$dir) && preg_match("/^\./",$dir) == 0)
+            if(is_dir($path.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
             {
                 echo "<li>" . _('Revisando directorio: ') . $path.DIRECTORY_SEPARATOR.$dir;
                 echo "<li>" . _('Comando ejecutado: '). $cmd;
                 $return = shell_exec($cmd);
                 echo "<li>" . _('Con salida:') . '<pre>' . $return . '</pre>';
+                usleep(10);
                 $translations = self::findTranslations($path.DIRECTORY_SEPARATOR.$dir, $locale);
             }
         }

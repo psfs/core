@@ -121,9 +121,14 @@ class AssetsParser{
                                     }
                                     $orig = realpath(dirname($this->path . $file) . DIRECTORY_SEPARATOR . $source_file);
                                     $orig_part = preg_split('/\/public\//i', $orig);
-                                    $dest = $this->path . 'html' . DIRECTORY_SEPARATOR . $orig_part[1];
-                                    if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-                                    @copy($orig, $dest);
+                                    try
+                                    {
+                                        $dest = $this->path . 'html' . DIRECTORY_SEPARATOR . $orig_part[1];
+                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+                                        @copy($orig, $dest);
+                                    }catch(\Exception $e)
+                                    {
+                                    }
                                 }
                             }
                         }
