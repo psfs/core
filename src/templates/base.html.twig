@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ get_config('default_language')|default('es') }}">
+<html lang="{{ get_config('default_language')|default('es') }}" ng-app>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,6 +18,8 @@
         <meta name="description" content="Php Simple Fast & Secure">
     {% endblock seo %}
 {% endblock head %}
+    {{ asset('/src/public/js/jquery-1.11.1.min.map', '/js/jquery-1.11.1.min.map', false) }}
+    {{ asset('/src/public/js/angular.min.js.map', '/js/angular.min.js.map', false) }}
     </head>
     <body>
         {% include 'top.menu.html.twig' %}
@@ -38,6 +40,7 @@
         {% scripts
         "/src/public/js/jquery.min.js"
         "/src/public/js/bootstrap.min.js"
+        "/src/public/js/angular.js"
         "/src/public/js/jquery-ui.min.js"
         "/src/public/js/jquery.autocomplete.js"
         "/src/public/js/timeline.js"

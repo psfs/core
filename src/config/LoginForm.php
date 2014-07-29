@@ -16,6 +16,7 @@ class LoginForm extends Form{
             "label" => _("Usuario"),
             "required" => true,
             "pattern" => Form::VALID_ALPHANUMERIC,
+            "ng-model" => "username",
         ))
         ->add("pass", array(
             "label" => _("Contraseña"),
@@ -27,7 +28,7 @@ class LoginForm extends Form{
             "required" => false,
             "type" => "hidden",
         ))
-        ->addButton('submit', _("Acceso"))
+        ->addButton('submit', _("Acceder como {{username}}"))
         ->addButton("cancel", _("Cancelar"), "button", array(
             "onclick" => "javacript:location.href = \"" . Router::getInstance()->getRoute('') . "\";",
             "class" => "btn-link",

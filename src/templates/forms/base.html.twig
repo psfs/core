@@ -6,8 +6,7 @@
       role="form"
 {% if form.attrs %}
     {% for name, attr in form.attrs %}
-      {{ ' ' }}
-      {{ name ~'=' ~ attr ~'' }}
+      {{ name }}="{{ attr }}"
     {% endfor %}
 {% endif %}>
     <fieldset>

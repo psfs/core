@@ -152,12 +152,12 @@ class Template extends Singleton{
                 $ppath = explode("/", $string);
                 $original_filename = $ppath[count($ppath) -1];
                 $base = BASE_DIR . DIRECTORY_SEPARATOR . "html" .DIRECTORY_SEPARATOR;
-                if(preg_match("/\.css$/i", $string))
+                if(preg_match('/\.css$/i', $string))
                 {
                     $file = "/". substr(md5($string), 0, 8) . ".css";
                     $html_base = "css";
                     if($debug) $file = str_replace(".css", "_" . $original_filename, $file);
-                }elseif(preg_match("/\.js$/i", $string))
+                }elseif(preg_match('/\.js$/i', $string))
                 {
                     $file = "/". substr(md5($string), 0, 8) . ".js";
                     $html_base = "js";
@@ -180,6 +180,10 @@ class Template extends Singleton{
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "media";
                     if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                }elseif(!$return && !is_null($name))
+                {
+                    $html_base = '';
+                    $file = $name;
                 }
                 $file_path = $html_base . $file;
                 //Creamos el directorio si no existe
@@ -200,12 +204,12 @@ class Template extends Singleton{
                                     foreach($urls as $source)
                                     {
                                         $source_file = preg_replace("/'/", "", $source[1]);
-                                        if(preg_match("/\#/", $source_file))
+                                        if(preg_match('/\#/', $source_file))
                                         {
                                             $source_file = explode("#", $source_file);
                                             $source_file = $source_file[0];
                                         }
-                                        if(preg_match("/\?/", $source_file))
+                                        if(preg_match('/\?/', $source_file))
                                         {
                                             $source_file = explode("?", $source_file);
                                             $source_file = $source_file[0];

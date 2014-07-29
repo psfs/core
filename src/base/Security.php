@@ -64,7 +64,12 @@ class Security extends Singleton{
         }
         if(!empty($admins)) foreach($admins as &$admin)
         {
-            $admin["class"] = $admin["profile"] == sha1("admin") ? 'primary' : "warning";
+            if(isset($admin["profile"]))
+            {
+                $admin["class"] = $admin["profile"] == sha1("admin") ? 'primary' : "warning";
+            }else{
+                $admin["class"] = "primary";
+            }
         }
         return Template::getInstance()->render('admin.html.twig', array(
             'admins' => $admins,
