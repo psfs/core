@@ -50,7 +50,7 @@ class Dispatcher extends Singleton{
         putenv("LC_ALL=" . $this->locale);
         setlocale(LC_ALL, $this->locale);
         //Cargamos el path de las traducciones
-        $locale_path = __DIR__ . DIRECTORY_SEPARATOR . 'locale';
+        $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
         if(!file_exists($locale_path)) @mkdir($locale_path);
         bindtextdomain('psfs', $locale_path);
         textdomain('psfs');
