@@ -1,3 +1,5 @@
+/html/
+/locale/
 /vendor/
 /cache/
 /config/
@@ -6,3 +8,4 @@
 /modules/
 composer.phar
 composer.lock
+.idea/
