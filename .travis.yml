@@ -13,5 +13,3 @@ env:
 
 install:
   - composer install
-
-script: phpunit --bootstrap=vendor/autoload src/test/PSFSTest
