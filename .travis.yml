@@ -3,11 +3,6 @@ language: php
 php:
   # aliased to a recent 5.4.x version
   - 5.4
-  # aliased to a recent 5.5.x version
-  - 5.5
-
-env:
-  - DB=mysql
 
 install:
   - composer install
