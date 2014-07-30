@@ -6,9 +6,9 @@ use PSFS\base\Singleton;
 use PSFS\base\Request;
 use PSFS\base\Logger;
 use PSFS\base\Router;
-use PSFS\config\AdminForm;
-use PSFS\config\Config;
-use PSFS\config\LoginForm;
+use PSFS\base\config\AdminForm;
+use PSFS\base\config\Config;
+use PSFS\base\config\LoginForm;
 
 /**
  * Class Security

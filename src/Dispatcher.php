@@ -8,10 +8,11 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Singleton;
-use PSFS\config\Config;
-use PSFS\exception\ConfigException;
-use PSFS\exception\LoggerException;
-use PSFS\exception\SecurityException;
+use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
+use PSFS\base\exception\LoggerException;
+use PSFS\base\exception\SecurityException;
+use PSFS\base\Template;
 
 /**
  * Class Dispatcher
@@ -52,9 +53,9 @@ class Dispatcher extends Singleton{
         //Cargamos el path de las traducciones
         $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
         if(!file_exists($locale_path)) @mkdir($locale_path);
-        bindtextdomain('psfs', $locale_path);
-        textdomain('psfs');
-        bind_textdomain_codeset('psfs', 'UTF-8');
+        bindtextdomain('translations', $locale_path);
+        textdomain('translations');
+        bind_textdomain_codeset('translations', 'UTF-8');
         return $this;
     }
 
@@ -131,17 +132,22 @@ class Dispatcher extends Singleton{
      */
     public function getTranslations($locale = 'en_GB')
     {
-        $locale_path = realpath(SOURCE_DIR . DIRECTORY_SEPARATOR . 'locale');
+        //Generamos las traducciones de las plantillas
+        Template::getInstance()->regenerateTemplates();
+
+        $locale_path = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
+        //Localizamos xgettext
         $translations = self::findTranslations(SOURCE_DIR, $locale);
+        $translations = self::findTranslations(CORE_DIR, $locale);
+        $translations = self::findTranslations(CACHE_DIR, $locale);
         echo "<hr>";
         echo _('Compilando traducciones');
-        pre("msgfmt {$locale_path}psfs.po -o {$locale_path}psfs.mo");
-        $result = shell_exec("msgfmt {$locale_path}psfs.po -o {$locale_path}psfs.mo");
-        pre($result, true);
-        $translations = self::findTranslations(CACHE_DIR, $locale);
+        pre("msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo");
+        exec("export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo", $result);
         echo "Fin";
+        pre($result);
         exit();
     }
 
@@ -152,24 +158,25 @@ class Dispatcher extends Singleton{
      */
     private static function findTranslations($path, $locale)
     {
-        $locale_path = realpath(SOURCE_DIR . DIRECTORY_SEPARATOR . 'locale');
+        $locale_path = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
         $translations = false;
         $d = dir($path);
         while(false !== ($dir = $d->read()))
         {
-            $join = (file_exists($locale_path . 'psfs.po')) ? '-j' : '';
-            if(!file_exists($locale_path)) mkdir($locale_path, 0775, true);
-            $cmd = "xgettext --from-code=UTF-8 {$join} -o {$locale_path}psfs.po ".$path.DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR."*.php";
+            if(!file_exists($locale_path)) mkdir($locale_path, 0777, true);
+            if(!file_exists($locale_path . 'translations.po')) file_put_contents($locale_path . 'translations.po', '');
+            $inspect_path = realpath($path.DIRECTORY_SEPARATOR.$dir);
+            $cmd_php = "export PATH=\$PATH:/opt/local/bin; xgettext ". $inspect_path . DIRECTORY_SEPARATOR ."*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$locale_path}translations.po";
             if(is_dir($path.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
             {
-                echo "<li>" . _('Revisando directorio: ') . $path.DIRECTORY_SEPARATOR.$dir;
-                echo "<li>" . _('Comando ejecutado: '). $cmd;
-                $return = shell_exec($cmd);
-                echo "<li>" . _('Con salida:') . '<pre>' . $return . '</pre>';
+                $return = array();
+                echo "<li>" . _('Revisando directorio: ') . $inspect_path;
+                echo "<li>" . _('Comando ejecutado: '). $cmd_php;
+                shell_exec($cmd_php);// . " >> " . __DIR__ . DIRECTORY_SEPARATOR . "debug.log 2>&1");
                 usleep(10);
-                $translations = self::findTranslations($path.DIRECTORY_SEPARATOR.$dir, $locale);
+                $translations = self::findTranslations($inspect_path, $locale);
             }
         }
         return $translations;

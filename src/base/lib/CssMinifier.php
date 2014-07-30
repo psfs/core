@@ -20,7 +20,7 @@
  * by Yahoo! Inc. under the BSD (revised) open source license.
  */
 
-namespace PSFS\lib;
+namespace PSFS\base\lib;
 
 class CssMinifier
 {

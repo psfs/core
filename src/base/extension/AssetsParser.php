@@ -2,9 +2,9 @@
 
 namespace PSFS\base\extension;
 
-use \PSFS\config\Config;
-use \PSFS\lib\JsMinifier;
-use \PSFS\lib\CssMinifier;
+use \PSFS\base\config\Config;
+use \PSFS\base\lib\JsMinifier;
+use \PSFS\base\lib\CssMinifier;
 
 /**
  * Class AssetsParser
@@ -61,7 +61,7 @@ class AssetsParser{
      */
     public function compile()
     {
-        /* @var $config \PSFS\config\Config */
+        /* @var $config \PSFS\base\config\Config */
         $config = Config::getInstance();
         $debug = $config->get("debug");
         //Unificamos ficheros para que no se retarde mucho el proceso
@@ -200,7 +200,7 @@ class AssetsParser{
      */
     public function printHtml()
     {
-        /* @var $config \PSFS\config\Config */
+        /* @var $config \PSFS\base\config\Config */
         $config = Config::getInstance();
         $debug = $config->get("debug");
         switch($this->type)

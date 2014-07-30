@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\exception;
+namespace PSFS\base\exception;
 
 class SecurityException extends \Exception{
     public function __construct($message = null)

@@ -1,6 +1,6 @@
 <?php
 
-namespace PSFS\exception;
+namespace PSFS\base\exception;
 
 class LoggerException extends \Exception{
 

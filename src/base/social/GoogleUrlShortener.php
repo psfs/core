@@ -2,14 +2,14 @@
 /**
  * Api de conexión a Google url sortener
  */
-namespace PSFS\social;
+namespace PSFS\base\social;
 
 use PSFS\base\Request;
 use PSFS\base\Template;
 use PSFS\base\Logger;
 use PSFS\base\Router;
-use PSFS\social\form\GoogleUrlShortenerForm;
-use PSFS\social\form\GenerateShortUrlForm;
+use PSFS\base\social\form\GoogleUrlShortenerForm;
+use PSFS\base\social\form\GenerateShortUrlForm;
 
 class GoogleUrlShortener{
 

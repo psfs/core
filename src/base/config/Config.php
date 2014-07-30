@@ -1,20 +1,20 @@
 <?php
 
-namespace PSFS\config;
+namespace PSFS\base\config;
 
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Singleton;
-use PSFS\exception\ConfigException;
-use PSFS\config\ConfigForm;
-use PSFS\config\ModuleForm;
+use PSFS\base\exception\ConfigException;
+use PSFS\base\config\ConfigForm;
+use PSFS\base\config\ModuleForm;
 use PSFS\base\Logger;
 use PSFS\base\Template;
 use PSFS\base\Request;
 
 /**
  * Class Config
- * @package PSFS\config
+ * @package PSFS\base\config
  */
 class Config extends Singleton{
 
@@ -61,7 +61,7 @@ class Config extends Singleton{
      * Método que devuelve el path de la carpeta lib
      * @return string
      */
-    public function getLibPath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR); }
+    public function getLibPath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR); }
 
     /**
      * Método que devuelve el path de cache
@@ -73,7 +73,7 @@ class Config extends Singleton{
      * Método que devuelve el path general de templates de PSFS
      * @return string
      */
-    public function getTemplatePath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR ); }
+    public function getTemplatePath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR ); }
 
     /**
      * Método que indica si se ha configurado correctamente la plataforma
@@ -143,7 +143,7 @@ class Config extends Singleton{
      */
     public function config(){
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".Request::getInstance()->getrequestUri());
-        /* @var $form \PSFS\config\ConfigForm */
+        /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm;
         $form->build();
         if(Request::getInstance()->getMethod() == 'POST')
@@ -196,7 +196,7 @@ class Config extends Singleton{
     public function generateModule()
     {
         Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".Request::getInstance()->getrequestUri());
-        /* @var $form \PSFS\config\ConfigForm */
+        /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ModuleForm();
         $form->build();
         if(Request::getInstance()->getMethod() == 'POST')

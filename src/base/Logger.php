@@ -3,7 +3,7 @@
 namespace PSFS\base;
 
 use PSFS\base\Singleton;
-use PSFS\exception\LoggerException;
+use PSFS\base\exception\LoggerException;
 use PSFS\base\Request as Parser;
 
 if(!defined("LOG_DIR"))

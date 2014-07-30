@@ -1,6 +1,6 @@
 <?php
 
-namespace PSFS\types\interfaces;
+namespace PSFS\base\types\interfaces;
 
 interface AuthInterface{
     function isLogged();

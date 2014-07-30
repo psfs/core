@@ -1,11 +1,11 @@
 <?php
 
-namespace PSFS\social\form;
+namespace PSFS\base\social\form;
 
 use PSFS\base\Router;
-use PSFS\types\Form;
+use PSFS\base\types\Form;
 
-class GenerateShortUrlForm extends Form
+class GoogleUrlShortenerForm extends Form
 {
 
     /**
@@ -13,9 +13,9 @@ class GenerateShortUrlForm extends Form
      */
     function __construct()
     {
-        $this->setAction(Router::getInstance()->getRoute('admin-social-gus-generate'));
-        $this->add("url", array(
-            "label" => _("Url Larga"),
+        $this->setAction(Router::getInstance()->getRoute('admin-social-gus'));
+        $this->add("api_key", array(
+            "label" => _("Api Key"),
             "class" => "col-md-3",
         ));
 
@@ -43,6 +43,6 @@ class GenerateShortUrlForm extends Form
      */
     public function getTitle()
     {
-        return "Test de Url Acortada";
+        return "Google Url Shortener";
     }
 }

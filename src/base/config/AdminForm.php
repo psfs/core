@@ -1,9 +1,9 @@
 <?php
 
-namespace PSFS\config;
+namespace PSFS\base\config;
 
-use PSFS\types\Form;
-use PSFS\config\Config;
+use PSFS\base\types\Form;
+use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\Security;
 

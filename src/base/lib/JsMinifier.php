@@ -16,7 +16,7 @@
  * @author     Robert Hafner <tedivm@tedivm.com>
  */
 
-namespace PSFS\lib;
+namespace PSFS\base\lib;
 
 /**
  * Minifier

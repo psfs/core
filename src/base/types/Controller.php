@@ -1,14 +1,14 @@
 <?php
 
-namespace PSFS\types;
+namespace PSFS\base\types;
 
-use PSFS\types\interfaces\ControllerInterface;
+use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\Template;
 use PSFS\base\Request;
 
 /**
  * Class Controller
- * @package PSFS\types
+ * @package PSFS\base\types
  */
 abstract class Controller extends \PSFS\base\Singleton implements ControllerInterface{
 
@@ -31,8 +31,22 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
      */
     public function render($template, array $vars = array(), $dump = false)
     {
+        $this->saveDomain();
         if($dump) return $this->tpl->dump($this->getDomain() . $template, $vars);
         else return $this->tpl->render($this->getDomain() . $template, $vars);
+    }
+
+    /**
+     * Método que almacena los dominios en la carpetade configuración para poder parsear las traducciones
+     * @return $this
+     */
+    protected function saveDomain()
+    {
+        $domains = array();
+        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json")) $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+        $domains[$this->getDomain()] = $this->tpl->getLoader()->getPaths();
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($domains));
+        return $this;
     }
 
     /**

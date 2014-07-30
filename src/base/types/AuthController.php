@@ -1,9 +1,9 @@
 <?php
 
-namespace PSFS\types;
+namespace PSFS\base\types;
 
-use PSFS\types\Controller;
-use PSFS\types\interfaces\AuthInterface;
+use PSFS\base\types\Controller;
+use PSFS\base\types\interfaces\AuthInterface;
 use PSFS\base\Security;
 
 abstract class AuthController extends Controller implements AuthInterface{

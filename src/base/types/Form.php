@@ -1,11 +1,11 @@
 <?php
 
-namespace PSFS\types;
+namespace PSFS\base\types;
 
 use PSFS\base\Request;
-use PSFS\exception\FormException;
+use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
-use PSFS\config\Config;
+use PSFS\base\config\Config;
 
 abstract class Form{
 

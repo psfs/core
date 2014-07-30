@@ -3,11 +3,11 @@
 namespace PSFS\base;
 
 use PSFS\base\Singleton;
-use PSFS\config\Config;
-use PSFS\exception\ConfigException;
-use PSFS\config\AdminForm;
+use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
+use PSFS\base\config\AdminForm;
 use PSFS\base\Security;
-use PSFS\exception\RouterException;
+use PSFS\base\exception\RouterException;
 
 /**
  * Class Router
@@ -81,7 +81,7 @@ class Router extends Singleton{
             if(preg_match("/^". $expr ."$/i", $route))
             {
                 $get = $this->extractComponents($route, $pattern);
-                /** @var $class PSFS\types\Controller */
+                /** @var $class PSFS\base\types\Controller */
                 $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
                 try{
 
@@ -305,7 +305,7 @@ class Router extends Singleton{
      * @param $params
      *
      * @return mixed
-     * @throws \PSFS\exception\ConfigException
+     * @throws \PSFS\base\exception\ConfigException
      */
     public function getRoute($slug = '', $absolute = false, $params = null)
     {

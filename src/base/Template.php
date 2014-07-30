@@ -1,9 +1,9 @@
 <?php
 
-namespace PSFS\Base;
+namespace PSFS\base;
 
 use PSFS\base\Singleton;
-use PSFS\config\Config;
+use PSFS\base\config\Config;
 use PSFS\Dispatcher;
 use PSFS\base\Router;
 use PSFS\base\Request;
@@ -26,6 +26,7 @@ class Template extends Singleton{
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => Config::getInstance()->getCachePath(),
             'debug' => (bool)$this->debug,
+            'auto_reload' => true,
         ));
         //Asignamos las funciones especiales
         $this->addAssetFunction()
@@ -33,7 +34,6 @@ class Template extends Singleton{
             ->addFormWidgetFunction()
             ->addFormButtonFunction()
             ->addConfigFunction()
-            ->addTranslationFilter()
             ->addRouteFunction()
             ->dumpResource();
 
@@ -43,7 +43,14 @@ class Template extends Singleton{
 
         //Optimizamos
         $this->tpl->addExtension(new \Twig_Extension_Optimizer());
+        $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
     }
+
+    /**
+     * Método que devuelve el loader del Template
+     * @return \Twig_LoaderInterface
+     */
+    public function getLoader(){ return $this->tpl->getLoader(); }
 
     /**
      * Método que activa la zona pública
@@ -244,7 +251,7 @@ class Template extends Singleton{
     private function addFormsFunction()
     {
         $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('form', function(\PSFS\types\Form $form) use ($tpl) {
+        $function = new \Twig_SimpleFunction('form', function(\PSFS\base\types\Form $form) use ($tpl) {
             return $tpl->display('forms/base.html.twig', array(
                 'form' => $form,
             ));
@@ -262,8 +269,7 @@ class Template extends Singleton{
      */
     public function addPath($path, $domain = '')
     {
-        $loader = $this->tpl->getLoader();
-        $loader->addPath($path, $domain);
+        $this->tpl->getLoader()->addPath($path, $domain);
         return $this;
     }
 
@@ -311,23 +317,40 @@ class Template extends Singleton{
     {
         $tpl = $this->tpl;
         $function = new \Twig_SimpleFunction('get_config', function($param){
-            return \PSFS\config\Config::getInstance()->get($param) ?: '';
+            return \PSFS\base\config\Config::getInstance()->get($param) ?: '';
         });
         $this->tpl->addFunction($function);
         return $this;
     }
 
-    /**
-     * Método que añade el filtro de traducción a Twig
-     * @return $this
+     * Servicio que regenera todas las plantillas
      */
-    private function addTranslationFilter()
+    public function regenerateTemplates()
     {
-        $filter = new \Twig_SimpleFilter('trans', function ($string) {
-            return _($string);
-        });
-        $this->tpl->addFilter($filter);
-        return $this;
+        //Generamos los dominios por defecto del fmwk
+        foreach($this->tpl->getLoader()->getPaths() as $path) $this->generateTemplate($path);
+        $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+        if(!empty($domains)) foreach($domains as $domain => $paths)
+        {
+            foreach($paths as $path)
+            {
+                $this->addPath($path, $domain);
+                $this->generateTemplate($path, $domain);
+            }
+        }
+        pre(_("Plantillas regeneradas correctamente"));
+    }
+
+    protected function generateTemplate($tplDir, $domain = '')
+    {
+        pre(str_replace("%d", $domain, str_replace("%s", $tplDir, _("Generando plantillas en path '%s' para el dominio '%d'"))));
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file)
+        {
+            // force compilation
+            if ($file->isFile()) {
+                $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
+            }
+        }
     }
 
     /**

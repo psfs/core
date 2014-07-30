@@ -1,8 +1,8 @@
 <?php
 
-namespace PSFS\config;
+namespace PSFS\base\config;
 use PSFS\base\Router;
-use PSFS\types\Form;
+use PSFS\base\types\Form;
 
 class LoginForm extends Form{
 
