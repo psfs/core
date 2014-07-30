@@ -323,6 +323,7 @@ class Template extends Singleton{
         return $this;
     }
 
+    /*
      * Servicio que regenera todas las plantillas
      */
     public function regenerateTemplates()
