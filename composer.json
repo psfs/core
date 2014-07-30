@@ -12,7 +12,8 @@
         "monolog/monolog": "1.10.*@dev",
         "behat/behat": "3.0.*@dev",
         "phpunit/phpunit": "4.3.*@dev",
-        "twig/twig": "1.*@dev"
+        "twig/twig": "1.*@dev",
+        "twig/extensions": "1.1.*@dev"
     },
     "license": "MIT",
     "authors": [
