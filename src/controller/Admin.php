@@ -321,8 +321,7 @@ class Admin extends AuthController{
                     Logger::getInstance()->infoLog("Generamos configuración invocando a propel:\n $ret");
                     //Redireccionamos al home definido
                     Logger::getInstance()->infoLog("Módulo generado correctamente");
-                    pre("fin", true);
-                    return $this->getRequest()->redirect();
+                    return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin", true));
                 }catch(\Exception $e)
                 {
                     Logger::getInstance()->infoLog($e->getMessage() . "[" . $e->getLine() . "]");
