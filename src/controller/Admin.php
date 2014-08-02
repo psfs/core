@@ -265,6 +265,7 @@ class Admin extends AuthController{
                     //Creamos la carpeta del módulo
                     if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
                     //Creamos las carpetas CORE del módulo
+                    Logger::getInstance()->infoLog("Generamos la estructura");
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
@@ -277,26 +278,25 @@ class Admin extends AuthController{
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
                     //Generamos el controlador base
+                    Logger::getInstance()->infoLog("Generamos el controlador BASE");
                     $controller = $this->tpl->dump("generator/controller.template.twig", array(
                         "module" => $module,
                     ));
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
                     //Generamos el autoloader del módulo
+                    Logger::getInstance()->infoLog("Generamos el autoloader");
                     $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
                         "module" => $module,
                     ));
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
-                    //Generamos el autoloader de propel
-                    $autoloader_propel = $this->tpl->dump("generator/autoload.propel.twig", array(
+                    //Generamos el autoloader del módulo
+                    Logger::getInstance()->infoLog("Generamos el schema");
+                    $schema = $this->tpl->dump("generator/schema.propel.twig", array(
                         "module" => $module,
-                        "host" => $this->config->get("db_host"),
-                        "port" => $this->config->get("db_port"),
-                        "user" => $this->config->get("db_user"),
-                        "pass" => $this->config->get("db_password"),
                         "db" => $this->config->get("db_name"),
                     ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php", $autoloader_propel);
-                    //Generamos el build.properties de propel
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $schema);
+                    Logger::getInstance()->infoLog("Generamos la configuración de Propel");
                     $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
                         "module" => $module,
                         "host" => $this->config->get("db_host"),
@@ -305,26 +305,27 @@ class Admin extends AuthController{
                         "pass" => $this->config->get("db_password"),
                         "db" => $this->config->get("db_name"),
                     ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties", $build_properties);
-                    //Generamos el build.properties de propel
-                    $runtime_conf = $this->tpl->dump("generator/runtime.config.twig", array(
-                        "module" => $module,
-                        "host" => $this->config->get("db_host"),
-                        "port" => $this->config->get("db_port"),
-                        "user" => $this->config->get("db_user"),
-                        "pass" => $this->config->get("db_password"),
-                        "db" => $this->config->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml", $runtime_conf);
+                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $build_properties);
                     //Generamos la plantilla de index
                     $index = $this->tpl->dump("generator/index.template.twig");
+                    Logger::getInstance()->infoLog("Generamos una plantilla base por defecto");
                     if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
+                    //Generamos las clases de propel y la configuración
+                    $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
+                    $opt = " --input-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
+                    $ret = shell_exec($exec . "build" . $opt);
+                    Logger::getInstance()->infoLog("Generamos clases invocando a propel:\n $ret");
+                    $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
+                    Logger::getInstance()->infoLog("Generamos sql invocando a propel:\n $ret");
+                    $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
+                    Logger::getInstance()->infoLog("Generamos configuración invocando a propel:\n $ret");
                     //Redireccionamos al home definido
                     Logger::getInstance()->infoLog("Módulo generado correctamente");
+                    pre("fin", true);
                     return $this->getRequest()->redirect();
                 }catch(\Exception $e)
                 {
-                    Logger::getInstance()->infoLog($e->getMessage());
+                    Logger::getInstance()->infoLog($e->getMessage() . "[" . $e->getLine() . "]");
                     throw new \HttpException('Error al generar el módulo, prueba a cambiar los permisos', 403);
                 }
             }
@@ -401,7 +402,10 @@ class Admin extends AuthController{
         foreach($files as $file)
         {
             $size = $file->getSize() / 8 / 1024;
-            $logs[] = $file->getFilename() . " [". round($size, 3) ." Kb]";
+            $logs[] =array(
+                "filename" => $file->getFilename(),
+                "size" => round($size, 3)
+            );
             if($file->getFilename() == $selected) $log = $file->getContents();
         }
         return $this->render("logs.html.twig", array(

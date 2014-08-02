@@ -152,7 +152,7 @@ class Router extends Singleton{
             }
             if(!empty($home_params)) $this->routing['/'] = $home_params;
         }
-        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode($this->routing));
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode($this->routing, JSON_PRETTY_PRINT));
     }
 
     /**

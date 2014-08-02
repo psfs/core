@@ -11,8 +11,8 @@
             {% for logfile in logs %}
                 <li class="list-group-item">
                     <label>
-                        <input type="radio" name="log" value="{{ logfile }}" onclick="javascript:$('#logs').submit();" {% if selected == logfile %}checked{% endif %}>
-                        <span>{{ logfile }}</span>
+                        <input type="radio" name="log" value="{{ logfile.filename }}" onclick="javascript:$('#logs').submit();" {% if selected == logfile.filename %}checked{% endif %}>
+                        {{ logfile.filename }}<span class="label label-default">{{ logfile.size }} Kb</span>
                     </label>
                 </li>
             {% endfor %}

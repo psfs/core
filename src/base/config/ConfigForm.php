@@ -54,7 +54,7 @@ class ConfigForm extends Form{
         //Hidratamos el formulario
         $this->setData($data);
         //Añadimos las acciones del formulario
-        $this->addButton('submit', "Guardar configuración", "submit", array(
+        $this->addButton('submit', _("Guardar configuración"), "submit", array(
                 "class" => "btn-success col-md-offset-2"
             ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(

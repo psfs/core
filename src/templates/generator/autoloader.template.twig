@@ -7,7 +7,10 @@
 if(!defined("BASE_DIR"))
 define("BASE_DIR", dirname( dirname(__DIR__) ) );
 
-if(!function_exists("{{ module }}Autoloader")){
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php';
+
+if(!function_exists("{{ module }}Autoloader"))
+{
     // autoloader
     function {{ module }}Autoloader( $class ){
         // it only autoload class into the Rain scope

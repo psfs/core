@@ -28,7 +28,7 @@
 
     //Autoload de módulos
     $finder = new Finder();
-    $finder->files()->in(CORE_DIR)->depth('== 1')->name("autoload.php");
+    $finder->files()->in(CORE_DIR)->name("autoload.php");
     foreach ($finder as $file) {
         include_once($file->getRealPath());
     }

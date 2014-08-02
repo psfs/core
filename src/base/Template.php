@@ -114,7 +114,7 @@ class Template extends Singleton{
             header('Authorization:');
         }
 
-        if(!empty($cookies)) foreach($cookies as $cookie)
+        if(!empty($cookies) && is_array($cookies)) foreach($cookies as $cookie)
         {
             setcookie($cookie["name"],
                 $cookie["value"],
