@@ -22,7 +22,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin PSFS<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         {% for route in super_admin_routes %}
-                            <li><a href="{{ path(route) }}">{{ route|trans }}</a></li>
+                            <li><a href="{{ path(route) }}">{{ route }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -32,7 +32,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         {% for route in admin_routes %}
-                            <li><a href="{{ path(route) }}">{{ route|trans }}</a></li>
+                            <li><a href="{{ path(route) }}">{{ route }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>

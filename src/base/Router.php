@@ -195,10 +195,21 @@ class Router extends Singleton{
                         if(count($sr))
                         {
                             $regex = $sr[1] ?: $sr[0];
+                            $default = '';
+                            $params = array();
+                            if(!empty($method->getParameters())) foreach($method->getParameters() as $param)
+                            {
+                                if($param->isOptional() && !is_array($param->getDefaultValue()))
+                                {
+                                    $params[$param->getName()] = $param->getDefaultValue();
+                                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+                                }
+                            }else $default = $regex;
                             $routing[$regex] = array(
                                 "class" => $namespace,
                                 "method" => $method->getName(),
-                                "params" => $method->getParameters(),
+                                "params" => $params,
+                                "default" => $default,
                             );
                         }
                     }
@@ -274,7 +285,7 @@ class Router extends Singleton{
         if(!empty($params)) foreach($params as $key => $value)
         {
             $url = str_replace("{".$key."}", $value, $url);
-        }
+        }elseif(!empty($this->routing[$this->slugs[$slug]]["default"])) $url = $this->routing[$this->slugs[$slug]]["default"];
         return $url;
     }
 
@@ -295,7 +306,7 @@ class Router extends Singleton{
                 }else{
                     $profile = "admin";
                 }
-                if(empty($params["params"])) $routes[$profile][] = $params["slug"];
+                if(!empty($params["default"])) $routes[$profile][] = $params["slug"];
             }
         }
         asort($routes["superadmin"]);
