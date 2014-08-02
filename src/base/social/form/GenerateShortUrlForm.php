@@ -16,13 +16,13 @@ class GenerateShortUrlForm extends Form
         $this->setAction(Router::getInstance()->getRoute('admin-social-gus-generate'));
         $this->add("url", array(
             "label" => _("Url Larga"),
-            "class" => "col-md-3",
+            "class" => "col-md-8",
         ));
 
         $this->add(Form::SEPARATOR);
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
-            "class" => "col-md-6",
+            "class" => "col-md-8",
         ));
         //Añadimos las acciones del formulario
         $this->addButton('submit');

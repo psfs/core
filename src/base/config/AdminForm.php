@@ -11,7 +11,7 @@ class AdminForm extends Form{
 
     function __construct()
     {
-        $this->setAction(Router::getInstance()->getRoute('setup-admin'));
+        $this->setAction(Router::getInstance()->getRoute('admin-setup'));
         $this->add('username', array(
             'label' => _('Alias de usuario'),
             'autocomplete' => 'off',

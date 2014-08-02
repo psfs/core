@@ -58,12 +58,6 @@ class Config extends Singleton{
     public function getDebugMode(){ return $this->debug; }
 
     /**
-     * Método que devuelve el path de la carpeta lib
-     * @return string
-     */
-    public function getLibPath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR); }
-
-    /**
      * Método que devuelve el path de cache
      * @return string
      */
@@ -136,37 +130,6 @@ class Config extends Singleton{
     }
 
     /**
-     * Método que gestiona la configuración de las variables
-     * @Route /admin/config
-     * @return mixed
-     * @throws \HttpException
-     */
-    public function config(){
-        Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".Request::getInstance()->getrequestUri());
-        /* @var $form \PSFS\base\config\ConfigForm */
-        $form = new ConfigForm;
-        $form->build();
-        if(Request::getInstance()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                if(self::save($form->getData(), $form->getExtraData()))
-                {
-                    Logger::getInstance()->infoLog("Configuración guardada correctamente");
-                    return Request::getInstance()->redirect();
-                }
-                throw new \HttpException('Error al guardar la configuración, prueba a cambiar los permisos', 403);
-            }
-        }
-        return Template::getInstance()->render('welcome.html.twig', array(
-            'text' => _("Bienvenido a PSFS"),
-            'config' => $form,
-            "routes" => Router::getInstance()->getAdminRoutes(),
-        ));
-    }
-
-    /**
      * Servicio que devuelve los parámetros de configuración de Propel para las BD
      * @return mixed
      */
@@ -175,129 +138,5 @@ class Config extends Singleton{
         return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json'), true);
     }
 
-    /**
-     * Método que gestiona el menú de administración
-     * @route /admin
-     * @route /admin/
-     * @return mixed
-     */
-    public function index()
-    {
-        return Template::getInstance()->render("index.html.twig", array(
-            "routes" => Router::getInstance()->getAdminRoutes(),
-        ));
-    }
 
-    /**
-     * Método que genera un nuevo módulo
-     * @route /admin/module
-     * @return mixed
-     */
-    public function generateModule()
-    {
-        Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".Request::getInstance()->getrequestUri());
-        /* @var $form \PSFS\base\config\ConfigForm */
-        $form = new ModuleForm();
-        $form->build();
-        if(Request::getInstance()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                $module = $form->getFieldValue("module");
-                try
-                {
-                    $mod_path = BASE_DIR . DIRECTORY_SEPARATOR . "modules" . DIRECTORY_SEPARATOR;
-                    //Creamos el directorio base de los módulos
-                    if(!file_exists($mod_path)) mkdir($mod_path, 0775);
-                    //Creamos la carpeta del módulo
-                    if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
-                    //Creamos las carpetas CORE del módulo
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
-                    //Creamos las carpetas de los assets
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
-                    //Generamos el controlador base
-                    $controller = Template::getInstance()->dump("generator/controller.template.twig", array(
-                        "module" => $module,
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
-                    //Generamos el autoloader del módulo
-                    $autoloader = Template::getInstance()->dump("generator/autoloader.template.twig", array(
-                        "module" => $module,
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
-                    //Generamos el autoloader de propel
-                    $autoloader_propel = Template::getInstance()->dump("generator/autoload.propel.twig", array(
-                        "module" => $module,
-                        "host" => $this->get("db_host"),
-                        "port" => $this->get("db_port"),
-                        "user" => $this->get("db_user"),
-                        "pass" => $this->get("db_password"),
-                        "db" => $this->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "autoload.php", $autoloader_propel);
-                    //Generamos el build.properties de propel
-                    $build_properties = Template::getInstance()->dump("generator/build.properties.twig", array(
-                        "module" => $module,
-                        "host" => $this->get("db_host"),
-                        "port" => $this->get("db_port"),
-                        "user" => $this->get("db_user"),
-                        "pass" => $this->get("db_password"),
-                        "db" => $this->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "build.properties", $build_properties);
-                    //Generamos el build.properties de propel
-                    $runtime_conf = Template::getInstance()->dump("generator/runtime.config.twig", array(
-                        "module" => $module,
-                        "host" => $this->get("db_host"),
-                        "port" => $this->get("db_port"),
-                        "user" => $this->get("db_user"),
-                        "pass" => $this->get("db_password"),
-                        "db" => $this->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "runtime-conf.xml", $runtime_conf);
-                    //Generamos la plantilla de index
-                    $index = Template::getInstance()->dump("generator/index.template.twig");
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
-                    //Redireccionamos al home definido
-                    Logger::getInstance()->infoLog("Módulo generado correctamente");
-                    return Request::getInstance()->redirect();
-                }catch(\Exception $e)
-                {
-                    Logger::getInstance()->infoLog($e->getMessage());
-                    throw new \HttpException('Error al generar el módulo, prueba a cambiar los permisos', 403);
-                }
-            }
-        }
-        return Template::getInstance()->render("modules.html.twig", array(
-            'properties' => $this->getPropelParams(),
-            'form' => $form,
-            "routes" => Router::getInstance()->getAdminRoutes(),
-        ));
-    }
-
-    /**
-     * Servicio que devuelve los parámetros disponibles
-     * @route /admin/config/params
-     * @return mixed
-     */
-    public function getConfigParams()
-    {
-        $response = json_encode(array_merge(self::$required, self::$optional));
-        ob_start();
-        header("Content-type: text/json");
-        header("Content-length: " . count($response));
-        echo $response;
-        ob_flush();
-        ob_end_clean();
-        exit();
-    }
 }

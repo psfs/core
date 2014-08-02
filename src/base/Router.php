@@ -8,7 +8,8 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\config\AdminForm;
 use PSFS\base\Security;
 use PSFS\base\exception\RouterException;
-
+use PSFS\controller\Admin;
+use Symfony\Component\Finder\Finder;
 /**
  * Class Router
  * @package PSFS
@@ -17,9 +18,13 @@ class Router extends Singleton{
 
     protected $routing;
     protected $slugs;
+    private $finder;
+    private $controller;
 
     function __construct()
     {
+        $this->controller = new Admin();
+        $this->finder = new Finder();
         if(Config::getInstance()->getDebugMode() || !file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"))
         {
             $this->hydrateRouting();
@@ -40,6 +45,12 @@ class Router extends Singleton{
     }
 
     /**
+     * Método que devuelve las rutas
+     * @return mixed
+     */
+    public function getSlugs(){ return $this->slugs; }
+
+    /**
      * Método que calcula el objeto a enrutar
      * @param $route
      *
@@ -52,7 +63,7 @@ class Router extends Singleton{
         {
             if(!Security::getInstance()->checkAdmin())
             {
-                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin($route);
+                if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Basic Realm="PSFS"');
                 echo _("Es necesario ser administrador para ver ésta zona");
@@ -64,7 +75,7 @@ class Router extends Singleton{
         {
             if(!Security::getInstance()->checkAdmin())
             {
-                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin($route);
+                if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Basic Realm="Zona Restringida"');
                 echo _("Espacio web restringido");
@@ -123,52 +134,6 @@ class Router extends Singleton{
     }
 
     /**
-     * Método que devuelve el namespace asociado a una clase
-     * @param $class
-     *
-     * @return null
-     */
-    protected function findClass($class)
-    {
-        //Buscamos en PSFS en primera instancia
-        $class_namespace = $this->exploreDir(SOURCE_DIR, $class);
-        //Si no tenemos la ruta buscamos en la carpeta de módulos
-        if(is_null($class_namespace))
-        {
-            $class_namespace = $this->exploreDir(CORE_DIR, $class, 'Modules');
-        }
-        return $class_namespace;
-    }
-
-    /**
-     * Método que busca en la estructura de directorios la clase
-     * @param $dir
-     * @param $class
-     * @param $base
-     * @return null
-     */
-    protected function exploreDir($orig_dir, $class, $base = 'PSFS')
-    {
-        $class_namespace = null;
-        if(file_exists($orig_dir. DIRECTORY_SEPARATOR . $class . ".php"))
-        {
-            $class_namespace = $base . "\\" . $class;
-        }elseif(is_dir($orig_dir))
-        {
-            $d = dir($orig_dir);
-            while(false !== ($dir = $d->read()))
-            {
-                if(is_dir($orig_dir.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
-                {
-                    $class_namespace = $this->exploreDir($orig_dir.DIRECTORY_SEPARATOR.$dir, $class, $base . "\\" . $dir);
-                    if(!is_null($class_namespace)) break;
-                }
-            }
-        }
-        return $class_namespace;
-    }
-
-    /**
      * Método que regenera el fichero de rutas
      */
     private function hydrateRouting()
@@ -199,19 +164,13 @@ class Router extends Singleton{
      */
     private function inspectDir($origen, $namespace = "PSFS", $routing)
     {
-        if(file_exists($origen))
+        $files = $this->finder->files()->in($origen)->contains("Controller")->name("*.php");
+        foreach($files as $file)
         {
-            $d = dir($origen);
-            while(!empty($d) && false !== ($dir = $d->read()))
-            {
-                if(is_dir($origen.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
-                {
-                    $routing = $this->inspectDir($origen.DIRECTORY_SEPARATOR.$dir, $namespace . '\\' . $dir, $routing);
-                }elseif(preg_match('/\.php$/',$dir)){
-                    $routing = $this->addRouting($namespace . '\\' .str_replace(".php", "", $dir), $routing);
-                }
-            }
+            $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
+            $routing = $this->addRouting($namespace .str_replace(".php", "", $filename), $routing);
         }
+        $this->finder = new Finder();
         return $routing;
     }
 
@@ -232,7 +191,7 @@ class Router extends Singleton{
                 {
                     if($method->isPublic())
                     {
-                        preg_match("/@route\ (.*)\n/i", $method->getDocComment(), $sr);
+                        preg_match('/@route\ (.*)\n/i', $method->getDocComment(), $sr);
                         if(count($sr))
                         {
                             $regex = $sr[1] ?: $sr[0];
@@ -317,35 +276,6 @@ class Router extends Singleton{
             $url = str_replace("{".$key."}", $value, $url);
         }
         return $url;
-    }
-
-    /**
-     * Método que pinta por pantalla todas las rutas del sistema
-     * @route /admin/routes
-     */
-    public function printRoutes()
-    {
-        return Template::getInstance()->render('routing.html.twig', array(
-            'slugs' => $this->slugs,
-            "routes" => Router::getInstance()->getAdminRoutes(),
-        ));
-    }
-
-    /**
-     * Servicio que devuelve los parámetros disponibles
-     * @route /admin/routes/show
-     * @return mixed
-     */
-    public function getRouting()
-    {
-        $response = json_encode(array_keys($this->slugs));
-        ob_start();
-        header("Content-type: text/json");
-        header("Content-length: " . count($response));
-        echo $response;
-        ob_flush();
-        ob_end_clean();
-        exit();
     }
 
     /**

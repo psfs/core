@@ -29,56 +29,6 @@ class Security extends Singleton{
     }
 
     /**
-     * Método que gestiona los usuarios administradores de la plataforma
-     * @route /setup-admin
-     * @return mixed
-     */
-    public function adminers()
-    {
-        $admins = $this->getAdmins();
-        if(!empty($admins))
-        {
-            if(!$this->checkAdmin())
-            {
-                if("login" === Config::getInstance()->get("admin_login")) return Security::getInstance()->adminLogin("/setup-admin");
-                header('HTTP/1.1 401 Unauthorized');
-                header('WWW-Authenticate: Basic Realm="PSFS"');
-                echo _("Es necesario ser administrador para ver ésta zona");
-                exit();
-            }
-        }
-        $form = new AdminForm();
-        $form->build();
-        if(Request::getInstance()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                if(self::save($form->getData()))
-                {
-                    Logger::getInstance()->infoLog("Configuración guardada correctamente");
-                    return Request::getInstance()->redirect();
-                }
-                throw new \HttpException('Error al guardar los administradores, prueba a cambiar los permisos', 403);
-            }
-        }
-        if(!empty($admins)) foreach($admins as &$admin)
-        {
-            if(isset($admin["profile"]))
-            {
-                $admin["class"] = $admin["profile"] == sha1("admin") ? 'primary' : "warning";
-            }else{
-                $admin["class"] = "primary";
-            }
-        }
-        return Template::getInstance()->render('admin.html.twig', array(
-            'admins' => $admins,
-            'form' => $form,
-            'profiles' => self::getProfiles(),
-        ));
-    }
-
-    /**
      * Método estático que devuelve los perfiles de la plataforma
      * @return array
      */
@@ -146,7 +96,7 @@ class Security extends Singleton{
             if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
             {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return $request->redirect(Router::getInstance()->getRoute('setup-admin'));
+                return $request->redirect(Router::getInstance()->getRoute('admin-setup'));
             }
             $admins = $this->getAdmins();
             //Sacamos las credenciales de la petición
@@ -188,46 +138,7 @@ class Security extends Singleton{
      * Método privado para la generación del hash de la cookie de administración
      * @return string
      */
-    private function getHash(){ return substr(md5("admin"), 0, 8); }
-
-    /**
-     * Acción que pinta un formulario genérico de login pra la zona restringida
-     * @params string $route
-     * @route /admin/login
-     * @return html
-     */
-    public function adminLogin($route = null)
-    {
-        $form = new LoginForm();
-        if(Request::getInstance()->getMethod() == "GET") $form->setData(array("route" => $route));
-        $form->build();
-        if(Request::getInstance()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                if($this->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass")))
-                {
-                    $cookies = array(
-                        array(
-                            "name" => $this->getHash(),
-                            "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
-                            "expire" => time() + 3600,
-                            "http" => true,
-                        )
-                    );
-                    return Template::getInstance()->render("redirect.html.twig", array(
-                        'route' => $form->getFieldValue("route"),
-                    ), $cookies);
-                }else{
-                    $form->setError("user", "El usuario no tiene acceso a la web");
-                }
-            }
-        }
-        return Template::getInstance()->render("login.html.twig", array(
-            'form' => $form,
-        ));
-    }
+    public function getHash(){ return substr(md5("admin"), 0, 8); }
 
     /**
      * Método que devuelve el usuario logado

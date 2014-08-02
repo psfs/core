@@ -29,11 +29,34 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
      *
      * @return mixed
      */
-    public function render($template, array $vars = array(), $dump = false)
+    public function render($template, array $vars = array(), $cookies = false)
     {
         $this->saveDomain();
-        if($dump) return $this->tpl->dump($this->getDomain() . $template, $vars);
-        else return $this->tpl->render($this->getDomain() . $template, $vars);
+        $vars["__menu__"] = $this->getMenu();
+        return $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
+    }
+
+    /**
+     * Método del controlador que añade los menús automáticamente a las vistas
+     * @return array
+     */
+    protected function getMenu()
+    {
+        return array();
+    }
+
+    /**
+     * Método que renderiza una plantilla
+     * @param $template
+     * @param array $vars
+     *
+     * @return mixed
+     */
+    public function dump($template, array $vars = array())
+    {
+        $this->saveDomain();
+        $vars["__menu__"] = $this->getMenu();
+        return $this->tpl->dump($this->getDomain() . $template, $vars);
     }
 
     /**
