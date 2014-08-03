@@ -10,22 +10,24 @@
     use Symfony\Component\Console\Question\Question;
     use PSFS\controller\Admin;
 
-    /**
-     * Wrapper para trazar logs en la consola
-     * Class CLog
-     */
-    class CLog{
-        private $log;
-        private $verbosity;
-        public function __construct($log, $verbosity = 0)
-        {
-            $this->log = $log;
-            $this->verbosity = $verbosity;
-        }
+    if(!class_exists("CLog")) {
+        /**
+         * Wrapper para trazar logs en la consola
+         * Class CLog
+         */
+        class CLog{
+            private $log;
+            private $verbosity;
+            public function __construct($log, $verbosity = 0)
+            {
+                $this->log = $log;
+                $this->verbosity = $verbosity;
+            }
 
-        public function infoLog($msg)
-        {
-            if($this->verbosity) $this->log->writeln($msg);
+            public function infoLog($msg)
+            {
+                if($this->verbosity) $this->log->writeln($msg);
+            }
         }
     }
 
