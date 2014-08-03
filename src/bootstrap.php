@@ -10,6 +10,7 @@
     if (!defined("CACHE_DIR")) define("CACHE_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'cache');
     if (!defined("CONFIG_DIR")) define("CONFIG_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'config');
     if (!defined("CORE_DIR")) define("CORE_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'modules');
+    if (!defined("WEB_DIR")) define("WEB_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'html');
 
     //Cargamos en memoria la función de desarrollo PRE
     if (!function_exists("pre")) {

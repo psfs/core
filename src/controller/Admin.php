@@ -127,6 +127,8 @@ class Admin extends AuthController{
                     );
                     return $this->render("redirect.html.twig", array(
                         'route' => $form->getFieldValue("route"),
+                        'status_message' => _("Acceso permitido... redirigiendo!!"),
+                        'delay' => 3,
                     ), $cookies);
                 }else{
                     $form->setError("user", "El usuario no tiene acceso a la web");
@@ -216,7 +218,7 @@ class Admin extends AuthController{
                 if(Config::save($form->getData(), $form->getExtraData()))
                 {
                     Logger::getInstance()->infoLog("Configuración guardada correctamente");
-                    return $this->getRequest()->redirect();
+                    return $this->getRequest()->redirect($this->getRoute('admin'));
                 }
                 throw new \HttpException('Error al guardar la configuración, prueba a cambiar los permisos', 403);
             }
@@ -245,7 +247,7 @@ class Admin extends AuthController{
      * @route /admin/module
      * @return mixed
      */
-    public function generateModule()
+    public function generateModule($module = '')
     {
         Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".$this->getRequest()->getrequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
@@ -259,68 +261,7 @@ class Admin extends AuthController{
                 $module = $form->getFieldValue("module");
                 try
                 {
-                    $mod_path = BASE_DIR . DIRECTORY_SEPARATOR . "modules" . DIRECTORY_SEPARATOR;
-                    //Creamos el directorio base de los módulos
-                    if(!file_exists($mod_path)) mkdir($mod_path, 0775);
-                    //Creamos la carpeta del módulo
-                    if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
-                    //Creamos las carpetas CORE del módulo
-                    Logger::getInstance()->infoLog("Generamos la estructura");
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
-                    //Creamos las carpetas de los assets
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
-                    //Generamos el controlador base
-                    Logger::getInstance()->infoLog("Generamos el controlador BASE");
-                    $controller = $this->tpl->dump("generator/controller.template.twig", array(
-                        "module" => $module,
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
-                    //Generamos el autoloader del módulo
-                    Logger::getInstance()->infoLog("Generamos el autoloader");
-                    $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
-                        "module" => $module,
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
-                    //Generamos el autoloader del módulo
-                    Logger::getInstance()->infoLog("Generamos el schema");
-                    $schema = $this->tpl->dump("generator/schema.propel.twig", array(
-                        "module" => $module,
-                        "db" => $this->config->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $schema);
-                    Logger::getInstance()->infoLog("Generamos la configuración de Propel");
-                    $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
-                        "module" => $module,
-                        "host" => $this->config->get("db_host"),
-                        "port" => $this->config->get("db_port"),
-                        "user" => $this->config->get("db_user"),
-                        "pass" => $this->config->get("db_password"),
-                        "db" => $this->config->get("db_name"),
-                    ));
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $build_properties);
-                    //Generamos la plantilla de index
-                    $index = $this->tpl->dump("generator/index.template.twig");
-                    Logger::getInstance()->infoLog("Generamos una plantilla base por defecto");
-                    if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
-                    //Generamos las clases de propel y la configuración
-                    $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
-                    $opt = " --input-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
-                    $ret = shell_exec($exec . "build" . $opt);
-                    Logger::getInstance()->infoLog("Generamos clases invocando a propel:\n $ret");
-                    $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
-                    Logger::getInstance()->infoLog("Generamos sql invocando a propel:\n $ret");
-                    $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
-                    Logger::getInstance()->infoLog("Generamos configuración invocando a propel:\n $ret");
-                    //Redireccionamos al home definido
-                    Logger::getInstance()->infoLog("Módulo generado correctamente");
+                    $this->createStructureModule($module, Logger::getInstance());
                     return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin", true));
                 }catch(\Exception $e)
                 {
@@ -333,6 +274,81 @@ class Admin extends AuthController{
             'properties' => $this->config->getPropelParams(),
             'form' => $form,
         ));
+    }
+
+    /**
+     * Servicio que genera la estructura de un módulo o lo actualiza en caso de ser necesario
+     * @param $module
+     * @param $logger
+     * @param $pb
+     *
+     * @return mixed
+     */
+    public function createStructureModule($module, $logger, $pb = null)
+    {
+        $mod_path = BASE_DIR . DIRECTORY_SEPARATOR . "modules" . DIRECTORY_SEPARATOR;
+        $module = ucfirst($module);
+        //Creamos el directorio base de los módulos
+        if(!file_exists($mod_path)) mkdir($mod_path, 0775);
+        //Creamos la carpeta del módulo
+        if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
+        //Creamos las carpetas CORE del módulo
+        $logger->infoLog("Generamos la estructura");
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
+        //Creamos las carpetas de los assets
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
+        //Generamos el controlador base
+        $logger->infoLog("Generamos el controlador BASE");
+        $controller = $this->tpl->dump("generator/controller.template.twig", array(
+            "module" => $module,
+        ));
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
+        //Generamos el autoloader del módulo
+        $logger->infoLog("Generamos el autoloader");
+        $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
+            "module" => $module,
+        ));
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
+        //Generamos el autoloader del módulo
+        $logger->infoLog("Generamos el schema");
+        $schema = $this->tpl->dump("generator/schema.propel.twig", array(
+            "module" => $module,
+            "db" => $this->config->get("db_name"),
+        ));
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $schema);
+        $logger->infoLog("Generamos la configuración de Propel");
+        $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
+            "module" => $module,
+            "host" => $this->config->get("db_host"),
+            "port" => $this->config->get("db_port"),
+            "user" => $this->config->get("db_user"),
+            "pass" => $this->config->get("db_password"),
+            "db" => $this->config->get("db_name"),
+        ));
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $build_properties);
+        //Generamos la plantilla de index
+        $index = $this->tpl->dump("generator/index.template.twig");
+        $logger->infoLog("Generamos una plantilla base por defecto");
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
+        //Generamos las clases de propel y la configuración
+        $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
+        $opt = " --input-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
+        $ret = shell_exec($exec . "build" . $opt);
+        $logger->infoLog("Generamos clases invocando a propel:\n $ret");
+        $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
+        $logger->infoLog("Generamos sql invocando a propel:\n $ret");
+        $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
+        $logger->infoLog("Generamos configuración invocando a propel:\n $ret");
+        //Redireccionamos al home definido
+        $logger->infoLog("Módulo generado correctamente");
     }
 
     /**

@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="refresh" content="2;url={{ route }}">
+        <meta http-equiv="refresh" content="{{ delay|default(0) }};url={{ route }}">
     </head>
     <body>
-    <h5 style="color: #666; text-align: center; text-shadow: 1px 1px 1px #999;">{{ "Acceso permitido... redirigiendo!!"|trans }}</h5>
+    {% if status_message is defined %}
+    <h5 style="color: #666; text-align: center; text-shadow: 1px 1px 1px #999;">{{ status_message }}</h5>
+    {% endif %}
     </body>
 </html>

@@ -3,13 +3,14 @@
 namespace PSFS\base;
 
 use PSFS\base\Singleton;
+use Symfony\Component\Finder\Finder;
 
 if(!function_exists("getallheaders"))
 {
     function getallheaders()
     {
         foreach($_SERVER as $h=>$v)
-            if(ereg('HTTP_(.+)',$h,$hp))
+            if(preg_match('/HTTP_(.+)/',$h,$hp))
                 $headers[$hp[1]]=$v;
         return $headers;
     }
@@ -109,7 +110,7 @@ class Request extends Singleton{
      */
     public function isFile()
     {
-        $file = (preg_match("/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip)$/", $this->getrequestUri()) != 0);
+        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php)$/', $this->getrequestUri()) != 0);
         return $file;
     }
 

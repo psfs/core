@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types;
 
+use PSFS\base\Router;
 use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\Template;
 use PSFS\base\Request;
@@ -149,6 +150,19 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
     public function getDomain()
     {
         return "@{$this->domain}/";
+    }
+
+    /**
+     * Wrapper para obtener la url de una ruta interna
+     * @param string $route
+     * @param bool $absolute
+     * @param array $params
+     *
+     * @return mixed
+     */
+    public function getRoute($route = '', $absolute = false, $params = array())
+    {
+        return Router::getInstance()->getRoute($route, $absolute, $params);
     }
 
 }

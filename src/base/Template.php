@@ -158,7 +158,7 @@ class Template extends Singleton{
             {
                 $ppath = explode("/", $string);
                 $original_filename = $ppath[count($ppath) -1];
-                $base = BASE_DIR . DIRECTORY_SEPARATOR . "html" .DIRECTORY_SEPARATOR;
+                $base = WEB_DIR .DIRECTORY_SEPARATOR;
                 if(preg_match('/\.css$/i', $string))
                 {
                     $file = "/". substr(md5($string), 0, 8) . ".css";
@@ -223,7 +223,7 @@ class Template extends Singleton{
                                         }
                                         $orig = realpath(dirname(BASE_DIR . $string) . DIRECTORY_SEPARATOR . $source_file);
                                         $orig_part = explode("Public", $orig);
-                                        $dest = BASE_DIR . DIRECTORY_SEPARATOR . 'html' . $orig_part[1];
+                                        $dest = WEB_DIR . $orig_part[1];
                                         if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
                                         @copy($orig, $dest);
                                     }
@@ -233,7 +233,7 @@ class Template extends Singleton{
                         }
                     }
                     $data = file_get_contents(BASE_DIR . $string);
-                    if(!empty($name)) file_put_contents(BASE_DIR . DIRECTORY_SEPARATOR . "html" . DIRECTORY_SEPARATOR . $name, $data);
+                    if(!empty($name)) file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
                     else file_put_contents($base . $file_path, $data);
                 }
             }
@@ -383,17 +383,17 @@ class Template extends Singleton{
             if(file_exists(BASE_DIR . $path))
             {
                 $destfolder = basename(BASE_DIR . $path);
-                if(!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug)
+                if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug)
                 {
                     try
                     {
-                        @mkdir(BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        @mkdir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                     }catch (\Exception $e)
                     {
                         Logger::getInstance()->errorLog($e->getMessage() . "[" . $e->getCode() . "]");
                     }
 
-                    self::copyr(BASE_DIR . $path, BASE_DIR . DIRECTORY_SEPARATOR . "html" . $dest);
+                    self::copyr(BASE_DIR . $path, WEB_DIR . $dest);
                 }
             }
             return '';
