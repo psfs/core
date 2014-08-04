@@ -165,4 +165,16 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
         return Router::getInstance()->getRoute($route, $absolute, $params);
     }
 
+    /**
+     * Wrapper que hace una redirección
+     * @param $route
+     * @param array $params
+     *
+     * @return mixed
+     */
+    public function redirect($route, $params = array())
+    {
+        return $this->getRequest()->redirect($this->getRoute($route, true, $params));
+    }
+
 }

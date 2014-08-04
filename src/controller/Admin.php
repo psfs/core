@@ -262,7 +262,7 @@ class Admin extends AuthController{
                 try
                 {
                     $this->createStructureModule($module, Logger::getInstance());
-                    return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin", true));
+                    return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin-module", true));
                 }catch(\Exception $e)
                 {
                     Logger::getInstance()->infoLog($e->getMessage() . "[" . $e->getLine() . "]");

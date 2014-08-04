@@ -10,6 +10,7 @@
     use Symfony\Component\Console\Question\Question;
     use PSFS\controller\Admin;
 
+    if(!isset($console)) $console = new Application();
     $console
         ->register('psfs:create:root')
         ->setDefinition(array(

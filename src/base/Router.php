@@ -197,7 +197,8 @@ class Router extends Singleton{
                             $regex = $sr[1] ?: $sr[0];
                             $default = '';
                             $params = array();
-                            if(!empty($method->getParameters())) foreach($method->getParameters() as $param)
+                            $parameters = $method->getParameters();
+                            if(!empty($parameters)) foreach($parameters as $param)
                             {
                                 if($param->isOptional() && !is_array($param->getDefaultValue()))
                                 {

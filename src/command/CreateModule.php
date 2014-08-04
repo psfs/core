@@ -31,6 +31,7 @@
         }
     }
 
+    if(!isset($console)) $console = new Application();
     $console
         ->register('psfs:create:module')
         ->setDefinition(array(
