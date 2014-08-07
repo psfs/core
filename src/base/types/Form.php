@@ -236,7 +236,7 @@ abstract class Form{
         $data = array();
         if(!empty($this->fields)) foreach($this->fields as $key => $field)
         {
-            if(self::SEPARATOR !== $key && $key != ($this->getName()."_token")) $data[$key] = $field["value"];
+            if(self::SEPARATOR !== $key && $key != ($this->getName()."_token")) $data[$key] = (isset($field["value"])) ? $field["value"] : null;
         }
         return $data;
     }

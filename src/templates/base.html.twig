@@ -37,6 +37,7 @@
         {% endblock body %}
         </section>
         <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+        <a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page" data-toggle="tooltip" data-placement="left"><span class="glyphicon glyphicon-chevron-up"></span></a>
         {% scripts
         "/src/public/js/jquery.min.js"
         "/src/public/js/bootstrap.min.js"
@@ -47,6 +48,7 @@
         "/src/public/js/shadowbox.js"
         "/src/public/js/bootstrap.slider.js"
         "/src/public/js/bootbox.js"
+        "/src/public/js/admins.js"
         %}{% endscript %}
     {% block scripts %}
     {% endblock scripts %}
