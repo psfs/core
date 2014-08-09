@@ -7,7 +7,7 @@
     if (!defined("SOURCE_DIR"))define("SOURCE_DIR", __DIR__);
     if(preg_match("/vendor/", SOURCE_DIR))
     {
-        if (!defined("BASE_DIR")) define("BASE_DIR", SOURCE_DIR . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "..");
+        if (!defined("BASE_DIR")) define("BASE_DIR", SOURCE_DIR . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "..");
     }else{
         if (!defined("BASE_DIR")) define("BASE_DIR", SOURCE_DIR . DIRECTORY_SEPARATOR . "..");
     }
