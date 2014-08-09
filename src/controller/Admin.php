@@ -383,7 +383,6 @@ class Admin extends AuthController{
     /**
      * Servicio que devuelve los parámetros disponibles
      * @route /admin/routes/show
-     * @translation _("Servicio json urls")
      * @return mixed
      */
     public function getRouting()

@@ -28,8 +28,8 @@ class Router extends Singleton{
         if(Config::getInstance()->getDebugMode() || !file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"))
         {
             $this->hydrateRouting();
-        }else $this->routing = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
-        $this->simpatize();
+            $this->simpatize();
+        }else list($this->routing, $this->slugs) = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
     }
 
     /**
@@ -152,7 +152,6 @@ class Router extends Singleton{
             }
             if(!empty($home_params)) $this->routing['/'] = $home_params;
         }
-        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode($this->routing, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -206,11 +205,14 @@ class Router extends Singleton{
                                     $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
                                 }
                             }else $default = $regex;
+                            preg_match('/@visible\ (.*)\n/i', $method->getDocComment(), $visible);
+                            $visible = (!empty($visible) && isset($visible[1]) && $visible[1] == 'false') ? false : true;
                             $routing[$regex] = array(
                                 "class" => $namespace,
                                 "method" => $method->getName(),
                                 "params" => $params,
                                 "default" => $default,
+                                "visible" => $visible,
                             );
                         }
                     }
@@ -229,9 +231,14 @@ class Router extends Singleton{
         foreach($this->routing as $key => &$info)
         {
             $slug = $this->slugify($key);
+            if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations")) @mkdir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations", 0775);
+            if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php")) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "<?php \$translations = array();\n");
+            include(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php");
+            if(!isset($translations[$slug])) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
             $this->slugs[$slug] = $key;
             $info["slug"] = $slug;
         }
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode(array($this->routing, $this->slugs), JSON_PRETTY_PRINT));
         return $this;
     }
 
@@ -307,7 +314,7 @@ class Router extends Singleton{
                 }else{
                     $profile = "admin";
                 }
-                if(!empty($params["default"])) $routes[$profile][] = $params["slug"];
+                if(!empty($params["default"]) && $params["visible"]) $routes[$profile][] = $params["slug"];
             }
         }
         asort($routes["superadmin"]);
