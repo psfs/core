@@ -25,7 +25,7 @@
         }
     },
     "bin": [
-        "bin/psfs"
+        "src/bin/psfs"
     ],
     "minimum-stability": "dev"
 }
