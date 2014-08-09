@@ -14,5 +14,6 @@ Componentes necesarios para su ejecución:
 
 
 Para instalar usar composer:
-   composer require c15k0/psfs
-   ./vendor/bin/psfs psfs:create:root
+
+    composer require c15k0/psfs
+    ./vendor/bin/psfs psfs:create:root
