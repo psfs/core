@@ -32,9 +32,12 @@
         }
     }
 
-    //Autoload de módulos
-    $finder = new Finder();
-    $finder->files()->in(CORE_DIR)->name("autoload.php");
-    foreach ($finder as $file) {
-        include_once($file->getRealPath());
+    if(file_exists(CORE_DIR))
+    {
+        //Autoload de módulos
+        $finder = new Finder();
+        $finder->files()->in(CORE_DIR)->name("autoload.php");
+        foreach ($finder as $file) {
+            include_once($file->getRealPath());
+        }
     }
