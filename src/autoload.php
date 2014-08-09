@@ -7,6 +7,7 @@
 if(!defined("BASE_DIR"))
     define("BASE_DIR", dirname( dirname(__DIR__) ) );
 
+require_once "bootstrap.php";
 if(!function_exists("PSFSAutoloader"))
 {
     // autoloader
