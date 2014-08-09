@@ -12,6 +12,7 @@ Componentes necesarios para su ejecución:
     * "monolog/monolog": "1.10.*@dev",
     * "twig/twig": "1.*@dev"
 
-Descomprimir html.tar.gz en el directorio raiz para crear el document root
 
-Actualmente en fase de desarrollo
+Para instalar usar composer:
+   composer require c15k0/psfs
+   ./vendor/bin/psfs psfs:create:root
