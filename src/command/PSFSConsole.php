@@ -21,8 +21,11 @@
     foreach($commands as $com) include_once($com->getRealPath());
 
     //Hidratamos con los comandos de los módulos
-    $commands = new Finder();
-    $commands->in(CORE_DIR)->path("Command")->name("*.php");
-    foreach($commands as $com) include_once($com->getRealPath());
+    if(file_exists(CORE_DIR))
+    {
+        $commands = new Finder();
+        $commands->in(CORE_DIR)->path("Command")->name("*.php");
+        foreach($commands as $com) include_once($com->getRealPath());
+    }
 
     $console->run();
