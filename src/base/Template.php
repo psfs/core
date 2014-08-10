@@ -156,7 +156,8 @@ class Template extends Singleton{
             $debug = Config::getInstance()->get("debug");
             $filename_path = $string;
             if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
-            if(!file_exists($file_path) && !empty($this->getDomains())) foreach($this->getDomains() as $domain => $paths)
+            $domains = self::getDomains(true);
+            if(!file_exists($file_path) && !empty($domains)) foreach($domains as $domain => $paths)
             {
                 $domain_filename = str_replace($domain, $paths["public"], $string);
                 if(file_exists($domain_filename))
