@@ -194,7 +194,7 @@ class Template extends Singleton{
                 }
                 $file_path = $html_base . $file;
                 //Creamos el directorio si no existe
-                if(!file_exists($base . $html_base)) @mkdir($base . $html_base, 0775);
+                if(!file_exists($base . $html_base)) @mkdir($base . $html_base, 0775, true);
                 //Si se ha modificado
                 if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime(BASE_DIR . $string))
                 {
@@ -387,7 +387,7 @@ class Template extends Singleton{
                 {
                     try
                     {
-                        @mkdir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        @mkdir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder, 0775, true);
                     }catch (\Exception $e)
                     {
                         Logger::getInstance()->errorLog($e->getMessage() . "[" . $e->getCode() . "]");
@@ -410,7 +410,7 @@ class Template extends Singleton{
             $dir_handle=opendir($source);
             $sourcefolder = basename($source);
             $destfolder = basename($dest);
-            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder);
+            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder, true);
             while($file=readdir($dir_handle)){
                 if($file!="." && $file!=".."){
                     if(is_dir($source."/".$file)){
