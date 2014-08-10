@@ -1,4 +1,3 @@
 #!/usr/bin/env php
 <?php
-    if(!preg_match("/psfs/i", __DIR__)) require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'PSFSConsole.php');
-    else require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'c15k0' . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'PSFSConsole.php');
+    require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'PSFSConsole.php');
