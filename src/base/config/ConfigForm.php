@@ -1,7 +1,7 @@
 <?php
 
 namespace PSFS\base\config;
-use Composer\Config;
+use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
