@@ -103,6 +103,7 @@ class Admin extends AuthController{
      * Acción que pinta un formulario genérico de login pra la zona restringida
      * @params string $route
      * @route /admin/login
+     * @visible false
      * @return html
      */
     public function adminLogin($route = null)
@@ -354,6 +355,7 @@ class Admin extends AuthController{
     /**
      * Servicio que devuelve los parámetros disponibles
      * @route /admin/config/params
+     * @visible false
      * @return mixed
      */
     public function getConfigParams()
@@ -383,6 +385,7 @@ class Admin extends AuthController{
     /**
      * Servicio que devuelve los parámetros disponibles
      * @route /admin/routes/show
+     * @visible false
      * @return mixed
      */
     public function getRouting()

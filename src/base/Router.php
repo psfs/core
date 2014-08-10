@@ -318,7 +318,16 @@ class Router extends Singleton{
             }
         }
         asort($routes["superadmin"]);
-        asort($routes["admin"]);
+        if(isset($routes["admin"])) asort($routes["admin"]);
         return $routes;
+    }
+
+    /**
+     * Método que devuelve le controladordel admin
+     * @return Admin
+     */
+    public function getAdmin()
+    {
+        return $this->controller;
     }
 }

@@ -21,10 +21,10 @@ class Singleton
     public static function getInstance()
     {
         $class = get_called_class();
-        if (!self::$instance instanceof $class) {
-            self::$instance = new $class;
+        if (!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class) {
+            self::$instance[$class] = new $class;
         }
-        return self::$instance;
+        return self::$instance[$class];
     }
 
     /**
