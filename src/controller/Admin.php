@@ -19,8 +19,11 @@ use Symfony\Component\Finder\Finder;
 /**
  * Class Admin
  * @package PSFS\controller
+ * @domain ROOT
  */
 class Admin extends AuthController{
+
+    const DOMAIN = 'ROOT';
 
     private $config;
     /**

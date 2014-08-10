@@ -18,7 +18,6 @@ class Template extends Singleton{
     protected $debug = false;
     protected $public_zone = true;
     private $status_code = null;
-    static private $domains = array();
 
     function __construct()
     {
@@ -157,7 +156,7 @@ class Template extends Singleton{
             $debug = Config::getInstance()->get("debug");
             $filename_path = $string;
             if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
-            if(!file_exists($file_path) && !empty(self::getDomains())) foreach(self::getDomains() as $domain => $paths)
+            if(!file_exists($file_path) && !empty($this->getDomains())) foreach($this->getDomains() as $domain => $paths)
             {
                 $domain_filename = str_replace($domain, $paths["public"], $string);
                 if(file_exists($domain_filename))
@@ -345,11 +344,8 @@ class Template extends Singleton{
         $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
         if(!empty($domains)) foreach($domains as $domain => $paths)
         {
-            foreach($paths as $path)
-            {
-                $this->addPath($path, $domain);
-                $this->generateTemplate($path, $domain);
-            }
+            $this->addPath($paths["template"], $domain);
+            $this->generateTemplate($paths["template"], $domain);
         }
         pre(_("Plantillas regeneradas correctamente"));
     }
@@ -440,15 +436,16 @@ class Template extends Singleton{
     }
 
     /**
-     * Método estático que devuelve las rutas de los dominios
-     * @return array
+     * Método que devuelve los dominios de una plataforma
+     * @return mixed
      */
-    static public function getDomains()
+    static public function getDomains($append = false)
     {
-        if(empty(self::$domains) && file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"))
+        $domains = Router::getInstance()->getDomains();
+        if($append) foreach($domains as &$domain)
         {
-            self::$domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+            foreach($domain as &$path) $path .= DIRECTORY_SEPARATOR;
         }
-        return self::$domains;
+        return $domains;
     }
 }

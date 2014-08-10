@@ -28,7 +28,7 @@ class AssetsParser{
     {
         $this->type = $type;
         $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
-        $this->domains = Template::getDomains();
+        $this->domains = Template::getDomains(true);
     }
 
     /**
@@ -44,7 +44,10 @@ class AssetsParser{
         elseif(!empty($this->domains)) foreach($this->domains as $domain => $paths)
         {
             $domain_filename = str_replace($domain, $paths["public"], $filename);
-            if(file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename)) $this->files[] = $domain_filename;
+            if(file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename))
+            {
+                $this->files[] = $domain_filename;
+            }
         }
         return $this;
     }

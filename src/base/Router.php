@@ -20,6 +20,7 @@ class Router extends Singleton{
     protected $slugs;
     private $finder;
     private $controller;
+    private $domains;
 
     function __construct()
     {
@@ -29,7 +30,11 @@ class Router extends Singleton{
         {
             $this->hydrateRouting();
             $this->simpatize();
-        }else list($this->routing, $this->slugs) = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
+        }else
+        {
+            list($this->routing, $this->slugs) = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
+            $this->domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+        }
     }
 
     /**
@@ -142,6 +147,7 @@ class Router extends Singleton{
         $modules = realpath(CORE_DIR);
         $this->routing = $this->inspectDir($base, "PSFS", array());
         $this->routing = $this->inspectDir($modules, "", $this->routing);
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($this->domains, JSON_PRETTY_PRINT));
         $home = Config::getInstance()->get('home_action');
         if(!empty($home))
         {
@@ -163,7 +169,7 @@ class Router extends Singleton{
      */
     private function inspectDir($origen, $namespace = "PSFS", $routing)
     {
-        $files = $this->finder->files()->in($origen)->contains("Controller")->name("*.php");
+        $files = $this->finder->files()->in($origen)->path("/controller/i")->name("*.php");
         foreach($files as $file)
         {
             $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
@@ -186,6 +192,7 @@ class Router extends Singleton{
             $reflection = new \ReflectionClass($namespace);
             if(false === $reflection->isAbstract() && false === $reflection->isInterface())
             {
+                $this->extractDomain($reflection);
                 foreach($reflection->getMethods() as $method)
                 {
                     if($method->isPublic())
@@ -220,6 +227,36 @@ class Router extends Singleton{
             }
         }
         return $routing;
+    }
+
+    /**
+     * Método que extrae de la ReflectionClass los datos necesarios para componer los dominios en los templates
+     * @param $class
+     *
+     * @return $this
+     */
+    protected function extractDomain($class)
+    {
+        //Calculamos los dominios para las plantillas
+        if(!$class->hasConstant("DOMAIN")) throw new ConfigException(_("El controlador debe tener un dominio asignado"));
+        $domain = "@" . $class->getConstant("DOMAIN") . "/";
+        $path = realpath(dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $tpl_path = "templates";
+        $public_path = "public";
+        $model_path = "models";
+        if(!preg_match("/ROOT/", $domain))
+        {
+            $tpl_path = ucfirst($tpl_path);
+            $public_path = ucfirst($public_path);
+            $model_path = ucfirst($model_path);
+        }
+        if($class->hasConstant("TPL")) $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
+        $this->domains[$domain] = array(
+            "template" => $path . $tpl_path,
+            "model" => $path . $model_path,
+            "public" => $path . $public_path,
+        );
+        return $this;
     }
 
     /**
@@ -330,5 +367,14 @@ class Router extends Singleton{
     public function getAdmin()
     {
         return $this->controller;
+    }
+
+    /**
+     * Método que extrae los dominios
+     * @return mixed
+     */
+    public function getDomains()
+    {
+        return $this->domains;
     }
 }
