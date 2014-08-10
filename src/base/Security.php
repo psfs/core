@@ -25,7 +25,6 @@ class Security extends Singleton{
 
     public function __construct()
     {
-        $this->checkAdmin();
     }
 
     /**
