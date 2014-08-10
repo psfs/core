@@ -231,13 +231,14 @@ class Router extends Singleton{
         foreach($this->routing as $key => &$info)
         {
             $slug = $this->slugify($key);
-            if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations")) @mkdir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations", 0775);
+            if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations")) @mkdir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations", 0775, true);
             if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php")) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "<?php \$translations = array();\n");
             include(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php");
             if(!isset($translations[$slug])) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
             $this->slugs[$slug] = $key;
             $info["slug"] = $slug;
         }
+        if(!file_exists(CONFIG_DIR)) @mkdir(CONFIG_DIR, 0775);
         file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode(array($this->routing, $this->slugs), JSON_PRETTY_PRINT));
         return $this;
     }
