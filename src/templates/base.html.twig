@@ -6,11 +6,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="NOINDEX,NOFOLLOW">
         {% styles
-            '/src/public/css/bootstrap.min.css'
-            '/src/public/css/bootstrap-theme.min.css'
-            '/src/public/css/font-awesome.min.css'
-            '/src/public/css/timeline.css'
-            '/src/public/css/shadowbox.css'
+            '@ROOT/css/bootstrap.min.css'
+            '@ROOT/css/bootstrap-theme.min.css'
+            '@ROOT/css/font-awesome.min.css'
+            '@ROOT/css/timeline.css'
+            '@ROOT/css/shadowbox.css'
         %}{% endstyles %}
 {% block head %}
     {% block seo %}
@@ -18,8 +18,8 @@
         <meta name="description" content="Php Simple Fast & Secure">
     {% endblock seo %}
 {% endblock head %}
-    {{ asset('/src/public/js/jquery-1.11.1.min.map', '/js/jquery-1.11.1.min.map', false) }}
-    {{ asset('/src/public/js/angular.min.js.map', '/js/angular.min.js.map', false) }}
+    {{ asset('@ROOT/js/jquery-1.11.1.min.map', '/js/jquery-1.11.1.min.map', false) }}
+    {{ asset('@ROOT/js/angular.min.js.map', '/js/angular.min.js.map', false) }}
     </head>
     <body>
         {% include 'top.menu.html.twig' %}
@@ -39,16 +39,16 @@
         <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
         <a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page" data-toggle="tooltip" data-placement="left"><span class="glyphicon glyphicon-chevron-up"></span></a>
         {% scripts
-        "/src/public/js/jquery.min.js"
-        "/src/public/js/bootstrap.min.js"
-        "/src/public/js/angular.js"
-        "/src/public/js/jquery-ui.min.js"
-        "/src/public/js/jquery.autocomplete.js"
-        "/src/public/js/timeline.js"
-        "/src/public/js/shadowbox.js"
-        "/src/public/js/bootstrap.slider.js"
-        "/src/public/js/bootbox.js"
-        "/src/public/js/admins.js"
+        "@ROOT/js/jquery.min.js"
+        "@ROOT/js/bootstrap.min.js"
+        "@ROOT/js/angular.js"
+        "@ROOT/js/jquery-ui.min.js"
+        "@ROOT/js/jquery.autocomplete.js"
+        "@ROOT/js/timeline.js"
+        "@ROOT/js/shadowbox.js"
+        "@ROOT/js/bootstrap.slider.js"
+        "@ROOT/js/bootbox.js"
+        "@ROOT/js/admins.js"
         %}{% endscript %}
     {% block scripts %}
     {% endblock scripts %}

@@ -30,7 +30,7 @@ class Admin extends AuthController{
     {
         parent::__construct();
         $this->config = Config::getInstance();
-        $this->setDomain('')
+        $this->setDomain('ROOT')
             ->setTemplatePath(Config::getInstance()->getTemplatePath());
     }
 
@@ -42,12 +42,6 @@ class Admin extends AuthController{
     {
         return Router::getInstance()->getAdminRoutes();
     }
-
-    /**
-     * Redefinimos el método de getDomain
-     * @return string
-     */
-    public function getDomain(){ return ''; }
 
     /**
      * Método que gestiona los usuarios administradores de la plataforma

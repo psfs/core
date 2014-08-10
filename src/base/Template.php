@@ -18,6 +18,7 @@ class Template extends Singleton{
     protected $debug = false;
     protected $public_zone = true;
     private $status_code = null;
+    static private $domains = array();
 
     function __construct()
     {
@@ -154,7 +155,18 @@ class Template extends Singleton{
         $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true){
             $file_path = "";
             $debug = Config::getInstance()->get("debug");
-            if(file_exists(BASE_DIR . $string))
+            $filename_path = $string;
+            if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
+            if(!file_exists($file_path) && !empty(self::getDomains())) foreach(self::getDomains() as $domain => $paths)
+            {
+                $domain_filename = str_replace($domain, $paths["public"], $string);
+                if(file_exists($domain_filename))
+                {
+                    $filename_path = $domain_filename;
+                    continue;
+                }
+            }
+            if(file_exists($filename_path))
             {
                 $ppath = explode("/", $string);
                 $original_filename = $ppath[count($ppath) -1];
@@ -169,19 +181,19 @@ class Template extends Singleton{
                     $file = "/". substr(md5($string), 0, 8) . ".js";
                     $html_base = "js";
                     if($debug) $file = str_replace(".js", "_" . $original_filename, $file);
-                }elseif(preg_match("/image/i", mime_content_type(BASE_DIR . $string)))
+                }elseif(preg_match("/image/i", mime_content_type($filename_path)))
                 {
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "image";
                     if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(preg_match("/(doc|pdf)/i", mime_content_type(BASE_DIR . $string)))
+                }elseif(preg_match("/(doc|pdf)/i", mime_content_type($filename_path)))
                 {
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "docs";
                     if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(preg_match("/(video|audio|ogg)/i", mime_content_type(BASE_DIR . $string)))
+                }elseif(preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path)))
                 {
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
@@ -196,11 +208,11 @@ class Template extends Singleton{
                 //Creamos el directorio si no existe
                 if(!file_exists($base . $html_base)) @mkdir($base . $html_base, 0775, true);
                 //Si se ha modificado
-                if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime(BASE_DIR . $string))
+                if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($filename_path))
                 {
                     if($html_base == 'css')
                     {
-                        $handle = @fopen(BASE_DIR . $string, 'r');
+                        $handle = @fopen($filename_path, 'r');
                         if($handle)
                         {
                             while (!feof($handle)) {
@@ -221,7 +233,7 @@ class Template extends Singleton{
                                             $source_file = explode("?", $source_file);
                                             $source_file = $source_file[0];
                                         }
-                                        $orig = realpath(dirname(BASE_DIR . $string) . DIRECTORY_SEPARATOR . $source_file);
+                                        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
                                         $orig_part = explode("Public", $orig);
                                         $dest = WEB_DIR . $orig_part[1];
                                         if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
@@ -232,7 +244,7 @@ class Template extends Singleton{
                             fclose($handle);
                         }
                     }
-                    $data = file_get_contents(BASE_DIR . $string);
+                    $data = file_get_contents($filename_path);
                     if(!empty($name)) file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
                     else file_put_contents($base . $file_path, $data);
                 }
@@ -425,5 +437,18 @@ class Template extends Singleton{
             // can also handle simple copy commands
             if(!file_exists($dest)) @copy($source, $dest);
         }
+    }
+
+    /**
+     * Método estático que devuelve las rutas de los dominios
+     * @return array
+     */
+    static public function getDomains()
+    {
+        if(empty(self::$domains) && file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"))
+        {
+            self::$domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+        }
+        return self::$domains;
     }
 }

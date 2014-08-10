@@ -68,8 +68,20 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
     {
         $domains = array();
         if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json")) $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
-        $domains[$this->getDomain()] = $this->tpl->getLoader()->getPaths();
-        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($domains));
+        $template_src = $this->tpl->getLoader()->getPaths();
+        $domain = $this->getDomain();
+        if(!empty($template_src)) foreach($template_src as $tpl_src)
+        {
+            $domains[$domain]["template"] = $tpl_src . DIRECTORY_SEPARATOR;
+            //Guardamos el path de los recursos públicos
+            $public_src = "public" . DIRECTORY_SEPARATOR;
+            if(preg_match("/".str_replace(DIRECTORY_SEPARATOR, '\/', CORE_DIR) . "/", $tpl_src))
+            {
+                $public_src = ucfirst($public_src);
+            }
+            $domains[$domain]["public"] = preg_replace("/Templates(.*)$/i", $public_src, $tpl_src);
+        }
+        file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($domains, JSON_PRETTY_PRINT));
         return $this;
     }
 
