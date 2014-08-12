@@ -340,7 +340,7 @@ abstract class Form{
             $model = $this->getHydratedModel();
             $model->save();
             $save = true;
-            Logger::getInstance()->infoLog("Noticia guardada con id " . $this->model->getIdNews());
+            Logger::getInstance()->infoLog(get_class($this->model) . " guardado con id " . $this->model->getPrimaryKey());
         }catch(\Exception $e)
         {
             Logger::getInstance()->errorLog($e->getMessage());
