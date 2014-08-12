@@ -27,7 +27,7 @@
     {% endif %}
     </div>
 {% elseif field.type == 'textarea' %}
-    <label class="control-label{% if field.class %} col-md-2{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
     <div class="{{ field.class }}">
         <textarea id="{{ field.id }}"
       name="{{ field.name }}"
