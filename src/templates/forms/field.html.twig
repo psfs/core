@@ -59,12 +59,12 @@
         </select>
     </div>
 {% endif %}
-{% if field.error %}
-    <div class="clearfix"></div>
-    <div class="alert alert-danger">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="javascript:$(this).parent().remove();">×</button>
-        <p>{{ field.error | raw }}</p>
-    </div>
+</div>
 {% endif %}
+{% if field.error %}
+<div class="clearfix"></div>
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="javascript:$(this).parent().remove();">×</button>
+    <p>{{ field.error | raw }}</p>
 </div>
 {% endif %}
