@@ -389,9 +389,20 @@ class Template extends Singleton{
     {
         $function = new \Twig_SimpleFunction('resource', function($path, $dest){
             $debug = Config::getInstance()->get("debug");
-            if(file_exists(BASE_DIR . $path))
+            $domains = self::getDomains(true);
+            $filename_path = $path;
+            if(!file_exists($path) && !empty($domains)) foreach($domains as $domain => $paths)
             {
-                $destfolder = basename(BASE_DIR . $path);
+                $domain_filename = str_replace($domain, $paths["public"], $path);
+                if(file_exists($domain_filename))
+                {
+                    $filename_path = $domain_filename;
+                    continue;
+                }
+            }
+            if(file_exists($filename_path))
+            {
+                $destfolder = basename($filename_path);
                 if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug)
                 {
                     try
@@ -402,7 +413,7 @@ class Template extends Singleton{
                         Logger::getInstance()->errorLog($e->getMessage() . "[" . $e->getCode() . "]");
                     }
 
-                    self::copyr(BASE_DIR . $path, WEB_DIR . $dest);
+                    self::copyr($filename_path, WEB_DIR . $dest);
                 }
             }
             return '';
@@ -419,7 +430,7 @@ class Template extends Singleton{
             $dir_handle=opendir($source);
             $sourcefolder = basename($source);
             $destfolder = basename($dest);
-            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder, true);
+            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder, 0755, true);
             while($file=readdir($dir_handle)){
                 if($file!="." && $file!=".."){
                     if(is_dir($source."/".$file)){
