@@ -54,7 +54,7 @@
             onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
         {% endif %}>
         {% for key, value in field.data %}
-            <option value="{{ key }}" {% if key == field.value %}selected{% endif %}>{{ value }}</option>
+            <option value="{{ key }}" {% if key in field.value %}selected{% endif %}>{{ value }}</option>
         {% endfor %}
         </select>
     </div>

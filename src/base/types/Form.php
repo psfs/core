@@ -319,10 +319,49 @@ abstract class Form{
         foreach($this->fields as $key => &$field)
         {
             $method = "get" . ucfirst($key);
+            $type = (isset($field["type"])) ? $field["type"] : "text";
+            //Extraemos los campos del modelo
             if(method_exists($this->model, $method))
             {
-                $field['value'] = $this->model->$method();
+                $value = $this->model->$method();
+                //En caso de ser un objeto tenemos una lógica especial
+                if(is_object($value))
+                {
+                    //Si es una relación múltiple
+                    if($value instanceof \Propel\Runtime\Collection\ObjectCollection)
+                    {
+                        $value = $value->getData();
+                        //Extraemos los datos en función del tipo de input
+                        switch($type)
+                        {
+                            case "checkbox":
+                            case "select":
+                                $data = array();
+                                if(!empty($value)) foreach($value as $val)
+                                {
+                                    if(isset($field["class_data"]) && method_exists($val, "get" . $field["class_data"]))
+                                    {
+                                        $class_method = "get" . $field["class_data"];
+                                        $class = $val->$class_method();
+                                        if(isset($field["class_id"]) && method_exists($class, "get" . $field["class_id"]))
+                                        {
+                                            $method = "get" . $field["class_id"];
+                                            $data[] = $class->$method();
+                                        }else $data[] = $class->getPrimaryKey();
+                                    }else $data[] = $val;
+                                }
+                                $field["value"] = $data;
+                                break;
+                            default:        $field["value"] = (is_array($value)) ? implode(", ", $value) : $value; break;
+                        }
+                    }else{ //O una relación unitaria
+                        if(method_exists($value, "__toString")) $field["value"] = $value;
+                        else $field["value"] = $value->getPrimaryKey();
+                    }
+                }else $field["value"] = $value;
             }
+            //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
+            if(in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) $field["value"] = array($field["value"]);
         }
     }
 
