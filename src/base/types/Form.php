@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types;
 
+use Propel\Runtime\Collection\Collection;
 use PSFS\base\Request;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
@@ -304,8 +305,25 @@ abstract class Form{
         if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
         foreach($this->getData() as $key => $value)
         {
-            $method = "set" . ucfirst($key);
-            if(method_exists($this->model, $method)) $this->model->$method($value);
+            $setter = "set" . ucfirst($key);
+            $getter = "get" . ucfirst($key);
+            if(method_exists($this->model, $setter))
+            {
+                if(method_exists($this->model, $getter))
+                {
+                    $tmp = $this->model->$getter();
+                    if(is_object($tmp) && gettype($value) != gettype($tmp))
+                    {
+                        if($tmp instanceof Collection)
+                        {
+                            $collection = new Collection();
+                            $collection->append($value);
+                            $value = $collection;
+                        }
+                    }
+                }
+                $this->model->$setter($value);
+            }
         }
         return $this->model;
     }
