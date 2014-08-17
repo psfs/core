@@ -91,7 +91,7 @@ class Router extends Singleton{
         //Revisamos si tenemos la ruta registrada
         foreach($this->routing as $pattern => $action)
         {
-            $expr = preg_replace('/\/\{(.*)\}/', "###", $pattern);
+            $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
             $expr = preg_quote($expr, "/");
             $expr = str_replace("###", "(.*)", $expr);
             if(preg_match("/^". $expr ."$/i", $route))
