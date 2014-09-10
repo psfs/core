@@ -32,7 +32,7 @@ class Request extends Singleton{
         $this->cookies = $_COOKIE;
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
-        $this->data = (count($_REQUEST)) ? $_REQUEST : file_get_contents("php://input");
+        $this->data = (preg_match('/application\/json/g', $this->header['Content-Type'])) ? file_get_contents("php://input") : $_REQUEST;
     }
 
     /**
