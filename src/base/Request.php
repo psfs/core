@@ -197,6 +197,17 @@ class Request extends Singleton{
     }
 
     /**
+     * Método que devuelve los files subidos por POST
+     * @param $name
+     *
+     * @return array
+     */
+    public function getFile($name)
+    {
+        return (isset($this->upload[$name])) ? $this->upload[$name] : array();
+    }
+
+    /**
      * Método que devuelve si la petición es ajax o no
      * @return bool
      */
