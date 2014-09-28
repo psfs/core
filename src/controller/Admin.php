@@ -284,7 +284,7 @@ class Admin extends AuthController{
      */
     public function createStructureModule($module, $logger, $pb = null)
     {
-        $mod_path = BASE_DIR . DIRECTORY_SEPARATOR . "modules" . DIRECTORY_SEPARATOR;
+        $mod_path = CORE_DIR . DIRECTORY_SEPARATOR;
         $module = ucfirst($module);
         //Creamos el directorio base de los módulos
         if(!file_exists($mod_path)) mkdir($mod_path, 0775);
