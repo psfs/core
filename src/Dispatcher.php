@@ -81,7 +81,7 @@ class Dispatcher extends Singleton{
                         throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
                     }, E_NOTICE);
                 }
-                if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
+                if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();
             }else $this->router->httpNotFound();
         }
         catch(\Exception $e)
