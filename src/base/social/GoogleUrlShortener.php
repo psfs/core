@@ -11,6 +11,10 @@
     use PSFS\base\social\form\GoogleUrlShortenerForm;
     use PSFS\base\social\form\GenerateShortUrlForm;
 
+    /**
+     * Class GoogleUrlShortener
+     * @package PSFS\base\social
+     */
     class GoogleUrlShortener{
 
         const URL_INSERT = "https://www.googleapis.com/urlshortener/v1/url?key={key}";
@@ -18,6 +22,9 @@
 
         private $api_key;
 
+        /**
+         * @return $this
+         */
         public function __construct()
         {
             if(file_exists(CONFIG_DIR . '/apis.json'))

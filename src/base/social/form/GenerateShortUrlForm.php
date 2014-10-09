@@ -5,11 +5,16 @@ namespace PSFS\base\social\form;
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
+/**
+ * Class GenerateShortUrlForm
+ * @package PSFS\base\social\form
+ */
 class GenerateShortUrlForm extends Form
 {
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     function __construct()
     {

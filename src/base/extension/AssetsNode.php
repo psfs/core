@@ -1,12 +1,23 @@
 <?php
 
 namespace PSFS\base\extension;
-
+/**
+ * Class AssetsNode
+ * @package PSFS\base\extension
+ */
 class AssetsNode extends \Twig_Node{
 
     protected $hash;
     protected $type;
 
+    /**
+     * @param array $name
+     * @param array $values
+     * @param int $line
+     * @param null $tag
+     * @param string $type
+     * @return $this
+     */
     public function __construct($name, $values, $line, $tag = null, $type = 'js')
     {
         parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line, $tag);

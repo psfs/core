@@ -27,6 +27,9 @@ class Request extends Singleton{
     protected $header;
     protected $data;
 
+    /**
+     * @return $this
+     */
     public function __construct(){
         $this->server = $_SERVER;
         $this->cookies = $_COOKIE;

@@ -23,6 +23,7 @@ class AssetsParser{
     /**
      * Constructor por defecto
      * @param string $type
+     * @return $this
      */
     public function __construct($type = 'js')
     {

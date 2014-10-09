@@ -18,6 +18,7 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     function __construct(){
         $this->tpl = Template::getInstance();

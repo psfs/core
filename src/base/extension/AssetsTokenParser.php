@@ -9,6 +9,11 @@ namespace PSFS\base\extension;
 class AssetsTokenParser extends \Twig_TokenParser{
 
     protected $type;
+
+    /**
+     * @param string $type
+     * @return $this
+     */
     public function __construct($type = 'js')
     {
         $this->type = $type;

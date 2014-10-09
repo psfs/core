@@ -27,6 +27,10 @@
         protected $ts;
         protected $isDebug = false;
 
+        /**
+         * @param string $path
+         * @return $this
+         */
         public function __construct($path = LOG_DIR)
         {
             if(!file_exists($path)) @mkdir($path);

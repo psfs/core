@@ -7,8 +7,16 @@ use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\Security;
 
+/**
+ * Class AdminForm
+ * @package PSFS\base\config
+ */
 class AdminForm extends Form{
 
+    /**
+     * @return $this
+     * @throws \PSFS\base\exception\RouterException
+     */
     function __construct()
     {
         $this->setAction(Router::getInstance()->getRoute('admin-setup'));

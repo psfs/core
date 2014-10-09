@@ -19,6 +19,9 @@ class Template extends Singleton{
     protected $public_zone = true;
     private $status_code = null;
 
+    /**
+     * @return $this
+     */
     function __construct()
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: false;

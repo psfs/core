@@ -6,12 +6,17 @@ use PSFS\base\types\Controller;
 use PSFS\base\types\interfaces\AuthInterface;
 use PSFS\base\Security;
 
+/**
+ * Class AuthController
+ * @package PSFS\base\types
+ */
 abstract class AuthController extends Controller implements AuthInterface{
 
     protected $security;
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     public function __construct()
     {

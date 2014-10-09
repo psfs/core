@@ -3,11 +3,16 @@ namespace {{ module }}\Controller;
 
 use PSFS\base\types\Controller;
 
+/**
+* Class {{ module }}
+* @package {{ module }}\Controller
+*/
 class {{ module }} extends Controller
 {
     const DOMAIN = '{{ module }}';
     /**
     * Constructor por defecto
+    * @return $this
     */
     function __construct()
     {

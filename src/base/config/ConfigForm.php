@@ -5,10 +5,15 @@ use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
+/**
+ * Class ConfigForm
+ * @package PSFS\base\config
+ */
 class ConfigForm extends Form{
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     function __construct()
     {

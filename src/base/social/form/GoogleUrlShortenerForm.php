@@ -5,11 +5,16 @@ namespace PSFS\base\social\form;
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
+/**
+ * Class GoogleUrlShortenerForm
+ * @package PSFS\base\social\form
+ */
 class GoogleUrlShortenerForm extends Form
 {
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     function __construct()
     {

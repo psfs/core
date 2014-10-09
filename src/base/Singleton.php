@@ -16,7 +16,7 @@ class Singleton
     /**
      * gets the instance via lazy initialization (created on first usage)
      *
-     * @return self
+     * @return $this
      */
     public static function getInstance()
     {

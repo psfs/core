@@ -44,6 +44,7 @@ abstract class Form{
     /**
      * Constructor por defecto
      * @param null $model
+     * @return $this
      */
     public function __construct($model = null)
     {

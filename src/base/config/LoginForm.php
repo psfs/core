@@ -4,10 +4,15 @@ namespace PSFS\base\config;
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
+/**
+ * Class LoginForm
+ * @package PSFS\base\config
+ */
 class LoginForm extends Form{
 
     /**
      * Constructor por defecto
+     * @return $this
      */
     function __construct()
     {

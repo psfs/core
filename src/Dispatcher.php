@@ -33,6 +33,7 @@ class Dispatcher extends Singleton{
     /**
      * Constructor por defecto
      * @param $mem
+     * @return $this
      */
     public function __construct($mem = 0){
         $this->router = Router::getInstance();
@@ -66,7 +67,7 @@ class Dispatcher extends Singleton{
     public function run()
     {
         $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
-        if(!$this->config->isConfigured()) return $this->routed->getAdmin()->config();
+        if(!$this->config->isConfigured()) return $this->router->getAdmin()->config();
         //
         try{
             if(!$this->parser->isFile())
@@ -75,10 +76,10 @@ class Dispatcher extends Singleton{
                 {
                     //Warning & Notice handler
                     set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline, $errcontext);
                     }, E_WARNING);
                     set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline, $errcontext);
                     }, E_NOTICE);
                 }
                 if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();

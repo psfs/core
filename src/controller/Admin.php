@@ -28,13 +28,14 @@ class Admin extends AuthController{
     private $config;
     /**
      * Constructor por defecto
+     * @return $this
      */
     public function __construct()
     {
         parent::__construct();
         $this->config = Config::getInstance();
         $this->setDomain('ROOT')
-            ->setTemplatePath(Config::getInstance()->getTemplatePath());
+            ->setTemplatePath($this->config->getTemplatePath());
     }
 
     /**

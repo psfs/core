@@ -28,6 +28,9 @@ class Config extends Singleton{
     static public $optional = array('platform_name', "debug", "restricted", "admin_login");
     protected $debug = false;
 
+    /**
+     * @return $this
+     */
     function __construct()
     {
         $this->configure();

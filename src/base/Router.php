@@ -22,6 +22,9 @@
         private $controller;
         private $domains;
 
+        /**
+         * @return $this
+         */
         function __construct()
         {
             $this->controller = new Admin();

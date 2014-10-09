@@ -7,8 +7,17 @@
     use PSFS\base\Router;
     use PSFS\base\Security;
 
+    /**
+     * Class ModuleForm
+     * @package PSFS\base\config
+     */
     class ModuleForm extends Form{
 
+        /**
+         * @return $this
+         * @throws \PSFS\base\exception\FormException
+         * @throws \PSFS\base\exception\RouterException
+         */
         function __construct()
         {
             $this->setAction(Router::getInstance()->getRoute('admin-module'));

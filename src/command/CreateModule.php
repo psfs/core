@@ -18,6 +18,12 @@
         class CLog{
             private $log;
             private $verbosity;
+
+            /**
+             * @param $log
+             * @param int $verbosity
+             * @return $this
+             */
             public function __construct($log, $verbosity = 0)
             {
                 $this->log = $log;

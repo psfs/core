@@ -23,9 +23,10 @@ class Security extends Singleton{
 
     private $authorized = false;
 
-    public function __construct()
-    {
-    }
+    /**
+     * @return $this
+     */
+    public function __construct(){ }
 
     /**
      * Método estático que devuelve los perfiles de la plataforma
