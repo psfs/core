@@ -3,105 +3,91 @@
     namespace PSFS\base;
 
     use PSFS\base\Singleton;
-    use PSFS\base\exception\LoggerException;
-    use PSFS\base\Request as Parser;
+    use Monolog\Logger as Monolog;
+    use Monolog\Handler\FirePHPHandler;
+    use Monolog\Handler\StreamHandler;
+    use Monolog\Processor\WebProcessor;
+    use Monolog\Processor\MemoryUsageProcessor;
 
     if(!defined("LOG_DIR"))
     {
-        if(!file_exists(BASE_DIR.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR)) @mkdir(BASE_DIR.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR);
-        define("LOG_DIR", BASE_DIR.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR);
+        if(!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . 'logs')) @mkdir(BASE_DIR . DIRECTORY_SEPARATOR . 'logs', 0755, true);
+        define("LOG_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
     }
 
     class Logger extends Singleton{
 
-        const INFO_LOG = 0;
-        const DEBUG_LOG = 1;
-        const ERROR_LOG = 2;
-
-        private $info;
-        private $debug;
-        private $error;
-
-        protected $path;
-        protected $date;
-        protected $ts;
-        protected $isDebug = false;
+        protected $logger;
+        private $stream;
 
         /**
          * @param string $path
          * @return $this
          */
-        public function __construct($path = LOG_DIR)
+        public function __construct()
         {
-            if(!file_exists($path)) @mkdir($path);
-            $this->path = $path.DIRECTORY_SEPARATOR;
-            $this->date = date("Ymd");
-            $this->ts = Parser::getInstance()->ts(true);
+            $args = func_get_args();
+            $logger = 'general';
+            $debug = false;
+            if(!empty($args))
+            {
+                if(isset($args[0][0])) $logger = $args[0][0];
+                if(isset($args[0][1])) $debug = $args[0][1];
+            }
+            $path = LOG_DIR . DIRECTORY_SEPARATOR . strtoupper($logger) . DIRECTORY_SEPARATOR . date('Y'). DIRECTORY_SEPARATOR . date('m');
+            if(!file_exists($path)) @mkdir($path, 0755, true);
+            $this->stream = fopen($path . DIRECTORY_SEPARATOR . date("Ymd") . ".log", "a+");
+            $this->logger = new Monolog(strtoupper($logger));
+            $this->logger->pushHandler(new StreamHandler($this->stream));
+            if($debug)
+            {
+                $this->logger->pushHandler(new FirePHPHandler());
+                $this->logger->pushProcessor(new MemoryUsageProcessor());
+            }
+            $this->logger->pushProcessor(new WebProcessor());
         }
 
         /**
-         * Método que escribe el log en el fichero
-         *
-         * @param $msg
-         * @param int $type
-         *
-         * @return bool
+         * Destruye el recurso
          */
-        private function _write($msg, $type = Logger::INFO_LOG)
+        public function __destroy()
         {
-            $write = false;
-            try{
-                $dump = "[{$this->ts}]";
-                switch($type)
-                {
-                    case 0:
-                    default:$dump .= "[INFO] "; break;
-                    case 1: $dump .= "[DEBUG] "; break;
-                    case 2: $dump .= "[ERROR] "; break;
-                }
-                $dump .= print_r($msg, true);
-                $file = fopen($this->path.$this->date.".log", "a+");
-                fwrite($file, $dump.PHP_EOL);
-                fclose($file);
-
-            }catch(LoggerException $e){
-                echo $e->getError();
-            }catch(Exception $e){
-                echo $e->getMessage();
-            }
-            return $write;
+            fclose($this->stream);
         }
 
         /**
          * Método que escribe un log de información
          * @param string $msg
+         * @param array $context
          *
          * @return bool
          */
-        public function infoLog($msg = '')
+        public function infoLog($msg = '', $context = array())
         {
-            return $this->_write($msg);
+            return $this->logger->addInfo($msg, $context);
         }
 
         /**
          * Método que escribe un log de Debug
          * @param string $msg
+         * @param array $context
          *
          * @return bool
          */
-        public function debugLog($msg = '')
+        public function debugLog($msg = '', $context = array())
         {
-            return $this->_write($msg, Logger::DEBUG_LOG);
+            return $this->logger->addDebug($msg, $context);
         }
 
         /**
          * Método que escribe un log de Error
          * @param $msg
+         * @param array $context
          *
          * @return bool
          */
-        public function errorLog($msg)
+        public function errorLog($msg, $context = array())
         {
-            return $this->_write($msg, Logger::ERROR_LOG);
+            return $this->logger->addError($msg, $context);
         }
     }

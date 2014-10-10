@@ -22,7 +22,7 @@ class Singleton
     {
         $class = get_called_class();
         if (!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class) {
-            self::$instance[$class] = new $class;
+            self::$instance[$class] = new $class(func_get_args());
         }
         return self::$instance[$class];
     }

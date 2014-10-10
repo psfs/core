@@ -96,7 +96,7 @@ class Security extends Singleton{
             if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
             {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return $request->redirect(Router::getInstance()->getRoute('admin-setup'));
+                return Router::getInstance()->getAdmin()->adminers();
             }
             $admins = $this->getAdmins();
             //Sacamos las credenciales de la petición

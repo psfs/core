@@ -10,9 +10,7 @@ use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\exception\LoggerException;
 use PSFS\base\exception\SecurityException;
-use PSFS\base\Template;
 
 require_once "bootstrap.php";
 /**
@@ -39,10 +37,10 @@ class Dispatcher extends Singleton{
         $this->router = Router::getInstance();
         $this->parser = Request::getInstance();
         $this->security = Security::getInstance();
-        $this->log = Logger::getInstance();
+        $this->config = Config::getInstance();
+        $this->log = Logger::getInstance('PSFS', $this->config->getDebugMode());
         $this->ts = $this->parser->getTs();
         $this->mem = memory_get_usage();
-        $this->config = Config::getInstance();
         $this->setLocale();
     }
 
@@ -76,10 +74,10 @@ class Dispatcher extends Singleton{
                 {
                     //Warning & Notice handler
                     set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline, $errcontext);
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
                     }, E_WARNING);
                     set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline, $errcontext);
+                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
                     }, E_NOTICE);
                 }
                 if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();

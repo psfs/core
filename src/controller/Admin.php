@@ -232,6 +232,7 @@ class Admin extends AuthController{
      * Método que gestiona el menú de administración
      * @route /admin
      * @route /admin/
+     * @visible false
      * @return mixed
      */
     public function index()
@@ -293,17 +294,17 @@ class Admin extends AuthController{
         if(!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
         //Creamos las carpetas CORE del módulo
         $logger->infoLog("Generamos la estructura");
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755);
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755);
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755, true);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755, true);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755, true);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
         //Creamos las carpetas de los assets
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755);
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755);
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755);
-        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755, true);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755, true);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755, true);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755, true);
         //Generamos el controlador base
         $logger->infoLog("Generamos el controlador BASE");
         $controller = $this->tpl->dump("generator/controller.template.twig", array(

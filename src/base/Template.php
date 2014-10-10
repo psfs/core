@@ -20,7 +20,7 @@ class Template extends Singleton{
     private $status_code = null;
 
     /**
-     * @return $this
+     *
      */
     function __construct()
     {

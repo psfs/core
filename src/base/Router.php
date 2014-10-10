@@ -71,24 +71,28 @@
             {
                 if(!Security::getInstance()->checkAdmin())
                 {
+                    Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
                     if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
                     header('HTTP/1.1 401 Unauthorized');
                     header('WWW-Authenticate: Basic Realm="PSFS"');
                     echo _("Es necesario ser administrador para ver ésta zona");
                     exit();
                 }
+                Logger::getInstance()->debugLog('Acceso autenticado al admin');
             }
             //Restricción de la web por contraseña
             if(!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted'))
             {
                 if(!Security::getInstance()->checkAdmin())
                 {
+                    Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
                     if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
                     header('HTTP/1.1 401 Unauthorized');
                     header('WWW-Authenticate: Basic Realm="Zona Restringida"');
                     echo _("Espacio web restringido");
                     exit();
                 }
+                Logger::getInstance()->debugLog('Acceso autenticado al gestor de usuarios');
             }
 
             //Revisamos si tenemos la ruta registrada
@@ -103,16 +107,22 @@
                     /** @var $class PSFS\base\types\Controller */
                     $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
                     try{
-
+                        Logger::getInstance()->debugLog('Ruta resuelta para ' . $route);
                         return call_user_func_array(array($class, $action["method"]), $get);
                     }catch(\Exception $e)
                     {
+                        Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
                         throw $e;
                     }
                 }
             }
 
-            if(preg_match('/\/$/', $route)) return $this->execute(substr($route, 0, strlen($route) -1));
+            if(preg_match('/\/$/', $route))
+            {
+                if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
+                else $default = Config::getInstance()->get("home_action");
+                return $this->execute($this->getRoute($default));
+            }
 
             return false;
         }

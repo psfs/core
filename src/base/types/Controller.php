@@ -134,7 +134,7 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
 
     /**
      * Método que devuelve el objeto de petición
-     * @return \PSFS\base\Singleton
+     * @return \PSFS\base\Request
      */
     protected function getRequest(){ return Request::getInstance(); }
 
