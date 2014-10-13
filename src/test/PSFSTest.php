@@ -37,7 +37,7 @@ class PSFSTest extends \PHPUnit_Framework_TestCase{
         $this->assertTrue(is_bool($config->isConfigured()));
 
         // Comprobamos la extracción de variables de configuración
-        $this->assertNull($config->get(uniqid()));
+        $this->assertEmpty($config->get(uniqid()));
     }
 
     /**
