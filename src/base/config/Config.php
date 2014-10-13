@@ -24,7 +24,13 @@ class Config extends Singleton{
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     protected $config;
-    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'admin_action', 'default_language');
+    static public $defaults = array(
+        "db_host" => "localhost",
+        "db_port" => "3306",
+        "default_language" => "es_ES",
+    );
+    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language');
+    static public $encrypted = array('db_password');
     static public $optional = array('platform_name', "debug", "restricted", "admin_login");
     protected $debug = false;
 

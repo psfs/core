@@ -21,10 +21,14 @@ class ConfigForm extends Form{
         //Añadimos los campos obligatorios
         foreach(Config::$required as $field)
         {
+            $type = (in_array($field, Config::$encrypted)) ? "password" : "text";
+            $value = (isset(Config::$defaults[$field])) ? Config::$defaults[$field] : null;
             $this->add($field, array(
                 "label" => _($field),
                 "class" => "col-md-6",
                 "required" => true,
+                "type" => $type,
+                "value" => $value,
             ));
         }
         $this->add(Form::SEPARATOR);

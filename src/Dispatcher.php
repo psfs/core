@@ -44,6 +44,10 @@ class Dispatcher extends Singleton{
         $this->setLocale();
     }
 
+    /**
+     * Método que asigna el directorio de traducciones para el proyecto
+     * @return $this
+     */
     private function setLocale()
     {
         $this->locale = $this->config->get("default_language");
@@ -90,7 +94,7 @@ class Dispatcher extends Singleton{
                 "file" => $e->getFile(),
                 "line" => $e->getLine(),
             );
-            $this->log->errorLog($error);
+            $this->log->errorLog(json_encode($error));
             unset($error);
             if($e instanceof ConfigException) return $this->config->config();
             if($e instanceof SecurityException) return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
