@@ -160,6 +160,7 @@
             $modules = realpath(CORE_DIR);
             $this->routing = $this->inspectDir($base, "PSFS", array());
             if(file_exists($modules)) $this->routing = $this->inspectDir($modules, "", $this->routing);
+            if(!file_exists(CONFIG_DIR)) @mkdir(CONFIG_DIR, 0755, true);
             file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($this->domains, JSON_PRETTY_PRINT));
             $home = Config::getInstance()->get('home_action');
             if(!empty($home))
