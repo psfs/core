@@ -300,6 +300,7 @@ class Admin extends AuthController{
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
+        if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Tests")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Tests", 0755);
         //Creamos las carpetas de los assets
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755, true);
         if(!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755, true);
@@ -434,6 +435,7 @@ class Admin extends AuthController{
     /**
      * Servicio que configura la api key de Google Url Shortener
      * @route /admin/social/gus
+     * @visible false
      */
     public function configApiKey()
     {
@@ -467,6 +469,7 @@ class Admin extends AuthController{
     /**
      * Servicio que genera la url acortada de una dirección
      * @route /admin/social/gus/generate
+     * @visible false
      * @return mixed
      * @throws \HttpException
      */

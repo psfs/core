@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ get_config('default_language')|default('es') }}" ng-app>
+<html lang="{{ get_config('default_language')|default('es') }}" ng-app="{{ app_name|default('') }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -22,7 +22,9 @@
     {{ asset('@ROOT/js/angular.min.js.map', '/js/angular.min.js.map', false) }}
     </head>
     <body>
+        {% block menu %}
         {% include 'top.menu.html.twig' %}
+        {% endblock menu %}
         <header role="banner">{% block header %}{% endblock header %}</header>
         <section>
         {% block body %}
