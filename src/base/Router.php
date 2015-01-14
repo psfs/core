@@ -119,7 +119,7 @@
 
             if(preg_match('/\/$/', $route))
             {
-                if(preg_match('/admin/', $route)) $default = "admin";
+                if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
                 else $default = Config::getInstance()->get("home_action");
                 return $this->execute($this->getRoute($default));
             }

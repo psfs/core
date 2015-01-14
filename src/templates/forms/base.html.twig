@@ -11,7 +11,16 @@
 {% endif %}>
     <fieldset>
     {% if form.title %}
-        <legend>{{ form.title }}</legend>
+        <legend class="media">
+            {% if form.logo %}
+            <div class="media-left media-middle">
+                <img src="{{ form.logo }}" alt="{{ form.title }}" id="{{ form.name }}_img"/>
+            </div>
+            {% endif %}
+            <div class="media-body">
+                <h3 class="media-heading">{{ form.title | raw }}</h3>
+            </div>
+        </legend>
     {% endif %}
     {% for name, field in form.fields %}
     {% if name == '__SEPARATOR__' %}

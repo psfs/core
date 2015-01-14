@@ -361,7 +361,12 @@ class Template extends Singleton{
         {
             // force compilation
             if ($file->isFile()) {
-                $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
+                try{
+                    $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
+                }catch(\Exception $e)
+                {
+                    Logger::getInstance()->errorLog($e->getMessage());
+                }
             }
         }
     }

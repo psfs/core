@@ -1,86 +1,149 @@
 {% if field.type == "hidden" %}
-    <input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+<input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
 {% else %}
-    <div class="form-group{% if field.error %} has-error{% endif %} {{ field.class }}">
-        {% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
-            <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-            <div class="{% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}required-field-block {% endif %}{% if field.class %} col-md-8{% endif %}">
-                <input
-                {% for name, value in field %}
-                    {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
-                        {{ name }}="{{ value }}"
+<div class="form-group{% if field.error %} has-error{% endif %} {{ field.class }}">
+{% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
+    <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <div class="{% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}required-field-block {% endif %}{% if field.class %} col-md-8{% endif %}">
+        <input
+    {% for name, value in field %}
+        {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
+        {{ name }}="{{ value }}"
+        {% endif %}
+    {% endfor %}
+    {% if field.required %}
+        required="required"
+    {% endif %}
+        class="form-control {{ field.class }}"
+    {% if field.error %}
+        onfocus="$(this).parent().removeClass('has-error').find('.alert').remove();"
+    {% endif %}
+        value="{{ field.value }}"
+        >
+    {% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}
+        <div class="required-icon" data-toggle="tooltip" data-original-title="Required" title="Required">
+            <div class="text">*</div>
+        </div>
+    {% endif %}
+    </div>
+{% elseif field.type == 'textarea' %}
+    <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    <div class="{{ field.class }}">
+        <textarea id="{{ field.id }}"
+      name="{{ field.name }}"
+    {% if field.required %}
+      required="required"
+    {% endif %}
+      class="form-control {{ field.class }}"
+    {% if field.error %}
+      onfocus="$(this).parent().removeClass('has-error').find('.alert').remove();"
+    {% endif %}
+      placeholder="{{ field.placeholder|default(field.name) }}"
+        >{{ field.value | raw }}</textarea>
+    </div>
+{% elseif field.type == 'select' %}
+    <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
+    {% if field.route %}
+    <a class="btn btn-link" href="javascript:void(0);" data-add="{{ field.route }}" data-title="{{ "Nuevo "|trans ~ field.label }}" title="{{ "Nuevo "|trans ~ field.label }}" data-tooltip="true">
+        <i class="fa fa-plus-circle"></i>
+    </a>
+    {% endif %}
+    <div class="{% if field.class %} col-md-8{% endif %}">
+        {% if field.multiple %}
+        <div class="col-md-5">
+            <select id="src_{{ field.id }}" multiple class="form-control multiple" data-info="{{ field.info }}" data-focus="false" onclick="changeFocus(this, '{{ field.id }}');">
+            {% for key, value in field.data %}
+                {% if value is not iterable %}
+                    {% if key not in field.value %}
+                    <option value="{{ key }}">{{ value }}</option>
+                    {% endif %}
+                {% else %}
+                    <optgroup label="{{ key }}">
+                    {% for _key, _value in value %}
+                        {% if _key not in field.value %}
+                        <option value="{{ _key }}">{{ _value }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    </optgroup>
+                {% endif %}
+            {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 btn-group-xs btn-group-vertical" role="group">
+            <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Deseleccionar todo"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', false, true);">
+                <i class="fa fa-angle-double-left"></i>
+            </button>
+            <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Deseleccionar"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', false, false);">
+                <i class="fa fa-angle-left"></i>
+            </button>
+            <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Info"|trans }}" title onclick="showDetails('{{ field.id }}');">
+                <i class="fa fa-info-circle"></i>
+            </button>
+            <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Seleccionar"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, false);">
+                <i class="fa fa-angle-right"></i>
+            </button>
+            <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Seleccionar todo"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, true);">
+                <i class="fa fa-angle-double-right"></i>
+            </button>
+        </div>
+        <div class="col-md-5">
+            <select id="dest_{{ field.id }}" multiple class="form-control multiple" data-info="{{ field.info }}" data-focus="false" onclick="changeFocus(this, '{{ field.id }}');">
+                {% for key, value in field.data %}
+                    {% if value is not iterable %}
+                        {% if key in field.value %}
+                            <option value="{{ key }}" data-tooltip="true">{{ value }}</option>
+                        {% endif %}
+                    {% else %}
+                        <optgroup label="{{ key }}">
+                            {% for _key, _value in value %}
+                                {% if _key in field.value %}
+                                    <option value="{{ _key }}">{{ _value }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
                     {% endif %}
                 {% endfor %}
+            </select>
+            {% for key, value in field.data %}
+            {% if key in field.value %}
+            <input type="hidden" name="{{ field.name }}[]" value="{{ key }}" />
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <select id="{{ field.id }}"
+                name="{{ field.name }}"
                 {% if field.required %}
                     required="required"
                 {% endif %}
-                class="form-control {{ field.class }}"
+                {% if field.multiple %}
+                    multiple
+                {% endif %}
+                class="form-control"
                 {% if field.error %}
-                    onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
+            onfocus="$(this).parent().removeClass('has-error').find('.alert').remove();"
+                {% endif %}>
+            {% for key, value in field.data %}
+                {% if value is not iterable %}
+                    <option value="{{ key }}" {% if key in field.value %}selected{% endif %}>{{ value }}</option>
+                {% else %}
+                    <optgroup label="{{ key }}">
+                        {% for _key, _value in value %}
+                            <option value="{{ _key }}" {% if _key in field.value %}selected{% endif %}>{{ _value }}</option>
+                        {% endfor %}
+                    </optgroup>
                 {% endif %}
-                value="{{ field.value }}"
-                >
-                {% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}
-                    <div class="required-icon" data-toggle="tooltip" data-original-title="Required" title="Required">
-                        <div class="text">*</div>
-                    </div>
-                {% endif %}
-            </div>
-        {% elseif field.type == 'textarea' %}
-            <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-            <div class="{{ field.class }}">
-                <textarea id="{{ field.id }}"
-                          name="{{ field.name }}"
-                        {% if field.required %}
-                            required="required"
-                        {% endif %}
-                          class="form-control {{ field.class }}"
-                        {% if field.error %}
-                            onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
-                        {% endif %}
-                          placeholder="{{ field.placeholder|default(field.name) }}"
-                        >{{ field.value | raw }}</textarea>
-            </div>
-        {% elseif field.type == 'select' %}
-            <label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>
-            {% if field.route %}
-                <a class="btn btn-link" href="javascript:void(0);" data-add="{{ field.route }}">
-                    <i class="fa fa-plus-circle"></i>
-                </a>
-            {% endif %}
-            <div class="{% if field.class %} col-md-8{% endif %}">
-                <select id="{{ field.id }}"
-                        name="{{ field.name }}{% if field.multiple %}[]{% endif %}"
-                        {% if field.required %}
-                            required="required"
-                        {% endif %}
-                        {% if field.multiple %}
-                            multiple
-                        {% endif %}
-                        class="form-control"
-                        {% if field.error %}
-                    onfocus="javascript:$(this).parent().removeClass('has-error').find('.alert').remove();"
-                        {% endif %}>
-                    {% for key, value in field.data %}
-                        {% if value is not iterable %}
-                            <option value="{{ key }}" {% if key in field.value %}selected{% endif %}>{{ value }}</option>
-                        {% else %}
-                            <optgroup label="{{ key }}">
-                                {% for _key, _value in value %}
-                                    <option value="{{ _key }}" {% if _key in field.value %}selected{% endif %}>{{ _value }}</option>
-                                {% endfor %}
-                            </optgroup>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
+            {% endfor %}
+        </select>
         {% endif %}
     </div>
 {% endif %}
+</div>
+{% endif %}
 {% if field.error %}
-    <div class="clearfix"></div>
-    <div class="alert alert-danger">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="javascript:$(this).parent().remove();">×</button>
-        <p>{{ field.error | raw }}</p>
-    </div>
+<div class="clearfix"></div>
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="$(this).parent().remove();">×</button>
+    <p>{{ field.error | raw }}</p>
+</div>
 {% endif %}

@@ -38,6 +38,7 @@ abstract class Form{
     protected $buttons;
     protected $extra;
     protected $model;
+    protected $logo;
 
     abstract function getName();
 
@@ -65,6 +66,11 @@ abstract class Form{
         $this->fields[$name]['placeholder'] = (isset($value['placeholder'])) ? $value['placeholder'] : $name;
         return $this;
     }
+    public function setLogo($logo)
+    {
+        $this->logo = $logo;
+        return $this;
+    }
 
     public function getEncType(){ return $this->enctype; }
     public function getAction(){ return $this->action; }
@@ -72,6 +78,7 @@ abstract class Form{
     public function getFields(){ return $this->fields; }
     public function getAttrs(){ return $this->attrs; }
     public function getButtons(){ return $this->buttons; }
+    public function getLogo(){ return $this->logo; }
 
     /**
      * Método que genera un CRFS token para los formularios
@@ -222,10 +229,12 @@ abstract class Form{
         {
             if(isset($data[$form_name][$key]) && isset($data[$form_name][$key]))
             {
-                if(preg_match("/id/i", $form_name) && $data[$form_name][$key] == 0)
+                if(preg_match("/id/i", $key) && ($data[$form_name][$key] == 0 || $data[$form_name][$key] == "%" || $data[$form_name][$key] == ""))
                 {
                     $field["value"] = null;
                 }else $field["value"] = $data[$form_name][$key];
+            }else{
+                unset($field["value"]);
             }
         }
         //Limpiamos los datos
@@ -381,6 +390,7 @@ abstract class Form{
                         }
                     }else{ //O una relación unitaria
                         if(method_exists($value, "__toString")) $field["value"] = $value;
+                        elseif($value instanceof \DateTime) $field["value"] = $value->format("Y-m-d H:i:s");
                         else $field["value"] = $value->getPrimaryKey();
                     }
                 }else $field["value"] = $value;

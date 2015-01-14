@@ -35,7 +35,11 @@ class Request extends Singleton{
         $this->cookies = $_COOKIE;
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
-        $this->data = (preg_match('/application\/json/i', $this->header['Content-Type'])) ? file_get_contents("php://input") : $_REQUEST;
+        $this->data = $_REQUEST;
+        if(preg_match('/application\/json/i', $this->header['Content-Type']))
+        {
+            $this->data += json_decode(file_get_contents("php://input"), true);
+        }
     }
 
     /**

@@ -38,7 +38,9 @@
         //Autoload de módulos
         $finder = new Finder();
         $finder->files()->in(CORE_DIR)->name("autoload.php");
+        /* @var $file SplFileInfo */
         foreach ($finder as $file) {
-            include_once($file->getRealPath());
+            $path = $file->getRealPath();
+            include_once($path);
         }
     }

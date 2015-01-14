@@ -8,16 +8,36 @@
     <div class="col-md-4">
         <form name="logs" id="logs" action="{{ path('admin-logs') }}" method="post">
             <ul class="list-group">
-            {% for logfile in logs %}
+            {% for year, data in logs %}
+                {% for month, logfiles in data %}
                 <li class="list-group-item">
-                    <label>
-                        <input type="radio" name="log" value="{{ logfile.filename }}" onclick="javascript:$('#logs').submit();" {% if selected == logfile.filename %}checked{% endif %}>
-                        {{ logfile.filename }}<span class="label label-default">{{ logfile.size }} Kb</span>
-                    </label>
+                    <a href="javascript:void(0);" onclick="toggleLogs('{{ year }}-{{ month }}');">&rarr; {{ year }} - {{ month }}</a>
                 </li>
+                <li class="list-group-item logs {% if month_open != month %}hide{% endif %} {{ year }}-{{ month }}">
+                    <ul class="list-group">
+                    {% for log in logfiles %}
+                        <li class="list-group-item">
+                            <label>
+                                <input type="radio" name="log" value="{{ log.filename }}" onclick="$('#logs').submit();" {% if selected == log.filename %}checked{% endif %}>
+                                {{ log.filename }}<span class="label label-default">{{ log.size }} Kb</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
             {% endfor %}
             </ul>
         </form>
     </div>
-    <pre class="well col-md-8">{{ log }}</pre>
+    <div class="col-md-8">
+        <h2>{{ selected }}</h2>
+    {% for line in log %}
+        <div class="alert alert-{{ line.type }}" role="alert">
+            <p>[{{ line.http_method }}] {{ line.url }} &rarr; {{ line.referrer }}</p>
+            <p>{{ line.log | raw }}</p>
+            <p class="badge">{{ line.memory_usage }}</p>
+        </div>
+    {% endfor %}
+    </div>
 {% endblock body_content %}

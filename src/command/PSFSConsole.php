@@ -8,10 +8,24 @@
     /**
      * Consola de gestión de PSFS
      */
-    if(preg_match("/vendor/i", __DIR__)) $dir = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    else $dir = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor') . DIRECTORY_SEPARATOR;
+    // Load custom config
+    $pwd = str_replace("\n", "", shell_exec("pwd"));
+    if(empty($pwd)) $pwd = __DIR__;
+    $dir = $pwd . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR;
 
     require_once $dir . 'autoload.php';
+
+
+    $project_path = $pwd.DIRECTORY_SEPARATOR."src".DIRECTORY_SEPARATOR;
+    if(file_exists($project_path."bootstrap.php"))
+    {
+        include_once($project_path."bootstrap.php");
+    }
+    if(file_exists($project_path."autoload.php"))
+    {
+        include_once($project_path."autoload.php");
+    }
+
     require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
     $console = new Application();
