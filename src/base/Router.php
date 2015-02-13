@@ -2,6 +2,7 @@
 
     namespace PSFS\base;
 
+    use PSFS\base\exception\AccessDeniedException;
     use PSFS\base\Singleton;
     use PSFS\base\config\Config;
     use PSFS\base\exception\ConfigException;
@@ -66,35 +67,38 @@
          */
         public function execute($route)
         {
-            //Chequeamos si entramos en el admin
-            if(preg_match('/^\/admin/i', $route))
+            // Checks restricted access
+            try
             {
-                if(!Security::getInstance()->checkAdmin())
-                {
-                    Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
-                    if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
-                    header('HTTP/1.1 401 Unauthorized');
-                    header('WWW-Authenticate: Basic Realm="PSFS"');
-                    echo _("Es necesario ser administrador para ver ésta zona");
-                    exit();
-                }
-                Logger::getInstance()->debugLog('Acceso autenticado al admin');
-            }
-            //Restricción de la web por contraseña
-            if(!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted'))
+                $this->checkRestrictedAccess($route);
+            }catch(AccessDeniedException $e)
             {
-                if(!Security::getInstance()->checkAdmin())
-                {
-                    Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
-                    if("login" === Config::getInstance()->get("admin_login")) return $this->controller->adminLogin($route);
-                    header('HTTP/1.1 401 Unauthorized');
-                    header('WWW-Authenticate: Basic Realm="Zona Restringida"');
-                    echo _("Espacio web restringido");
-                    exit();
-                }
-                Logger::getInstance()->debugLog('Acceso autenticado al gestor de usuarios');
+                Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
+                if("login" === Config::getInstance()->get("admin_login")) return $this->redirectLogin($route);
+                else return $this->sentAuthHeader();
             }
 
+            if(!$this->searhAction($route))
+            {
+                if(preg_match('/\/$/', $route))
+                {
+                    if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
+                    else $default = Config::getInstance()->get("home_action");
+                    return $this->execute($this->getRoute($default));
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Método que busca el componente que ejecuta la ruta
+         * @param $route
+         *
+         * @return mixed|boolean
+         * @throws \Exception
+         */
+        protected function searhAction($route)
+        {
             //Revisamos si tenemos la ruta registrada
             foreach($this->routing as $pattern => $action)
             {
@@ -104,7 +108,7 @@
                 if(preg_match("/^". $expr ."$/i", $route))
                 {
                     $get = $this->extractComponents($route, $pattern);
-                    /** @var $class PSFS\base\types\Controller */
+                    /** @var $class \PSFS\base\types\Controller */
                     $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
                     try{
                         Logger::getInstance()->debugLog('Ruta resuelta para ' . $route);
@@ -116,15 +120,49 @@
                     }
                 }
             }
-
-            if(preg_match('/\/$/', $route))
-            {
-                if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
-                else $default = Config::getInstance()->get("home_action");
-                return $this->execute($this->getRoute($default));
-            }
-
             return false;
+        }
+
+        /**
+         * Método que manda las cabeceras de autenticación
+         */
+        protected function sentAuthHeader()
+        {
+            $platform = trim(Config::getInstance()->get("platform_name"));
+            header('HTTP/1.1 401 Unauthorized');
+            header('WWW-Authenticate: Basic Realm="'.$platform.'"');
+            echo _("Zona restringida");
+            exit();
+        }
+
+        /**
+         * Método que redirige a la pantalla web del login
+         * @param $route
+         *
+         * @return \PSFS\controller\html
+         */
+        public function redirectLogin($route)
+        {
+            return $this->controller->adminLogin($route);
+        }
+
+        /**
+         * Método que chequea el acceso a una zona restringida
+         * @param $route
+         *
+         * @throws AccessDeniedException
+         */
+        protected function checkRestrictedAccess($route)
+        {
+            //Chequeamos si entramos en el admin
+            if(preg_match('/^\/admin/i', $route) || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted')))
+            {
+                if(!Security::getInstance()->checkAdmin())
+                {
+                    throw new AccessDeniedException();
+                }
+                Logger::getInstance()->debugLog('Acceso autenticado al admin');
+            }
         }
 
         /**

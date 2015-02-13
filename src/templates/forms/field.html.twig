@@ -48,7 +48,7 @@
         <i class="fa fa-plus-circle"></i>
     </a>
     {% endif %}
-    <div class="{% if field.class %} col-md-8{% endif %}">
+    <div class="{% if field.class %} col-md-12{% endif %}">
         {% if field.multiple %}
         <div class="col-md-5">
             <select id="src_{{ field.id }}" multiple class="form-control multiple" data-info="{{ field.info }}" data-focus="false" onclick="changeFocus(this, '{{ field.id }}');">
