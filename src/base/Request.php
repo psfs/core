@@ -37,7 +37,8 @@ class Request extends Singleton{
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST;
-        if(preg_match('/application\/json/i', $this->header['Content-Type']))
+        $contentType = (isset($this->header['Content-Type'])) ? $this->header['Content-Type'] : "text/html";
+        if(preg_match('/application\/json/i', $contentType))
         {
             $this->data += json_decode(file_get_contents("php://input"), true);
         }
