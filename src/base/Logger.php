@@ -42,7 +42,7 @@
             if($debug)
             {
                 $this->logger->pushHandler(new FirePHPHandler());
-                $this->logger->pushProcessor(new MemoryUsageProcessor());
+                //$this->logger->pushProcessor(new MemoryUsageProcessor());
             }
             $this->logger->pushProcessor(new WebProcessor());
         }

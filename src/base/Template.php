@@ -395,8 +395,8 @@ class Template extends Singleton{
      */
     private function dumpResource()
     {
-        $function = new \Twig_SimpleFunction('resource', function($path, $dest){
-            $debug = Config::getInstance()->get("debug");
+        $function = new \Twig_SimpleFunction('resource', function($path, $dest, $force = false){
+            $debug = Config::getInstance()->getDebugMode();
             $domains = self::getDomains(true);
             $filename_path = $path;
             if(!file_exists($path) && !empty($domains)) foreach($domains as $domain => $paths)
@@ -411,7 +411,7 @@ class Template extends Singleton{
             if(file_exists($filename_path))
             {
                 $destfolder = basename($filename_path);
-                if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug)
+                if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
                 {
                     try
                     {
@@ -444,7 +444,7 @@ class Template extends Singleton{
                     if(is_dir($source."/".$file)){
                         self::copyr($source."/".$file, $dest."/".$sourcefolder);
                     } else {
-                        if(!file_exists($dest."/".$sourcefolder."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
+                        if(!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
                     }
                 }
             }

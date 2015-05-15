@@ -29,12 +29,12 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
      * @param $template
      * @param array $vars
      *
-     * @return mixed
+     * @return html
      */
     public function render($template, array $vars = array(), $cookies = false)
     {
         $vars["__menu__"] = $this->getMenu();
-        return $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
+        $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
     }
 
     /**

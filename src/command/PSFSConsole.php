@@ -9,8 +9,7 @@
      * Consola de gestión de PSFS
      */
     // Load custom config
-    $pwd = str_replace("\n", "", shell_exec("pwd"));
-    if(empty($pwd)) $pwd = __DIR__;
+    $pwd = getcwd();
     $dir = $pwd . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR;
 
     require_once $dir . 'autoload.php';

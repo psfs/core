@@ -343,6 +343,7 @@ class Admin extends AuthController{
         $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
         $opt = " --input-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
         $ret = shell_exec($exec . "build" . $opt);
+        
         $logger->infoLog("Generamos clases invocando a propel:\n $ret");
         $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
         $logger->infoLog("Generamos sql invocando a propel:\n $ret");

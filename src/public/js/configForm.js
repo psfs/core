@@ -1,4 +1,4 @@
-var params = [], routing = [];
+var params, routing;
 /**
  * Función que añade un nuevo campo al formulario de configuración
  * @returns {boolean}
@@ -10,7 +10,7 @@ function addNewField(form)
     var prelabel = $("<label>"),
         div_label = $("<div>"),
         label = $("<input>"),
-        div_input = $("<div>")
+        div_input = $("<div>");
         input = $("<input>"),
         container = $("<div>"),
         ts = new Date().getTime(),
@@ -62,9 +62,39 @@ function addNewField(form)
 function autocomplete(obj)
 {
     $(obj).typeahead({
-        local: params
-    });
+            minLength: 1,
+            highlight: true
+        },
+        {
+            name: 'routing',
+            displayKey: 'value',
+            source: substringMatcher(params  || [])
+        });
     return false;
+}
+
+function substringMatcher(strs) {
+    return function findMatches(q, cb) {
+        var matches, substrRegex;
+
+        // an array that will be populated with substring matches
+        matches = [];
+
+        // regex used to determine if a string contains the substring `q`
+        substrRegex = new RegExp(q, 'i');
+
+        // iterate through the pool of strings and for any string that
+        // contains the substring `q`, add it to the `matches` array
+        $.each(strs, function(i, str) {
+            if (substrRegex.test(str)) {
+                // the typeahead jQuery plugin expects suggestions to a
+                // JavaScript object, refer to typeahead docs for more info
+                matches.push({ value: str });
+            }
+        });
+
+        cb(matches);
+    };
 }
 
 (function(){
@@ -74,7 +104,7 @@ function autocomplete(obj)
         url: "/admin/config/params",
         dataType: "JSON",
         success: function(json){
-            params = json;
+            params = json || [];
         }
     });
     //Hidratamos las rutas de acceso
@@ -82,8 +112,15 @@ function autocomplete(obj)
         url: "/admin/routes/show",
         dataType: "JSON",
         success: function(json){
-            routing = json;
-            $("input[name*=action]").typeahead({local:json});
+            $("input[name*=action]").typeahead({
+                    minLength: 1,
+                    highlight: true
+                },
+                {
+                    name: 'routing',
+                    displayKey: 'value',
+                    source: substringMatcher(json  || [])
+                });
         }
     });
 })();

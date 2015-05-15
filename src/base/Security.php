@@ -161,4 +161,17 @@ class Security extends Singleton{
             'route' => $route,
         ));
     }
+
+    public function isSuperAdmin()
+    {
+        $users = $this->getAdmins();
+        $logged = $this->getAdminFromCookie();
+        $profiles = Security::getCleanProfiles();
+        if($users[$logged[0]])
+        {
+            $security = $users[$logged[0]]["profile"];
+            return $profiles["__SUPER_ADMIN__"] == $security;
+        }
+        return false;
+    }
 }

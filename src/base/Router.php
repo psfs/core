@@ -48,7 +48,7 @@
         {
             if(empty($e)) $e = new \Exception('Página no encontrada', 404);
             return Template::getInstance()->setStatus($e->getCode())->render('error.html.twig', array(
-                'exception' => $e,
+                'exception' => (null != $e->getPrevious()) ? $e->getPrevious() : $e,
                 'error_page' => true,
             ));
         }
@@ -105,7 +105,8 @@
                 $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
                 $expr = preg_quote($expr, "/");
                 $expr = str_replace("###", "(.*)", $expr);
-                if(preg_match("/^". $expr ."$/i", $route))
+                $expr2 = preg_replace('/\(\.\*\)$/i', "", $expr);
+                if(preg_match('/^'. $expr .'\/?$/i', $route) || preg_match('/^'. $expr2 .'?$/i', $route))
                 {
                     $get = $this->extractComponents($route, $pattern);
                     /** @var $class \PSFS\base\types\Controller */
@@ -416,7 +417,7 @@
         }
 
         /**
-         * Método que devuelve le controladordel admin
+         * Método que devuelve le controlador del admin
          * @return Admin
          */
         public function getAdmin()
