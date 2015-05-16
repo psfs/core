@@ -2,12 +2,12 @@
 
     namespace PSFS\base;
 
-    use PSFS\base\Singleton;
+
     use Monolog\Logger as Monolog;
     use Monolog\Handler\FirePHPHandler;
     use Monolog\Handler\StreamHandler;
     use Monolog\Processor\WebProcessor;
-    use Monolog\Processor\MemoryUsageProcessor;
+
 
     if(!defined("LOG_DIR"))
     {
@@ -21,8 +21,7 @@
         private $stream;
 
         /**
-         * @param string $path
-         * @return $this
+         * @internal param string $path
          */
         public function __construct()
         {

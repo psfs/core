@@ -9,7 +9,6 @@ namespace PSFS\base\exception;
 class ConfigException extends \Exception{
     /**
      * @param null $message
-     * @return $this
      */
     public function __construct($message = null)
     {

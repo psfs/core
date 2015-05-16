@@ -28,7 +28,6 @@ class Admin extends AuthController{
     private $config;
     /**
      * Constructor por defecto
-     * @return $this
      */
     public function __construct()
     {
@@ -51,6 +50,7 @@ class Admin extends AuthController{
      * Método que gestiona los usuarios administradores de la plataforma
      * @route /admin/setup
      * @return mixed
+     * @throws \HttpException
      */
     public function adminers()
     {
@@ -99,10 +99,10 @@ class Admin extends AuthController{
 
     /**
      * Acción que pinta un formulario genérico de login pra la zona restringida
-     * @params string $route
+     * @params $route string
      * @route /admin/login
      * @visible false
-     * @return html
+     * @return string HTML
      */
     public function adminLogin($route = null)
     {
@@ -141,6 +141,7 @@ class Admin extends AuthController{
 
     /**
      * Método que recorre los directorios para extraer las traducciones posibles
+     * @param $locale string
      * @route /admin/translations/{locale}
      */
     public function getTranslations($locale = '')
@@ -171,6 +172,7 @@ class Admin extends AuthController{
      * Método que revisa las traducciones directorio a directorio
      * @param $path
      * @param $locale
+     * @return boolean
      */
     private static function findTranslations($path, $locale)
     {
@@ -245,7 +247,11 @@ class Admin extends AuthController{
     /**
      * Método que genera un nuevo módulo
      * @route /admin/module
-     * @return mixed
+     *
+     * @param $module string
+     *
+     * @return string HTML
+     * @throws \HttpException
      */
     public function generateModule($module = '')
     {
@@ -486,11 +492,11 @@ class Admin extends AuthController{
      * Servicio que configura la api key de Google Url Shortener
      * @route /admin/social/gus
      * @visible false
+     * @return string HTML
      */
     public function configApiKey()
     {
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getrequestUri());
-        /* @var $form \PSFS\social\form\GoogleUrlShortenerForm */
         $gs = new GoogleUrlShortener();
         $form = new GoogleUrlShortenerForm();
         $form->build();
@@ -526,7 +532,6 @@ class Admin extends AuthController{
     public function genShortUrl()
     {
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getrequestUri());
-        /* @var $form \PSFS\social\form\GenerateShortUrlForm */
         $form = new GenerateShortUrlForm();
         $gs = new GoogleUrlShortener();
         $form->build();

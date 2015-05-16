@@ -12,7 +12,6 @@ class AssetsTokenParser extends \Twig_TokenParser{
 
     /**
      * @param string $type
-     * @return $this
      */
     public function __construct($type = 'js')
     {
@@ -37,7 +36,7 @@ class AssetsTokenParser extends \Twig_TokenParser{
             switch($value->getType())
             {
                 case \Twig_Token::STRING_TYPE: $values[] = $parser->getExpressionParser()->parseExpression(); break;
-                case \Twig_Token::BLOCK_END_TYPE: $end = true;
+                case \Twig_Token::BLOCK_END_TYPE: $end = true; $stream->next(); break;
                 default: $stream->next(); break;
             }
         }

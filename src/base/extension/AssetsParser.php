@@ -22,8 +22,8 @@ class AssetsParser{
 
     /**
      * Constructor por defecto
+     *
      * @param string $type
-     * @return $this
      */
     public function __construct($type = 'js')
     {
@@ -35,9 +35,9 @@ class AssetsParser{
     /**
      * Método que añade un nuevo fichero al proceso de generación de los assets
      * @param $filename
-     * @param string $type
-     *
      * @return $this
+     * @internal param string $type
+     *
      */
     public function addFile($filename)
     {
@@ -67,9 +67,9 @@ class AssetsParser{
 
     /**
      * Método que procesa los ficheros solicitados en función del modo de ejecución
-     * @param string $type
-     *
      * @return $this
+     * @internal param string $type
+     *
      */
     public function compile()
     {

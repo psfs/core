@@ -2,13 +2,6 @@
 
 namespace PSFS\base;
 
-use PSFS\base\Singleton;
-use PSFS\base\Request;
-use PSFS\base\Logger;
-use PSFS\base\Router;
-use PSFS\base\config\AdminForm;
-use PSFS\base\config\Config;
-use PSFS\base\config\LoginForm;
 
 /**
  * Class Security
@@ -17,14 +10,13 @@ use PSFS\base\config\LoginForm;
 class Security extends Singleton{
 
     /**
-     * @var  user
+     * @var array user
      */
     private $user;
 
     private $authorized = false;
 
     /**
-     * @return $this
      */
     public function __construct(){ }
 
@@ -67,7 +59,7 @@ class Security extends Singleton{
         }
         $admins[$user['username']]['hash'] = sha1($user['username'].$user['password']);
         $admins[$user['username']]['profile'] = $user['profile'];
-        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins)));;
+        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins)));
     }
 
     /**
@@ -86,7 +78,12 @@ class Security extends Singleton{
 
     /**
      * Método que devuelve si un usuario tiene privilegios para acceder a la zona de administración
+     *
+     * @param null $user
+     * @param null $pass
+     *
      * @return bool
+     * @throws \HttpException
      */
     public function checkAdmin($user = null, $pass = null)
     {

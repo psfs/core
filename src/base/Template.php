@@ -2,12 +2,12 @@
 
 namespace PSFS\base;
 
-use PSFS\base\Singleton;
+
 use PSFS\base\config\Config;
+use PSFS\base\types\Form;
 use PSFS\Dispatcher;
-use PSFS\base\Router;
-use PSFS\base\Request;
-use PSFS\base\Security;
+
+
 use PSFS\base\extension\AssetsTokenParser;
 
 class Template extends Singleton{
@@ -86,8 +86,11 @@ class Template extends Singleton{
 
     /**
      * Método que procesa la plantilla
+     *
      * @param $tpl
      * @param array $vars
+     * @param array $cookies
+     *
      * @return mixed
      */
     public function render($tpl, array $vars = array(), $cookies = array())
@@ -174,6 +177,8 @@ class Template extends Singleton{
                 $ppath = explode("/", $string);
                 $original_filename = $ppath[count($ppath) -1];
                 $base = WEB_DIR .DIRECTORY_SEPARATOR;
+                $file = "";
+                $html_base = "";
                 if(preg_match('/\.css$/i', $string))
                 {
                     $file = "/". substr(md5($string), 0, 8) . ".css";
@@ -266,8 +271,8 @@ class Template extends Singleton{
     private function addFormsFunction()
     {
         $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('form', function(\PSFS\base\types\Form $form) use ($tpl) {
-            return $tpl->display('forms/base.html.twig', array(
+        $function = new \Twig_SimpleFunction('form', function(Form $form) use ($tpl) {
+            $tpl->display('forms/base.html.twig', array(
                 'form' => $form,
             ));
         });
@@ -300,7 +305,7 @@ class Template extends Singleton{
             //Limpiamos los campos obligatorios
             if(!isset($field["required"])) $field["required"] = true;
             elseif(isset($field["required"]) && (bool)$field["required"] === false) unset($field["required"]);
-            return $tpl->display('forms/field.html.twig', array(
+            $tpl->display('forms/field.html.twig', array(
                 'field' => $field,
             ));
         });
@@ -316,7 +321,7 @@ class Template extends Singleton{
     {
         $tpl = $this->tpl;
         $function = new \Twig_SimpleFunction('form_button', function(array $button) use ($tpl) {
-            return $tpl->display('forms/button.html.twig', array(
+            $tpl->display('forms/button.html.twig', array(
                 'button' => $button,
             ));
         });
@@ -332,9 +337,9 @@ class Template extends Singleton{
     {
         $tpl = $this->tpl;
         $function = new \Twig_SimpleFunction('get_config', function($param){
-            return \PSFS\base\config\Config::getInstance()->get($param) ?: '';
+            return Config::getInstance()->get($param) ?: '';
         });
-        $this->tpl->addFunction($function);
+        $tpl->addFunction($function);
         return $this;
     }
 
@@ -437,7 +442,6 @@ class Template extends Singleton{
         if(is_dir($source)) {
             $dir_handle=opendir($source);
             $sourcefolder = basename($source);
-            $destfolder = basename($dest);
             if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder, 0755, true);
             while($file=readdir($dir_handle)){
                 if($file!="." && $file!=".."){
@@ -457,8 +461,9 @@ class Template extends Singleton{
 
     /**
      * Método que devuelve los dominios de una plataforma
+     * @param bool $append
      * @return mixed
-     */
+*/
     static public function getDomains($append = false)
     {
         $domains = Router::getInstance()->getDomains();

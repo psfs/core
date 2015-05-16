@@ -31,7 +31,6 @@ class Dispatcher extends Singleton{
     /**
      * Constructor por defecto
      * @param $mem
-     * @return $this
      */
     public function __construct($mem = 0){
         $this->router = Router::getInstance();
@@ -104,7 +103,7 @@ class Dispatcher extends Singleton{
 
     /**
      * Método que devuelve la memoria usada desde la ejecución
-     * @param $formatted
+     * @param $unit string
      *
      * @return int
      */

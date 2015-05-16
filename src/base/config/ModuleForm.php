@@ -3,7 +3,7 @@
     namespace PSFS\base\config;
 
     use PSFS\base\types\Form;
-    use PSFS\base\config\Config;
+
     use PSFS\base\Router;
     use PSFS\base\Security;
 
@@ -14,7 +14,6 @@
     class ModuleForm extends Form{
 
         /**
-         * @return $this
          * @throws \PSFS\base\exception\FormException
          * @throws \PSFS\base\exception\RouterException
          */

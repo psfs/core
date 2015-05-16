@@ -2,15 +2,9 @@
 
 namespace PSFS\base\config;
 
-use PSFS\base\Router;
-use PSFS\base\Security;
+
 use PSFS\base\Singleton;
-use PSFS\base\exception\ConfigException;
-use PSFS\base\config\ConfigForm;
-use PSFS\base\config\ModuleForm;
-use PSFS\base\Logger;
-use PSFS\base\Template;
-use PSFS\base\Request;
+
 
 /**
  * Class Config
@@ -35,7 +29,6 @@ class Config extends Singleton{
     protected $debug = false;
 
     /**
-     * @return $this
      */
     function __construct()
     {
@@ -44,9 +37,9 @@ class Config extends Singleton{
 
     /**
      * Método que carga la configuración del sistema
-     * @param null $path
-     *
      * @return mixed
+     * @internal param null $path
+     *
      */
     protected function configure()
     {
@@ -98,7 +91,10 @@ class Config extends Singleton{
 
     /**
      * Método que guarda la configuración del framework
+     *
      * @param array $data
+     *
+     * @param array $extra
      *
      * @return bool
      */

@@ -2,7 +2,7 @@
 
 namespace PSFS\base\types;
 
-use PSFS\base\types\Controller;
+
 use PSFS\base\types\interfaces\AuthInterface;
 use PSFS\base\Security;
 
@@ -16,7 +16,6 @@ abstract class AuthController extends Controller implements AuthInterface{
 
     /**
      * Constructor por defecto
-     * @return $this
      */
     public function __construct()
     {

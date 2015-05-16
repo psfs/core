@@ -3,6 +3,7 @@
 namespace PSFS\base\types;
 
 use PSFS\base\Router;
+use PSFS\base\Singleton;
 use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\Template;
 use PSFS\base\Request;
@@ -11,14 +12,13 @@ use PSFS\base\Request;
  * Class Controller
  * @package PSFS\base\types
  */
-abstract class Controller extends \PSFS\base\Singleton implements ControllerInterface{
+abstract class Controller extends Singleton implements ControllerInterface{
 
     protected $tpl;
     protected $domain = '';
 
     /**
      * Constructor por defecto
-     * @return $this
      */
     function __construct(){
         $this->tpl = Template::getInstance();
@@ -26,8 +26,11 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
 
     /**
      * Método que renderiza una plantilla
+     *
      * @param $template
      * @param array $vars
+     *
+     * @param bool $cookies
      *
      * @return html
      */
@@ -129,19 +132,21 @@ abstract class Controller extends \PSFS\base\Singleton implements ControllerInte
     public function jsonp($response)
     {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
-        return $this->response($data, "application/javascript");
+        $this->response($data, "application/javascript");
     }
 
     /**
      * Método que devuelve el objeto de petición
      * @return \PSFS\base\Request
      */
-    protected function getRequest(){ return Request::getInstance(); }
+    protected function getRequest(){ return Request::getInstance();
+    }
 
     /**
      * Método que añade la ruta del controlador a los path de plantillas Twig
+     * @param $path
      * @return mixed
-     */
+*/
     protected function setTemplatePath($path)
     {
         $this->tpl->addPath($path, $this->domain);

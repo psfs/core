@@ -2,7 +2,7 @@
 
 namespace PSFS\base;
 
-use PSFS\base\Singleton;
+
 use Symfony\Component\Finder\Finder;
 
 if(!function_exists("getallheaders"))
@@ -29,7 +29,6 @@ class Request extends Singleton{
     protected $data;
 
     /**
-     * @return $this
      */
     public function __construct(){
         $this->server = $_SERVER;
@@ -73,6 +72,9 @@ class Request extends Singleton{
 
     /**
      * Método que devuelve el TimeStamp de la petición
+     *
+     * @param bool $formatted
+     *
      * @return mixed
      */
     public static function ts($formatted = false){ return self::getInstance()->getTs($formatted); }
@@ -182,9 +184,9 @@ class Request extends Singleton{
 
     /**
      * Devuelve la url completa de base
-     * @param bollean $protocol
+     * @param bool|bollean $protocol
      * @return string
-     */
+*/
     public function getRootUrl($protocol = true)
     {
         $host = $this->getServerName();

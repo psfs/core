@@ -3,6 +3,7 @@
 namespace PSFS\base\types;
 
 use Propel\Runtime\Collection\Collection;
+use Propel\Runtime\Collection\ObjectCollection;
 use PSFS\base\Request;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
@@ -44,8 +45,8 @@ abstract class Form{
 
     /**
      * Constructor por defecto
+     *
      * @param null $model
-     * @return $this
      */
     public function __construct($model = null)
     {
@@ -54,6 +55,8 @@ abstract class Form{
 
     /**
      * Setters
+     * @param $enctype
+     * @return $this
      */
     public function setEncType($enctype){ $this->enctype = $enctype; return $this; }
     public function setAction($action){ $this->action = $action; return $this; }
@@ -266,7 +269,10 @@ abstract class Form{
 
     /**
      * Mëtodo que pre hidrata el formulario para su modificación
+     *
      * @param $data
+     *
+     * @throws FormException
      */
     public function setData($data)
     {
@@ -280,11 +286,13 @@ abstract class Form{
 
     /**
      * Método que añade un botón al formulario
+     * @param $id
      * @param string $value
      * @param string $type
-     * @param null $action
-     *
+     * @param null $attrs
      * @return $this
+     * @internal param null $action
+     *
      */
     public function addButton($id, $value = 'Guardar', $type = 'submit', $attrs = null)
     {
@@ -362,7 +370,7 @@ abstract class Form{
                 if(is_object($value))
                 {
                     //Si es una relación múltiple
-                    if($value instanceof \Propel\Runtime\Collection\ObjectCollection)
+                    if($value instanceof ObjectCollection)
                     {
                         $value = $value->getData();
                         //Extraemos los datos en función del tipo de input
@@ -403,7 +411,7 @@ abstract class Form{
     /**
      * Método que guarda los datos del formulario en el modelo de datos asociado al formulario
      * @return bool
-     * @throws \FormException
+     * @throws FormException
      */
     public function save()
     {

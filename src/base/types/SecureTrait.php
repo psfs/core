@@ -2,7 +2,7 @@
 
 namespace PSFS\base\types;
 
-use PSFS\base\types\interfaces\AuthInterface;
+
 use PSFS\base\Security;
 
 /**
@@ -15,11 +15,9 @@ trait SecureTrait{
 
     /**
      * Constructor por defecto
-     * @return $this
      */
     public function __construct()
     {
-        parent::__construct();
         $this->security = Security::getInstance();
     }
 

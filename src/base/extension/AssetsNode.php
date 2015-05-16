@@ -16,7 +16,6 @@ class AssetsNode extends \Twig_Node{
      * @param int $line
      * @param null $tag
      * @param string $type
-     * @return $this
      */
     public function __construct($name, $values, $line, $tag = null, $type = 'js')
     {

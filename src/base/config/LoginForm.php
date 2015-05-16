@@ -12,7 +12,7 @@ class LoginForm extends Form{
 
     /**
      * Constructor por defecto
-     * @return $this
+     * @throws \PSFS\base\exception\RouterException
      */
     function __construct()
     {

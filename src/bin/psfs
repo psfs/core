@@ -1,3 +1,4 @@
 #!/usr/bin/env php
 <?php
+    /** @noinspection PhpIncludeInspection */
     require_once(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'PSFSConsole.php');

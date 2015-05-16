@@ -4,12 +4,6 @@
      */
     namespace PSFS\base\social;
 
-    use PSFS\base\Request;
-    use PSFS\base\Template;
-    use PSFS\base\Logger;
-    use PSFS\base\Router;
-    use PSFS\base\social\form\GoogleUrlShortenerForm;
-    use PSFS\base\social\form\GenerateShortUrlForm;
 
     /**
      * Class GoogleUrlShortener
@@ -23,7 +17,6 @@
         private $api_key;
 
         /**
-         * @return $this
          */
         public function __construct()
         {

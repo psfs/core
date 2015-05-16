@@ -1,7 +1,7 @@
 <?php
 
 namespace PSFS\base\config;
-use PSFS\base\config\Config;
+
 use PSFS\base\Router;
 use PSFS\base\types\Form;
 
@@ -13,7 +13,8 @@ class ConfigForm extends Form{
 
     /**
      * Constructor por defecto
-     * @return $this
+     * @throws \PSFS\base\exception\FormException
+     * @throws \PSFS\base\exception\RouterException
      */
     function __construct()
     {

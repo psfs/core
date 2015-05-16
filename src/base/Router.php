@@ -3,11 +3,11 @@
     namespace PSFS\base;
 
     use PSFS\base\exception\AccessDeniedException;
-    use PSFS\base\Singleton;
+
     use PSFS\base\config\Config;
     use PSFS\base\exception\ConfigException;
-    use PSFS\base\config\AdminForm;
-    use PSFS\base\Security;
+
+
     use PSFS\base\exception\RouterException;
     use PSFS\controller\Admin;
     use Symfony\Component\Finder\Finder;
@@ -24,7 +24,6 @@
         private $domains;
 
         /**
-         * @return $this
          */
         function __construct()
         {
@@ -43,6 +42,10 @@
 
         /**
          * Método que deriva un error HTTP de página no encontrada
+         *
+         * @param \Exception $e
+         *
+         * @return mixed
          */
         public function httpNotFound(\Exception $e = null)
         {
@@ -170,8 +173,9 @@
          * Método que extrae de la url los parámetros REST
          * @param $route
          *
+         * @param $pattern
          * @return array
-         */
+*/
         protected function extractComponents($route, $pattern)
         {
             $url = parse_url($route);
@@ -215,11 +219,12 @@
 
         /**
          * Método que inspecciona los directorios en busca de clases que registren rutas
-         * @param $dir
+         * @param $origen
+         * @param string $namespace
          * @param $routing
-         *
          * @return mixed
-         */
+         * @internal param $dir
+*/
         private function inspectDir($origen, $namespace = "PSFS", $routing)
         {
             $files = $this->finder->files()->in($origen)->path("/controller/i")->name("*.php");
@@ -234,10 +239,11 @@
 
         /**
          * Método que añade nuevas rutas al array de referencia
+         * @param $namespace
          * @param $routing
-         *
          * @return mixed
-         */
+         * @throws ConfigException
+*/
         private function addRouting($namespace, $routing)
         {
             if(class_exists($namespace))
@@ -284,9 +290,11 @@
 
         /**
          * Método que extrae de la ReflectionClass los datos necesarios para componer los dominios en los templates
+         *
          * @param $class
          *
          * @return $this
+         * @throws ConfigException
          */
         protected function extractDomain($class)
         {
@@ -369,12 +377,13 @@
 
         /**
          * Método que devuelve una ruta del framework
-         * @param $slug
-         * @param $absolute
+         *
+         * @param string $slug
+         * @param bool $absolute
          * @param $params
          *
          * @return mixed
-         * @throws \PSFS\base\exception\ConfigException
+         * @throws RouterException
          */
         public function getRoute($slug = '', $absolute = false, $params = null)
         {

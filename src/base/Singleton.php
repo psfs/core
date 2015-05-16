@@ -9,7 +9,7 @@ namespace PSFS\base;
 class Singleton
 {
     /**
-     * @var cached reference to singleton instance
+     * @var Singleton cached reference to singleton instance
      */
     protected static $instance;
 

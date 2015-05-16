@@ -8,7 +8,6 @@ namespace PSFS\base\exception;
 class RouterException extends \Exception{
     /**
      * @param null $message
-     * @return $this
      */
     public function __construct($message = null)
     {
