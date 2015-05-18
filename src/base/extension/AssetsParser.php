@@ -2,9 +2,9 @@
 
 namespace PSFS\base\extension;
 
-use \PSFS\base\config\Config;
-use \PSFS\base\lib\JsMinifier;
-use \PSFS\base\lib\CssMinifier;
+use PSFS\base\config\Config;
+use PSFS\base\lib\CssMinifier;
+use PSFS\base\lib\JsMinifier;
 use PSFS\base\Template;
 
 /**

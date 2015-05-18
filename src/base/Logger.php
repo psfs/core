@@ -3,9 +3,9 @@
     namespace PSFS\base;
 
 
-    use Monolog\Logger as Monolog;
     use Monolog\Handler\FirePHPHandler;
     use Monolog\Handler\StreamHandler;
+    use Monolog\Logger as Monolog;
     use Monolog\Processor\WebProcessor;
 
 

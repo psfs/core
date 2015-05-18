@@ -4,11 +4,10 @@ namespace PSFS\base;
 
 
 use PSFS\base\config\Config;
+use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\types\Form;
 use PSFS\Dispatcher;
 
-
-use PSFS\base\extension\AssetsTokenParser;
 
 class Template extends Singleton{
 

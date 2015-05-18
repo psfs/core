@@ -2,11 +2,11 @@
 
 namespace PSFS\base\types;
 
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
-use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\Template;
-use PSFS\base\Request;
+use PSFS\base\types\interfaces\ControllerInterface;
 
 /**
  * Class Controller

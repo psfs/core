@@ -2,10 +2,9 @@
 
     namespace PSFS\base\config;
 
-    use PSFS\base\types\Form;
-
     use PSFS\base\Router;
     use PSFS\base\Security;
+    use PSFS\base\types\Form;
 
     /**
      * Class ModuleForm

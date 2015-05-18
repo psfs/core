@@ -3,8 +3,8 @@
 namespace PSFS\base\types;
 
 
-use PSFS\base\types\interfaces\AuthInterface;
 use PSFS\base\Security;
+use PSFS\base\types\interfaces\AuthInterface;
 
 /**
  * Class AuthController

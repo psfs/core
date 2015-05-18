@@ -2,16 +2,15 @@
 
     namespace PSFS\base;
 
-    use PSFS\base\exception\AccessDeniedException;
-
     use PSFS\base\config\Config;
+    use PSFS\base\exception\AccessDeniedException;
     use PSFS\base\exception\ConfigException;
-
-
     use PSFS\base\exception\RouterException;
     use PSFS\controller\Admin;
     use PSFS\services\AdminServices;
     use Symfony\Component\Finder\Finder;
+
+
     /**
      * Class Router
      * @package PSFS

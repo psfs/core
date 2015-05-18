@@ -4,10 +4,10 @@ namespace PSFS\base\types;
 
 use Propel\Runtime\Collection\Collection;
 use Propel\Runtime\Collection\ObjectCollection;
-use PSFS\base\Request;
+use PSFS\base\config\Config;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
-use PSFS\base\config\Config;
+use PSFS\base\Request;
 
 abstract class Form{
 
