@@ -67,6 +67,7 @@ abstract class Form{
         $this->fields[$name]['name'] = $this->getName() . "[{$name}]";
         $this->fields[$name]['id'] = $this->getName() . '_' . $name;
         $this->fields[$name]['placeholder'] = (isset($value['placeholder'])) ? $value['placeholder'] : $name;
+        $this->fields[$name]['hasLabel'] = (isset($value['hasLabel'])) ? $value['hasLabel'] : true;
         return $this;
     }
     public function setLogo($logo)

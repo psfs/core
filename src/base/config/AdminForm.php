@@ -29,7 +29,7 @@ class AdminForm extends Form{
         ))->add('profile', array(
             'type' => 'select',
             'label' => _("Perfil"),
-            'value' => sha1('admin'),
+            'value' => sha1('superadmin'),
             'autocomplete' => 'off',
             'data' => Security::getProfiles(),
         ));

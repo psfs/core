@@ -44,7 +44,7 @@ function addNewField(form)
     .appendTo(div_label);
 
     //Añadimos el campo del valor
-    div_input.addClass("col-md-6")
+    div_input.addClass("col-md-4")
     .appendTo(container);
     input.attr({
         "type": "text",

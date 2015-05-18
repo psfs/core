@@ -30,11 +30,11 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param $template
      * @param array $vars
      *
-     * @param bool $cookies
+     * @param array $cookies
      *
      * @return html
      */
-    public function render($template, array $vars = array(), $cookies = false)
+    public function render($template, array $vars = array(), $cookies = array())
     {
         $vars["__menu__"] = $this->getMenu();
         $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
