@@ -186,7 +186,7 @@ class Request extends Singleton{
      * Devuelve la url completa de base
      * @param bool|bollean $protocol
      * @return string
-*/
+    */
     public function getRootUrl($protocol = true)
     {
         $host = $this->getServerName();

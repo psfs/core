@@ -10,6 +10,7 @@
 
     use PSFS\base\exception\RouterException;
     use PSFS\controller\Admin;
+    use PSFS\services\AdminServices;
     use Symfony\Component\Finder\Finder;
     /**
      * Class Router
@@ -132,11 +133,7 @@
          */
         protected function sentAuthHeader()
         {
-            $platform = trim(Config::getInstance()->get("platform_name"));
-            header('HTTP/1.1 401 Unauthorized');
-            header('WWW-Authenticate: Basic Realm="'.$platform.'"');
-            echo _("Zona restringida");
-            exit();
+            AdminServices::getInstance()->setAdminHeaders();
         }
 
         /**
@@ -175,7 +172,7 @@
          *
          * @param $pattern
          * @return array
-*/
+        */
         protected function extractComponents($route, $pattern)
         {
             $url = parse_url($route);
@@ -224,7 +221,7 @@
          * @param $routing
          * @return mixed
          * @internal param $dir
-*/
+        */
         private function inspectDir($origen, $namespace = "PSFS", $routing)
         {
             $files = $this->finder->files()->in($origen)->path("/controller/i")->name("*.php");
@@ -243,7 +240,7 @@
          * @param $routing
          * @return mixed
          * @throws ConfigException
-*/
+        */
         private function addRouting($namespace, $routing)
         {
             if(class_exists($namespace))

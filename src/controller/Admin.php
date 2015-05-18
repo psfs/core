@@ -337,7 +337,7 @@ class Admin extends AuthController{
                     switch($type)
                     {
                         case 'PSFS.DEBUG': $detail["type"] = "info"; break;
-                        case 'PSFS.ERROR': $detail["type"] = "danger"; break;
+                        case 'PSFS.ERRO R': $detail["type"] = "danger"; break;
                         case 'PSFS.WARN': $detail["type"] = "warning"; break;
                     }
                 }catch(\Exception $e)
