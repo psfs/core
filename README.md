@@ -1,6 +1,9 @@
 PSFS
 ====
 [![Build Status](https://travis-ci.org/c15k0/psfs.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
+[![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
+[![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
+[![Latest Unstable Version](https://poser.pugx.org/c15k0/psfs/v/unstable)](https://packagist.org/packages/c15k0/psfs) [![License](https://poser.pugx.org/c15k0/psfs/license)](https://packagist.org/packages/c15k0/psfs)
 
 Framework Php Simple Fast & Secure
 
