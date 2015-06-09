@@ -6,7 +6,7 @@ namespace PSFS\base\exception;
  * Class ConfigException
  * @package PSFS\base\exception
  */
-class ConfigException extends \Exception{
+class ConfigException extends \Exception {
     /**
      * @param null $message
      */

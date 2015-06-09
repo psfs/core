@@ -5,7 +5,7 @@ namespace PSFS\base\exception;
  * Class RouterException
  * @package PSFS\base\exception
  */
-class RouterException extends \Exception{
+class RouterException extends \Exception {
     /**
      * @param null $message
      */

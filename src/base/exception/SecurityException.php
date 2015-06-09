@@ -5,7 +5,7 @@ namespace PSFS\base\exception;
  * Class SecurityException
  * @package PSFS\base\exception
  */
-class SecurityException extends \Exception{
+class SecurityException extends \Exception {
     /**
      * @param null $message
      */

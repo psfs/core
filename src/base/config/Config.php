@@ -47,7 +47,7 @@ class Config extends Singleton {
         {
             $this->config = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json'), true) ?: array();
             $this->debug = (isset($this->config['debug'])) ? (bool)$this->config['debug'] : false;
-        }else {
+        } else {
             $this->debug = true;
         }
         return $this;
@@ -101,15 +101,19 @@ class Config extends Singleton {
     public static function save(array $data, array $extra = null)
     {
         //En caso de tener parámetros nuevos los guardamos
-        if (!empty($extra["label"])) foreach ($extra["label"] as $index => $field)
+        if (!empty($extra["label"])) {
+            foreach ($extra["label"] as $index => $field)
         {
             if (isset($extra["value"][$index]) && !empty($extra["value"][$index])) /** @var $data array */
                 $data[$field] = $extra["value"][$index];
         }
+        }
         $final_data = array();
-        if (!empty($data)) foreach ($data as $key => $value)
+        if (!empty($data)) {
+            foreach ($data as $key => $value)
         {
             if (!empty($value)) $final_data[$key] = $value;
+        }
         }
         return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json', json_encode($final_data)));
     }

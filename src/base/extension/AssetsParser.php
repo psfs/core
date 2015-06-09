@@ -12,7 +12,7 @@ use PSFS\base\Template;
  * Class AssetsParser
  * @package PSFS\base\extension
  */
-class AssetsParser{
+class AssetsParser {
 
     protected $files = array();
     protected $hash = array();
@@ -30,7 +30,7 @@ class AssetsParser{
     public function __construct($type = 'js')
     {
         $this->type = $type;
-        $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
+        $this->path = WEB_DIR.DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
         $this->log = Logger::getInstance();
     }
@@ -44,11 +44,11 @@ class AssetsParser{
      */
     public function addFile($filename)
     {
-        if(file_exists($this->path . $filename) && preg_match('/\.' . $this->type . '$/i', $filename)) $this->files[] = $filename;
-        elseif(!empty($this->domains)) foreach($this->domains as $domain => $paths)
+        if (file_exists($this->path.$filename) && preg_match('/\.'.$this->type.'$/i', $filename)) $this->files[] = $filename;
+        elseif (!empty($this->domains)) foreach ($this->domains as $domain => $paths)
         {
             $domain_filename = str_replace($domain, $paths["public"], $filename);
-            if(file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename))
+            if (file_exists($domain_filename) && preg_match('/\.'.$this->type.'$/i', $domain_filename))
             {
                 $this->files[] = $domain_filename;
             }
@@ -81,7 +81,7 @@ class AssetsParser{
         $debug = $config->getDebugMode();
         //Unificamos ficheros para que no se retarde mucho el proceso
         $this->files = array_unique($this->files);
-        switch($this->type)
+        switch ($this->type)
         {
             default:
             case "js": $this->_compileJs($debug); break;
@@ -99,56 +99,56 @@ class AssetsParser{
      */
     protected function _compileCss($debug = false)
     {
-        $base = $this->path . "css" . DIRECTORY_SEPARATOR;
-        if(!file_exists($base)) @mkdir($base);
+        $base = $this->path."css".DIRECTORY_SEPARATOR;
+        if (!file_exists($base)) @mkdir($base);
         $data = '';
-        if(!empty($this->files)) foreach($this->files as $file)
+        if (!empty($this->files)) foreach ($this->files as $file)
         {
-            if(file_exists($file))
+            if (file_exists($file))
             {
 
                 $path_parts = explode("/", $file);
-                $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-                if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file))
+                $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
+                if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file))
                 {
                     //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
-                    @unlink($base . $this->hash . ".css");
+                    @unlink($base.$this->hash.".css");
                     $handle = @fopen($file, 'r');
-                    if($handle)
+                    if ($handle)
                     {
                         while (!feof($handle)) {
                             $line = fgets($handle);
                             $urls = array();
-                            if(preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER))
+                            if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER))
                             {
-                                foreach($urls as $source)
+                                foreach ($urls as $source)
                                 {
                                     $source_file = preg_replace("/'/", "", $source[1]);
-                                    if(preg_match('/\#/', $source_file))
+                                    if (preg_match('/\#/', $source_file))
                                     {
                                         $source_file = explode("#", $source_file);
                                         $source_file = $source_file[0];
                                     }
-                                    if(preg_match('/\?/', $source_file))
+                                    if (preg_match('/\?/', $source_file))
                                     {
                                         $source_file = explode("?", $source_file);
                                         $source_file = $source_file[0];
                                     }
-                                    $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $source_file);
-                                    $orig_part = explode(DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR, $orig);
+                                    $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
+                                    $orig_part = explode(DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR, $orig);
                                     try
                                     {
-                                        if(count($orig_part) > 1)
+                                        if (count($orig_part) > 1)
                                         {
-                                            $dest = $this->path . $orig_part[1];
-                                            if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-                                            if(!file_exists($dest) || filemtime($orig) > filemtime($dest))
+                                            $dest = $this->path.$orig_part[1];
+                                            if (!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+                                            if (!file_exists($dest) || filemtime($orig) > filemtime($dest))
                                             {
                                                 @copy($orig, $dest);
                                                 $this->log->infoLog("$orig copiado a $dest");
                                             }
                                         }
-                                    }catch(\Exception $e)
+                                    }catch (\Exception $e)
                                     {
                                         $this->log->errorLog($e->getMessage());
                                     }
@@ -158,21 +158,21 @@ class AssetsParser{
                         fclose($handle);
                     }
                 }
-                if($debug)
+                if ($debug)
                 {
                     $data = file_get_contents($file);
-                    file_put_contents($base . $file_path, $data);
-                }else{
+                    file_put_contents($base.$file_path, $data);
+                }else {
                     $data .= file_get_contents($file);
                 }
-                $this->compiled_files[] = "/css/" . $file_path;
+                $this->compiled_files[] = "/css/".$file_path;
             }
         }
-        if(!$debug && !file_exists($base . $this->hash . ".css"))
+        if (!$debug && !file_exists($base.$this->hash.".css"))
         {
             $minifier = new CssMinifier();
             $data = $minifier->run($data);
-            file_put_contents($base . $this->hash . ".css", $data);
+            file_put_contents($base.$this->hash.".css", $data);
         }
         return $this;
     }
@@ -185,35 +185,35 @@ class AssetsParser{
      */
     protected function _compileJs($debug = false)
     {
-        $base = $this->path . "js" . DIRECTORY_SEPARATOR;
-        if(!file_exists($base)) @mkdir($base);
+        $base = $this->path."js".DIRECTORY_SEPARATOR;
+        if (!file_exists($base)) @mkdir($base);
         $data = '';
-        if(!empty($this->files)) foreach($this->files as $file)
+        if (!empty($this->files)) foreach ($this->files as $file)
         {
             $path_parts = explode("/", $file);
-            if(file_exists($file))
+            if (file_exists($file))
             {
-                if($debug)
+                if ($debug)
                 {
-                    $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-                    $this->compiled_files[] = "/js/" . $file_path;
-                    if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file))
+                    $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
+                    $this->compiled_files[] = "/js/".$file_path;
+                    if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file))
                     {
                         $data = file_get_contents($file);
-                        file_put_contents($base . $file_path, $data);
+                        file_put_contents($base.$file_path, $data);
                     }
-                }else{
-                    if(!file_exists($base . $this->hash . ".js"))
+                }else {
+                    if (!file_exists($base.$this->hash.".js"))
                     {
                         $js = file_get_contents($file);
-                        $data .= ";" . $minifiedCode = JsMinifier::minify($js);
+                        $data .= ";".$minifiedCode = JsMinifier::minify($js);
                     }
                 }
             }
         }
-        if(!$debug && !file_exists($base . $this->hash . ".js"))
+        if (!$debug && !file_exists($base.$this->hash.".js"))
         {
-            file_put_contents($base . $this->hash . ".js", $data);
+            file_put_contents($base.$this->hash.".js", $data);
         }
         return $this;
     }
@@ -226,7 +226,7 @@ class AssetsParser{
         /* @var $config \PSFS\base\config\Config */
         $config = Config::getInstance();
         $debug = $config->getDebugMode();
-        switch($this->type)
+        switch ($this->type)
         {
             default:
             case "js": $this->_printJs($debug); break;
@@ -236,35 +236,35 @@ class AssetsParser{
 
     /**
      * Método que devuelve el html con la ruta compilada del recurso javascript
-     * @param $debug
+     * @param boolean $debug
      */
     protected function _printJs($debug)
     {
-        if($debug)
+        if ($debug)
         {
-            if(!empty($this->compiled_files)) foreach($this->compiled_files as $file)
+            if (!empty($this->compiled_files)) foreach ($this->compiled_files as $file)
             {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
-        }else{
-            echo "\t\t<script type='text/javascript' src='/js/". $this->hash .".js'></script>\n";
+        }else {
+            echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
 
     /**
      * Método que devuelve el html con la ruta compilada del recurso css
-     * @param $debug
+     * @param boolean $debug
      */
     protected function _printCss($debug)
     {
-        if($debug)
+        if ($debug)
         {
-            if(!empty($this->compiled_files)) foreach($this->compiled_files as $file)
+            if (!empty($this->compiled_files)) foreach ($this->compiled_files as $file)
             {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
-        }else{
-            echo "\t\t<link href='/css/". $this->hash .".css' rel='stylesheet' media='screen, print'>";
+        }else {
+            echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
 }
