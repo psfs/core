@@ -129,7 +129,7 @@ class Request extends Singleton{
      * Método que devuelve un parámetro de la solicitud
      * @param string $param
      *
-     * @return null
+     * @return string|null
      */
     public function get($param)
     {
@@ -179,7 +179,7 @@ class Request extends Singleton{
      */
     public function getProtocol()
     {
-        return $this->getServer("https") ? 'https://' : 'http://';
+        return ($this->getServer("HTTPS") || $this->getServer("https")) ? 'https://' : 'http://';
     }
 
     /**

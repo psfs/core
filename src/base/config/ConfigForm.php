@@ -9,7 +9,8 @@ use PSFS\base\types\Form;
  * Class ConfigForm
  * @package PSFS\base\config
  */
-class ConfigForm extends Form {
+class ConfigForm extends Form
+{
 
     /**
      * Constructor por defecto
@@ -20,8 +21,7 @@ class ConfigForm extends Form {
     {
         $this->setAction(Router::getInstance()->getRoute('admin-config'));
         //Añadimos los campos obligatorios
-        foreach (Config::$required as $field)
-        {
+        foreach (Config::$required as $field) {
             $type = (in_array($field, Config::$encrypted)) ? "password" : "text";
             $value = (isset(Config::$defaults[$field])) ? Config::$defaults[$field] : null;
             $this->add($field, array(
@@ -35,17 +35,15 @@ class ConfigForm extends Form {
         $this->add(Form::SEPARATOR);
         $data = Config::getInstance()->dumpConfig();
         if (!empty(Config::$optional) && !empty($data)) {
-            foreach (Config::$optional as $field)
-        {
-            if (array_key_exists($field, $data))
-            {
-                $this->add($field, array(
-                    "label" => _($field),
-                    "class" => "col-md-6",
-                    "required" => false,
-                    "value" => $data[$field],
-                ));
-        }
+            foreach (Config::$optional as $field) {
+                if (array_key_exists($field, $data)) {
+                    $this->add($field, array(
+                        "label" => _($field),
+                        "class" => "col-md-6",
+                        "required" => false,
+                        "value" => $data[$field],
+                    ));
+                }
             }
         }
         $extra = array();
@@ -53,16 +51,14 @@ class ConfigForm extends Form {
             $extra = array_diff(array_keys($data), array_merge(Config::$required, Config::$optional));
         }
         if (!empty($extra)) {
-            foreach ($extra as $key => $field)
-        {
-            $this->add($key, array(
-                "label" => $field,
-                "class" => "col-md-6",
-                "required" => false,
-                "value" => $data[$field],
-            ));
-        }
-        }
+            foreach ($extra as $key => $field) {
+                $this->add($key, array(
+                    "label" => $field,
+                    "class" => "col-md-6",
+                    "required" => false,
+                    "value" => $data[$field],
+                ));
+            }
         }
         $this->add(Form::SEPARATOR);
         //Aplicamos estilo al formulario
@@ -73,10 +69,10 @@ class ConfigForm extends Form {
         $this->setData($data);
         //Añadimos las acciones del formulario
         $this->addButton('submit', _("Guardar configuración"), "submit", array(
-                "class" => "btn-success col-md-offset-2"
-            ))
+            "class" => "btn-success col-md-offset-2"
+        ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
-                "onclick" => "javascript:addNewField(document.getElementById('".$this->getName()."'));",
+                "onclick" => "javascript:addNewField(document.getElementById('" . $this->getName() . "'));",
                 "class" => "btn-warning",
             ));
     }
@@ -85,7 +81,8 @@ class ConfigForm extends Form {
      * Nombre del formulario
      * @return string
      */
-    public function getName() {
+    public function getName()
+    {
         return "config";
     }
 
@@ -95,6 +92,6 @@ class ConfigForm extends Form {
      */
     public function getTitle()
     {
-        return "Parámetros necesarios para la ejecución de PSFS";
+        return _("Parámetros necesarios para la ejecución de PSFS");
     }
 }
