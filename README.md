@@ -4,6 +4,7 @@ PSFS
 [![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
 [![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
 [![Latest Unstable Version](https://poser.pugx.org/c15k0/psfs/v/unstable)](https://packagist.org/packages/c15k0/psfs) [![License](https://poser.pugx.org/c15k0/psfs/license)](https://packagist.org/packages/c15k0/psfs)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/c15k0/psfs/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
 
 Framework Php Simple Fast & Secure
 
