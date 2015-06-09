@@ -297,7 +297,7 @@ class Admin extends AuthController{
         if($this->getRequest()->getMethod() == 'POST')
         {
             $selected = $this->getRequest()->get("log");
-            $log = $this->srv->formatLogFile($selected);
+            list($log, $monthOpen) = $this->srv->formatLogFile($selected);
         }
         asort($logs);
         return $this->render("logs.html.twig", array(

@@ -263,18 +263,25 @@
             $monthOpen = null;
             $files = new Finder();
             $files->files()->in(LOG_DIR)->name($selectedLog);
-            if($files->count() > 0)
+            $file = null;
+            $log = array();
+            foreach($files as $match)
             {
-                pre($files, true);
+                $file = $match;
+                break;
             }
-            $finded = true;
-            if($finded)
+            /** @var \SplFileInfo $file */
+            if(!empty($file))
             {
-                krsort($log);
+                $time = date("c", $file->getMTime());
+                $dateTime = new \DateTime($time);
+                $monthOpen = $dateTime->format("m");
+                $content = file($file->getPath() . DIRECTORY_SEPARATOR . $file->getFilename());
+                krsort($content);
                 $detailLog = array();
-                foreach($log as &$line)
+                foreach($content as &$line)
                 {
-                    $line = preg_replace(array('/^\[(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\]/'), '<span class="label label-success">$6:$5:$4  $3-$2-$1</span>', $line);
+                    $line = preg_replace(array('/^\[(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\]/'), '<span class="label label-success">$4:$5:$6  $3-$2-$1</span>', $line);
                     preg_match_all('/\{(.*)\}/', $line, $match);
                     try
                     {
