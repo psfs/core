@@ -177,6 +177,7 @@ class Admin extends AuthController{
         return $this->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
             'config' => $form,
+            'typeahead_data' => array_merge(Config::$required, Config::$optional),
         ));
     }
 

@@ -42,7 +42,7 @@ class ConfigForm extends Form{
                     "label" => _($field),
                     "class" => "col-md-6",
                     "required" => false,
-                    "pattern" => Form::VALID_ALPHANUMERIC,
+                    "value" => $data[$field],
                 ));
             }
         }
@@ -51,10 +51,10 @@ class ConfigForm extends Form{
         if(!empty($extra)) foreach($extra as $key => $field)
         {
             $this->add($key, array(
-                "label" => _($key),
+                "label" => $field,
                 "class" => "col-md-6",
                 "required" => false,
-                "pattern" => Form::VALID_ALPHANUMERIC,
+                "value" => $data[$field],
             ));
         }
         $this->add(Form::SEPARATOR);

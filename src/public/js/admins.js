@@ -229,6 +229,11 @@ function toggleLogs(logGroup)
     $("." + logGroup).removeClass("hide");
 }
 
+function typeahead()
+{
+
+}
+
 (function(){
     backToTop();
     checkCreationFields();
