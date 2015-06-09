@@ -10,7 +10,7 @@
      * Class ModuleForm
      * @package PSFS\base\config
      */
-    class ModuleForm extends Form{
+    class ModuleForm extends Form {
 
         /**
          * @throws \PSFS\base\exception\FormException

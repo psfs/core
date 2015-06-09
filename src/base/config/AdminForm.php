@@ -10,7 +10,7 @@ use PSFS\base\types\Form;
  * Class AdminForm
  * @package PSFS\base\config
  */
-class AdminForm extends Form{
+class AdminForm extends Form {
 
     /**
      * @throws \PSFS\base\exception\RouterException

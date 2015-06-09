@@ -10,7 +10,7 @@ use PSFS\base\Singleton;
  * Class Config
  * @package PSFS\base\config
  */
-class Config extends Singleton{
+class Config extends Singleton {
 
     const DEFAULT_LANGUAGE = 'es';
     const DEFAULT_ENCODE = 'UTF-8';
@@ -37,17 +37,17 @@ class Config extends Singleton{
 
     /**
      * Método que carga la configuración del sistema
-     * @return mixed
+     * @return Config
      * @internal param null $path
      *
      */
     protected function configure()
     {
-        if(file_exists(CONFIG_DIR . '/config.json'))
+        if (file_exists(CONFIG_DIR.'/config.json'))
         {
-            $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json'), true) ?: array();
+            $this->config = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json'), true) ?: array();
             $this->debug = (isset($this->config['debug'])) ? (bool)$this->config['debug'] : false;
-        }else{
+        }else {
             $this->debug = true;
         }
         return $this;
@@ -57,19 +57,19 @@ class Config extends Singleton{
      * Método que devuelve si la plataforma está en modo debug
      * @return bool
      */
-    public function getDebugMode(){ return $this->debug; }
+    public function getDebugMode() { return $this->debug; }
 
     /**
      * Método que devuelve el path de cache
      * @return string
      */
-    public function getCachePath(){ return CACHE_DIR; }
+    public function getCachePath() { return CACHE_DIR; }
 
     /**
      * Método que devuelve el path general de templates de PSFS
      * @return string
      */
-    public function getTemplatePath(){ return realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR ); }
+    public function getTemplatePath() { return realpath(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR); }
 
     /**
      * Método que indica si se ha configurado correctamente la plataforma
@@ -78,9 +78,9 @@ class Config extends Singleton{
     public function isConfigured()
     {
         $configured = true;
-        foreach(static::$required as $required)
+        foreach (static::$required as $required)
         {
-            if(empty($this->config[$required]))
+            if (empty($this->config[$required]))
             {
                 $configured = false;
                 break;
@@ -101,17 +101,17 @@ class Config extends Singleton{
     public static function save(array $data, array $extra = null)
     {
         //En caso de tener parámetros nuevos los guardamos
-        if(!empty($extra["label"])) foreach($extra["label"] as $index => $field)
+        if (!empty($extra["label"])) foreach ($extra["label"] as $index => $field)
         {
-            if(isset($extra["value"][$index]) && !empty($extra["value"][$index])) /** @var $data array */
+            if (isset($extra["value"][$index]) && !empty($extra["value"][$index])) /** @var $data array */
                 $data[$field] = $extra["value"][$index];
         }
         $final_data = array();
-        if(!empty($data)) foreach($data as $key => $value)
+        if (!empty($data)) foreach ($data as $key => $value)
         {
-            if(!empty($value)) $final_data[$key] = $value;
+            if (!empty($value)) $final_data[$key] = $value;
         }
-        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json', json_encode($final_data)));
+        return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json', json_encode($final_data)));
     }
 
     /**
@@ -140,7 +140,7 @@ class Config extends Singleton{
      */
     public function getPropelParams()
     {
-        return json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json'), true);
+        return json_decode(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'properties.json'), true);
     }
 
 

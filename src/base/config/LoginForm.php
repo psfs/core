@@ -8,7 +8,7 @@ use PSFS\base\types\Form;
  * Class LoginForm
  * @package PSFS\base\config
  */
-class LoginForm extends Form{
+class LoginForm extends Form {
 
     /**
      * Constructor por defecto
@@ -35,7 +35,7 @@ class LoginForm extends Form{
         ))
         ->addButton('submit', _("Acceder como {{username}}"))
         ->addButton("cancel", _("Cancelar"), "button", array(
-            "onclick" => "javacript:location.href = \"" . Router::getInstance()->getRoute('') . "\";",
+            "onclick" => "javacript:location.href = \"".Router::getInstance()->getRoute('')."\";",
             "class" => "btn-link",
         ));
     }
@@ -44,7 +44,7 @@ class LoginForm extends Form{
      * Nombre del formulario
      * @return string
      */
-    public function getName(){
+    public function getName() {
         return "login";
     }
 }
