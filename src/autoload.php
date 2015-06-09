@@ -4,8 +4,9 @@
  * @author Fran López <fran.lopez84@hotmail.es>
  * @version 0.1
  */
-if (!defined("BASE_DIR"))
+if (!defined("BASE_DIR")) {
     define("BASE_DIR", dirname(dirname(__DIR__)));
+}
 
 if (!function_exists("PSFSAutoloader"))
 {
@@ -28,7 +29,9 @@ if (!function_exists("PSFSAutoloader"))
             }
 
             // require the file
-            if (file_exists($abs_path)) require_once $abs_path;
+            if (file_exists($abs_path)) {
+                require_once $abs_path;
+            }
         }
         return false;
     }
