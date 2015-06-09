@@ -6,6 +6,7 @@
     use PSFS\base\Singleton;
     use PSFS\base\Template;
     use PSFS\controller\Admin;
+    use Symfony\Component\Finder\Finder;
 
     class AdminServices extends Singleton{
 
@@ -223,5 +224,84 @@
             $logger->infoLog("Generamos sql invocando a propel:\n $ret");
             $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
             $logger->infoLog("Generamos configuración invocando a propel:\n $ret");
+        }
+
+        /**
+         * Servicio que lee los logs y los formatea para listarlos
+         * @return array
+         */
+        public function getLogFiles()
+        {
+            $files = new Finder();
+            $files->files()->in(LOG_DIR)->name("*.log")->sortByModifiedTime();
+            $logs = array();
+            /** @var \SplFileInfo $file */
+            foreach($files as $file)
+            {
+                $size = $file->getSize() / 8 / 1024;
+                $time = date("c", $file->getMTime());
+                $dateTime = new \DateTime($time);
+                if(!isset($logs[$dateTime->format("Y")])) $logs[$dateTime->format("Y")] = array();
+                $logs[$dateTime->format("Y")][$dateTime->format("m")][$time] = array(
+                    "filename" => $file->getFilename(),
+                    "size" => round($size, 3)
+                );
+                krsort($logs[$dateTime->format("Y")][$dateTime->format("m")]);
+                krsort($logs[$dateTime->format("Y")]);
+            }
+            return $logs;
+        }
+
+        /**
+         * Servicio que parsea el fichero de log seleccionado
+         * @param $selectedLog
+         *
+         * @return array
+         */
+        public function formatLogFile($selectedLog)
+        {
+            $monthOpen = null;
+            $files = new Finder();
+            $files->files()->in(LOG_DIR)->name($selectedLog);
+            if($files->count() > 0)
+            {
+                pre($files, true);
+            }
+            $finded = true;
+            if($finded)
+            {
+                krsort($log);
+                $detailLog = array();
+                foreach($log as &$line)
+                {
+                    $line = preg_replace(array('/^\[(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\]/'), '<span class="label label-success">$6:$5:$4  $3-$2-$1</span>', $line);
+                    preg_match_all('/\{(.*)\}/', $line, $match);
+                    try
+                    {
+                        $line = str_replace('[]','', str_replace($match[0][0], '', $line));
+                        $detail = json_decode($match[0][0], true);
+                        if(empty($detail)) $detail = array();
+                        preg_match_all('/\>\ (.*):/i', $line, $match);
+                        $type = (isset($match[1][0])) ? $match[1][0] : '';
+                        switch($type)
+                        {
+                            case 'PSFS.DEBUG': $detail["type"] = "info"; break;
+                            case 'PSFS.ERROR': $detail["type"] = "danger"; break;
+                            case 'PSFS.WARN': $detail["type"] = "warning"; break;
+                        }
+                    }catch(\Exception $e)
+                    {
+                        $detail = array(
+                            "type" => "danger",
+                        );
+                    }
+                    $detailLog[] = array_merge(array(
+                        "log" => $line,
+                    ), $detail);
+                    if(count($detailLog) >= 1000) break;
+                }
+                $log = $detailLog;
+            }
+            return array($log, $monthOpen);
         }
     }

@@ -135,7 +135,7 @@ class AssetsParser {
                                         $source_file = $source_file[0];
                                     }
                                     $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
-                                    $orig_part = explode(DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR, $orig);
+                                    $orig_part = preg_split('/\/public\//i', $orig);
                                     try
                                     {
                                         if (count($orig_part) > 1)

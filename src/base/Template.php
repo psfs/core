@@ -188,7 +188,7 @@ class Template extends Singleton{
                     $file = "/". substr(md5($string), 0, 8) . ".js";
                     $html_base = "js";
                     if($debug) $file = str_replace(".js", "_" . $original_filename, $file);
-                }elseif(preg_match("/img/i", mime_content_type($filename_path)))
+                }elseif(preg_match("/image/i", mime_content_type($filename_path)))
                 {
                     $ext = explode(".", $string);
                     $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
