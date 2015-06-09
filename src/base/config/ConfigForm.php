@@ -34,7 +34,8 @@ class ConfigForm extends Form {
         }
         $this->add(Form::SEPARATOR);
         $data = Config::getInstance()->dumpConfig();
-        if (!empty(Config::$optional) && !empty($data)) foreach (Config::$optional as $field)
+        if (!empty(Config::$optional) && !empty($data)) {
+            foreach (Config::$optional as $field)
         {
             if (array_key_exists($field, $data))
             {
@@ -44,11 +45,15 @@ class ConfigForm extends Form {
                     "required" => false,
                     "value" => $data[$field],
                 ));
+        }
             }
         }
         $extra = array();
-        if (!empty($data)) $extra = array_diff(array_keys($data), array_merge(Config::$required, Config::$optional));
-        if (!empty($extra)) foreach ($extra as $key => $field)
+        if (!empty($data)) {
+            $extra = array_diff(array_keys($data), array_merge(Config::$required, Config::$optional));
+        }
+        if (!empty($extra)) {
+            foreach ($extra as $key => $field)
         {
             $this->add($key, array(
                 "label" => $field,
@@ -56,6 +61,7 @@ class ConfigForm extends Form {
                 "required" => false,
                 "value" => $data[$field],
             ));
+        }
         }
         }
         $this->add(Form::SEPARATOR);
@@ -70,7 +76,7 @@ class ConfigForm extends Form {
                 "class" => "btn-success col-md-offset-2"
             ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
-                "onclick" => "javascript:addNewField(document.getElementById('". $this->getName() ."'));",
+                "onclick" => "javascript:addNewField(document.getElementById('".$this->getName()."'));",
                 "class" => "btn-warning",
             ));
     }
