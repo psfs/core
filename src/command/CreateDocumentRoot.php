@@ -28,8 +28,9 @@
             if(!file_exists($path . DIRECTORY_SEPARATOR . "fonts")) @mkdir($path . DIRECTORY_SEPARATOR . "fonts", 0775, true);
             if(!file_exists($path)) throw new \Exception("No tienes privilegios para crear el directorio '{$path}'");
             if(!file_exists(SOURCE_DIR . DIRECTORY_SEPARATOR . 'html.tar.gz')) throw new \Exception("No existe el fichero del DocumentRoot");
-            $ret = shell_exec("export PATH=\$PATH:/opt/local/bin; cd {$path} && tar xzfv " . SOURCE_DIR . DIRECTORY_SEPARATOR . "html.tar.gz ");
-            $output->writeln($ret);
+            $bin_path = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "bin";
+            $tar = new Archive_Tar(realpath(SOURCE_DIR . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "html.tar.gz", true);
+            $tar->extract(realpath($path));
             $output->writeln("Document root generado en " . $path);
         })
     ;
