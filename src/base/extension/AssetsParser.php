@@ -5,6 +5,7 @@ namespace PSFS\base\extension;
 use PSFS\base\config\Config;
 use PSFS\base\lib\CssMinifier;
 use PSFS\base\lib\JsMinifier;
+use PSFS\base\Logger;
 use PSFS\base\Template;
 
 /**
@@ -19,6 +20,7 @@ class AssetsParser{
     protected $type;
     protected $path;
     protected $domains = array();
+    private $log;
 
     /**
      * Constructor por defecto
@@ -30,6 +32,7 @@ class AssetsParser{
         $this->type = $type;
         $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
+        $this->log = Logger::getInstance();
     }
 
     /**
@@ -75,7 +78,7 @@ class AssetsParser{
     {
         /* @var $config \PSFS\base\config\Config */
         $config = Config::getInstance();
-        $debug = $config->get("debug");
+        $debug = $config->getDebugMode();
         //Unificamos ficheros para que no se retarde mucho el proceso
         $this->files = array_unique($this->files);
         switch($this->type)
@@ -132,14 +135,22 @@ class AssetsParser{
                                         $source_file = $source_file[0];
                                     }
                                     $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $source_file);
-                                    $orig_part = preg_split('/\/public\//i', $orig);
+                                    $orig_part = explode(DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR, $orig);
                                     try
                                     {
-                                        $dest = $this->path . $orig_part[1];
-                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-                                        @copy($orig, $dest);
+                                        if(count($orig_part) > 1)
+                                        {
+                                            $dest = $this->path . $orig_part[1];
+                                            if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+                                            if(!file_exists($dest) || filemtime($orig) > filemtime($dest))
+                                            {
+                                                @copy($orig, $dest);
+                                                $this->log->infoLog("$orig copiado a $dest");
+                                            }
+                                        }
                                     }catch(\Exception $e)
                                     {
+                                        $this->log->errorLog($e->getMessage());
                                     }
                                 }
                             }
@@ -163,7 +174,6 @@ class AssetsParser{
             $data = $minifier->run($data);
             file_put_contents($base . $this->hash . ".css", $data);
         }
-
         return $this;
     }
 
@@ -215,7 +225,7 @@ class AssetsParser{
     {
         /* @var $config \PSFS\base\config\Config */
         $config = Config::getInstance();
-        $debug = $config->get("debug");
+        $debug = $config->getDebugMode();
         switch($this->type)
         {
             default:

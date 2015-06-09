@@ -85,8 +85,7 @@ class Dispatcher extends Singleton{
                 }
                 if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();
             }else $this->router->httpNotFound();
-        }
-        catch(\Exception $e)
+        }catch(\Exception $e)
         {
             $error = array(
                 "error" => $e->getMessage(),

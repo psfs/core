@@ -158,7 +158,7 @@ class Template extends Singleton{
     {
         $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true){
             $file_path = "";
-            $debug = Config::getInstance()->get("debug");
+            $debug = Config::getInstance()->getDebugMode();
             $filename_path = $string;
             if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
             $domains = self::getDomains(true);
