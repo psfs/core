@@ -172,47 +172,84 @@ class Template extends Singleton{
                     continue;
                 }
             }
-            if(file_exists($filename_path))
+            /**
+             * @param $string
+             * @param $name
+             * @param $return
+             * @param $debug
+             * @param $filename_path
+             *
+             * @return array
+             */
+            function calculateAssetPath($string, $name, $return, $debug, $filename_path)
             {
                 $ppath = explode("/", $string);
-                $original_filename = $ppath[count($ppath) -1];
-                $base = WEB_DIR .DIRECTORY_SEPARATOR;
+                $original_filename = $ppath[count($ppath) - 1];
+                $base = WEB_DIR . DIRECTORY_SEPARATOR;
                 $file = "";
                 $html_base = "";
-                if(preg_match('/\.css$/i', $string))
-                {
-                    $file = "/". substr(md5($string), 0, 8) . ".css";
+                if (preg_match('/\.css$/i', $string)) {
+                    $file = "/" . substr(md5($string), 0, 8) . ".css";
                     $html_base = "css";
-                    if($debug) $file = str_replace(".css", "_" . $original_filename, $file);
-                }elseif(preg_match('/\.js$/i', $string))
-                {
-                    $file = "/". substr(md5($string), 0, 8) . ".js";
+                    if ($debug) $file = str_replace(".css", "_" . $original_filename, $file);
+                } elseif (preg_match('/\.js$/i', $string)) {
+                    $file = "/" . substr(md5($string), 0, 8) . ".js";
                     $html_base = "js";
-                    if($debug) $file = str_replace(".js", "_" . $original_filename, $file);
-                }elseif(preg_match("/image/i", mime_content_type($filename_path)))
-                {
+                    if ($debug) $file = str_replace(".js", "_" . $original_filename, $file);
+                } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
                     $ext = explode(".", $string);
-                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "img";
-                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(preg_match("/(doc|pdf)/i", mime_content_type($filename_path)))
-                {
+                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
                     $ext = explode(".", $string);
-                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "docs";
-                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path)))
-                {
+                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
                     $ext = explode(".", $string);
-                    $file = "/". substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
                     $html_base = "media";
-                    if($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                }elseif(!$return && !is_null($name))
-                {
+                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                } elseif (!$return && !is_null($name)) {
                     $html_base = '';
                     $file = $name;
                 }
                 $file_path = $html_base . $file;
+
+                return array($base, $html_base, $file_path);
+            }
+
+            /**
+             * @param $handle
+             * @param $filename_path
+             */
+            function processCssLine($handle, $filename_path)
+            {
+                $line = fgets($handle);
+                $urls = array();
+                if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+                    foreach ($urls as $source) {
+                        $source_file = preg_replace("/'/", "", $source[1]);
+                        if (preg_match('/\#/', $source_file)) {
+                            $source_file = explode("#", $source_file);
+                            $source_file = $source_file[0];
+                        }
+                        if (preg_match('/\?/', $source_file)) {
+                            $source_file = explode("?", $source_file);
+                            $source_file = $source_file[0];
+                        }
+                        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+                        $orig_part = explode("Public", $orig);
+                        $dest = WEB_DIR . $orig_part[1];
+                        Config::createDir($dest);
+                        @copy($orig, $dest);
+                    }
+                }
+            }
+
+            if(file_exists($filename_path)) {
+                list($base, $html_base, $file_path) = calculateAssetPath($string, $name, $return, $debug, $filename_path);
                 //Creamos el directorio si no existe
                 Config::createDir($base . $html_base);
                 //Si se ha modificado
@@ -224,30 +261,7 @@ class Template extends Singleton{
                         if($handle)
                         {
                             while (!feof($handle)) {
-                                $line = fgets($handle);
-                                $urls = array();
-                                if(preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER))
-                                {
-                                    foreach($urls as $source)
-                                    {
-                                        $source_file = preg_replace("/'/", "", $source[1]);
-                                        if(preg_match('/\#/', $source_file))
-                                        {
-                                            $source_file = explode("#", $source_file);
-                                            $source_file = $source_file[0];
-                                        }
-                                        if(preg_match('/\?/', $source_file))
-                                        {
-                                            $source_file = explode("?", $source_file);
-                                            $source_file = $source_file[0];
-                                        }
-                                        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
-                                        $orig_part = explode("Public", $orig);
-                                        $dest = WEB_DIR . $orig_part[1];
-                                        Config::createDir($dest);
-                                        @copy($orig, $dest);
-                                    }
-                                }
+                                processCssLine($handle, $filename_path);
                             }
                             fclose($handle);
                         }
