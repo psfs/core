@@ -47,8 +47,14 @@
             $config = Config::getInstance();
             if ($debug)
             {
-                if (!empty($config->get("logger.phpFire"))) $this->logger->pushHandler(new FirePHPHandler());
-                if (!empty($config->get("logger.memory"))) $this->logger->pushProcessor(new MemoryUsageProcessor());
+                $phpFireLog = $config->get("logger.phpFire");
+                if (!empty($phpFireLog)) {
+                    $this->logger->pushHandler(new FirePHPHandler());
+                }
+                $memoryLog = $config->get("logger.memory");
+                if (!empty($memoryLog)) {
+                    $this->logger->pushProcessor(new MemoryUsageProcessor());
+                }
             }
             $this->logger->pushProcessor(new WebProcessor());
         }

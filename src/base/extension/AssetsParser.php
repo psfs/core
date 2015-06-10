@@ -333,11 +333,11 @@ class AssetsParser {
         $domains = Template::getDomains(TRUE);
         if (!file_exists($file_path) && !empty($domains)) {
             foreach ($domains as $domain => $paths) {
-            $domain_filename = str_replace($domain, $paths["public"], $string);
-        }
-            if (file_exists($domain_filename)) {
-                $filename_path = $domain_filename;
-                continue;
+                $domain_filename = str_replace($domain, $paths["public"], $string);
+                if (file_exists($domain_filename)) {
+                    $filename_path = $domain_filename;
+                    continue;
+                }
             }
         }
 
