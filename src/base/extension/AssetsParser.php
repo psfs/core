@@ -3,6 +3,7 @@
 namespace PSFS\base\extension;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\lib\CssMinifier;
 use PSFS\base\lib\JsMinifier;
 use PSFS\base\Logger;
@@ -133,19 +134,9 @@ class AssetsParser {
             {
                 if ($debug)
                 {
-                    $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
-                    $this->compiled_files[] = "/js/".$file_path;
-                    if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file))
-                    {
-                        $data = file_get_contents($file);
-                        file_put_contents($base.$file_path, $data);
-                    }
+                    $data = $this->putDebugJs($path_parts, $base, $file);
                 }else {
-                    if (!file_exists($base.$this->hash.".js"))
-                    {
-                        $js = file_get_contents($file);
-                        $data .= ";".$minifiedCode = JsMinifier::minify($js);
-                    }
+                    $data = $this->putProductionJs($base, $file, $data);
                 }
             }
         }
@@ -255,7 +246,9 @@ class AssetsParser {
             $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
             if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
-                @unlink($base . $this->hash . ".css");
+                if(@unlink($base . $this->hash . ".css") === false) {
+                    throw new ConfigException("Can't unlink file " . $base . $this->hash . ".css");
+                }
                 $handle = @fopen($file, 'r');
                 if ($handle) {
                     while (!feof($handle)) {
@@ -279,6 +272,44 @@ class AssetsParser {
             $this->compiled_files[] = "/css/" . $file_path;
 
             return $data;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param $path_parts
+     * @param $base
+     * @param $file
+     *
+     * @return string
+     */
+    protected function putDebugJs($path_parts, $base, $file)
+    {
+        $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
+        $this->compiled_files[] = "/js/" . $file_path;
+        $data = "";
+        if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
+            $data = file_get_contents($file);
+            file_put_contents($base . $file_path, $data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param $base
+     * @param $file
+     * @param $data
+     *
+     * @return string
+     * @throws \Exception
+     */
+    protected function putProductionJs($base, $file, $data)
+    {
+        if (!file_exists($base . $this->hash . ".js")) {
+            $js = file_get_contents($file);
+            $data .= ";" . $minifiedCode = JsMinifier::minify($js);
         }
 
         return $data;
