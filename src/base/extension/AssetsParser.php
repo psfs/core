@@ -48,13 +48,11 @@ class AssetsParser {
         if (file_exists($this->path.$filename) && preg_match('/\.'.$this->type.'$/i', $filename)) {
             $this->files[] = $filename;
         } elseif (!empty($this->domains)) {
-            foreach ($this->domains as $domain => $paths)
-        {
-            $domain_filename = str_replace($domain, $paths["public"], $filename);
-        }
-            if (file_exists($domain_filename) && preg_match('/\.'.$this->type.'$/i', $domain_filename))
-            {
-                $this->files[] = $domain_filename;
+            foreach ($this->domains as $domain => $paths) {
+                $domain_filename = str_replace($domain, $paths["public"], $filename);
+                if (file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename)) {
+                    $this->files[] = $domain_filename;
+                }
             }
         }
         return $this;
@@ -133,17 +131,14 @@ class AssetsParser {
         Config::createDir($base);
         $data = '';
         if (!empty($this->files)) {
-            foreach ($this->files as $file)
-        {
-            $path_parts = explode("/", $file);
-        }
-            if (file_exists($file))
-            {
-                if ($debug)
-                {
-                    $data = $this->putDebugJs($path_parts, $base, $file);
-                } else {
-                    $data = $this->putProductionJs($base, $file, $data);
+            foreach ($this->files as $file) {
+                $path_parts = explode("/", $file);
+                if (file_exists($file)) {
+                    if ($debug) {
+                        $data = $this->putDebugJs($path_parts, $base, $file);
+                    } else {
+                        $data = $this->putProductionJs($base, $file, $data);
+                    }
                 }
             }
         }
@@ -324,5 +319,102 @@ class AssetsParser {
         }
 
         return $data;
+    }
+
+    /**
+     * Servicio que busca el path para un dominio dado
+     * @param $string
+     * @param $file_path
+     *
+     * @return mixed
+     */
+    public static function findDomainPath($string, $file_path)
+    {
+        $domains = Template::getDomains(TRUE);
+        if (!file_exists($file_path) && !empty($domains)) foreach ($domains as $domain => $paths) {
+            $domain_filename = str_replace($domain, $paths["public"], $string);
+            if (file_exists($domain_filename)) {
+                $filename_path = $domain_filename;
+                continue;
+            }
+        }
+
+        return $filename_path;
+    }
+
+    /**
+     * @param $string
+     * @param $name
+     * @param $return
+     * @param $debug
+     * @param $filename_path
+     *
+     * @return array
+     */
+    public static function calculateAssetPath($string, $name, $return, $debug, $filename_path)
+    {
+        $ppath = explode("/", $string);
+        $original_filename = $ppath[count($ppath) - 1];
+        $base = WEB_DIR . DIRECTORY_SEPARATOR;
+        $file = "";
+        $html_base = "";
+        if (preg_match('/\.css$/i', $string)) {
+            $file = "/" . substr(md5($string), 0, 8) . ".css";
+            $html_base = "css";
+            if ($debug) $file = str_replace(".css", "_" . $original_filename, $file);
+        } elseif (preg_match('/\.js$/i', $string)) {
+            $file = "/" . substr(md5($string), 0, 8) . ".js";
+            $html_base = "js";
+            if ($debug) $file = str_replace(".js", "_" . $original_filename, $file);
+        } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "img";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "docs";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "media";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (!$return && !is_null($name)) {
+            $html_base = '';
+            $file = $name;
+        }
+        $file_path = $html_base . $file;
+
+        return array($base, $html_base, $file_path);
+    }
+
+    /**
+     * @param $handle
+     * @param $filename_path
+     */
+    public static function extractCssLineResource($handle, $filename_path)
+    {
+        $line = fgets($handle);
+        $urls = array();
+        if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+            foreach ($urls as $source) {
+                $source_file = preg_replace("/'/", "", $source[1]);
+                if (preg_match('/\#/', $source_file)) {
+                    $source_file = explode("#", $source_file);
+                    $source_file = $source_file[0];
+                }
+                if (preg_match('/\?/', $source_file)) {
+                    $source_file = explode("?", $source_file);
+                    $source_file = $source_file[0];
+                }
+                $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+                $orig_part = explode("Public", $orig);
+                $dest = WEB_DIR . $orig_part[1];
+                Config::createDir($dest);
+                @copy($orig, $dest);
+            }
+        }
     }
 }
