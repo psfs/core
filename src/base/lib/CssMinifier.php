@@ -112,7 +112,7 @@ class CssMinifier
         // if the number of characters is 25000 or less, do not chunk
         if ($l <= $css_chunk_length) {
             $css_chunks[] = $css;
-        }else {
+        } else {
             // chunk css code securely
             while ($i < $l) {
                 $i += 50; // save iterations. 500 checks for a closing curly brace }
@@ -466,7 +466,7 @@ class CssMinifier
                 $sb[] = $preserver;
 
                 $append_index = $end_index + 1;
-            }else {
+            } else {
                 // No end terminator found, re-add the whole match. Should we throw/warn here?
                 $sb[] = $this->str_slice($css, $index, $last_index);
                 $append_index = $last_index;
@@ -525,13 +525,13 @@ class CssMinifier
             if ($is_filter) {
                 // Restore, maintain case, otherwise filter will break
                 $sb[] = $m[1].'#'.$m[2].$m[3].$m[4].$m[5].$m[6].$m[7];
-            }else {
+            } else {
                 if (strtolower($m[2]) == strtolower($m[3]) &&
                     strtolower($m[4]) == strtolower($m[5]) &&
                     strtolower($m[6]) == strtolower($m[7])) {
                     // Compress.
                     $hex = '#'.strtolower($m[3].$m[5].$m[7]);
-                }else {
+                } else {
                     // Non compressible color, restore but lower case.
                     $hex = '#'.strtolower($m[2].$m[3].$m[4].$m[5].$m[6].$m[7]);
                 }
@@ -592,7 +592,7 @@ class CssMinifier
             for ($i = 0; $i < count($rgbcolors); $i++) {
                 $rgbcolors[$i] = $this->round_number(floatval($rgbcolors[$i])*2.55);
             }
-        }else {
+        } else {
             $rgbcolors = explode(',', $matches[1]);
         }
 
@@ -624,7 +624,7 @@ class CssMinifier
 
         if ($s == 0) {
             $r = $g = $b = $this->round_number(255*$l);
-        }else {
+        } else {
             $v2 = $l < 0.5 ? $l*(1 + $s) : ($l + $s) - ($s*$l);
             $v1 = (2*$l) - $v2;
             $r = $this->round_number(255*$this->hue_to_rgb($v1, $v2, $h + (1/3)));
@@ -677,9 +677,15 @@ class CssMinifier
     private function hue_to_rgb($v1, $v2, $vh)
     {
         $vh = $vh < 0 ? $vh + 1 : ($vh > 1 ? $vh - 1 : $vh);
-        if ($vh*6 < 1) return $v1 + ($v2 - $v1)*6*$vh;
-        if ($vh*2 < 1) return $v2;
-        if ($vh*3 < 2) return $v1 + ($v2 - $v1)*((2/3) - $vh)*6;
+        if ($vh*6 < 1) {
+            return $v1 + ($v2 - $v1)*6*$vh;
+        }
+        if ($vh*2 < 1) {
+            return $v2;
+        }
+        if ($vh*3 < 2) {
+            return $v1 + ($v2 - $v1)*((2/3) - $vh)*6;
+        }
         return $v1;
     }
 

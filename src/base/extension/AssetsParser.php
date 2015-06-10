@@ -50,7 +50,7 @@ class AssetsParser {
         } elseif (!empty($this->domains)) {
             foreach ($this->domains as $domain => $paths) {
                 $domain_filename = str_replace($domain, $paths["public"], $filename);
-                if (file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename)) {
+                if (file_exists($domain_filename) && preg_match('/\.'.$this->type.'$/i', $domain_filename)) {
                     $this->files[] = $domain_filename;
                 }
             }
@@ -136,7 +136,7 @@ class AssetsParser {
                 if (file_exists($file)) {
                     if ($debug) {
                         $data = $this->putDebugJs($path_parts, $base, $file);
-                    } else {
+                    }else {
                         $data = $this->putProductionJs($base, $file, $data);
                     }
                 }
@@ -179,7 +179,7 @@ class AssetsParser {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
             }
-        } else {
+        }else {
             echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
@@ -198,7 +198,7 @@ class AssetsParser {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
             }
-        } else {
+        }else {
             echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
@@ -231,7 +231,7 @@ class AssetsParser {
                     $this->log->infoLog("$orig copiado a $dest");
                 }
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->log->errorLog($e->getMessage());
         }
     }
@@ -272,7 +272,7 @@ class AssetsParser {
             if ($debug) {
                 $data = file_get_contents($file);
                 file_put_contents($base.$file_path, $data);
-            }else {
+            } else {
                 $data .= file_get_contents($file);
             }
             $this->compiled_files[] = "/css/".$file_path;
@@ -324,15 +324,17 @@ class AssetsParser {
     /**
      * Servicio que busca el path para un dominio dado
      * @param $string
-     * @param $file_path
+     * @param string $file_path
      *
      * @return mixed
      */
     public static function findDomainPath($string, $file_path)
     {
         $domains = Template::getDomains(TRUE);
-        if (!file_exists($file_path) && !empty($domains)) foreach ($domains as $domain => $paths) {
+        if (!file_exists($file_path) && !empty($domains)) {
+            foreach ($domains as $domain => $paths) {
             $domain_filename = str_replace($domain, $paths["public"], $string);
+        }
             if (file_exists($domain_filename)) {
                 $filename_path = $domain_filename;
                 continue;
@@ -345,47 +347,47 @@ class AssetsParser {
     /**
      * @param $string
      * @param $name
-     * @param $return
-     * @param $debug
+     * @param boolean $return
+     * @param boolean $debug
      * @param $filename_path
      *
-     * @return array
+     * @return string[]
      */
     public static function calculateAssetPath($string, $name, $return, $debug, $filename_path)
     {
         $ppath = explode("/", $string);
         $original_filename = $ppath[count($ppath) - 1];
-        $base = WEB_DIR . DIRECTORY_SEPARATOR;
+        $base = WEB_DIR.DIRECTORY_SEPARATOR;
         $file = "";
         $html_base = "";
         if (preg_match('/\.css$/i', $string)) {
-            $file = "/" . substr(md5($string), 0, 8) . ".css";
+            $file = "/".substr(md5($string), 0, 8).".css";
             $html_base = "css";
-            if ($debug) $file = str_replace(".css", "_" . $original_filename, $file);
+            if ($debug) $file = str_replace(".css", "_".$original_filename, $file);
         } elseif (preg_match('/\.js$/i', $string)) {
-            $file = "/" . substr(md5($string), 0, 8) . ".js";
+            $file = "/".substr(md5($string), 0, 8).".js";
             $html_base = "js";
-            if ($debug) $file = str_replace(".js", "_" . $original_filename, $file);
+            if ($debug) $file = str_replace(".js", "_".$original_filename, $file);
         } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
-            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "img";
-            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
         } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
-            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "docs";
-            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
         } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
-            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "media";
-            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
         } elseif (!$return && !is_null($name)) {
             $html_base = '';
             $file = $name;
         }
-        $file_path = $html_base . $file;
+        $file_path = $html_base.$file;
 
         return array($base, $html_base, $file_path);
     }
@@ -409,9 +411,9 @@ class AssetsParser {
                     $source_file = explode("?", $source_file);
                     $source_file = $source_file[0];
                 }
-                $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+                $orig = realpath(dirname($filename_path).DIRECTORY_SEPARATOR.$source_file);
                 $orig_part = explode("Public", $orig);
-                $dest = WEB_DIR . $orig_part[1];
+                $dest = WEB_DIR.$orig_part[1];
                 Config::createDir($dest);
                 @copy($orig, $dest);
             }

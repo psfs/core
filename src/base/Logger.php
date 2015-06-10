@@ -10,10 +10,10 @@
     use PSFS\base\config\Config;
 
 
-    if(!defined("LOG_DIR"))
+    if (!defined("LOG_DIR"))
     {
-        Config::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
-        define("LOG_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
+        Config::createDir(BASE_DIR.DIRECTORY_SEPARATOR.'logs');
+        define("LOG_DIR", BASE_DIR.DIRECTORY_SEPARATOR.'logs');
     }
 
     /**
@@ -21,7 +21,7 @@
      * @package PSFS\base
      * Servicio de log
      */
-    class Logger extends Singleton{
+    class Logger extends Singleton {
 
         protected $logger;
         private $stream;
@@ -34,21 +34,21 @@
             $args = func_get_args();
             $logger = 'general';
             $debug = false;
-            if(!empty($args))
+            if (!empty($args))
             {
-                if(isset($args[0][0])) $logger = $args[0][0];
-                if(isset($args[0][1])) $debug = $args[0][1];
+                if (isset($args[0][0])) $logger = $args[0][0];
+                if (isset($args[0][1])) $debug = $args[0][1];
             }
-            $path = LOG_DIR . DIRECTORY_SEPARATOR . strtoupper($logger) . DIRECTORY_SEPARATOR . date('Y'). DIRECTORY_SEPARATOR . date('m');
+            $path = LOG_DIR.DIRECTORY_SEPARATOR.strtoupper($logger).DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
             Config::createDir($path);
-            $this->stream = fopen($path . DIRECTORY_SEPARATOR . date("Ymd") . ".log", "a+");
+            $this->stream = fopen($path.DIRECTORY_SEPARATOR.date("Ymd").".log", "a+");
             $this->logger = new Monolog(strtoupper($logger));
             $this->logger->pushHandler(new StreamHandler($this->stream));
             $config = Config::getInstance();
-            if($debug)
+            if ($debug)
             {
-                if(!empty($config->get("logger.phpFire"))) $this->logger->pushHandler(new FirePHPHandler());
-                if(!empty($config->get("logger.memory"))) $this->logger->pushProcessor(new MemoryUsageProcessor());
+                if (!empty($config->get("logger.phpFire"))) $this->logger->pushHandler(new FirePHPHandler());
+                if (!empty($config->get("logger.memory"))) $this->logger->pushProcessor(new MemoryUsageProcessor());
             }
             $this->logger->pushProcessor(new WebProcessor());
         }
