@@ -97,40 +97,10 @@ class Template extends Singleton{
         ob_clean();
         ob_start();
         header("X-Powered-By: @c15k0");
-        if($this->debug)
-        {
-            $vars["__DEBUG__"]["includes"] = get_included_files();
-            $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
-            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
-            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
-        }
-
-        if(null !== $this->status_code)
-        {
-            header($this->status_code);
-        }
-
-        if($this->public_zone)
-        {
-            unset($_SERVER["PHP_AUTH_USER"]);
-            unset($_SERVER["PHP_AUTH_PW"]);
-            header_remove("Authorization");
-        }else{
-            header('Authorization:');
-        }
-
-        if(!empty($cookies) && is_array($cookies)) foreach($cookies as $cookie)
-        {
-            setcookie($cookie["name"],
-                $cookie["value"],
-                (isset($cookie["expire"])) ? $cookie["expire"] : null,
-                (isset($cookie["path"])) ? $cookie["path"] : "/",
-                (isset($cookie["domain"])) ? $cookie["domain"] : Request::getInstance()->getRootUrl(false),
-                (isset($cookie["secure"])) ? $cookie["secure"] : false,
-                (isset($cookie["http"])) ? $cookie["http"] : false
-            );
-        }
+        $vars = $this->setDebugHeaders($vars);
+        $this->setStatusHeader();
+        $this->setAuthHeaders();
+        $this->setCookieHeaders($cookies);
 
         echo $this->dump($tpl, $vars);
         ob_flush();
@@ -152,104 +122,117 @@ class Template extends Singleton{
     }
 
     /**
+     * Servicio que busca el path para un dominio dado
+     * @param $string
+     * @param $file_path
+     *
+     * @return mixed
+     */
+    public static function findDomainPath($string, $file_path)
+    {
+        $domains = self::getDomains(TRUE);
+        if (!file_exists($file_path) && !empty($domains)) foreach ($domains as $domain => $paths) {
+            $domain_filename = str_replace($domain, $paths["public"], $string);
+            if (file_exists($domain_filename)) {
+                $filename_path = $domain_filename;
+                continue;
+            }
+        }
+
+        return $filename_path;
+    }
+
+    /**
+     * @param $string
+     * @param $name
+     * @param $return
+     * @param $debug
+     * @param $filename_path
+     *
+     * @return array
+     */
+    public static function calculateAssetPath($string, $name, $return, $debug, $filename_path)
+    {
+        $ppath = explode("/", $string);
+        $original_filename = $ppath[count($ppath) - 1];
+        $base = WEB_DIR . DIRECTORY_SEPARATOR;
+        $file = "";
+        $html_base = "";
+        if (preg_match('/\.css$/i', $string)) {
+            $file = "/" . substr(md5($string), 0, 8) . ".css";
+            $html_base = "css";
+            if ($debug) $file = str_replace(".css", "_" . $original_filename, $file);
+        } elseif (preg_match('/\.js$/i', $string)) {
+            $file = "/" . substr(md5($string), 0, 8) . ".js";
+            $html_base = "js";
+            if ($debug) $file = str_replace(".js", "_" . $original_filename, $file);
+        } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "img";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "docs";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "media";
+            if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+        } elseif (!$return && !is_null($name)) {
+            $html_base = '';
+            $file = $name;
+        }
+        $file_path = $html_base . $file;
+
+        return array($base, $html_base, $file_path);
+    }
+
+    /**
+     * @param $handle
+     * @param $filename_path
+     */
+    public static function processCssLine($handle, $filename_path)
+    {
+        $line = fgets($handle);
+        $urls = array();
+        if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+            foreach ($urls as $source) {
+                $source_file = preg_replace("/'/", "", $source[1]);
+                if (preg_match('/\#/', $source_file)) {
+                    $source_file = explode("#", $source_file);
+                    $source_file = $source_file[0];
+                }
+                if (preg_match('/\?/', $source_file)) {
+                    $source_file = explode("?", $source_file);
+                    $source_file = $source_file[0];
+                }
+                $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+                $orig_part = explode("Public", $orig);
+                $dest = WEB_DIR . $orig_part[1];
+                Config::createDir($dest);
+                @copy($orig, $dest);
+            }
+        }
+    }
+
+    /**
      * Funcion Twig para los assets en las plantillas
      * @return $this
      */
     private function addAssetFunction()
     {
         $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true){
+
             $file_path = "";
             $debug = Config::getInstance()->getDebugMode();
-            $filename_path = $string;
             if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
-            $domains = self::getDomains(true);
-            if(!file_exists($file_path) && !empty($domains)) foreach($domains as $domain => $paths)
-            {
-                $domain_filename = str_replace($domain, $paths["public"], $string);
-                if(file_exists($domain_filename))
-                {
-                    $filename_path = $domain_filename;
-                    continue;
-                }
-            }
-            /**
-             * @param $string
-             * @param $name
-             * @param $return
-             * @param $debug
-             * @param $filename_path
-             *
-             * @return array
-             */
-            function calculateAssetPath($string, $name, $return, $debug, $filename_path)
-            {
-                $ppath = explode("/", $string);
-                $original_filename = $ppath[count($ppath) - 1];
-                $base = WEB_DIR . DIRECTORY_SEPARATOR;
-                $file = "";
-                $html_base = "";
-                if (preg_match('/\.css$/i', $string)) {
-                    $file = "/" . substr(md5($string), 0, 8) . ".css";
-                    $html_base = "css";
-                    if ($debug) $file = str_replace(".css", "_" . $original_filename, $file);
-                } elseif (preg_match('/\.js$/i', $string)) {
-                    $file = "/" . substr(md5($string), 0, 8) . ".js";
-                    $html_base = "js";
-                    if ($debug) $file = str_replace(".js", "_" . $original_filename, $file);
-                } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
-                    $ext = explode(".", $string);
-                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-                    $html_base = "img";
-                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
-                    $ext = explode(".", $string);
-                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-                    $html_base = "docs";
-                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
-                    $ext = explode(".", $string);
-                    $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-                    $html_base = "media";
-                    if ($debug) $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
-                } elseif (!$return && !is_null($name)) {
-                    $html_base = '';
-                    $file = $name;
-                }
-                $file_path = $html_base . $file;
-
-                return array($base, $html_base, $file_path);
-            }
-
-            /**
-             * @param $handle
-             * @param $filename_path
-             */
-            function processCssLine($handle, $filename_path)
-            {
-                $line = fgets($handle);
-                $urls = array();
-                if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
-                    foreach ($urls as $source) {
-                        $source_file = preg_replace("/'/", "", $source[1]);
-                        if (preg_match('/\#/', $source_file)) {
-                            $source_file = explode("#", $source_file);
-                            $source_file = $source_file[0];
-                        }
-                        if (preg_match('/\?/', $source_file)) {
-                            $source_file = explode("?", $source_file);
-                            $source_file = $source_file[0];
-                        }
-                        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
-                        $orig_part = explode("Public", $orig);
-                        $dest = WEB_DIR . $orig_part[1];
-                        Config::createDir($dest);
-                        @copy($orig, $dest);
-                    }
-                }
-            }
+            $filename_path = Template::findDomainPath($string, $file_path);
 
             if(file_exists($filename_path)) {
-                list($base, $html_base, $file_path) = calculateAssetPath($string, $name, $return, $debug, $filename_path);
+                list($base, $html_base, $file_path) = Template::calculateAssetPath($string, $name, $return, $debug, $filename_path);
                 //Creamos el directorio si no existe
                 Config::createDir($base . $html_base);
                 //Si se ha modificado
@@ -261,7 +244,7 @@ class Template extends Singleton{
                         if($handle)
                         {
                             while (!feof($handle)) {
-                                processCssLine($handle, $filename_path);
+                                Template::processCssLine($handle, $filename_path);
                             }
                             fclose($handle);
                         }
@@ -479,5 +462,60 @@ class Template extends Singleton{
             foreach($domain as &$path) $path .= DIRECTORY_SEPARATOR;
         }
         return $domains;
+    }
+
+    /**
+     * @param $cookies
+     */
+    protected function setCookieHeaders($cookies)
+    {
+        if (!empty($cookies) && is_array($cookies)) foreach ($cookies as $cookie) {
+            setcookie($cookie["name"],
+                $cookie["value"],
+                (isset($cookie["expire"])) ? $cookie["expire"] : NULL,
+                (isset($cookie["path"])) ? $cookie["path"] : "/",
+                (isset($cookie["domain"])) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
+                (isset($cookie["secure"])) ? $cookie["secure"] : FALSE,
+                (isset($cookie["http"])) ? $cookie["http"] : FALSE
+            );
+        }
+    }
+
+    protected function setAuthHeaders()
+    {
+        if ($this->public_zone) {
+            unset($_SERVER["PHP_AUTH_USER"]);
+            unset($_SERVER["PHP_AUTH_PW"]);
+            header_remove("Authorization");
+        } else {
+            header('Authorization:');
+        }
+    }
+
+    protected function setStatusHeader()
+    {
+        if (NULL !== $this->status_code) {
+            header($this->status_code);
+        }
+    }
+
+    /**
+     * @param array $vars
+     *
+     * @return array
+     */
+    protected function setDebugHeaders(array $vars)
+    {
+        if ($this->debug) {
+            $vars["__DEBUG__"]["includes"] = get_included_files();
+            $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
+            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
+            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
+
+            return $vars;
+        }
+
+        return $vars;
     }
 }
