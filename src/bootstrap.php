@@ -1,7 +1,4 @@
 <?php
-    /**
-     * Bootstrap general
-     */
     use Symfony\Component\Finder\Finder;
 
     if (!defined("SOURCE_DIR"))define("SOURCE_DIR", __DIR__);

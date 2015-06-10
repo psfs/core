@@ -4,6 +4,7 @@ namespace PSFS\base;
 
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\types\Form;
 use PSFS\Dispatcher;
@@ -94,6 +95,7 @@ class Template extends Singleton{
      */
     public function render($tpl, array $vars = array(), $cookies = array())
     {
+        ob_clean();
         ob_start();
         header("X-Powered-By: @c15k0");
         if($this->debug)
@@ -134,7 +136,7 @@ class Template extends Singleton{
         echo $this->dump($tpl, $vars);
         ob_flush();
         ob_end_clean();
-        exit();
+        exit;
     }
 
     /**
@@ -213,7 +215,11 @@ class Template extends Singleton{
                 }
                 $file_path = $html_base . $file;
                 //Creamos el directorio si no existe
-                if(!file_exists($base . $html_base)) @mkdir($base . $html_base, 0775, true);
+                if(!file_exists($base . $html_base)) {
+                    if(@mkdir($base . $html_base, 0775, true) === false) {
+                        throw new ConfigException("Can't create directory " . $base . $html_base);
+                    }
+                }
                 //Si se ha modificado
                 if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($filename_path))
                 {
@@ -243,7 +249,11 @@ class Template extends Singleton{
                                         $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
                                         $orig_part = explode("Public", $orig);
                                         $dest = WEB_DIR . $orig_part[1];
-                                        if(!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+                                        if(!file_exists(dirname($dest))) {
+                                            if(@mkdir(dirname($dest), 0755, true) === false) {
+                                                throw new ConfigException("Can't create directory " . $dest);
+                                            }
+                                        }
                                         @copy($orig, $dest);
                                     }
                                 }
@@ -417,12 +427,8 @@ class Template extends Singleton{
                 $destfolder = basename($filename_path);
                 if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
                 {
-                    try
-                    {
-                        @mkdir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder, 0775, true);
-                    }catch (\Exception $e)
-                    {
-                        Logger::getInstance()->errorLog($e->getMessage() . "[" . $e->getCode() . "]");
+                    if(@mkdir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder, 0775, true) === false) {
+                        throw new ConfigException("Can't create directory " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                     }
 
                     self::copyr($filename_path, WEB_DIR . $dest);
@@ -441,7 +447,11 @@ class Template extends Singleton{
         if(is_dir($source)) {
             $dir_handle=opendir($source);
             $sourcefolder = basename($source);
-            if(!file_exists($dest."/".$sourcefolder)) @mkdir($dest."/".$sourcefolder, 0755, true);
+            if(!file_exists($dest."/".$sourcefolder)) {
+                if(@mkdir($dest."/".$sourcefolder, 0755, true) === false) {
+                    throw new ConfigException("Can't create directory " . $dest . "/" . $sourcefolder);
+                }
+            }
             while($file=readdir($dir_handle)){
                 if($file!="." && $file!=".."){
                     if(is_dir($source."/".$file)){

@@ -285,8 +285,10 @@
                     preg_match_all('/\{(.*)\}/', $line, $match);
                     try
                     {
-                        $line = str_replace('[]','', str_replace($match[0][0], '', $line));
-                        $detail = json_decode($match[0][0], true);
+                        if(!empty($match[0])) {
+                            $line = str_replace('[]','', str_replace($match[0][0], '', $line));
+                            $detail = json_decode($match[0][0], true);
+                        }
                         if(empty($detail)) $detail = array();
                         preg_match_all('/\>\ (.*):/i', $line, $match);
                         $type = (isset($match[1][0])) ? $match[1][0] : '';

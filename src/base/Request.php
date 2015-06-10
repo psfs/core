@@ -149,8 +149,10 @@ class Request extends Singleton{
     public function redirect($url = null)
     {
         if(empty($url)) $url = $this->server['HTTP_ORIGIN'];
+        ob_start();
         header('Location: ' . $url);
-        exit;
+        ob_end_clean();
+        exit(_("Redireccionando..."));
     }
 
     /**

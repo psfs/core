@@ -70,7 +70,7 @@ class Dispatcher extends Singleton{
         $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
         if(!$this->config->isConfigured()) return $this->router->getAdmin()->config();
         //
-        try{
+        try {
             if(!$this->parser->isFile())
             {
                 if($this->config->getDebugMode())
@@ -84,9 +84,8 @@ class Dispatcher extends Singleton{
                     }, E_NOTICE);
                 }
                 if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();
-            }else $this->router->httpNotFound();
-        }catch(\Exception $e)
-        {
+            }else return $this->router->httpNotFound();
+        } catch(\Exception $e) {
             $error = array(
                 "error" => $e->getMessage(),
                 "file" => $e->getFile(),
@@ -98,6 +97,7 @@ class Dispatcher extends Singleton{
             if($e instanceof SecurityException) return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
             return $this->router->httpNotFound($e);
         }
+        return false;
     }
 
     /**

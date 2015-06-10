@@ -5,12 +5,12 @@ namespace PSFS\base\exception;
  * Class RouterException
  * @package PSFS\base\exception
  */
-class RouterException extends \Exception {
+class RouterException extends \RuntimeException {
     /**
      * @param null $message
      */
-    public function __construct($message = null)
+    public function __construct($message = null, $code = 404, \Exception $e)
     {
-        parent::__construct($message ?: _("Página no encontrada"), 404);
+        parent::__construct($message ?: _("Página no encontrada"), $code, $e);
     }
 }

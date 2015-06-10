@@ -81,7 +81,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
         echo $response;
         ob_flush();
         ob_end_clean();
-        exit();
+        exit;
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
         echo $data;
         ob_flush();
         ob_end_clean();
-        exit();
+        exit;
     }
 
     /**

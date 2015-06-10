@@ -41,7 +41,7 @@ abstract class Form{
     protected $model;
     protected $logo;
 
-    abstract function getName();
+    abstract public function getName();
 
     /**
      * Constructor por defecto
@@ -134,10 +134,10 @@ abstract class Form{
      */
     public function getFieldValue($name)
     {
-        $field = $this->getField($name);
         $value = null;
-        if(!empty($field))
+        if(!is_null($this->getField($name)))
         {
+            $field = $this->getField($name);
             $value = $field["value"] ?: null;
         }
         return $value;

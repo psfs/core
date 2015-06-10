@@ -20,15 +20,20 @@
         ->setCode(function (InputInterface $input, OutputInterface $output) {
             $path = $input->getArgument('path');
             if(empty($path)) $path = BASE_DIR . DIRECTORY_SEPARATOR . 'html';
-            if(!file_exists($path)) @mkdir($path, 0775, true);
-            if(!file_exists($path . DIRECTORY_SEPARATOR . "js")) @mkdir($path . DIRECTORY_SEPARATOR . "js", 0775, true);
-            if(!file_exists($path . DIRECTORY_SEPARATOR . "css")) @mkdir($path . DIRECTORY_SEPARATOR . "css", 0775, true);
-            if(!file_exists($path . DIRECTORY_SEPARATOR . "img")) @mkdir($path . DIRECTORY_SEPARATOR . "img", 0775, true);
-            if(!file_exists($path . DIRECTORY_SEPARATOR . "media")) @mkdir($path . DIRECTORY_SEPARATOR . "media", 0775, true);
-            if(!file_exists($path . DIRECTORY_SEPARATOR . "fonts")) @mkdir($path . DIRECTORY_SEPARATOR . "fonts", 0775, true);
-            if(!file_exists($path)) throw new \Exception("No tienes privilegios para crear el directorio '{$path}'");
-            if(!file_exists(SOURCE_DIR . DIRECTORY_SEPARATOR . 'html.tar.gz')) throw new \Exception("No existe el fichero del DocumentRoot");
-            $bin_path = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "bin";
+            if(!file_exists($path)) {
+                if(@mkdir($path, 0775, true) === false) {
+                    throw new \PSFS\base\exception\ConfigException("Can't create directory " . $path);
+                }
+            }
+            $paths = array("js", "css", "img", "media", "fonts");
+            foreach($paths as $htmlPath) {
+                if(!file_exists($path . DIRECTORY_SEPARATOR . $htmlPath)) {
+                    if(@mkdir($path . DIRECTORY_SEPARATOR . $htmlPath, 0775, true) === false) {
+                        throw new \PSFS\base\exception\ConfigException("Can't create directory " . $path . DIRECTORY_SEPARATOR . $htmlPath);
+                    }
+                }
+            }
+            if(!file_exists(SOURCE_DIR . DIRECTORY_SEPARATOR . 'html.tar.gz')) throw new \PSFS\base\exception\ConfigException("No existe el fichero del DocumentRoot");
             $tar = new Archive_Tar(realpath(SOURCE_DIR . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "html.tar.gz", true);
             $tar->extract(realpath($path));
             $output->writeln("Document root generado en " . $path);

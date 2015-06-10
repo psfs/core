@@ -141,10 +141,17 @@ class AssetsParser {
                                         if (count($orig_part) > 1)
                                         {
                                             $dest = $this->path.$orig_part[1];
-                                            if (!file_exists(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+                                            if (!file_exists(dirname($dest)))
+                                            {
+                                                if(@mkdir(dirname($dest), 0755, true) === false) {
+                                                    throw new \RuntimeException('The directory '.$dest.' could not be created.');
+                                                }
+                                            }
                                             if (!file_exists($dest) || filemtime($orig) > filemtime($dest))
                                             {
-                                                @copy($orig, $dest);
+                                                if(@copy($orig, $dest) === false) {
+                                                    throw new \RuntimeException('Can\' copy '.$dest.'');
+                                                }
                                                 $this->log->infoLog("$orig copiado a $dest");
                                             }
                                         }
