@@ -45,10 +45,13 @@ class AssetsParser {
      */
     public function addFile($filename)
     {
-        if (file_exists($this->path.$filename) && preg_match('/\.'.$this->type.'$/i', $filename)) $this->files[] = $filename;
-        elseif (!empty($this->domains)) foreach ($this->domains as $domain => $paths)
+        if (file_exists($this->path.$filename) && preg_match('/\.'.$this->type.'$/i', $filename)) {
+            $this->files[] = $filename;
+        } elseif (!empty($this->domains)) {
+            foreach ($this->domains as $domain => $paths)
         {
             $domain_filename = str_replace($domain, $paths["public"], $filename);
+        }
             if (file_exists($domain_filename) && preg_match('/\.'.$this->type.'$/i', $domain_filename))
             {
                 $this->files[] = $domain_filename;
@@ -103,9 +106,11 @@ class AssetsParser {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
         Config::createDir($base);
         $data = '';
-        if (!empty($this->files)) foreach ($this->files as $file)
+        if (!empty($this->files)) {
+            foreach ($this->files as $file)
         {
             $data = $this->processCssLine($debug, $file, $base, $data);
+        }
         }
         if (!$debug && !file_exists($base.$this->hash.".css"))
         {
@@ -127,15 +132,17 @@ class AssetsParser {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
         Config::createDir($base);
         $data = '';
-        if (!empty($this->files)) foreach ($this->files as $file)
+        if (!empty($this->files)) {
+            foreach ($this->files as $file)
         {
             $path_parts = explode("/", $file);
+        }
             if (file_exists($file))
             {
                 if ($debug)
                 {
                     $data = $this->putDebugJs($path_parts, $base, $file);
-                }else {
+                } else {
                     $data = $this->putProductionJs($base, $file, $data);
                 }
             }
@@ -171,11 +178,13 @@ class AssetsParser {
     {
         if ($debug)
         {
-            if (!empty($this->compiled_files)) foreach ($this->compiled_files as $file)
+            if (!empty($this->compiled_files)) {
+                foreach ($this->compiled_files as $file)
             {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
-        }else {
+            }
+        } else {
             echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
@@ -188,17 +197,19 @@ class AssetsParser {
     {
         if ($debug)
         {
-            if (!empty($this->compiled_files)) foreach ($this->compiled_files as $file)
+            if (!empty($this->compiled_files)) {
+                foreach ($this->compiled_files as $file)
             {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
-        }else {
+            }
+        } else {
             echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
 
     /**
-     * @param $source
+     * @param string[] $source
      * @param $file
      */
     protected function extractCssResources($source, $file)
@@ -212,29 +223,29 @@ class AssetsParser {
             $source_file = explode("?", $source_file);
             $source_file = $source_file[0];
         }
-        $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $source_file);
+        $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
         $orig_part = preg_split('/\/public\//i', $orig);
         try {
             if (count($orig_part) > 1) {
-                $dest = $this->path . $orig_part[1];
+                $dest = $this->path.$orig_part[1];
                 Config::createDir($dest);
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
                     if (@copy($orig, $dest) === FALSE) {
-                        throw new \RuntimeException('Can\' copy ' . $dest . '');
+                        throw new \RuntimeException('Can\' copy '.$dest.'');
                     }
                     $this->log->infoLog("$orig copiado a $dest");
                 }
             }
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             $this->log->errorLog($e->getMessage());
         }
     }
 
     /**
-     * @param $debug
+     * @param boolean $debug
      * @param $file
-     * @param $base
-     * @param $data
+     * @param string $base
+     * @param string $data
      *
      * @return string
      */
@@ -243,11 +254,11 @@ class AssetsParser {
         if (file_exists($file)) {
 
             $path_parts = explode("/", $file);
-            $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-            if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
+            $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
+            if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file)) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
-                if(@unlink($base . $this->hash . ".css") === false) {
-                    throw new ConfigException("Can't unlink file " . $base . $this->hash . ".css");
+                if (@unlink($base.$this->hash.".css") === false) {
+                    throw new ConfigException("Can't unlink file ".$base.$this->hash.".css");
                 }
                 $handle = @fopen($file, 'r');
                 if ($handle) {
@@ -265,11 +276,11 @@ class AssetsParser {
             }
             if ($debug) {
                 $data = file_get_contents($file);
-                file_put_contents($base . $file_path, $data);
-            } else {
+                file_put_contents($base.$file_path, $data);
+            }else {
                 $data .= file_get_contents($file);
             }
-            $this->compiled_files[] = "/css/" . $file_path;
+            $this->compiled_files[] = "/css/".$file_path;
 
             return $data;
         }
@@ -279,37 +290,37 @@ class AssetsParser {
 
     /**
      * @param $path_parts
-     * @param $base
+     * @param string $base
      * @param $file
      *
      * @return string
      */
     protected function putDebugJs($path_parts, $base, $file)
     {
-        $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-        $this->compiled_files[] = "/js/" . $file_path;
+        $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
+        $this->compiled_files[] = "/js/".$file_path;
         $data = "";
-        if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
+        if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file)) {
             $data = file_get_contents($file);
-            file_put_contents($base . $file_path, $data);
+            file_put_contents($base.$file_path, $data);
         }
 
         return $data;
     }
 
     /**
-     * @param $base
+     * @param string $base
      * @param $file
-     * @param $data
+     * @param string $data
      *
      * @return string
      * @throws \Exception
      */
     protected function putProductionJs($base, $file, $data)
     {
-        if (!file_exists($base . $this->hash . ".js")) {
+        if (!file_exists($base.$this->hash.".js")) {
             $js = file_get_contents($file);
-            $data .= ";" . $minifiedCode = JsMinifier::minify($js);
+            $data .= ";".$minifiedCode = JsMinifier::minify($js);
         }
 
         return $data;
