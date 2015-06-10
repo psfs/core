@@ -100,7 +100,7 @@ class AssetsParser {
     protected function _compileCss($debug = false)
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
-        if (!file_exists($base)) @mkdir($base);
+        Config::createDir($base);
         $data = '';
         if (!empty($this->files)) foreach ($this->files as $file)
         {
@@ -141,12 +141,7 @@ class AssetsParser {
                                         if (count($orig_part) > 1)
                                         {
                                             $dest = $this->path.$orig_part[1];
-                                            if (!file_exists(dirname($dest)))
-                                            {
-                                                if(@mkdir(dirname($dest), 0755, true) === false) {
-                                                    throw new \RuntimeException('The directory '.$dest.' could not be created.');
-                                                }
-                                            }
+                                            Config::createDir($dest);
                                             if (!file_exists($dest) || filemtime($orig) > filemtime($dest))
                                             {
                                                 if(@copy($orig, $dest) === false) {
@@ -193,7 +188,7 @@ class AssetsParser {
     protected function _compileJs($debug = false)
     {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
-        if (!file_exists($base)) @mkdir($base);
+        Config::createDir($base);
         $data = '';
         if (!empty($this->files)) foreach ($this->files as $file)
         {

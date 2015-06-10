@@ -199,11 +199,7 @@
             $modules = realpath(CORE_DIR);
             $this->routing = $this->inspectDir($base, "PSFS", array());
             if(file_exists($modules)) $this->routing = $this->inspectDir($modules, "", $this->routing);
-            if(!file_exists(CONFIG_DIR)) {
-                if(@mkdir(CONFIG_DIR, 0775) === false) {
-                    throw new ConfigException("Cant create directory " . CONFIG_DIR);
-                }
-            }
+            Config::createDir(CONFIG_DIR);
             file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($this->domains, JSON_PRETTY_PRINT));
             $home = Config::getInstance()->get('home_action');
             if(!empty($home))
@@ -329,22 +325,14 @@
             foreach($this->routing as $key => &$info)
             {
                 $slug = $this->slugify($key);
-                if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations")) {
-                    if(@mkdir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations", 0775, true) === false) {
-                        throw new ConfigException("Can't create directory " . CACHE_DIR . DIRECTORY_SEPARATOR . "translations");
-                    }
-                }
+                Config::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations");
                 if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php")) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "<?php \$translations = array();\n");
                 include(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php");
                 if(!isset($translations[$slug])) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
                 $this->slugs[$slug] = $key;
                 $info["slug"] = $slug;
             }
-            if(!file_exists(CONFIG_DIR)) {
-                if(@mkdir(CONFIG_DIR, 0775) === false) {
-                    throw new ConfigException("Cant create directory " . CONFIG_DIR);
-                }
-            }
+            Config::createDir(CONFIG_DIR);
             file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode(array($this->routing, $this->slugs), JSON_PRETTY_PRINT));
             return $this;
         }

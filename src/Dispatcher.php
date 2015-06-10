@@ -55,7 +55,7 @@ class Dispatcher extends Singleton{
         setlocale(LC_ALL, $this->locale);
         //Cargamos el path de las traducciones
         $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
-        if(!file_exists($locale_path)) @mkdir($locale_path);
+        Config::createDir($locale_path);
         bindtextdomain('translations', $locale_path);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');

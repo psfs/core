@@ -147,5 +147,15 @@ class Config extends Singleton {
         return json_decode(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'properties.json'), true);
     }
 
-
+    /**
+     * Método estático para la generación de directorios
+     * @param $dir
+     */
+    public static function createDir($dir) {
+        if(!file_exists($dir)) {
+            if(@mkdir($dir, 0775, true) === false) {
+                throw new \PSFS\base\exception\ConfigException("Can't create directory " . $dir);
+            }
+        }
+    }
 }

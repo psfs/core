@@ -87,7 +87,7 @@
                 $d = dir($path);
                 while(false !== ($dir = $d->read()))
                 {
-                    if(!file_exists($locale_path)) mkdir($locale_path, 0777, true);
+                    Config::createDir($locale_path);
                     if(!file_exists($locale_path . 'translations.po')) file_put_contents($locale_path . 'translations.po', '');
                     $inspect_path = realpath($path.DIRECTORY_SEPARATOR.$dir);
                     $cmd_php = "export PATH=\$PATH:/opt/local/bin; xgettext ". $inspect_path . DIRECTORY_SEPARATOR ."*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$locale_path}translations.po";
@@ -133,9 +133,9 @@
         private function createModulePath($module, $mod_path)
         {
             //Creamos el directorio base de los módulos
-            if (!file_exists($mod_path)) mkdir($mod_path, 0775);
+            Config::createDir($mod_path);
             //Creamos la carpeta del módulo
-            if (!file_exists($mod_path . $module)) mkdir($mod_path . $module, 0755);
+            Config::createDir($mod_path . $module);
         }
 
         /**
@@ -148,19 +148,15 @@
         {
             //Creamos las carpetas CORE del módulo
             $logger->infoLog("Generamos la estructura");
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Config", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Controller", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Form")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Form", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Models")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Models", 0755);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public", 0755);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Templates", 0755);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Services")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Services", 0755);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Tests")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Tests", 0755);
+            $paths = array("Config", "Controller", "Form", "Models", "Public", "Templates", "Services", "Test");
+            foreach($paths as $path) {
+                Config::createDir($mod_path . $module . DIRECTORY_SEPARATOR . $path);
+            }
             //Creamos las carpetas de los assets
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "img", 0755, TRUE);
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font")) mkdir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "font", 0755, TRUE);
+            $htmlPaths = array("css", "js", "img", "media", "font");
+            foreach($htmlPaths as $path) {
+                Config::createDir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $htmlPaths);
+            }
         }
 
         /**
