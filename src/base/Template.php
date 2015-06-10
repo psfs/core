@@ -10,7 +10,7 @@ use PSFS\base\types\Form;
 use PSFS\Dispatcher;
 
 
-class Template extends Singleton{
+class Template extends Singleton {
 
     protected $tpl;
     protected $filters = array();
@@ -53,7 +53,7 @@ class Template extends Singleton{
      * Método que devuelve el loader del Template
      * @return \Twig_LoaderInterface
      */
-    public function getLoader(){ return $this->tpl->getLoader(); }
+    public function getLoader() { return $this->tpl->getLoader(); }
 
     /**
      * Método que activa la zona pública
@@ -75,7 +75,7 @@ class Template extends Singleton{
      */
     public function setStatus($status = null)
     {
-        switch($status)
+        switch ($status)
         {
             case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
             case '404': $this->status_code = "HTTP/1.0 404 Not Found"; break;
@@ -87,7 +87,7 @@ class Template extends Singleton{
     /**
      * Método que procesa la plantilla
      *
-     * @param $tpl
+     * @param string $tpl
      * @param array $vars
      * @param array $cookies
      *
@@ -128,24 +128,24 @@ class Template extends Singleton{
      */
     private function addAssetFunction()
     {
-        $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true){
+        $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true) {
 
             $file_path = "";
             $debug = Config::getInstance()->getDebugMode();
-            if(!file_exists($file_path)) $file_path = BASE_DIR . $string;
+            if (!file_exists($file_path)) $file_path = BASE_DIR.$string;
             $filename_path = AssetsParser::findDomainPath($string, $file_path);
 
-            if(file_exists($filename_path)) {
+            if (file_exists($filename_path)) {
                 list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $debug, $filename_path);
                 //Creamos el directorio si no existe
-                Config::createDir($base . $html_base);
+                Config::createDir($base.$html_base);
                 //Si se ha modificado
-                if(!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($filename_path))
+                if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($filename_path))
                 {
-                    if($html_base == 'css')
+                    if ($html_base == 'css')
                     {
                         $handle = @fopen($filename_path, 'r');
-                        if($handle)
+                        if ($handle)
                         {
                             while (!feof($handle)) {
                                 AssetsParser::extractCssLineResource($handle, $filename_path);
@@ -154,11 +154,11 @@ class Template extends Singleton{
                         }
                     }
                     $data = file_get_contents($filename_path);
-                    if(!empty($name)) file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
-                    else file_put_contents($base . $file_path, $data);
+                    if (!empty($name)) file_put_contents(WEB_DIR.DIRECTORY_SEPARATOR.$name, $data);
+                    else file_put_contents($base.$file_path, $data);
                 }
             }
-            $return_path = (empty($name)) ? Request::getInstance()->getRootUrl() . '/' . $file_path : $name;
+            $return_path = (empty($name)) ? Request::getInstance()->getRootUrl().'/'.$file_path : $name;
             return ($return) ? $return_path : '';
         });
         $this->tpl->addFunction($function);
@@ -202,10 +202,10 @@ class Template extends Singleton{
     {
         $tpl = $this->tpl;
         $function = new \Twig_SimpleFunction('form_widget', function(array $field, string $label = null) use ($tpl) {
-            if(!empty($label)) $field["label"] = $label;
+            if (!empty($label)) $field["label"] = $label;
             //Limpiamos los campos obligatorios
-            if(!isset($field["required"])) $field["required"] = true;
-            elseif(isset($field["required"]) && (bool)$field["required"] === false) unset($field["required"]);
+            if (!isset($field["required"])) $field["required"] = true;
+            elseif (isset($field["required"]) && (bool)$field["required"] === false) unset($field["required"]);
             $tpl->display('forms/field.html.twig', array(
                 'field' => $field,
             ));
@@ -237,7 +237,7 @@ class Template extends Singleton{
     private function addConfigFunction()
     {
         $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('get_config', function($param){
+        $function = new \Twig_SimpleFunction('get_config', function($param) {
             return Config::getInstance()->get($param) ?: '';
         });
         $tpl->addFunction($function);
@@ -250,9 +250,9 @@ class Template extends Singleton{
     public function regenerateTemplates()
     {
         //Generamos los dominios por defecto del fmwk
-        foreach($this->tpl->getLoader()->getPaths() as $path) $this->generateTemplate($path);
-        $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
-        if(!empty($domains)) foreach($domains as $domain => $paths)
+        foreach ($this->tpl->getLoader()->getPaths() as $path) $this->generateTemplate($path);
+        $domains = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json"), true);
+        if (!empty($domains)) foreach ($domains as $domain => $paths)
         {
             $this->addPath($paths["template"], $domain);
             $this->generateTemplate($paths["template"], $domain);
@@ -267,9 +267,9 @@ class Template extends Singleton{
         {
             // force compilation
             if ($file->isFile()) {
-                try{
+                try {
                     $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
-                }catch(\Exception $e)
+                }catch (\Exception $e)
                 {
                     Logger::getInstance()->errorLog($e->getMessage());
                 }
@@ -283,10 +283,10 @@ class Template extends Singleton{
      */
     private function addRouteFunction()
     {
-        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false, $params = null){
-            try{
+        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false, $params = null) {
+            try {
                 return Router::getInstance()->getRoute($path, $absolute, $params);
-            }catch(\Exception $e)
+            }catch (\Exception $e)
             {
                 return Router::getInstance()->getRoute('', $absolute);
             }
@@ -301,26 +301,26 @@ class Template extends Singleton{
      */
     private function dumpResource()
     {
-        $function = new \Twig_SimpleFunction('resource', function($path, $dest, $force = false){
+        $function = new \Twig_SimpleFunction('resource', function($path, $dest, $force = false) {
             $debug = Config::getInstance()->getDebugMode();
             $domains = self::getDomains(true);
             $filename_path = $path;
-            if(!file_exists($path) && !empty($domains)) foreach($domains as $domain => $paths)
+            if (!file_exists($path) && !empty($domains)) foreach ($domains as $domain => $paths)
             {
                 $domain_filename = str_replace($domain, $paths["public"], $path);
-                if(file_exists($domain_filename))
+                if (file_exists($domain_filename))
                 {
                     $filename_path = $domain_filename;
                     continue;
                 }
             }
-            if(file_exists($filename_path))
+            if (file_exists($filename_path))
             {
                 $destfolder = basename($filename_path);
-                if(!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
+                if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force)
                 {
-                    Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                    self::copyr($filename_path, WEB_DIR . $dest);
+                    Config::createDir(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                    self::copyr($filename_path, WEB_DIR.$dest);
                 }
             }
             return '';
@@ -329,41 +329,44 @@ class Template extends Singleton{
         return $this;
     }
 
+    /**
+     * @param string $dest
+     */
     static public function copyr($source, $dest)
     {
         // recursive function to copy
         // all subdirectories and contents:
-        if(is_dir($source)) {
-            $dir_handle=opendir($source);
+        if (is_dir($source)) {
+            $dir_handle = opendir($source);
             $sourcefolder = basename($source);
             Config::createDir($dest."/".$sourcefolder);
-            while($file=readdir($dir_handle)){
-                if($file!="." && $file!=".."){
-                    if(is_dir($source."/".$file)){
+            while ($file = readdir($dir_handle)) {
+                if ($file != "." && $file != "..") {
+                    if (is_dir($source."/".$file)) {
                         self::copyr($source."/".$file, $dest."/".$sourcefolder);
-                    } else {
-                        if(!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
+                    }else {
+                        if (!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
                     }
                 }
             }
             @closedir($dir_handle);
-        } else {
+        }else {
             // can also handle simple copy commands
-            if(!file_exists($dest)) @copy($source, $dest);
+            if (!file_exists($dest)) @copy($source, $dest);
         }
     }
 
     /**
      * Método que devuelve los dominios de una plataforma
      * @param bool $append
-     * @return mixed
+     * @return string
     */
     static public function getDomains($append = false)
     {
         $domains = Router::getInstance()->getDomains();
-        if($append) foreach($domains as &$domain)
+        if ($append) foreach ($domains as &$domain)
         {
-            foreach($domain as &$path) $path .= DIRECTORY_SEPARATOR;
+            foreach ($domain as &$path) $path .= DIRECTORY_SEPARATOR;
         }
         return $domains;
     }
@@ -373,7 +376,8 @@ class Template extends Singleton{
      */
     protected function setCookieHeaders($cookies)
     {
-        if (!empty($cookies) && is_array($cookies)) foreach ($cookies as $cookie) {
+        if (!empty($cookies) && is_array($cookies)) {
+            foreach ($cookies as $cookie) {
             setcookie($cookie["name"],
                 $cookie["value"],
                 (isset($cookie["expire"])) ? $cookie["expire"] : NULL,
@@ -383,6 +387,7 @@ class Template extends Singleton{
                 (isset($cookie["http"])) ? $cookie["http"] : FALSE
             );
         }
+        }
     }
 
     protected function setAuthHeaders()
@@ -391,7 +396,7 @@ class Template extends Singleton{
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        } else {
+        }else {
             header('Authorization:');
         }
     }
@@ -413,9 +418,9 @@ class Template extends Singleton{
         if ($this->debug) {
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
-            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
-            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
+            header('X-PSFS-DEBUG-TS: '.Dispatcher::getInstance()->getTs().' s');
+            header('X-PSFS-DEBUG-MEM: '.Dispatcher::getInstance()->getMem('MBytes').' MBytes');
+            header('X-PSFS-DEBUG-FILES: '.count(get_included_files()).' files opened');
 
             return $vars;
         }
