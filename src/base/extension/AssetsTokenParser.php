@@ -6,7 +6,7 @@ namespace PSFS\base\extension;
  * Class AssetsTokenParser
  * @package PSFS\base\extension
  */
-class AssetsTokenParser extends \Twig_TokenParser{
+class AssetsTokenParser extends \Twig_TokenParser {
 
     protected $type;
 
@@ -30,10 +30,10 @@ class AssetsTokenParser extends \Twig_TokenParser{
 
         $name = $token->getValue();
 
-        while(!$end)
+        while (!$end)
         {
             $value = $stream->getCurrent();
-            switch($value->getType())
+            switch ($value->getType())
             {
                 case \Twig_Token::STRING_TYPE: $values[] = $parser->getExpressionParser()->parseExpression(); break;
                 case \Twig_Token::BLOCK_END_TYPE: $end = true; $stream->next(); break;
@@ -46,13 +46,13 @@ class AssetsTokenParser extends \Twig_TokenParser{
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
         $node = null;
 
-        if(!empty($values)) foreach($values as $value)
+        if (!empty($values)) foreach ($values as $value)
         {
             $tmp = array();
-            if(empty($node)) $node = $value;
-            else{
+            if (empty($node)) $node = $value;
+            else {
                 $tmp = $node->getAttribute("value");
-                if(!is_array($tmp)) $tmp = array($tmp);
+                if (!is_array($tmp)) $tmp = array($tmp);
             }
             $tmp[] = $value->getAttribute("value");
             $node->setAttribute("value", $tmp);
@@ -63,7 +63,7 @@ class AssetsTokenParser extends \Twig_TokenParser{
 
     public function getTag()
     {
-        switch($this->type)
+        switch ($this->type)
         {
             default:
             case 'js': $return = 'scripts'; break;
