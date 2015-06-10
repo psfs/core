@@ -167,39 +167,11 @@
          */
         private function createModuleBaseFiles($module, $logger, $mod_path)
         {
-            //Generamos el controlador base
-            $logger->infoLog("Generamos el controlador BASE");
-            $controller = $this->tpl->dump("generator/controller.template.twig", array(
-                "module" => $module,
-            ));
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
-            //Generamos el autoloader del módulo
-            $logger->infoLog("Generamos el autoloader");
-            $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
-                "module" => $module,
-            ));
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
-            //Generamos el autoloader del módulo
-            $logger->infoLog("Generamos el schema");
-            $schema = $this->tpl->dump("generator/schema.propel.twig", array(
-                "module" => $module,
-                "db"     => $this->config->get("db_name"),
-            ));
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $schema);
-            $logger->infoLog("Generamos la configuración de Propel");
-            $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
-                "module" => $module,
-                "host"   => $this->config->get("db_host"),
-                "port"   => $this->config->get("db_port"),
-                "user"   => $this->config->get("db_user"),
-                "pass"   => $this->config->get("db_password"),
-                "db"     => $this->config->get("db_name"),
-            ));
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $build_properties);
-            //Generamos la plantilla de index
-            $index = $this->tpl->dump("generator/index.template.twig");
-            $logger->infoLog("Generamos una plantilla base por defecto");
-            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
+            $this->generateControllerTemplate($module, $logger, $mod_path);
+            $this->genereateAutoloaderTemplate($module, $logger, $mod_path);
+            $this->generateSchemaTemplate($module, $logger, $mod_path);
+            $this->generatePropertiesTemplate($module, $logger, $mod_path);
+            $this->generateIndexTemplate($module, $logger, $mod_path);
         }
 
         /**
@@ -277,29 +249,7 @@
                 $detailLog = array();
                 foreach($content as &$line)
                 {
-                    $line = preg_replace(array('/^\[(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\]/'), '<span class="label label-success">$4:$5:$6  $3-$2-$1</span>', $line);
-                    preg_match_all('/\{(.*)\}/', $line, $match);
-                    try
-                    {
-                        if(!empty($match[0])) {
-                            $line = str_replace('[]','', str_replace($match[0][0], '', $line));
-                            $detail = json_decode($match[0][0], true);
-                        }
-                        if(empty($detail)) $detail = array();
-                        preg_match_all('/\>\ (.*):/i', $line, $match);
-                        $type = (isset($match[1][0])) ? $match[1][0] : '';
-                        switch($type)
-                        {
-                            case 'PSFS.DEBUG': $detail["type"] = "info"; break;
-                            case 'PSFS.ERROR': $detail["type"] = "danger"; break;
-                            case 'PSFS.WARN': $detail["type"] = "warning"; break;
-                        }
-                    }catch(\Exception $e)
-                    {
-                        $detail = array(
-                            "type" => "danger",
-                        );
-                    }
+                    list($line, $detail) = $this->parseLogLine($line, $match);
                     $detailLog[] = array_merge(array(
                         "log" => $line,
                     ), $detail);
@@ -308,5 +258,132 @@
                 $log = $detailLog;
             }
             return array($log, $monthOpen);
+        }
+
+        /**
+         * Servicio que trata la línea del log para procesarle en el front end
+         * @param $line
+         * @param $match
+         *
+         * @return array
+         */
+        private function parseLogLine($line, $match)
+        {
+            $line = preg_replace(array('/^\[(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\]/'), '<span class="label label-success">$4:$5:$6  $3-$2-$1</span>', $line);
+            preg_match_all('/\{(.*)\}/', $line, $match);
+            try {
+                if (!empty($match[0])) {
+                    $line = str_replace('[]', '', str_replace($match[0][0], '', $line));
+
+                    return array($line, $detail);
+                    $detail = json_decode($match[0][0], TRUE);
+
+                    return array($line, $detail);
+                }
+                if (empty($detail)) $detail = array();
+                preg_match_all('/\>\ (.*):/i', $line, $match);
+
+                return array($line, $detail);
+                $type = (isset($match[1][0])) ? $match[1][0] : '';
+                switch ($type) {
+                    case 'PSFS.DEBUG':
+                        $detail["type"] = "info";
+                        break;
+                    case 'PSFS.ERROR':
+                        $detail["type"] = "danger";
+                        break;
+                    case 'PSFS.WARN':
+                        $detail["type"] = "warning";
+                        break;
+                }
+
+                return array($line, $detail);
+            } catch (\Exception $e) {
+                $detail = array(
+                    "type" => "danger",
+                );
+
+                return array($line, $detail);
+            }
+
+            return array($line, $detail);
+        }
+
+        /**
+         * @param $module
+         * @param $logger
+         * @param $mod_path
+         */
+        private function generateControllerTemplate($module, $logger, $mod_path)
+        {
+//Generamos el controlador base
+            $logger->infoLog("Generamos el controlador BASE");
+            $controller = $this->tpl->dump("generator/controller.template.twig", array(
+                "module" => $module,
+            ));
+            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}.php", $controller);
+        }
+
+        /**
+         * @param $module
+         * @param $logger
+         * @param $mod_path
+         */
+        private function genereateAutoloaderTemplate($module, $logger, $mod_path)
+        {
+//Generamos el autoloader del módulo
+            $logger->infoLog("Generamos el autoloader");
+            $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
+                "module" => $module,
+            ));
+            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $autoloader);
+        }
+
+        /**
+         * @param $module
+         * @param $logger
+         * @param $mod_path
+         */
+        private function generateSchemaTemplate($module, $logger, $mod_path)
+        {
+//Generamos el autoloader del módulo
+            $logger->infoLog("Generamos el schema");
+            $schema = $this->tpl->dump("generator/schema.propel.twig", array(
+                "module" => $module,
+                "db"     => $this->config->get("db_name"),
+            ));
+            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $schema);
+        }
+
+        /**
+         * @param $module
+         * @param $logger
+         * @param $mod_path
+         */
+        private function generatePropertiesTemplate($module, $logger, $mod_path)
+        {
+            $logger->infoLog("Generamos la configuración de Propel");
+            $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
+                "module" => $module,
+                "host"   => $this->config->get("db_host"),
+                "port"   => $this->config->get("db_port"),
+                "user"   => $this->config->get("db_user"),
+                "pass"   => $this->config->get("db_password"),
+                "db"     => $this->config->get("db_name"),
+            ));
+            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $build_properties);
+        }
+
+        /**
+         * @param $module
+         * @param $logger
+         * @param $mod_path
+         */
+        private function generateIndexTemplate($module, $logger, $mod_path)
+        {
+//Generamos la plantilla de index
+            $index = $this->tpl->dump("generator/index.template.twig");
+            $logger->infoLog("Generamos una plantilla base por defecto");
+            if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);
         }
     }
