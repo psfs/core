@@ -589,7 +589,7 @@ class CssMinifier
         // Support for percentage values rgb(100%, 0%, 45%);
         if ($this->index_of($matches[1], '%') >= 0) {
             $rgbcolors = explode(',', str_replace('%', '', $matches[1]));
-            for ($i = 0; $i < count($rgbcolors); $i++) {
+            for ($i = 0, $ct = count($rgbcolors); $i < $ct; $i++) {
                 $rgbcolors[$i] = $this->round_number(floatval($rgbcolors[$i])*2.55);
             }
         } else {
@@ -597,7 +597,7 @@ class CssMinifier
         }
 
         // Values outside the sRGB color space should be clipped (0-255)
-        for ($i = 0; $i < count($rgbcolors); $i++) {
+        for ($i = 0, $ct = count($rgbcolors); $i < $ct; $i++) {
             $rgbcolors[$i] = $this->clamp_number(intval($rgbcolors[$i], 10), 0, 255);
             $rgbcolors[$i] = sprintf("%02x", $rgbcolors[$i]);
         }

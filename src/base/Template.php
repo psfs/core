@@ -4,6 +4,7 @@ namespace PSFS\base;
 
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\AssetsParser;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\types\Form;
@@ -337,29 +338,40 @@ class Template extends Singleton {
         // recursive function to copy
         // all subdirectories and contents:
         if (is_dir($source)) {
-            $dir_handle = opendir($source);
-            $sourcefolder = basename($source);
-            Config::createDir($dest."/".$sourcefolder);
-            while ($file = readdir($dir_handle)) {
-                if ($file != "." && $file != "..") {
-                    if (is_dir($source."/".$file)) {
-                        self::copyr($source."/".$file, $dest."/".$sourcefolder);
-                    }else {
-                        if (!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) @copy($source."/".$file, $dest."/".$sourcefolder."/".$file);
+            if($dir_handle = opendir($source)) {
+                $sourcefolder = basename($source);
+                Config::createDir($dest."/".$sourcefolder);
+                while ($file = readdir($dir_handle)) {
+                    if ($file != "." && $file != "..") {
+                        if (is_dir($source."/".$file)) {
+                            self::copyr($source."/".$file, $dest."/".$sourcefolder);
+                        }else {
+                            if (!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) {
+                                if(@copy($source."/".$file, $dest."/".$sourcefolder."/".$file) === false) {
+                                    throw new ConfigException("Can't copy " . $source."/".$file . " to " . $dest."/".$sourcefolder."/".$file);
+                                }
+                            }
+                        }
                     }
                 }
+                if(@closedir($dir_handle) === false) {
+                    throw new ConfigException("Can't close handler for directory  " . $source);
+                }
             }
-            @closedir($dir_handle);
         }else {
             // can also handle simple copy commands
-            if (!file_exists($dest)) @copy($source, $dest);
+            if (!file_exists($dest)) {
+                if(@copy($source, $dest) === false) {
+                    throw new ConfigException("Can't copy " . $source . " to " . $dest);
+                }
+            }
         }
     }
 
     /**
      * Método que devuelve los dominios de una plataforma
      * @param bool $append
-     * @return string
+     * @return array
     */
     static public function getDomains($append = false)
     {

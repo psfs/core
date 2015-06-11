@@ -326,11 +326,12 @@ class AssetsParser {
      * @param $string
      * @param string $file_path
      *
-     * @return mixed
+     * @return string
      */
     public static function findDomainPath($string, $file_path)
     {
         $domains = Template::getDomains(TRUE);
+        $filename_path = null;
         if (!file_exists($file_path) && !empty($domains)) {
             foreach ($domains as $domain => $paths) {
                 $domain_filename = str_replace($domain, $paths["public"], $string);
@@ -415,7 +416,9 @@ class AssetsParser {
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
                 Config::createDir($dest);
-                @copy($orig, $dest);
+                if(@copy($orig, $dest) === false) {
+                    throw new ConfigException("Can't copy " . $orig . " to " . $dest);
+                }
             }
         }
     }
