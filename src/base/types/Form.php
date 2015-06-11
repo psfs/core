@@ -46,7 +46,8 @@ abstract class Form{
     /**
      * Constructor por defecto
      *
-     * @param null $model
+     * @param Object $model
+     * @return void
      */
     public function __construct($model = null)
     {
@@ -55,8 +56,8 @@ abstract class Form{
 
     /**
      * Setters
-     * @param $enctype
-     * @return $this
+     * @param string $enctype
+     * @return Form
      */
     public function setEncType($enctype){ $this->enctype = $enctype; return $this; }
     public function setAction($action){ $this->action = $action; return $this; }
@@ -70,8 +71,7 @@ abstract class Form{
         $this->fields[$name]['hasLabel'] = (isset($value['hasLabel'])) ? $value['hasLabel'] : true;
         return $this;
     }
-    public function setLogo($logo)
-    {
+    public function setLogo($logo) {
         $this->logo = $logo;
         return $this;
     }
@@ -86,6 +86,7 @@ abstract class Form{
 
     /**
      * Método que genera un CRFS token para los formularios
+     * @return Form
      */
     private function genCrfsToken()
     {
@@ -107,7 +108,7 @@ abstract class Form{
 
     /**
      * Método genérico que devuelve una propiedad existente de la clase
-     * @param $prop
+     * @param string $prop
      *
      * @return null
      */
@@ -145,6 +146,7 @@ abstract class Form{
 
     /**
      * Método que construye el formulario asignando
+     * @return Form
      */
     public function build()
     {
@@ -173,23 +175,7 @@ abstract class Form{
             if(!empty($this->fields)) foreach($this->fields as $key => &$field)
             {
                 if($key  === self::SEPARATOR) continue;
-                //Verificamos si es obligatorio
-                if((!isset($field["required"]) || false !== (bool)$field["required"]) && empty($field["value"]))
-                {
-                    $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio")));
-                    $field["error"] = $this->getError($key);
-                    $valid = false;
-                }
-                //Validamos en caso de tener validaciones
-                if(!isset($field[$key]["error"]) && isset($field["pattern"]) && !empty($field["value"]))
-                {
-                    if(preg_match("/".$field["pattern"]."/", $field["value"]) == 0)
-                    {
-                        $this->setError($key,str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido")));
-                        $field["error"] = $this->getError($key);
-                        $valid = false;
-                    }
-                }
+                list($field, $valid) = $this->checkFieldValidation($field, $key);
             }
         }
         return $valid;
@@ -200,7 +186,7 @@ abstract class Form{
      * @param $field
      * @param string $error
      *
-     * @return $this
+     * @return Form
      */
     public function setError($field, $error = "Error de validación")
     {
@@ -222,7 +208,7 @@ abstract class Form{
 
     /**
      * Método que extrae los datos del formulario
-     * @return $this
+     * @return Form
      */
     public function hydrate()
     {
@@ -231,15 +217,7 @@ abstract class Form{
         $form_name = $this->getName();
         if(!empty($data[$form_name])) foreach($this->fields as $key => &$field)
         {
-            if(isset($data[$form_name][$key]) && isset($data[$form_name][$key]))
-            {
-                if(preg_match("/id/i", $key) && ($data[$form_name][$key] == 0 || $data[$form_name][$key] == "%" || $data[$form_name][$key] == ""))
-                {
-                    $field["value"] = null;
-                }else $field["value"] = $data[$form_name][$key];
-            }else{
-                unset($field["value"]);
-            }
+            list($data, $field) = $this->hydrateField($data, $form_name, $key, $field);
         }
         //Limpiamos los datos
         if(isset($data[$form_name])) unset($data[$form_name]);
@@ -271,8 +249,8 @@ abstract class Form{
     /**
      * Mëtodo que pre hidrata el formulario para su modificación
      *
-     * @param $data
-     *
+     * @param array $data
+     * @return void
      * @throws FormException
      */
     public function setData($data)
@@ -287,13 +265,11 @@ abstract class Form{
 
     /**
      * Método que añade un botón al formulario
-     * @param $id
+     * @param string $id
      * @param string $value
      * @param string $type
-     * @param null $attrs
-     * @return $this
-     * @internal param null $action
-     *
+     * @param array $attrs
+     * @return Form
      */
     public function addButton($id, $value = 'Guardar', $type = 'submit', $attrs = null)
     {
@@ -311,9 +287,9 @@ abstract class Form{
 
     /**
      * Método que elimina un botón del formulario
-     * @param $id
+     * @param string $id
      *
-     * @return $this
+     * @return Form
      */
     public function dropButton($id)
     {
@@ -323,89 +299,28 @@ abstract class Form{
 
     /**
      * Método que hidrate un modelo de datos asociado a un formulario
-     * @return null
+     * @return Object
      */
     public function getHydratedModel()
     {
         if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
         foreach($this->getData() as $key => $value)
         {
-            $setter = "set" . ucfirst($key);
-            $getter = "get" . ucfirst($key);
-            if(method_exists($this->model, $setter))
-            {
-                if(method_exists($this->model, $getter))
-                {
-                    $tmp = $this->model->$getter();
-                    if(is_object($tmp) && gettype($value) != gettype($tmp))
-                    {
-                        if($tmp instanceof Collection)
-                        {
-                            $collection = new Collection();
-                            $collection->append($value);
-                            $value = $collection;
-                        }
-                    }
-                }
-                $this->model->$setter($value);
-            }
+            $this->hydrateModelField($key, $value);
         }
         return $this->model;
     }
 
     /**
      * Método para setear los valores de los campos del formulario automáticamente desde el modelo que los guarda en BD
+     * @return void
      */
     public function hydrateFromModel()
     {
         if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
         foreach($this->fields as $key => &$field)
         {
-            $method = "get" . ucfirst($key);
-            $type = (isset($field["type"])) ? $field["type"] : "text";
-            //Extraemos los campos del modelo
-            if(method_exists($this->model, $method))
-            {
-                $value = $this->model->$method();
-                //En caso de ser un objeto tenemos una lógica especial
-                if(is_object($value))
-                {
-                    //Si es una relación múltiple
-                    if($value instanceof ObjectCollection)
-                    {
-                        $value = $value->getData();
-                        //Extraemos los datos en función del tipo de input
-                        switch($type)
-                        {
-                            case "checkbox":
-                            case "select":
-                                $data = array();
-                                if(!empty($value)) foreach($value as $val)
-                                {
-                                    if(isset($field["class_data"]) && method_exists($val, "get" . $field["class_data"]))
-                                    {
-                                        $class_method = "get" . $field["class_data"];
-                                        $class = $val->$class_method();
-                                        if(isset($field["class_id"]) && method_exists($class, "get" . $field["class_id"]))
-                                        {
-                                            $method = "get" . $field["class_id"];
-                                            $data[] = $class->$method();
-                                        }else $data[] = $class->getPrimaryKey();
-                                    }else $data[] = $val;
-                                }
-                                $field["value"] = $data;
-                                break;
-                            default:        $field["value"] = (is_array($value)) ? implode(", ", $value) : $value; break;
-                        }
-                    }else{ //O una relación unitaria
-                        if(method_exists($value, "__toString")) $field["value"] = $value;
-                        elseif($value instanceof \DateTime) $field["value"] = $value->format("Y-m-d H:i:s");
-                        else $field["value"] = $value->getPrimaryKey();
-                    }
-                }else $field["value"] = $value;
-            }
-            //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
-            if(in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) $field["value"] = array($field["value"]);
+            $field = $this->extractModelFieldValue($key, $field);
         }
     }
 
@@ -427,7 +342,149 @@ abstract class Form{
         }catch(\Exception $e)
         {
             Logger::getInstance()->errorLog($e->getMessage());
+            throw new FormException($e->getMessage(), $e->getCode(), $e);
         }
         return $save;
+    }
+
+    /**
+     * Método que valida un campo
+     * @param array $field
+     * @param string $key
+     * @return array
+     */
+    private function checkFieldValidation($field, $key)
+    {
+        //Verificamos si es obligatorio
+        if ((!isset($field["required"]) || false !== (bool)$field["required"]) && empty($field["value"])) {
+            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio")));
+            $field["error"] = $this->getError($key);
+            $valid = false;
+        }
+        //Validamos en caso de tener validaciones
+        if (!isset($field[$key]["error"]) && isset($field["pattern"]) && !empty($field["value"])) {
+            if (preg_match("/" . $field["pattern"] . "/", $field["value"]) == 0) {
+                $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido")));
+                $field["error"] = $this->getError($key);
+                $valid = false;
+                return array($field, $valid);
+            }
+            return array($field, $valid);
+        }
+        return array($field, $valid);
+    }
+
+    /**
+     * Método que hidrata los campos del formulario
+     * @param array $data
+     * @param string $form_name
+     * @param string $key
+     * @param string|array|object $field
+     * @return array
+     */
+    private function hydrateField($data, $form_name, $key, $field)
+    {
+        if (isset($data[$form_name][$key]) && isset($data[$form_name][$key])) {
+            if (preg_match("/id/i", $key) && ($data[$form_name][$key] == 0 || $data[$form_name][$key] == "%" || $data[$form_name][$key] == "")) {
+                $field["value"] = null;
+                return array($data, $field);
+            } else $field["value"] = $data[$form_name][$key];
+        } else {
+            unset($field["value"]);
+        }
+        return array($data, $field);
+    }
+
+    /**
+     * Método que hidrata los campos de un formulario desde un modelo
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    private function hydrateModelField($key, $value)
+    {
+        $setter = "set" . ucfirst($key);
+        $getter = "get" . ucfirst($key);
+        if (method_exists($this->model, $setter)) {
+            if (method_exists($this->model, $getter)) {
+                $tmp = $this->model->$getter();
+                if (is_object($tmp) && gettype($value) != gettype($tmp)) {
+                    if ($tmp instanceof Collection) {
+                        $collection = new Collection();
+                        $collection->append($value);
+                        $value = $collection;
+                    }
+                }
+            }
+            $this->model->$setter($value);
+        }
+    }
+
+    /**
+     * Método que extrae los valores de un campo de un modelo relacionado con el principal del formulario
+     * @param array $field
+     * @param string|array|object $val
+     * @param array $data
+     * @return array
+     */
+    private function extractRelatedModelFieldValue($field, $val, $data)
+    {
+        //Extraemos el dato del modelo relacionado si existe el getter
+        if (isset($field["class_data"]) && method_exists($val, "get" . $field["class_data"])) {
+            $class_method = "get" . $field["class_data"];
+            $class = $val->$class_method();
+            if (isset($field["class_id"]) && method_exists($class, "get" . $field["class_id"])) {
+                $method = "get" . $field["class_id"];
+                $data[] = $class->$method();
+                return array($field, $method, $data);
+            } else $data[] = $class->getPrimaryKey();
+        } else $data[] = $val;
+
+        return array($field, $method, $data);
+    }
+
+    /**
+     * Método que extrae el valor de un campo del modelo
+     * @param string $key
+     * @param array $field
+     * @return array
+     */
+    private function extractModelFieldValue($key, $field)
+    {
+        //Extraemos el valor del campo del modelo
+        $method = "get" . ucfirst($key);
+        $type = (isset($field["type"])) ? $field["type"] : "text";
+        //Extraemos los campos del modelo
+        if (method_exists($this->model, $method)) {
+            $value = $this->model->$method();
+            //En caso de ser un objeto tenemos una lógica especial
+            if (is_object($value)) {
+                //Si es una relación múltiple
+                if ($value instanceof ObjectCollection) {
+                    $value = $value->getData();
+                    //Extraemos los datos en función del tipo de input
+                    switch ($type) {
+                        case "checkbox":
+                        case "select":
+                            $data = array();
+                            if (!empty($value)) foreach ($value as $val) {
+                                list($field, $method, $data) = $this->extractRelatedModelFieldValue($field, $val, $data);
+                            }
+                            $field["value"] = $data;
+                            break;
+                        default:
+                            $field["value"] = (is_array($value)) ? implode(", ", $value) : $value;
+                            break;
+                    }
+                } else { //O una relación unitaria
+                    if (method_exists($value, "__toString")) $field["value"] = $value;
+                    elseif ($value instanceof \DateTime) $field["value"] = $value->format("Y-m-d H:i:s");
+                    else $field["value"] = $value->getPrimaryKey();
+                }
+            } else $field["value"] = $value;
+        }
+        //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
+        if (in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) $field["value"] = array($field["value"]);return $field;
+        return $field;
     }
 }

@@ -15,6 +15,9 @@ Componentes necesarios para su ejecución:
     * "symfony/finder": "2.3.*@dev",
     * "monolog/monolog": "1.10.*@dev",
     * "twig/twig": "1.*@dev"
+    * "twig/extensions": "1.1.*@dev",
+    * "monolog/monolog": "dev-master",
+    * "pear/archive_tar": "master"
 
 
 Para instalar usar composer:

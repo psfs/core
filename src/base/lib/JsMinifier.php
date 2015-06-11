@@ -352,7 +352,7 @@ class JsMinifier
      * Conditional comments and "license" style blocks are preserved.
      *
      * @param  int               $startIndex The index point where "getReal" function started
-     * @return bool|string       False if there's no character
+     * @return string       False if there's no character
      * @throws \RuntimeException Unclosed comments will throw an error
      */
     protected function processMultiLineComments($startIndex)
@@ -361,7 +361,7 @@ class JsMinifier
         $thirdCommentString = $this->getChar();
 
         // kill everything up to the next */ if it's there
-        if ($this->getNext('*/')) {
+        if ($this->getNext('*/') !== false) {
 
             $this->getChar(); // get *
             $this->getChar(); // get /
@@ -459,44 +459,46 @@ class JsMinifier
             // Grab the very next character and load it into a
             $this->a = $this->getChar();
 
-            switch ($this->a) {
+            if($this->a !== false) {
+                switch ($this->a) {
 
-                // If the string opener (single or double quote) is used
-                // output it and break out of the while loop-
-                // The string is finished!
-                case $stringType:
-                    break 2;
+                    // If the string opener (single or double quote) is used
+                    // output it and break out of the while loop-
+                    // The string is finished!
+                    case $stringType:
+                        break 2;
 
-                // New lines in strings without line delimiters are bad- actual
-                // new lines will be represented by the string \n and not the actual
-                // character, so those will be treated just fine using the switch
-                // block below.
-                case "\n":
-                    throw new \RuntimeException('Unclosed string at position: '.$startpos);
-                    break;
-
-                // Escaped characters get picked up here. If it's an escaped new line it's not really needed
-                case '\\':
-
-                    // a is a slash. We want to keep it, and the next character,
-                    // unless it's a new line. New lines as actual strings will be
-                    // preserved, but escaped new lines should be reduced.
-                    $this->b = $this->getChar();
-
-                    // If b is a new line we discard a and b and restart the loop.
-                    if ($this->b == "\n") {
+                    // New lines in strings without line delimiters are bad- actual
+                    // new lines will be represented by the string \n and not the actual
+                    // character, so those will be treated just fine using the switch
+                    // block below.
+                    case "\n":
+                        throw new \RuntimeException('Unclosed string at position: '.$startpos);
                         break;
-                    }
 
-                    // echo out the escaped character and restart the loop.
-                    echo $this->a.$this->b;
-                    break;
+                    // Escaped characters get picked up here. If it's an escaped new line it's not really needed
+                    case '\\':
+
+                        // a is a slash. We want to keep it, and the next character,
+                        // unless it's a new line. New lines as actual strings will be
+                        // preserved, but escaped new lines should be reduced.
+                        $this->b = $this->getChar();
+
+                        // If b is a new line we discard a and b and restart the loop.
+                        if ($this->b == "\n") {
+                            break;
+                        }
+
+                        // echo out the escaped character and restart the loop.
+                        echo $this->a.$this->b;
+                        break;
 
 
-                // Since we're not dealing with any special cases we simply
-                // output the character and continue our loop.
-                default:
-                    echo $this->a;
+                    // Since we're not dealing with any special cases we simply
+                    // output the character and continue our loop.
+                    default:
+                        echo $this->a;
+                }
             }
         }
     }
