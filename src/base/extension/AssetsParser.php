@@ -252,7 +252,7 @@ class AssetsParser {
             $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
             if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file)) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
-                if (@unlink($base.$this->hash.".css") === false) {
+                if (file_exists($base.$this->hash.".css") && @unlink($base.$this->hash.".css") === false) {
                     throw new ConfigException("Can't unlink file ".$base.$this->hash.".css");
                 }
                 $handle = @fopen($file, 'r');
