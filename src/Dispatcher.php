@@ -5,7 +5,6 @@ namespace PSFS;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\SecurityException;
-use PSFS\base\Forms;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;

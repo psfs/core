@@ -2,9 +2,6 @@
 
 namespace PSFS\base;
 
-
-use Symfony\Component\Finder\Finder;
-
 if(!function_exists("getallheaders"))
 {
     function getallheaders()

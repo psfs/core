@@ -12,7 +12,6 @@ use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\AuthController;
 use PSFS\services\AdminServices;
-use Symfony\Component\Finder\Finder;
 
 /**
  * Class Admin

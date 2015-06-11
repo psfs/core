@@ -4,7 +4,8 @@ PSFS
 [![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
 [![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
 [![Latest Unstable Version](https://poser.pugx.org/c15k0/psfs/v/unstable)](https://packagist.org/packages/c15k0/psfs) [![License](https://poser.pugx.org/c15k0/psfs/license)](https://packagist.org/packages/c15k0/psfs)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403/mini.png)](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403)
+
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403/big.png)](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403)
 
 Framework Php Simple Fast & Secure
 
