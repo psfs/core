@@ -9,4 +9,3 @@ php:
 install:
   - composer install
   - phpunit
-  - vendor/bin/psfs psfs:create:root
