@@ -356,6 +356,7 @@ abstract class Form{
     private function checkFieldValidation($field, $key)
     {
         //Verificamos si es obligatorio
+        $valid = true;
         if ((!isset($field["required"]) || false !== (bool)$field["required"]) && empty($field["value"])) {
             $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio")));
             $field["error"] = $this->getError($key);
@@ -367,9 +368,7 @@ abstract class Form{
                 $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido")));
                 $field["error"] = $this->getError($key);
                 $valid = false;
-                return array($field, $valid);
             }
-            return array($field, $valid);
         }
         return array($field, $valid);
     }
