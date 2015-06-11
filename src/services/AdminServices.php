@@ -275,15 +275,11 @@
                 if (!empty($match[0])) {
                     $line = str_replace('[]', '', str_replace($match[0][0], '', $line));
 
-                    return array($line, $detail);
                     $detail = json_decode($match[0][0], TRUE);
-
-                    return array($line, $detail);
                 }
                 if (empty($detail)) $detail = array();
                 preg_match_all('/\>\ (.*):/i', $line, $match);
 
-                return array($line, $detail);
                 $type = (isset($match[1][0])) ? $match[1][0] : '';
                 switch ($type) {
                     case 'PSFS.DEBUG':
@@ -297,13 +293,11 @@
                         break;
                 }
 
-                return array($line, $detail);
             } catch (\Exception $e) {
                 $detail = array(
                     "type" => "danger",
                 );
 
-                return array($line, $detail);
             }
 
             return array($line, $detail);

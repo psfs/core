@@ -2,7 +2,6 @@
 
 namespace PSFS\base\exception;
 
-class AccessDeniedException extends \Exception
-{
+class AccessDeniedException extends \Exception {
 
 }

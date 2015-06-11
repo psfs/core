@@ -86,8 +86,8 @@ class AssetsParser {
         switch ($this->type)
         {
             default:
-            case "js": $this->_compileJs($debug); break;
-            case "css": $this->_compileCss($debug); break;
+            case "js": $this->compileJs($debug); break;
+            case "css": $this->compileCss($debug); break;
         }
 
         return $this;
@@ -99,7 +99,7 @@ class AssetsParser {
      *
      * @return $this
      */
-    protected function _compileCss($debug = false)
+    protected function compileCss($debug = false)
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
         Config::createDir($base);
@@ -125,7 +125,7 @@ class AssetsParser {
      *
      * @return $this
      */
-    protected function _compileJs($debug = false)
+    protected function compileJs($debug = false)
     {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
         Config::createDir($base);
@@ -160,8 +160,8 @@ class AssetsParser {
         switch ($this->type)
         {
             default:
-            case "js": $this->_printJs($debug); break;
-            case "css": $this->_printCss($debug); break;
+            case "js": $this->printJs($debug); break;
+            case "css": $this->printCss($debug); break;
         }
     }
 
@@ -169,7 +169,7 @@ class AssetsParser {
      * Método que devuelve el html con la ruta compilada del recurso javascript
      * @param boolean $debug
      */
-    protected function _printJs($debug)
+    protected function printJs($debug)
     {
         if ($debug)
         {
@@ -188,7 +188,7 @@ class AssetsParser {
      * Método que devuelve el html con la ruta compilada del recurso css
      * @param boolean $debug
      */
-    protected function _printCss($debug)
+    protected function printCss($debug)
     {
         if ($debug)
         {

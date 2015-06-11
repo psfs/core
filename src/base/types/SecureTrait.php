@@ -9,7 +9,7 @@ use PSFS\base\Security;
  * Class AuthController
  * @package PSFS\base\types
  */
-trait SecureTrait{
+trait SecureTrait {
 
     protected $security;
 

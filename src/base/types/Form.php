@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types;
 
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Collection\Collection;
 use Propel\Runtime\Collection\ObjectCollection;
 use PSFS\base\config\Config;
@@ -46,7 +47,7 @@ abstract class Form{
     /**
      * Constructor por defecto
      *
-     * @param Object|null $model
+     * @param ActiveRecordInterface|null $model
      */
     public function __construct($model = null)
     {
@@ -298,7 +299,7 @@ abstract class Form{
 
     /**
      * Método que hidrate un modelo de datos asociado a un formulario
-     * @return Object
+     * @return ActiveRecordInterface
      */
     public function getHydratedModel()
     {
@@ -377,7 +378,7 @@ abstract class Form{
      * @param array $data
      * @param string $form_name
      * @param string $key
-     * @param string|array|object $field
+     * @param string|array $field
      * @return array
      */
     private function hydrateField($data, $form_name, $key, $field)
@@ -421,7 +422,7 @@ abstract class Form{
     /**
      * Método que extrae los valores de un campo de un modelo relacionado con el principal del formulario
      * @param array $field
-     * @param string|array|object $val
+     * @param string|array $val
      * @param array $data
      * @return array
      */

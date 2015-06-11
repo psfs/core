@@ -66,7 +66,7 @@ class CssMinifier
         }
 
         if ($this->raise_php_limits) {
-            $this->do_raise_php_limits();
+            $this->doRaisePhpLimits();
         }
 
         $this->comments = array();
@@ -75,24 +75,24 @@ class CssMinifier
         $start_index = 0;
         $length = strlen($css);
 
-        $css = $this->extract_data_urls($css);
+        $css = $this->extractDataUrls($css);
 
         // collect all comment blocks...
-        while (($start_index = $this->index_of($css, '/*', $start_index)) >= 0) {
-            $end_index = $this->index_of($css, '*/', $start_index + 2);
+        while (($start_index = $this->indexOf($css, '/*', $start_index)) >= 0) {
+            $end_index = $this->indexOf($css, '*/', $start_index + 2);
             if ($end_index < 0) {
                 $end_index = $length;
             }
-            $comment_found = $this->str_slice($css, $start_index + 2, $end_index);
+            $comment_found = $this->strSlice($css, $start_index + 2, $end_index);
             $this->comments[] = $comment_found;
             $comment_preserve_string = self::COMMENT.(count($this->comments) - 1).'___';
-            $css = $this->str_slice($css, 0, $start_index + 2).$comment_preserve_string.$this->str_slice($css, $end_index);
+            $css = $this->strSlice($css, 0, $start_index + 2).$comment_preserve_string.$this->strSlice($css, $end_index);
             // Set correct start_index: Fixes issue #2528130
             $start_index = $end_index + 2 + strlen($comment_preserve_string) - strlen($comment_found);
         }
 
         // preserve strings so their content doesn't get accidentally minified
-        $css = preg_replace_callback('/(?:"(?:[^\\\\"]|\\\\.|\\\\)*")|'."(?:'(?:[^\\\\']|\\\\.|\\\\)*')/S", array($this, 'replace_string'), $css);
+        $css = preg_replace_callback('/(?:"(?:[^\\\\"]|\\\\.|\\\\)*")|'."(?:'(?:[^\\\\']|\\\\.|\\\\)*')/S", array($this, 'replaceString'), $css);
 
         // Let's divide css code in chunks of 25.000 chars aprox.
         // Reason: PHP's PCRE functions like preg_replace have a "backtrack limit"
@@ -117,7 +117,7 @@ class CssMinifier
             while ($i < $l) {
                 $i += 50; // save iterations. 500 checks for a closing curly brace }
                 if ($l - $start_index <= $css_chunk_length || $i >= $l) {
-                    $css_chunks[] = $this->str_slice($css, $start_index);
+                    $css_chunks[] = $this->strSlice($css, $start_index);
                     break;
                 }
                 if ($css[$i - 1] === '}' && $i - $start_index > $css_chunk_length) {
@@ -125,10 +125,10 @@ class CssMinifier
                     // join them in the same chunk (i.e. @media blocks)
                     $next_chunk = substr($css, $i);
                     if (preg_match('/^\s*\}/', $next_chunk)) {
-                        $i = $i + $this->index_of($next_chunk, '}') + 1;
+                        $i = $i + $this->indexOf($next_chunk, '}') + 1;
                     }
 
-                    $css_chunks[] = $this->str_slice($css, $start_index, $i);
+                    $css_chunks[] = $this->strSlice($css, $start_index, $i);
                     $start_index = $i;
                 }
             }
@@ -155,16 +155,16 @@ class CssMinifier
      * Sets the memory limit for this script
      * @param int|string $limit
      */
-    public function set_memory_limit($limit)
+    public function setMemoryLimit($limit)
     {
-        $this->memory_limit = $this->normalize_int($limit);
+        $this->memory_limit = $this->normalizeInt($limit);
     }
 
     /**
      * Sets the maximum execution time for this script
      * @param int|string $seconds
      */
-    public function set_max_execution_time($seconds)
+    public function setMaxExecutionTime($seconds)
     {
         $this->max_execution_time = (int)$seconds;
     }
@@ -173,7 +173,7 @@ class CssMinifier
      * Sets the PCRE backtrack limit for this script
      * @param int $limit
      */
-    public function set_pcre_backtrack_limit($limit)
+    public function setPcreBacktrackLimit($limit)
     {
         $this->pcre_backtrack_limit = (int)$limit;
     }
@@ -182,7 +182,7 @@ class CssMinifier
      * Sets the PCRE recursion limit for this script
      * @param int $limit
      */
-    public function set_pcre_recursion_limit($limit)
+    public function setPcreRecursionLimit($limit)
     {
         $this->pcre_recursion_limit = (int)$limit;
     }
@@ -190,7 +190,7 @@ class CssMinifier
     /**
      * Try to configure PHP to use at least the suggested minimum settings
      */
-    private function do_raise_php_limits()
+    private function doRaisePhpLimits()
     {
         $php_limits = array(
             'memory_limit' => $this->memory_limit,
@@ -201,7 +201,7 @@ class CssMinifier
 
         // If current settings are higher respect them.
         foreach ($php_limits as $name => $suggested) {
-            $current = $this->normalize_int(ini_get($name));
+            $current = $this->normalizeInt(ini_get($name));
             // memory_limit exception: allow -1 for "no memory limit".
             if ($current > -1 && ($suggested == -1 || $current < $suggested)) {
                 ini_set($name, $suggested);
@@ -249,7 +249,7 @@ class CssMinifier
             // keep empty comments after child selectors (IE7 hack)
             // e.g. html >/**/ body
             if (strlen($token) === 0) {
-                $start_index = $this->index_of($css, $this->str_slice($placeholder, 1, -1));
+                $start_index = $this->indexOf($css, $this->strSlice($placeholder, 1, -1));
                 if ($start_index > 2) {
                     if (substr($css, $start_index - 3, 1) === '>') {
                         $this->preserved_tokens[] = '';
@@ -259,7 +259,7 @@ class CssMinifier
             }
 
             // in all other cases kill the comment
-            $css = preg_replace('/\/\*'.$this->str_slice($placeholder, 1, -1).'\*\//', '', $css, 1);
+            $css = preg_replace('/\/\*'.$this->strSlice($placeholder, 1, -1).'\*\//', '', $css, 1);
         }
 
 
@@ -267,7 +267,7 @@ class CssMinifier
         $css = preg_replace('/\s+/', ' ', $css);
 
         // Shorten & preserve calculations calc(...) since spaces are important
-        $css = preg_replace_callback('/calc(\(((?:[^\(\)]+|(?1))*)\))/i', array($this, 'replace_calc'), $css);
+        $css = preg_replace_callback('/calc(\(((?:[^\(\)]+|(?1))*)\))/i', array($this, 'replaceCalc'), $css);
 
         // Replace positive sign from numbers preceded by : or a white-space before the leading space is removed
         // +1.2em to 1.2em, +.8px to .8px, +2% to 2%
@@ -290,7 +290,7 @@ class CssMinifier
         // Remove the spaces before the things that should not have spaces before them.
         // But, be careful not to turn "p :link {...}" into "p:link{...}"
         // Swap out any pseudo-class colons with the token, and then swap back.
-        $css = preg_replace_callback('/(?:^|\})(?:(?:[^\{\:])+\:)+(?:[^\{]*\{)/', array($this, 'replace_colon'), $css);
+        $css = preg_replace_callback('/(?:^|\})(?:(?:[^\{\:])+\:)+(?:[^\{]*\{)/', array($this, 'replaceColon'), $css);
         
         // Remove spaces before the things that should not have spaces before them.
         $css = preg_replace('/\s+([\!\{\}\;\:\>\+\(\)\]\~\=,])/', '$1', $css);
@@ -302,23 +302,23 @@ class CssMinifier
         $css = preg_replace('/'.self::CLASSCOLON.'/', ':', $css);
 
         // retain space for special IE6 cases
-        $css = preg_replace_callback('/\:first\-(line|letter)(\{|,)/i', array($this, 'lowercase_pseudo_first'), $css);
+        $css = preg_replace_callback('/\:first\-(line|letter)(\{|,)/i', array($this, 'lowercasePseudoFirst'), $css);
 
         // no space after the end of a preserved comment
         $css = preg_replace('/\*\/ /', '*/', $css);
 
         // lowercase some popular @directives
-        $css = preg_replace_callback('/@(font-face|import|(?:-(?:atsc|khtml|moz|ms|o|wap|webkit)-)?keyframe|media|page|namespace)/i', array($this, 'lowercase_directives'), $css);
+        $css = preg_replace_callback('/@(font-face|import|(?:-(?:atsc|khtml|moz|ms|o|wap|webkit)-)?keyframe|media|page|namespace)/i', array($this, 'lowercaseDirectives'), $css);
 
         // lowercase some more common pseudo-elements
-        $css = preg_replace_callback('/:(active|after|before|checked|disabled|empty|enabled|first-(?:child|of-type)|focus|hover|last-(?:child|of-type)|link|only-(?:child|of-type)|root|:selection|target|visited)/i', array($this, 'lowercase_pseudo_elements'), $css);
+        $css = preg_replace_callback('/:(active|after|before|checked|disabled|empty|enabled|first-(?:child|of-type)|focus|hover|last-(?:child|of-type)|link|only-(?:child|of-type)|root|:selection|target|visited)/i', array($this, 'lowercasePseudoElements'), $css);
 
         // lowercase some more common functions
-        $css = preg_replace_callback('/:(lang|not|nth-child|nth-last-child|nth-last-of-type|nth-of-type|(?:-(?:moz|webkit)-)?any)\(/i', array($this, 'lowercase_common_functions'), $css);
+        $css = preg_replace_callback('/:(lang|not|nth-child|nth-last-child|nth-last-of-type|nth-of-type|(?:-(?:moz|webkit)-)?any)\(/i', array($this, 'lowercaseCommonFunctions'), $css);
 
         // lower case some common function that can be values
         // NOTE: rgb() isn't useful as we replace with #hex later, as well as and() is already done for us
-        $css = preg_replace_callback('/([:,\( ]\s*)(attr|color-stop|from|rgba|to|url|(?:-(?:atsc|khtml|moz|ms|o|wap|webkit)-)?(?:calc|max|min|(?:repeating-)?(?:linear|radial)-gradient)|-webkit-gradient)/iS', array($this, 'lowercase_common_functions_values'), $css);
+        $css = preg_replace_callback('/([:,\( ]\s*)(attr|color-stop|from|rgba|to|url|(?:-(?:atsc|khtml|moz|ms|o|wap|webkit)-)?(?:calc|max|min|(?:repeating-)?(?:linear|radial)-gradient)|-webkit-gradient)/iS', array($this, 'lowercaseCommonFunctionsValues'), $css);
         
         // Put the space back in some cases, to support stuff like
         // @media screen and (-webkit-min-device-pixel-ratio:0){
@@ -353,11 +353,11 @@ class CssMinifier
         // Shorten colors from rgb(51,102,153) to #336699, rgb(100%,0%,0%) to #ff0000 (sRGB color space)
         // Shorten colors from hsl(0, 100%, 50%) to #ff0000 (sRGB color space)
         // This makes it more likely that it'll get further compressed in the next step.
-        $css = preg_replace_callback('/rgb\s*\(\s*([0-9,\s\-\.\%]+)\s*\)(.{1})/i', array($this, 'rgb_to_hex'), $css);
-        $css = preg_replace_callback('/hsl\s*\(\s*([0-9,\s\-\.\%]+)\s*\)(.{1})/i', array($this, 'hsl_to_hex'), $css);
+        $css = preg_replace_callback('/rgb\s*\(\s*([0-9,\s\-\.\%]+)\s*\)(.{1})/i', array($this, 'rgbToHex'), $css);
+        $css = preg_replace_callback('/hsl\s*\(\s*([0-9,\s\-\.\%]+)\s*\)(.{1})/i', array($this, 'hslToHex'), $css);
 
         // Shorten colors from #AABBCC to #ABC or short color name.
-        $css = $this->compress_hex_colors($css);
+        $css = $this->compressHexColors($css);
 
         // border: none to border:0, outline: none to outline:0
         $css = preg_replace('/(border\-?(?:top|right|bottom|left|)|outline)\:none(;|\}| \!)/iS', '$1:0$2', $css);
@@ -384,7 +384,7 @@ class CssMinifier
             while ($i < strlen($css)) {
                 $i++;
                 if ($css[$i - 1] === '}' && $i - $start_index > $linebreak_pos) {
-                    $css = $this->str_slice($css, 0, $i)."\n".$this->str_slice($css, $i);
+                    $css = $this->strSlice($css, 0, $i)."\n".$this->strSlice($css, $i);
                     $start_index = $i;
                 }
             }
@@ -398,7 +398,7 @@ class CssMinifier
         $css = preg_replace('/'.self::NL.'/', "\n", $css);
 
         // Lowercase all uppercase properties
-        $css = preg_replace_callback('/(\{|\;)([A-Z\-]+)(\:)/', array($this, 'lowercase_properties'), $css);
+        $css = preg_replace_callback('/(\{|\;)([A-Z\-]+)(\:)/', array($this, 'lowercaseProperties'), $css);
 
         // restore preserved comments and strings
         for ($i = 0, $max = count($this->preserved_tokens); $i < $max; $i++) {
@@ -417,7 +417,7 @@ class CssMinifier
      * @param string $css
      * @return string
      */
-    private function extract_data_urls($css)
+    private function extractDataUrls($css)
     {
         // Leave data urls alone to increase parse performance.
         $max_index = strlen($css) - 1;
@@ -431,7 +431,7 @@ class CssMinifier
         // handling sb appends directly, instead of using matcher.append* methods.
 
         while (preg_match($pattern, $css, $m, 0, $offset)) {
-            $index = $this->index_of($css, $m[0], $offset);
+            $index = $this->indexOf($css, $m[0], $offset);
             $last_index = $index + strlen($m[0]);
             $start_index = $index + 4; // "url(".length()
             $end_index = $last_index - 1;
@@ -443,22 +443,22 @@ class CssMinifier
             }
 
             while ($found_terminator === FALSE && $end_index + 1 <= $max_index) {
-                $end_index = $this->index_of($css, $terminator, $end_index + 1);
+                $end_index = $this->indexOf($css, $terminator, $end_index + 1);
 
                 // endIndex == 0 doesn't really apply here
                 if ($end_index > 0 && substr($css, $end_index - 1, 1) !== '\\') {
                     $found_terminator = TRUE;
                     if (')' != $terminator) {
-                        $end_index = $this->index_of($css, ')', $end_index);
+                        $end_index = $this->indexOf($css, ')', $end_index);
                     }
                 }
             }
 
             // Enough searching, start moving stuff over to the buffer
-            $sb[] = $this->str_slice($css, $append_index, $index);
+            $sb[] = $this->strSlice($css, $append_index, $index);
 
             if ($found_terminator) {
-                $token = $this->str_slice($css, $start_index, $end_index);
+                $token = $this->strSlice($css, $start_index, $end_index);
                 $token = preg_replace('/\s+/', '', $token);
                 $this->preserved_tokens[] = $token;
 
@@ -468,14 +468,14 @@ class CssMinifier
                 $append_index = $end_index + 1;
             } else {
                 // No end terminator found, re-add the whole match. Should we throw/warn here?
-                $sb[] = $this->str_slice($css, $index, $last_index);
+                $sb[] = $this->strSlice($css, $index, $last_index);
                 $append_index = $last_index;
             }
 
             $offset = $last_index;
         }
 
-        $sb[] = $this->str_slice($css, $append_index);
+        $sb[] = $this->strSlice($css, $append_index);
 
         return implode('', $sb);
     }
@@ -495,7 +495,7 @@ class CssMinifier
      * @param string $css
      * @return string
      */
-    private function compress_hex_colors($css)
+    private function compressHexColors($css)
     {
         // Look for hex colors inside { ... } (to avoid IDs) and which don't have a =, or a " in front of them (to avoid filters)
         $pattern = '/(\=\s*?["\']?)?#([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])([0-9a-f])(\}|[^0-9a-f{][^{]*?\})/iS';
@@ -516,11 +516,11 @@ class CssMinifier
         );
 
         while (preg_match($pattern, $css, $m, 0, $offset)) {
-            $index = $this->index_of($css, $m[0], $offset);
+            $index = $this->indexOf($css, $m[0], $offset);
             $last_index = $index + strlen($m[0]);
             $is_filter = $m[1] !== null && $m[1] !== '';
 
-            $sb[] = $this->str_slice($css, $_index, $index);
+            $sb[] = $this->strSlice($css, $_index, $index);
 
             if ($is_filter) {
                 // Restore, maintain case, otherwise filter will break
@@ -542,7 +542,7 @@ class CssMinifier
             $_index = $offset = $last_index - strlen($m[8]);
         }
 
-        $sb[] = $this->str_slice($css, $_index);
+        $sb[] = $this->strSlice($css, $_index);
 
         return implode('', $sb);
     }
@@ -551,16 +551,16 @@ class CssMinifier
      * ---------------------------------------------------------------------------------------------
      */
 
-    private function replace_string($matches)
+    private function replaceString($matches)
     {
         $match = $matches[0];
         $quote = substr($match, 0, 1);
         // Must use addcslashes in PHP to avoid parsing of backslashes
-        $match = addcslashes($this->str_slice($match, 1, -1), '\\');
+        $match = addcslashes($this->strSlice($match, 1, -1), '\\');
 
         // maybe the string contains a comment-like substring?
         // one, maybe more? put'em back then
-        if (($pos = $this->index_of($match, self::COMMENT)) >= 0) {
+        if (($pos = $this->indexOf($match, self::COMMENT)) >= 0) {
             for ($i = 0, $max = count($this->comments); $i < $max; $i++) {
                 $match = preg_replace('/'.self::COMMENT.$i.'___/', $this->comments[$i], $match, 1);
             }
@@ -573,24 +573,24 @@ class CssMinifier
         return $quote.self::TOKEN.(count($this->preserved_tokens) - 1).'___'.$quote;
     }
 
-    private function replace_colon($matches)
+    private function replaceColon($matches)
     {
         return preg_replace('/\:/', self::CLASSCOLON, $matches[0]);
     }
 
-    private function replace_calc($matches)
+    private function replaceCalc($matches)
     {
         $this->preserved_tokens[] = trim(preg_replace('/\s*([\*\/\(\),])\s*/', '$1', $matches[2]));
         return 'calc('.self::TOKEN.(count($this->preserved_tokens) - 1).'___'.')';
     }
 
-    private function rgb_to_hex($matches)
+    private function rgbToHex($matches)
     {
         // Support for percentage values rgb(100%, 0%, 45%);
-        if ($this->index_of($matches[1], '%') >= 0) {
+        if ($this->indexOf($matches[1], '%') >= 0) {
             $rgbcolors = explode(',', str_replace('%', '', $matches[1]));
             for ($i = 0, $ct = count($rgbcolors); $i < $ct; $i++) {
-                $rgbcolors[$i] = $this->round_number(floatval($rgbcolors[$i])*2.55);
+                $rgbcolors[$i] = $this->roundNumber(floatval($rgbcolors[$i])*2.55);
             }
         } else {
             $rgbcolors = explode(',', $matches[1]);
@@ -598,7 +598,7 @@ class CssMinifier
 
         // Values outside the sRGB color space should be clipped (0-255)
         for ($i = 0, $ct = count($rgbcolors); $i < $ct; $i++) {
-            $rgbcolors[$i] = $this->clamp_number(intval($rgbcolors[$i], 10), 0, 255);
+            $rgbcolors[$i] = $this->clampNumber(intval($rgbcolors[$i], 10), 0, 255);
             $rgbcolors[$i] = sprintf("%02x", $rgbcolors[$i]);
         }
 
@@ -610,7 +610,7 @@ class CssMinifier
         return '#'.implode('', $rgbcolors).$matches[2];
     }
 
-    private function hsl_to_hex($matches)
+    private function hslToHex($matches)
     {
         $values = explode(',', str_replace('%', '', $matches[1]));
         $h = floatval($values[0]);
@@ -619,48 +619,48 @@ class CssMinifier
 
         // Wrap and clamp, then fraction!
         $h = ((($h%360) + 360)%360)/360;
-        $s = $this->clamp_number($s, 0, 100)/100;
-        $l = $this->clamp_number($l, 0, 100)/100;
+        $s = $this->clampNumber($s, 0, 100)/100;
+        $l = $this->clampNumber($l, 0, 100)/100;
 
         if ($s == 0) {
-            $r = $g = $b = $this->round_number(255*$l);
+            $r = $g = $b = $this->roundNumber(255*$l);
         } else {
             $v2 = $l < 0.5 ? $l*(1 + $s) : ($l + $s) - ($s*$l);
             $v1 = (2*$l) - $v2;
-            $r = $this->round_number(255*$this->hue_to_rgb($v1, $v2, $h + (1/3)));
-            $g = $this->round_number(255*$this->hue_to_rgb($v1, $v2, $h));
-            $b = $this->round_number(255*$this->hue_to_rgb($v1, $v2, $h - (1/3)));
+            $r = $this->roundNumber(255*$this->hueToRgb($v1, $v2, $h + (1/3)));
+            $g = $this->roundNumber(255*$this->hueToRgb($v1, $v2, $h));
+            $b = $this->roundNumber(255*$this->hueToRgb($v1, $v2, $h - (1/3)));
         }
 
-        return $this->rgb_to_hex(array('', $r.','.$g.','.$b, $matches[2]));
+        return $this->rgbToHex(array('', $r.','.$g.','.$b, $matches[2]));
     }
 
-    private function lowercase_pseudo_first($matches)
+    private function lowercasePseudoFirst($matches)
     {
         return ':first-'.strtolower($matches[1]).' '.$matches[2];
     }
 
-    private function lowercase_directives($matches) 
+    private function lowercaseDirectives($matches)
     {
         return '@'.strtolower($matches[1]);
     }
 
-    private function lowercase_pseudo_elements($matches) 
+    private function lowercasePseudoElements($matches)
     {
         return ':'.strtolower($matches[1]);
     }
 
-    private function lowercase_common_functions($matches) 
+    private function lowercaseCommonFunctions($matches)
     {
         return ':'.strtolower($matches[1]).'(';
     }
 
-    private function lowercase_common_functions_values($matches) 
+    private function lowercaseCommonFunctionsValues($matches)
     {
         return $matches[1].strtolower($matches[2]);
     }
 
-    private function lowercase_properties($matches)
+    private function lowercaseProperties($matches)
     {
         return $matches[1].strtolower($matches[2]).$matches[3];
     }
@@ -674,7 +674,7 @@ class CssMinifier
      * @param double $v2
      * @param integer $vh
      */
-    private function hue_to_rgb($v1, $v2, $vh)
+    private function hueToRgb($v1, $v2, $vh)
     {
         $vh = $vh < 0 ? $vh + 1 : ($vh > 1 ? $vh - 1 : $vh);
         if ($vh*6 < 1) {
@@ -689,7 +689,7 @@ class CssMinifier
         return $v1;
     }
 
-    private function round_number($n)
+    private function roundNumber($n)
     {
         return intval(floor(floatval($n) + 0.5), 10);
     }
@@ -698,7 +698,7 @@ class CssMinifier
      * @param integer $min
      * @param integer $max
      */
-    private function clamp_number($n, $min, $max)
+    private function clampNumber($n, $min, $max)
     {
         return min(max($n, $min), $max);
     }
@@ -712,7 +712,7 @@ class CssMinifier
      * @param int    $offset index (optional)
      * @return int
      */
-    private function index_of($haystack, $needle, $offset = 0)
+    private function indexOf($haystack, $needle, $offset = 0)
     {
         $index = strpos($haystack, $needle, $offset);
 
@@ -722,14 +722,14 @@ class CssMinifier
     /**
      * PHP port of Javascript's "slice" function for strings only
      * Author: Tubal Martin http://blog.margenn.com
-     * Tests: http://margenn.com/tubal/str_slice/
+     * Tests: http://margenn.com/tubal/strSlice/
      *
      * @param string   $str
      * @param int      $start index
      * @param integer $end index (optional)
      * @return string
      */
-    private function str_slice($str, $start = 0, $end = FALSE)
+    private function strSlice($str, $start = 0, $end = FALSE)
     {
         if ($end !== FALSE && ($start < 0 || $end <= 0)) {
             $max = strlen($str);
@@ -760,7 +760,7 @@ class CssMinifier
      * @param mixed $size
      * @return int
      */
-    private function normalize_int($size)
+    private function normalizeInt($size)
     {
         if (is_string($size)) {
             switch (substr($size, -1)) {

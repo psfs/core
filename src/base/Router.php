@@ -51,7 +51,7 @@
         {
             if(empty($e)) $e = new \Exception('Página no encontrada', 404);
             return Template::getInstance()->setStatus($e->getCode())->render('error.html.twig', array(
-                'exception' => (null != $e->getPrevious()) ? $e->getPrevious() : $e,
+                'exception' => (null !== $e->getPrevious()) ? $e->getPrevious() : $e,
                 'error_page' => true,
             ));
         }
