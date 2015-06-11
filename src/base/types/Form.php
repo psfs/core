@@ -46,8 +46,7 @@ abstract class Form{
     /**
      * Constructor por defecto
      *
-     * @param Object $model
-     * @return void
+     * @param Object|null $model
      */
     public function __construct($model = null)
     {
@@ -110,7 +109,7 @@ abstract class Form{
      * Método genérico que devuelve una propiedad existente de la clase
      * @param string $prop
      *
-     * @return null
+     * @return mixed|null
      */
     public function get($prop)
     {
@@ -121,17 +120,17 @@ abstract class Form{
 
     /**
      * Método que devuelve un campo del formulario
-     * @param $name
+     * @param string $name
      *
-     * @return null
+     * @return array|null
      */
     public function getField($name){ return (isset($this->fields[$name])) ? $this->fields[$name] : null; }
 
     /**
      * Método que devuelve el valor de un campo
-     * @param $name
+     * @param string $name
      *
-     * @return null
+     * @return mixed|null
      */
     public function getFieldValue($name)
     {
@@ -183,7 +182,7 @@ abstract class Form{
 
     /**
      * Método que añade un error para un campo del formulario
-     * @param $field
+     * @param array $field
      * @param string $error
      *
      * @return Form
@@ -197,7 +196,7 @@ abstract class Form{
 
     /**
      * Método que devuelve el error de un campo
-     * @param $field
+     * @param array $field
      *
      * @return string
      */
@@ -268,7 +267,7 @@ abstract class Form{
      * @param string $id
      * @param string $value
      * @param string $type
-     * @param array $attrs
+     * @param array|null $attrs
      * @return Form
      */
     public function addButton($id, $value = 'Guardar', $type = 'submit', $attrs = null)
@@ -429,6 +428,7 @@ abstract class Form{
     private function extractRelatedModelFieldValue($field, $val, $data)
     {
         //Extraemos el dato del modelo relacionado si existe el getter
+        $method = null;
         if (isset($field["class_data"]) && method_exists($val, "get" . $field["class_data"])) {
             $class_method = "get" . $field["class_data"];
             $class = $val->$class_method();
@@ -483,7 +483,9 @@ abstract class Form{
             } else $field["value"] = $value;
         }
         //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
-        if (in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) $field["value"] = array($field["value"]);return $field;
+        if (in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) {
+            $field["value"] = array($field["value"]);
+        }
         return $field;
     }
 }
