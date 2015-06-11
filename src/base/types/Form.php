@@ -182,7 +182,7 @@ abstract class Form{
 
     /**
      * Método que añade un error para un campo del formulario
-     * @param array $field
+     * @param string $field
      * @param string $error
      *
      * @return Form
@@ -196,7 +196,7 @@ abstract class Form{
 
     /**
      * Método que devuelve el error de un campo
-     * @param array $field
+     * @param string $field
      *
      * @return string
      */

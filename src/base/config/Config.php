@@ -25,7 +25,7 @@ class Config extends Singleton {
     );
     static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language');
     static public $encrypted = array('db_password');
-    static public $optional = array('platform_name', "debug", "restricted", "admin_login");
+    static public $optional = array('platform_name', "debug", "restricted", "admin_login", "logger.phpFire", "logger.memory");
     protected $debug = false;
 
     /**
