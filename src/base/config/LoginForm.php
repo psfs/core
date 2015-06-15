@@ -14,7 +14,7 @@ class LoginForm extends Form {
      * Constructor por defecto
      * @throws \PSFS\base\exception\RouterException
      */
-    function __construct()
+    public function __construct()
     {
         $this->setAction(Router::getInstance()->getRoute('admin-login'));
         $this->add("user", array(
