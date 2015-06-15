@@ -25,7 +25,7 @@
 
         /**
          */
-        function __construct()
+        public function __construct()
         {
             $this->controller = new Admin();
             $this->finder = new Finder();
