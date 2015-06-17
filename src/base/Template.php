@@ -23,7 +23,7 @@ class Template extends Singleton {
     /**
      *
      */
-    function __construct()
+    public function __construct()
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: false;
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());

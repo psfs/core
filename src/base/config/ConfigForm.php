@@ -17,7 +17,7 @@ class ConfigForm extends Form
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
      */
-    function __construct()
+    public function __construct()
     {
         $this->setAction(Router::getInstance()->getRoute('admin-config'));
         //Añadimos los campos obligatorios

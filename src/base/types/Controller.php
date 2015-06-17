@@ -20,7 +20,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
     /**
      * Constructor por defecto
      */
-    function __construct(){
+    public function __construct(){
         $this->tpl = Template::getInstance();
     }
 

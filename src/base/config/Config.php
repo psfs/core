@@ -30,7 +30,7 @@ class Config extends Singleton {
 
     /**
      */
-    function __construct()
+    public function __construct()
     {
         $this->configure();
     }
