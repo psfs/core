@@ -96,7 +96,6 @@ class Template extends Singleton {
      */
     public function render($tpl, array $vars = array(), $cookies = array())
     {
-        ob_clean();
         ob_start();
         header("X-Powered-By: @c15k0");
         $vars = $this->setDebugHeaders($vars);

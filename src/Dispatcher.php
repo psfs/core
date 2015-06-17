@@ -74,15 +74,9 @@ class Dispatcher extends Singleton{
             {
                 if($this->config->getDebugMode())
                 {
-                    //Warning & Notice handler
-                    set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-                    }, E_WARNING);
-                    set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext){
-                        throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-                    }, E_NOTICE);
+                    $this->bindWarningAsExceptions();
                 }
-                if(!$this->router->execute($this->parser->getServer("SCRIPT_URL"))) return $this->router->httpNotFound();
+                if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
             }else return $this->router->httpNotFound();
         } catch(\Exception $e) {
             $error = array(
@@ -125,6 +119,20 @@ class Dispatcher extends Singleton{
     public function getTs()
     {
         return microtime(true) - $this->ts;
+    }
+
+    /**
+     * Función debug para capturar los warnings y notice y convertirlos en excepciones
+     */
+    protected function bindWarningAsExceptions()
+    {
+        //Warning & Notice handler
+        set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
+            throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+        }, E_WARNING);
+        set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
+            throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+        }, E_NOTICE);
     }
 
 }
