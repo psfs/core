@@ -32,7 +32,7 @@ class Singleton
      * is not allowed to call from outside: private!
      *
      */
-    private function __construct(){
+    private function __construct() {
         $this->init();
     }
 
@@ -41,14 +41,14 @@ class Singleton
      *
      * @return void
      */
-    private function __clone(){}
+    private function __clone() {}
 
     /**
      * prevent from being unserialized
      *
      * @return void
      */
-    private function __wakeup(){}
+    private function __wakeup() {}
 
     /**
      * Magic setter
@@ -81,15 +81,15 @@ class Singleton
     public function load($variable, $singleton = true, $classNameSpace = null) {
         $calledClass = get_called_class();
         try {
-            $setter = "set" . ucfirst($variable);
-            if(method_exists($calledClass, $setter)) {
+            $setter = "set".ucfirst($variable);
+            if (method_exists($calledClass, $setter)) {
                 $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
                 $this->$setter($instance);
             }else {
                 $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
                 $this->$variable = $instance;
             }
-        }catch(\Exception $e) {
+        }catch (\Exception $e) {
             Logger::getInstance()->errorLog($e->getMessage());
         }
         return $this;
@@ -101,7 +101,7 @@ class Singleton
     public function init() {
         $properties = $this->getClassProperties();
         /** @var \ReflectionProperty $property */
-        if(!empty($properties)) foreach($properties as $property => $class) {
+        if (!empty($properties)) foreach ($properties as $property => $class) {
             $this->load($property, true, $class);
         }
     }
@@ -113,16 +113,16 @@ class Singleton
      */
     private function getClassProperties($class = null) {
         $properties = array();
-        if(empty($class)) $class = get_class($this);
+        if (empty($class)) $class = get_class($this);
         $selfReflector = new \ReflectionClass($class);
-        if(false !== $selfReflector->getParentClass()) {
+        if (false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
         }
-        foreach($selfReflector->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
+        foreach ($selfReflector->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
             $doc = $property->getDocComment();
-            if(preg_match('/@Inyectable/im', $doc)) {
+            if (preg_match('/@Inyectable/im', $doc)) {
                 $instanceType = $this->extractVarType($property->getDocComment());
-                if(!empty($instanceType)) {
+                if (!empty($instanceType)) {
                     $properties[$property->getName()] = $instanceType;
                 }
             }
@@ -158,7 +158,7 @@ class Singleton
         if (method_exists($varInstanceType, "getInstance") && true === $singleton) {
             $instance = $varInstanceType::getInstance();
             return $instance;
-        } else {
+        }else {
             $instance = new $varInstanceType();
             return $instance;
         }
