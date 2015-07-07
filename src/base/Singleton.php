@@ -115,7 +115,7 @@ class Singleton
         $properties = array();
         if(empty($class)) $class = get_class($this);
         $selfReflector = new \ReflectionClass($class);
-        if(null !== $selfReflector->getParentClass()) {
+        if(false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
         }
         foreach($selfReflector->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
