@@ -2,7 +2,6 @@
     /**
      * Comando de de creación de estructura de un módulo
      */
-    use PSFS\controller\Admin;
     use Symfony\Component\Console\Helper\QuestionHelper;
     use Symfony\Component\Console\Input\InputArgument;
     use Symfony\Component\Console\Input\InputInterface;
@@ -44,7 +43,6 @@
         ->setDescription('Comando de creación de módulos psfs')
         ->setCode(function (InputInterface $input, OutputInterface $output) {
             $module = $input->getArgument('module');
-            $admin = new Admin();
             $helper = new QuestionHelper();
             $log = new CLog($output, $output->isVerbose());
             try
@@ -58,7 +56,7 @@
                 //Sólo si tenemos nombre del módulo
                 if(!empty($module))
                 {
-                    $admin->createStructureModule($module, $log);
+                    \PSFS\services\AdminServices::getInstance()->createStructureModule($module, $log);
                 }
             }catch(\Exception $e)
             {

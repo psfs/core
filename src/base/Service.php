@@ -117,7 +117,7 @@
             $this->url = null;
             $this->params = array();
             $this->headers = array();
-            $this->log->debugLog(_("Context service cleared!"));
+            $this->log->debugLog(_("Context service for ". get_called_class() ." cleared!"));
         }
 
         /**

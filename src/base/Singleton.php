@@ -81,14 +81,13 @@ class Singleton
     public function load($variable, $singleton = true, $classNameSpace = null) {
         $calledClass = get_called_class();
         try {
-            pre($calledClass."->".$variable);
             $setter = "set" . ucfirst($variable);
-            if(!empty($this->$variable)) {
-                $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
-                $this->$variable = $instance;
-            }else if(method_exists($calledClass, $setter)) {
+            if(method_exists($calledClass, $setter)) {
                 $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
                 $this->$setter($instance);
+            }else {
+                $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
+                $this->$variable = $instance;
             }
         }catch(\Exception $e) {
             Logger::getInstance()->errorLog($e->getMessage());
@@ -101,7 +100,6 @@ class Singleton
      */
     public function init() {
         $properties = $this->getClassProperties();
-        $selfReflector = new \ReflectionClass(get_class($this));
         /** @var \ReflectionProperty $property */
         if(!empty($properties)) foreach($properties as $property => $class) {
             $this->load($property, true, $class);

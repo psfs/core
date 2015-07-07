@@ -4,19 +4,25 @@ namespace {{ module }}\Controller;
 use PSFS\base\types\Controller;
 
 /**
-* Class {{ module }}
+* Class {{ module }}Controller
 * @package {{ module }}\Controller
 */
-class {{ module }} extends Controller
+class {{ module }}Controller extends Controller
 {
     const DOMAIN = '{{ module }}';
+
+    /**
+    * @Inyectable
+    * @var \{{ module }}\Services\{{ module }}Service
+    */
+    protected $srv;
+
     /**
     * Constructor por defecto
-    * @return $this
     */
     function __construct()
     {
-        parent::__construct();
+        $this->init();
         $this->setDomain('{{ module }}')
             ->setTemplatePath(__DIR__. DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Templates');
     }
@@ -24,7 +30,7 @@ class {{ module }} extends Controller
     /**
     * Index
     * @route /{{ module }}
-    * @return html
+    * @return string HTML
     */
     public function index()
     {
