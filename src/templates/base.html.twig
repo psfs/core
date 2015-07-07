@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% set lang_html = get_config('default_language')|default('es_ES')|split("_") %}
-<html lang="{{ lang_html }}" data-ng-app="{{ app_name|default('') }}">
+<html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('') }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">

@@ -8,11 +8,7 @@
 {% block body_content %}
     <p><strong>{{ exception.getCode }}</strong> {{ exception.getMessage }}</p>
     {% if __DEBUG__ %}
-    <ul>
-        {% for trace in __DEBUG__.trace %}
-        <li>{{ trace.class }}<em>{{ trace.type }}</em>{{ trace.function }}() <span class="label label-danger">{{ trace.file }} [{{ trace.line }}]</span></li>
-        {% endfor %}
-    </ul>
+    <pre>{{ trace }}</pre>
     {% endif %}
 {% endblock body_content %}
 {% block scripts %}

@@ -22,16 +22,27 @@ class Admin extends AuthController{
 
     const DOMAIN = 'ROOT';
 
-    private $config;
-    private $srv;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\config\Config Servicio de configuración
+     */
+    protected $config;
+    /**
+     * @Inyectable
+     * @var \PSFS\services\AdminServices Servicios de administración
+     */
+    protected $srv;
+    /**
+     * @Inyectable
+     * @var  \PSFS\services\GeneratorService Servicio de generación de estructura de directorios
+     */
+    protected $gen;
     /**
      * Constructor por defecto
      */
     public function __construct()
     {
-        parent::__construct();
-        $this->config = Config::getInstance();
-        $this->srv = AdminServices::getInstance();
+        $this->init();
         $this->setDomain('ROOT')
             ->setTemplatePath($this->config->getTemplatePath());
     }
@@ -217,11 +228,11 @@ class Admin extends AuthController{
                 $module = $form->getFieldValue("module");
                 try
                 {
-                    $this->srv->createStructureModule($module, Logger::getInstance());
+                    $this->gen->createStructureModule($module, Logger::getInstance());
                     return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin-module", true));
                 }catch(\Exception $e)
                 {
-                    Logger::getInstance()->infoLog($e->getMessage() . "[" . $e->getLine() . "]");
+                    Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
                     throw new \HttpException('Error al generar el módulo, prueba a cambiar los permisos', 403);
                 }
             }
@@ -305,6 +316,16 @@ class Admin extends AuthController{
             "selected" => $selected,
             "month_open" => $monthOpen,
         ));
+    }
+
+    /**
+     * Test inyections
+     * @route /admin/inyect
+     */
+    public function testInyection() {
+        $this->srv->load("jarr", true);
+        $this->srv->load("config", true);
+        return $this->response("FIN TEST INYECTIONS");
     }
 
 }

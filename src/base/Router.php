@@ -51,7 +51,8 @@
         {
             if(empty($e)) $e = new \Exception('Página no encontrada', 404);
             return Template::getInstance()->setStatus($e->getCode())->render('error.html.twig', array(
-                'exception' => (null !== $e->getPrevious()) ? $e->getPrevious() : $e,
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
                 'error_page' => true,
             ));
         }
@@ -81,7 +82,7 @@
                 else return $this->sentAuthHeader();
             }
 
-            if(!$this->searhAction($route))
+            if(!$this->searchAction($route))
             {
                 if(preg_match('/\/$/', $route))
                 {
@@ -100,7 +101,7 @@
          * @return mixed|boolean
          * @throws \Exception
          */
-        protected function searhAction($route)
+        protected function searchAction($route)
         {
             //Revisamos si tenemos la ruta registrada
             foreach($this->routing as $pattern => $action)
