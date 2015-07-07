@@ -5,7 +5,6 @@ namespace PSFS\base\types;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
-use PSFS\base\Template;
 use PSFS\base\types\interfaces\ControllerInterface;
 
 /**
@@ -58,12 +57,6 @@ abstract class Controller extends Singleton implements ControllerInterface{
         $vars["__menu__"] = $this->getMenu();
         return $this->tpl->dump($this->getDomain() . $template, $vars);
     }
-
-    /**
-     * Método que devuelve un modelo
-     * @param $model
-     */
-    public function getModel($model){}
 
     /**
      * Método que devuelve una respuesta con formato

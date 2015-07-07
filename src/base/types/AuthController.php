@@ -3,7 +3,6 @@
 namespace PSFS\base\types;
 
 
-use PSFS\base\Security;
 use PSFS\base\types\interfaces\AuthInterface;
 
 /**
