@@ -318,14 +318,4 @@ class Admin extends AuthController{
         ));
     }
 
-    /**
-     * Test inyections
-     * @route /admin/inyect
-     */
-    public function testInyection() {
-        $this->srv->load("jarr", true);
-        $this->srv->load("config", true);
-        return $this->response("FIN TEST INYECTIONS");
-    }
-
 }

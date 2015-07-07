@@ -164,14 +164,19 @@
                 preg_match_all('/\>\ (.*):/i', $line, $match);
 
                 $type = (isset($match[1][0])) ? $match[1][0] : '';
+                $type = explode(".", $type);
+                $type = count($type)>1 ? $type[1] : $type[0];
                 switch ($type) {
-                    case 'PSFS.DEBUG':
+                    case 'INFO':
+                        $detail["type"] = "success";
+                        break;
+                    case 'DEBUG':
                         $detail["type"] = "info";
                         break;
-                    case 'PSFS.ERROR':
+                    case 'ERROR':
                         $detail["type"] = "danger";
                         break;
-                    case 'PSFS.WARN':
+                    case 'WARN':
                         $detail["type"] = "warning";
                         break;
                 }
