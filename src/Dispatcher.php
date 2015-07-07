@@ -5,10 +5,7 @@ namespace PSFS;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\SecurityException;
-use PSFS\base\Logger;
 use PSFS\base\Request;
-use PSFS\base\Router;
-use PSFS\base\Security;
 use PSFS\base\Singleton;
 
 require_once "bootstrap.php";
@@ -17,11 +14,32 @@ require_once "bootstrap.php";
  * @package PSFS
  */
 class Dispatcher extends Singleton {
-    private $router;
-    private $parser;
-    private $security;
-    private $log;
-    private $config;
+
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Router router
+     */
+    protected $router;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Request parser
+     */
+    protected $parser;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Security security
+     */
+    protected $security;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Logger log
+     */
+    protected $log;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\config\Config config
+     */
+    protected $config;
 
     protected $ts;
     protected $mem;
@@ -32,12 +50,8 @@ class Dispatcher extends Singleton {
      * @param $mem
      */
     public function __construct() {
-        $this->router = Router::getInstance();
-        $this->parser = Request::getInstance();
-        $this->security = Security::getInstance();
-        $this->config = Config::getInstance();
-        $this->log = Logger::getInstance('PSFS', $this->config->getDebugMode());
-        $this->ts = $this->parser->getTs();
+        $this->init();
+        $this->ts = Request::getInstance()->getTs();
         $this->mem = memory_get_usage();
         $this->setLocale();
     }
