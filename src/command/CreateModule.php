@@ -56,7 +56,7 @@
                 //Sólo si tenemos nombre del módulo
                 if(!empty($module))
                 {
-                    \PSFS\services\AdminServices::getInstance()->createStructureModule($module, $log);
+                    \PSFS\services\GeneratorService::getInstance()->createStructureModule($module, $log);
                 }
             }catch(\Exception $e)
             {

@@ -31,7 +31,7 @@ class Dispatcher extends Singleton{
      * Constructor por defecto
      * @param $mem
      */
-    public function __construct($mem = 0){
+    public function __construct(){
         $this->router = Router::getInstance();
         $this->parser = Request::getInstance();
         $this->security = Security::getInstance();
@@ -129,10 +129,10 @@ class Dispatcher extends Singleton{
     protected function bindWarningAsExceptions()
     {
         //Warning & Notice handler
-        set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
         }, E_WARNING);
-        set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
         }, E_NOTICE);
     }

@@ -11,7 +11,7 @@ class AssetsNode extends \Twig_Node {
     protected $type;
 
     /**
-     * @param array $name
+     * @param string $name
      * @param array $values
      * @param int $line
      * @param null $tag

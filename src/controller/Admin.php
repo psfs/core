@@ -11,7 +11,7 @@ use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\AuthController;
-use PSFS\services\AdminServices;
+use PSFS\Services\GeneratorService;
 
 /**
  * Class Admin
@@ -146,9 +146,9 @@ class Admin extends AuthController{
         $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
         //Localizamos xgettext
-        $translations = AdminServices::findTranslations(SOURCE_DIR, $locale);
-        $translations = AdminServices::findTranslations(CORE_DIR, $locale);
-        $translations = AdminServices::findTranslations(CACHE_DIR, $locale);
+        $translations = GeneratorService::findTranslations(SOURCE_DIR, $locale);
+        $translations = GeneratorService::findTranslations(CORE_DIR, $locale);
+        $translations = GeneratorService::findTranslations(CACHE_DIR, $locale);
 
         echo "<hr>";
         echo _('Compilando traducciones');
@@ -214,7 +214,7 @@ class Admin extends AuthController{
      * @return string HTML
      * @throws \HttpException
      */
-    public function generateModule($module = '')
+    public function generateModule()
     {
         Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".$this->getRequest()->getrequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */

@@ -59,11 +59,10 @@
          * Servicio que genera la estructura de un módulo o lo actualiza en caso de ser necesario
          * @param $module
          * @param $logger
-         * @param $pb
          *
          * @return mixed
          */
-        public function createStructureModule($module, $logger, $pb = null)
+        public function createStructureModule($module, $logger)
         {
             $mod_path = CORE_DIR . DIRECTORY_SEPARATOR;
             $module = ucfirst($module);

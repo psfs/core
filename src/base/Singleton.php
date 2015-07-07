@@ -121,7 +121,10 @@ class Singleton
         foreach($selfReflector->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
             $doc = $property->getDocComment();
             if(preg_match('/@Inyectable/im', $doc)) {
-                $properties[$property->getName()] = $this->extractVarType($property->getDocComment());
+                $instanceType = $this->extractVarType($property->getDocComment());
+                if(!empty($instanceType)) {
+                    $properties[$property->getName()] = $instanceType;
+                }
             }
         }
         return $properties;

@@ -469,6 +469,7 @@ abstract class Form{
                             $data = array();
                             if (!empty($value)) foreach ($value as $val) {
                                 list($field, $method, $data) = $this->extractRelatedModelFieldValue($field, $val, $data);
+                                unset($method);
                             }
                             $field["value"] = $data;
                             break;

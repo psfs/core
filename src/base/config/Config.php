@@ -93,9 +93,7 @@ class Config extends Singleton {
      * Método que guarda la configuración del framework
      *
      * @param array $data
-     *
-     * @param array $extra
-     *
+     * @param array|null $extra
      * @return bool
      */
     public static function save(array $data, array $extra = null)
