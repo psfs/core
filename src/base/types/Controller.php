@@ -14,15 +14,12 @@ use PSFS\base\types\interfaces\ControllerInterface;
  */
 abstract class Controller extends Singleton implements ControllerInterface{
 
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Template Gestor de plantillas
+     */
     protected $tpl;
     protected $domain = '';
-
-    /**
-     * Constructor por defecto
-     */
-    public function __construct(){
-        $this->tpl = Template::getInstance();
-    }
 
     /**
      * Método que renderiza una plantilla
@@ -146,7 +143,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * Método que añade la ruta del controlador a los path de plantillas Twig
      * @param $path
      * @return mixed
-*/
+    */
     protected function setTemplatePath($path)
     {
         $this->tpl->addPath($path, $this->domain);

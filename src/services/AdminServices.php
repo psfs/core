@@ -3,23 +3,29 @@
 
     use PSFS\base\config\Config;
     use PSFS\base\Security;
+    use PSFS\base\Service;
     use PSFS\base\Singleton;
     use PSFS\base\Template;
     use PSFS\controller\Admin;
     use Symfony\Component\Finder\Finder;
 
-    class AdminServices extends Singleton{
+    class AdminServices extends Service{
 
-        private $config;
-        private $security;
-        private $tpl;
-
-        public function __construct()
-        {
-            $this->config = Config::getInstance();
-            $this->security = Security::getInstance();
-            $this->tpl = Template::getInstance();
-        }
+        /**
+         * @Inyectable
+         * @var \PSFS\base\config\Config Servicio de configuración
+         */
+        protected $config;
+        /**
+         * @Inyectable
+         * @var \PSFS\base\Security Servicio de autenticación
+         */
+        protected $security;
+        /**
+         * @Inyectable
+         * @var \PSFS\base\Template Servicio de gestión de plantillas
+         */
+        protected $tpl;
 
         /**
          * Servicio que devuelve las cabeceras de autenticación
@@ -325,7 +331,7 @@
          */
         private function genereateAutoloaderTemplate($module, $logger, $mod_path)
         {
-//Generamos el autoloader del módulo
+            //Generamos el autoloader del módulo
             $logger->infoLog("Generamos el autoloader");
             $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
                 "module" => $module,
@@ -340,7 +346,7 @@
          */
         private function generateSchemaTemplate($module, $logger, $mod_path)
         {
-//Generamos el autoloader del módulo
+            //Generamos el autoloader del módulo
             $logger->infoLog("Generamos el schema");
             $schema = $this->tpl->dump("generator/schema.propel.twig", array(
                 "module" => $module,
@@ -375,7 +381,7 @@
          */
         private function generateIndexTemplate($module, $logger, $mod_path)
         {
-//Generamos la plantilla de index
+            //Generamos la plantilla de index
             $index = $this->tpl->dump("generator/index.template.twig");
             $logger->infoLog("Generamos una plantilla base por defecto");
             if (!file_exists($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig")) file_put_contents($mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $index);

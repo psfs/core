@@ -78,6 +78,10 @@ class Dispatcher extends Singleton{
                 }
                 if(!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
             }else return $this->router->httpNotFound();
+        } catch(ConfigException $c) {
+            return $this->config->config();
+        } catch(SecurityException $s) {
+            return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
         } catch(\Exception $e) {
             $error = array(
                 "error" => $e->getMessage(),
@@ -86,8 +90,6 @@ class Dispatcher extends Singleton{
             );
             $this->log->errorLog(json_encode($error));
             unset($error);
-            if($e instanceof ConfigException) return $this->config->config();
-            if($e instanceof SecurityException) return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
             return $this->router->httpNotFound($e);
         }
         return false;

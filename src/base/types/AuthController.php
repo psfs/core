@@ -12,16 +12,11 @@ use PSFS\base\types\interfaces\AuthInterface;
  */
 abstract class AuthController extends Controller implements AuthInterface{
 
-    protected $security;
-
     /**
-     * Constructor por defecto
+     * @Inyectable
+     * @var \PSFS\base\Security Seguridad del controlador
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->security = Security::getInstance();
-    }
+    protected $security;
 
     /**
      * Método que verifica si está autenticado el usuario

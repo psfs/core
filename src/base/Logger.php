@@ -39,7 +39,7 @@
                 if (isset($args[0][0])) $logger = $args[0][0];
                 if (isset($args[0][1])) $debug = $args[0][1];
             }
-            $path = LOG_DIR.DIRECTORY_SEPARATOR.strtoupper($logger).DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
+            $path = LOG_DIR.DIRECTORY_SEPARATOR.$logger.DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
             Config::createDir($path);
             $this->stream = fopen($path.DIRECTORY_SEPARATOR.date("Ymd").".log", "a+");
             $this->logger = new Monolog(strtoupper($logger));
@@ -101,5 +101,15 @@
         public function errorLog($msg, $context = array())
         {
             return $this->logger->addError($msg, $context);
+        }
+
+        /**
+         * Método que escribe un log de Warning
+         * @param $msg
+         * @param array $context
+         * @return bool
+         */
+        public function warningLog($msg, $context = array()) {
+            return $this->logger->addWarning($msg, $context);
         }
     }

@@ -22,16 +22,23 @@ class Admin extends AuthController{
 
     const DOMAIN = 'ROOT';
 
-    private $config;
-    private $srv;
+    /**
+     * @Inyectable
+     * @var \PSFS\base\config\Config Servicio de configuración
+     */
+    protected $config;
+    /**
+     * @Inyectable
+     * @var \PSFS\service\AdminService Servicios de administración
+     */
+    protected $srv;
     /**
      * Constructor por defecto
      */
     public function __construct()
     {
-        parent::__construct();
-        $this->config = Config::getInstance();
-        $this->srv = AdminServices::getInstance();
+        $this->init();
+        pre($this);
         $this->setDomain('ROOT')
             ->setTemplatePath($this->config->getTemplatePath());
     }
@@ -305,6 +312,16 @@ class Admin extends AuthController{
             "selected" => $selected,
             "month_open" => $monthOpen,
         ));
+    }
+
+    /**
+     * Test inyections
+     * @route /admin/inyect
+     */
+    public function testInyection() {
+        $this->srv->load("jarr", true);
+        $this->srv->load("config", true);
+        return $this->response("FIN TEST INYECTIONS");
     }
 
 }
