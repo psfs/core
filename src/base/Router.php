@@ -104,7 +104,8 @@
         protected function searchAction($route)
         {
             //Revisamos si tenemos la ruta registrada
-            list($path, $query) = array_values(parse_url($route));
+            $parts = parse_url($route);
+            $path = (isset($parts["path"])) ? $parts["path"] : $route;
             foreach($this->routing as $pattern => $action)
             {
                 $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
