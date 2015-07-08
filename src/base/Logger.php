@@ -31,9 +31,10 @@
          */
         public function __construct()
         {
+            $config = Config::getInstance();
             $args = func_get_args();
             $logger = 'general';
-            $debug = false;
+            $debug = $config->getDebugMode();
             if (!empty($args))
             {
                 if (isset($args[0][0])) $logger = $args[0][0];
@@ -44,7 +45,6 @@
             $this->stream = fopen($path.DIRECTORY_SEPARATOR.date("Ymd").".log", "a+");
             $this->logger = new Monolog(strtoupper($logger));
             $this->logger->pushHandler(new StreamHandler($this->stream));
-            $config = Config::getInstance();
             if ($debug)
             {
                 $phpFireLog = $config->get("logger.phpFire");
