@@ -104,13 +104,14 @@
         protected function searchAction($route)
         {
             //Revisamos si tenemos la ruta registrada
+            list($path, $query) = array_values(parse_url($route));
             foreach($this->routing as $pattern => $action)
             {
                 $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
                 $expr = preg_quote($expr, "/");
                 $expr = str_replace("###", "(.*)", $expr);
                 $expr2 = preg_replace('/\(\.\*\)$/i', "", $expr);
-                if(preg_match('/^'. $expr .'\/?$/i', $route) || preg_match('/^'. $expr2 .'?$/i', $route))
+                if(preg_match('/^'. $expr .'\/?$/i', $path) || preg_match('/^'. $expr2 .'?$/i', $path))
                 {
                     $get = $this->extractComponents($route, $pattern);
                     /** @var $class \PSFS\base\types\Controller */
