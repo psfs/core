@@ -1,6 +1,8 @@
 <?php
 
 namespace PSFS\base;
+use PSFS\base\config\Config;
+use PSFS\base\types\SingletonTrait;
 
 /**
  * Class Singleton
@@ -8,25 +10,11 @@ namespace PSFS\base;
  */
 class Singleton
 {
+    use SingletonTrait;
     /**
-     * @var Singleton cached reference to singleton instance
+     * @var bool flag que indica si la clase ha sido instanciada correctamente
      */
-    protected static $instance;
-
-    /**
-     * gets the instance via lazy initialization (created on first usage)
-     *
-     * @return $this
-     */
-    public static function getInstance()
-    {
-        $class = get_called_class();
-        if (!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class) {
-            self::$instance[$class] = new $class(func_get_args());
-            self::$instance[$class]->init();
-        }
-        return self::$instance[$class];
-    }
+    protected $loaded = false;
 
     /**
      * is not allowed to call from outside: private!
@@ -60,6 +48,22 @@ class Singleton
     }
 
     /**
+     * Método que devuelve si una clase está isntanciada correctamente
+     * @return bool
+     */
+    public function isLoaded() {
+        return $this->loaded;
+    }
+
+    /**
+     * Método que configura como cargada una clase
+     * @param bool|true $loaded
+     */
+    public function setLoaded($loaded = true) {
+        $this->loaded = $loaded;
+    }
+
+    /**
      * HELPERS
      */
 
@@ -81,12 +85,11 @@ class Singleton
     public function load($variable, $singleton = true, $classNameSpace = null) {
         $calledClass = get_called_class();
         try {
+            $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
             $setter = "set".ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
-                $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
                 $this->$setter($instance);
             }else {
-                $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
                 $this->$variable = $instance;
             }
         }catch (\Exception $e) {
@@ -99,10 +102,27 @@ class Singleton
      * Método que inyecta automáticamente las dependencias en la clase
      */
     public function init() {
-        $properties = $this->getClassProperties();
-        /** @var \ReflectionProperty $property */
-        if (!empty($properties)) foreach ($properties as $property => $class) {
-            $this->load($property, true, $class);
+        /** @var \PSFs\base\Logger $logService */
+        $logService = Logger::getInstance(get_class($this));
+        if(!$this->isLoaded()) {
+            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . sha1(get_class($this)) . ".json";
+            /** @var \PSFS\base\Cache $cacheService */
+            $cacheService = Cache::getInstance();
+            /** @var \PSFS\base\config\Config $configService */
+            $configService = Config::getInstance();
+            $properties = $cacheService->getDataFromFile($cacheFilename, CACHE::JSON);
+            if (true === $configService->getDebugMode() || null === $properties) {
+                $properties = $this->getClassProperties();
+                $cacheService->storeData($cacheFilename, $properties, Cache::JSON);
+            }
+            /** @var \ReflectionProperty $property */
+            if (!empty($properties)) foreach ($properties as $property => $class) {
+                $this->load($property, true, $class);
+                $logService->debugLog("Propiedad " . $property . " cargada con clase " . $class);
+            }
+            $this->setLoaded();
+        } else {
+            $logService->debugLog(get_class($this) . " ya cargada");
         }
     }
 
@@ -113,7 +133,7 @@ class Singleton
      */
     private function getClassProperties($class = null) {
         $properties = array();
-        if (empty($class)) $class = get_class($this);
+        if (null === $class) $class = get_class($this);
         $selfReflector = new \ReflectionClass($class);
         if (false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
@@ -122,7 +142,7 @@ class Singleton
             $doc = $property->getDocComment();
             if (preg_match('/@Inyectable/im', $doc)) {
                 $instanceType = $this->extractVarType($property->getDocComment());
-                if (!empty($instanceType)) {
+                if (null !== $instanceType) {
                     $properties[$property->getName()] = $instanceType;
                 }
             }
@@ -133,11 +153,11 @@ class Singleton
     /**
      * Método que extrae el tipo de instancia de la variable
      * @param $doc
-     * @return null
+     * @return null|string
      */
     private function extractVarType($doc) {
         $type = null;
-        if (preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {
+        if (false !== preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {
             list(, $type) = $matches;
         }
         return $type;
@@ -154,8 +174,8 @@ class Singleton
     {
         $reflector = new \ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
-        $varInstanceType = (empty($classNameSpace)) ? $this->extractVarType($property->getDocComment()) : $classNameSpace;
-        if (method_exists($varInstanceType, "getInstance") && true === $singleton) {
+        $varInstanceType = (null === $classNameSpace) ? $this->extractVarType($property->getDocComment()) : $classNameSpace;
+        if (true === $singleton && method_exists($varInstanceType, "getInstance")) {
             $instance = $varInstanceType::getInstance();
             return $instance;
         }else {

@@ -2,6 +2,8 @@
 
 namespace PSFS\base;
 
+use PSFS\base\types\SingletonTrait;
+
 if(!function_exists("getallheaders"))
 {
     function getallheaders()
@@ -18,7 +20,8 @@ if(!function_exists("getallheaders"))
  * Class Request
  * @package PSFS
  */
-class Request extends Singleton{
+class Request {
+    use SingletonTrait;
     protected $server;
     protected $cookies;
     protected $upload;

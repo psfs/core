@@ -8,11 +8,13 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\AssetsParser;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\types\Form;
+use PSFS\base\types\SingletonTrait;
 use PSFS\Dispatcher;
 
 
-class Template extends Singleton {
+class Template {
 
+    use SingletonTrait;
     protected $tpl;
     protected $filters = array();
 

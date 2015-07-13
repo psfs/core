@@ -37,12 +37,9 @@ class Admin extends AuthController{
      * @var  \PSFS\services\GeneratorService Servicio de generación de estructura de directorios
      */
     protected $gen;
-    /**
-     * Constructor por defecto
-     */
-    public function __construct()
-    {
-        $this->init();
+
+    public function init() {
+        parent::init();
         $this->setDomain('ROOT')
             ->setTemplatePath($this->config->getTemplatePath());
     }
@@ -194,7 +191,6 @@ class Admin extends AuthController{
     /**
      * Método que gestiona el menú de administración
      * @route /admin
-     * @route /admin/
      * @visible false
      * @return mixed
      */
@@ -208,8 +204,6 @@ class Admin extends AuthController{
     /**
      * Método que genera un nuevo módulo
      * @route /admin/module
-     *
-     * @param $module string
      *
      * @return string HTML
      * @throws \HttpException

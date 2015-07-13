@@ -1,14 +1,16 @@
 <?php
 
 namespace PSFS\base;
+use PSFS\base\types\SingletonTrait;
 
 
 /**
  * Class Security
  * @package PSFS
  */
-class Security extends Singleton{
+class Security {
 
+    use SingletonTrait;
     /**
      * @var array user
      */
