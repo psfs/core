@@ -6,6 +6,7 @@
     use PSFS\base\exception\AccessDeniedException;
     use PSFS\base\exception\ConfigException;
     use PSFS\base\exception\RouterException;
+    use PSFS\base\types\SingletonTrait;
     use PSFS\controller\Admin;
     use PSFS\services\AdminServices;
     use Symfony\Component\Finder\Finder;
@@ -15,19 +16,18 @@
      * Class Router
      * @package PSFS
      */
-    class Router extends Singleton{
+    class Router {
 
+        use SingletonTrait;
         protected $routing;
         protected $slugs;
         private $finder;
-        private $controller;
         private $domains;
 
         /**
          */
         public function __construct()
         {
-            $this->controller = new Admin();
             $this->finder = new Finder();
             if(Config::getInstance()->getDebugMode() || !file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"))
             {
@@ -84,7 +84,7 @@
 
             if(!$this->searchAction($route))
             {
-                if(preg_match('/\/$/', $route))
+                if(false !== preg_match('/\/$/', $route))
                 {
                     if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
                     else $default = Config::getInstance()->get("home_action");
@@ -116,7 +116,7 @@
                 {
                     $get = $this->extractComponents($route, $pattern);
                     /** @var $class \PSFS\base\types\Controller */
-                    $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
+                    $class = $this->getClassToCall($action);
                     try{
                         Logger::getInstance()->debugLog('Ruta resuelta para ' . $route);
                         return call_user_func_array(array($class, $action["method"]), $get);
@@ -146,7 +146,7 @@
          */
         public function redirectLogin($route)
         {
-            return $this->controller->adminLogin($route);
+            return Admin::getInstance()->adminLogin($route);
         }
 
         /**
@@ -430,7 +430,7 @@
          */
         public function getAdmin()
         {
-            return $this->controller;
+            return Admin::getInstance();
         }
 
         /**
@@ -440,5 +440,19 @@
         public function getDomains()
         {
             return $this->domains;
+        }
+
+        /**
+         * Método que extrae el controller a invocar
+         * @param $action
+         * @return mixed
+         */
+        protected function getClassToCall($action)
+        {
+            $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
+            if(null !== $class && method_exists($class, "init")) {
+                $class->init();
+            }
+            return $class;
         }
     }

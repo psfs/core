@@ -8,11 +8,13 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\AssetsParser;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\types\Form;
+use PSFS\base\types\SingletonTrait;
 use PSFS\Dispatcher;
 
 
-class Template extends Singleton {
+class Template {
 
+    use SingletonTrait;
     protected $tpl;
     protected $filters = array();
 
@@ -244,25 +246,33 @@ class Template extends Singleton {
         return $this;
     }
 
-    /*
+    /**
      * Servicio que regenera todas las plantillas
+     * @return aray
      */
     public function regenerateTemplates()
     {
         //Generamos los dominios por defecto del fmwk
         foreach ($this->tpl->getLoader()->getPaths() as $path) $this->generateTemplate($path);
         $domains = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json"), true);
+        $translations = array();
         if (!empty($domains)) foreach ($domains as $domain => $paths)
         {
             $this->addPath($paths["template"], $domain);
-            $this->generateTemplate($paths["template"], $domain);
+            $translations[] = $this->generateTemplate($paths["template"], $domain);
         }
-        pre(_("Plantillas regeneradas correctamente"));
+        $translations[] = _("Plantillas regeneradas correctamente");
+        return $translations;
     }
 
+    /**
+     * @param $tplDir
+     * @param string $domain
+     *
+     * @return mixed
+     */
     protected function generateTemplate($tplDir, $domain = '')
     {
-        pre(str_replace("%d", $domain, str_replace("%s", $tplDir, _("Generando plantillas en path '%s' para el dominio '%d'"))));
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file)
         {
             // force compilation
@@ -275,6 +285,7 @@ class Template extends Singleton {
                 }
             }
         }
+        return str_replace("%d", $domain, str_replace("%s", $tplDir, _("Generando plantillas en path '%s' para el dominio '%d'")));
     }
 
     /**
@@ -319,7 +330,7 @@ class Template extends Singleton {
                 $destfolder = basename($filename_path);
                 if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force)
                 {
-                    Config::createDir(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                    Config::createDir(extractPath(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder));
                     self::copyr($filename_path, WEB_DIR.$dest);
                 }
             }
@@ -327,6 +338,15 @@ class Template extends Singleton {
         });
         $this->tpl->addFunction($function);
         return $this;
+    }
+
+    public static function extractPath($path) {
+        $explodePath = explode(DIRECTORY_SEPARATOR, $path);
+        $realPath = array();
+        for($i = 0, $parts = count($explodePath) - 1; $i < $parts; $i++) {
+            $realPath[] = $explodePath[$i];
+        }
+        return implode(DIRECTORY_SEPARATOR, $realPath);
     }
 
     /**
@@ -339,15 +359,15 @@ class Template extends Singleton {
         if (is_dir($source)) {
             if($dir_handle = opendir($source)) {
                 $sourcefolder = basename($source);
-                Config::createDir($dest."/".$sourcefolder);
+                Config::createDir(extractPath($dest.DIRECTORY_SEPARATOR.$sourcefolder));
                 while ($file = readdir($dir_handle)) {
                     if ($file != "." && $file != "..") {
                         if (is_dir($source."/".$file)) {
-                            self::copyr($source."/".$file, $dest."/".$sourcefolder);
+                            self::copyr(extractPath($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder));
                         }else {
-                            if (!file_exists($dest."/".$sourcefolder."/".$file) || filemtime($dest."/".$sourcefolder."/".$file) != filemtime($source."/".$file)) {
-                                if(@copy($source."/".$file, $dest."/".$sourcefolder."/".$file) === false) {
-                                    throw new ConfigException("Can't copy " . $source."/".$file . " to " . $dest."/".$sourcefolder."/".$file);
+                            if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
+                                if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {
+                                    throw new ConfigException("Can't copy " . $source.DIRECTORY_SEPARATOR.$file . " to " . $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file);
                                 }
                             }
                         }

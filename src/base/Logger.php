@@ -8,6 +8,7 @@
     use Monolog\Processor\MemoryUsageProcessor;
     use Monolog\Processor\WebProcessor;
     use PSFS\base\config\Config;
+    use PSFS\base\types\SingletonTrait;
 
 
     if (!defined("LOG_DIR"))
@@ -21,8 +22,8 @@
      * @package PSFS\base
      * Servicio de log
      */
-    class Logger extends Singleton {
-
+    class Logger {
+        use SingletonTrait;
         protected $logger;
         private $stream;
 

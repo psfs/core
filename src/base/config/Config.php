@@ -3,15 +3,16 @@
 namespace PSFS\base\config;
 
 
-use PSFS\base\Singleton;
+use PSFS\base\types\SingletonTrait;
 
 
 /**
  * Class Config
  * @package PSFS\base\config
  */
-class Config extends Singleton {
+class Config {
 
+    use SingletonTrait;
     const DEFAULT_LANGUAGE = 'es';
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';

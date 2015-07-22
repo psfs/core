@@ -102,7 +102,7 @@ class AssetsParser {
     protected function compileCss($debug = false)
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
-        Config::createDir($base);
+        Config::createDir(Template::extractPath($base));
         $data = '';
         if (!empty($this->files)) {
             foreach ($this->files as $file)
@@ -128,7 +128,7 @@ class AssetsParser {
     protected function compileJs($debug = false)
     {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
-        Config::createDir($base);
+        Config::createDir(Template::extractPath($base));
         $data = '';
         if (!empty($this->files)) {
             foreach ($this->files as $file) {
@@ -223,7 +223,7 @@ class AssetsParser {
         try {
             if (count($orig_part) > 1) {
                 $dest = $this->path.$orig_part[1];
-                Config::createDir($dest);
+                Config::createDir(Template::extractPath($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
                     if (@copy($orig, $dest) === FALSE) {
                         throw new \RuntimeException('Can\' copy '.$dest.'');
@@ -415,7 +415,7 @@ class AssetsParser {
                 $orig = realpath(dirname($filename_path).DIRECTORY_SEPARATOR.$source_file);
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
-                Config::createDir($dest);
+                Config::createDir(Template::extractPath($dest));
                 if(@copy($orig, $dest) === false) {
                     throw new ConfigException("Can't copy " . $orig . " to " . $dest);
                 }
