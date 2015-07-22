@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% block body_header %}
+    <div class="page-header">
+        <h1>{{ "Generación de traducciones"|trans }}</h1>
+        <h2>{{ get_config('platform_name') }}</h2>
+    </div>
+{% endblock body_header %}
+{% block body_content %}
+    <section class="container-fluid">
+        <ul class="list-group">
+        {% for translation in translations %}
+            <li class="list-group-item">
+                <pre>{{ translation | raw }}</pre>
+            </li>
+        {% endfor %}
+        </ul>
+    </section>
+{% endblock body_content %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
+{% endblock scripts %}

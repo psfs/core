@@ -22,7 +22,7 @@
                 \PSFS\base\config\Config::createDir($path . DIRECTORY_SEPARATOR . $htmlPath);
             }
             if(!file_exists(SOURCE_DIR . DIRECTORY_SEPARATOR . 'html.tar.gz')) throw new \PSFS\base\exception\ConfigException("No existe el fichero del DocumentRoot");
-            $tar = new Archive_Tar(realpath(SOURCE_DIR . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "html.tar.gz", true);
+            $tar = new \Archive_Tar(realpath(SOURCE_DIR . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "html.tar.gz", true);
             $tar->extract(realpath($path));
             $output->writeln("Document root generado en " . $path);
         })

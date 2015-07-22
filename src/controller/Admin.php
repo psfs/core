@@ -137,22 +137,21 @@ class Admin extends AuthController{
         if(empty($locale)) $locale = $this->config->get("default_language");
 
         //Generamos las traducciones de las plantillas
-        $this->tpl->regenerateTemplates();
+        $translations = $this->tpl->regenerateTemplates();
 
         $locale_path = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
         //Localizamos xgettext
-        $translations = GeneratorService::findTranslations(SOURCE_DIR, $locale);
-        $translations = GeneratorService::findTranslations(CORE_DIR, $locale);
-        $translations = GeneratorService::findTranslations(CACHE_DIR, $locale);
+        $translations = array_merge($translations, GeneratorService::findTranslations(SOURCE_DIR, $locale));
+        $translations = array_merge($translations, GeneratorService::findTranslations(CORE_DIR, $locale));
+        $translations = array_merge($translations, GeneratorService::findTranslations(CACHE_DIR, $locale));
 
-        echo "<hr>";
-        echo _('Compilando traducciones');
-        pre("msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo");
-        exec("export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo", $result);
-        echo "Fin";
-        exit;
+        $translations[] = "msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo";
+        $translations[] = shell_exec("export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo");
+        return $this->render("translations.html.twig", array(
+            "translations" => $translations,
+        ));
     }
 
 
@@ -248,13 +247,7 @@ class Admin extends AuthController{
     public function getConfigParams()
     {
         $response = json_encode(array_merge(Config::$required, Config::$optional));
-        ob_start();
-        header("Content-type: text/json");
-        header("Content-length: " . count($response));
-        echo $response;
-        ob_flush();
-        ob_end_clean();
-        exit();
+        return $this->json($response);
     }
 
     /**
@@ -277,13 +270,7 @@ class Admin extends AuthController{
     public function getRouting()
     {
         $response = json_encode(array_keys(Router::getInstance()->getSlugs()));
-        ob_start();
-        header("Content-type: text/json");
-        header("Content-length: " . count($response));
-        echo $response;
-        ob_flush();
-        ob_end_clean();
-        exit();
+        return $this->json($response);
     }
 
     /**
