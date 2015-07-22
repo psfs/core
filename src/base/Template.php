@@ -330,7 +330,7 @@ class Template {
                 $destfolder = basename($filename_path);
                 if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force)
                 {
-                    Config::createDir(extractPath(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder));
+                    Config::createDir(Template::extractPath(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder));
                     self::copyr($filename_path, WEB_DIR.$dest);
                 }
             }
@@ -359,11 +359,11 @@ class Template {
         if (is_dir($source)) {
             if($dir_handle = opendir($source)) {
                 $sourcefolder = basename($source);
-                Config::createDir(extractPath($dest.DIRECTORY_SEPARATOR.$sourcefolder));
+                Config::createDir(Template::extractPath($dest.DIRECTORY_SEPARATOR.$sourcefolder));
                 while ($file = readdir($dir_handle)) {
                     if ($file != "." && $file != "..") {
                         if (is_dir($source."/".$file)) {
-                            self::copyr(extractPath($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder));
+                            self::copyr(Template::extractPath($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder));
                         }else {
                             if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
                                 if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {
