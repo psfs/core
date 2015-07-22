@@ -25,14 +25,14 @@
          * Método que revisa las traducciones directorio a directorio
          * @param $path
          * @param $locale
-         * @return boolean
+         * @return array
          */
         public static function findTranslations($path, $locale)
         {
             $locale_path = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
             $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
-            $translations = false;
+            $translations = array();
             if(file_exists($path))
             {
                 $d = dir($path);
@@ -44,11 +44,12 @@
                     $cmd_php = "export PATH=\$PATH:/opt/local/bin; xgettext ". $inspect_path . DIRECTORY_SEPARATOR ."*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$locale_path}translations.po";
                     if(is_dir($path.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
                     {
-                        echo "<li>" . _('Revisando directorio: ') . $inspect_path;
-                        echo "<li>" . _('Comando ejecutado: '). $cmd_php;
-                        shell_exec($cmd_php);// . " >> " . __DIR__ . DIRECTORY_SEPARATOR . "debug.log 2>&1");
+                        $res = _('Revisando directorio: ') . $inspect_path;
+                        $res .= _('Comando ejecutado: '). $cmd_php;
+                        $res .= shell_exec($cmd_php);// . " >> " . __DIR__ . DIRECTORY_SEPARATOR . "debug.log 2>&1");
                         usleep(10);
-                        $translations = self::findTranslations($inspect_path, $locale);
+                        $translations[] = $res;
+                        $translations = array_merge($translations, self::findTranslations($inspect_path, $locale));
                     }
                 }
             }

@@ -8,7 +8,7 @@
      */
     Trait SingletonTrait {
         /**
-         * @var Singleton cached reference to singleton instance
+         * @var array Singleton cached reference to singleton instance
          */
         protected static $instance = array();
 

@@ -22,7 +22,6 @@
         protected $routing;
         protected $slugs;
         private $finder;
-        private $controller;
         private $domains;
 
         /**
