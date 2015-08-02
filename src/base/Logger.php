@@ -41,6 +41,7 @@
                 if (isset($args[0][0])) $logger = $args[0][0];
                 if (isset($args[0][1])) $debug = $args[0][1];
             }
+            $logger = preg_replace('/\\\/', ".", $logger);
             $path = LOG_DIR.DIRECTORY_SEPARATOR.$logger.DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
             Config::createDir($path);
             $this->stream = fopen($path.DIRECTORY_SEPARATOR.date("Ymd").".log", "a+");
