@@ -367,8 +367,8 @@
                             if (is_dir($source.DIRECTORY_SEPARATOR.$file)) {
                                 self::copyr($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder);
                             }else {
-                                if (!file_exists($dest.DIRECTORY_SEPARATOR.$file)
-                                    || filemtime($dest.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
+                                if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file)
+                                    || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
                                     if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {
                                         throw new ConfigException("Can't copy " . $source.DIRECTORY_SEPARATOR.$file . " to " . $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file);
                                     }
