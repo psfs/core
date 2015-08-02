@@ -97,14 +97,15 @@ class Dispatcher extends Singleton {
         }catch (SecurityException $s) {
             return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
         }catch (\Exception $e) {
+            $ex = (null !== $e->getPrevious()) ? $e->getPrevious() : $e;
             $error = array(
-                "error" => $e->getMessage(),
-                "file" => $e->getFile(),
-                "line" => $e->getLine(),
+                "error" => $ex->getMessage(),
+                "file" => $ex->getFile(),
+                "line" => $ex->getLine(),
             );
             $this->log->errorLog(json_encode($error));
             unset($error);
-            return $this->router->httpNotFound($e);
+            return $this->router->httpNotFound($ex);
         }
         return false;
     }
