@@ -357,6 +357,7 @@
         {
             // recursive function to copy
             // all subdirectories and contents:
+            /** @var \PSFS\base\Logger $log */
             if (is_dir($source)) {
                 if($dir_handle = opendir($source)) {
                     $sourcefolder = basename($source);
@@ -364,12 +365,12 @@
                     while ($file = readdir($dir_handle)) {
                         if ($file != "." && $file != "..") {
                             if (is_dir($source.DIRECTORY_SEPARATOR.$file)) {
-                                self::copyr($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file);
+                                self::copyr($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$file);
                             }else {
-                                if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file)
-                                    || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
-                                    if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {
-                                        throw new ConfigException("Can't copy " . $source.DIRECTORY_SEPARATOR.$file . " to " . $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file);
+                                if (!file_exists($dest.DIRECTORY_SEPARATOR.$file)
+                                    || filemtime($dest.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
+                                    if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$file) === false) {
+                                        throw new ConfigException("Can't copy " . $source.DIRECTORY_SEPARATOR.$file . " to " . $dest.DIRECTORY_SEPARATOR.$file);
                                     }
                                 }
                             }
