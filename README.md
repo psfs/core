@@ -36,7 +36,7 @@ RoadMap:
         - Motores de sesión
     * Adaptación backend a angular
         - Inclusión angular en gestión de menús
-        - AngularStrap
+        - Angular Materials
     * Mejora sistema de cache(html, php, json)
         - Gestor de ficheros de cache
         - Serializado de lógicas de negocio
