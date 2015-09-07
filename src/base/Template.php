@@ -121,7 +121,13 @@ class Template {
     {
         $vars["__user__"] = Security::getInstance()->getUser();
         $vars["__profiles__"] = Security::getCleanProfiles();
-        return $this->tpl->render($tpl, $vars);
+        $dump = '';
+        try {
+            $dump = $this->tpl->render($tpl, $vars);
+        } catch(\Exception $e) {
+            echo "<pre>" . $e->getTraceAsString() . "</pre>";
+        }
+        return$dump;
     }
 
     /**

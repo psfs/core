@@ -18,9 +18,20 @@ class Security {
 
     private $authorized = false;
 
+    protected $session;
+
     /**
+     * Constructor por defecto
      */
-    public function __construct(){ }
+    public function __construct(){
+        session_start();
+        $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
+        if(null === $this->getSessionKey('__FLASH_CLEAR__')) {
+            $this->clearFlashes();
+            $this->setSessionKey('__FLASH_CLEAR__', microtime(true));
+        }
+        $this->user = (array_key_exists(sha1('USER'), $this->session)) ? unserialize($this->session[sha1('USER')]) : null;
+    }
 
     /**
      * Método estático que devuelve los perfiles de la plataforma
@@ -41,8 +52,8 @@ class Security {
     public static function getCleanProfiles()
     {
         return array(
-            "__SUPER_ADMIN__" => sha1("superadmin"),
-            "__ADMIN__" => sha1("admin"),
+            '__SUPER_ADMIN__' => sha1('superadmin'),
+            '__ADMIN__' => sha1('admin'),
         );
     }
 
@@ -107,11 +118,11 @@ class Security {
             }
             if(!empty($user) && !empty($admins[$user]))
             {
-                $auth = $admins[$user]["hash"];
+                $auth = $admins[$user]['hash'];
                 $this->authorized = ($auth == sha1($user.$pass));
                 $this->user = array(
-                    "alias" => $user,
-                    "profile" => $admins[$user]["profile"],
+                    'alias' => $user,
+                    'profile' => $admins[$user]['profile'],
                 );
             }
         }
@@ -128,7 +139,7 @@ class Security {
         $user = $pass = array();
         if(!empty($auth_cookie))
         {
-            list($user, $pass) = explode(":", base64_decode($auth_cookie));
+            list($user, $pass) = explode(':', base64_decode($auth_cookie));
         }
         return array($user, $pass);
     }
@@ -137,7 +148,7 @@ class Security {
      * Método privado para la generación del hash de la cookie de administración
      * @return string
      */
-    public function getHash(){ return substr(md5("admin"), 0, 8); }
+    public function getHash(){ return substr(md5('admin'), 0, 8); }
 
     /**
      * Método que devuelve el usuario logado
@@ -156,11 +167,15 @@ class Security {
      */
     public function notAuthorized($route)
     {
-        return Template::getInstance()->render("notauthorized.html.twig", array(
+        return Template::getInstance()->render('notauthorized.html.twig', array(
             'route' => $route,
         ));
     }
 
+    /**
+     * Servicio que chequea si un usuario es super administrador o no
+     * @return bool
+     */
     public function isSuperAdmin()
     {
         $users = $this->getAdmins();
@@ -168,9 +183,64 @@ class Security {
         $profiles = Security::getCleanProfiles();
         if($users[$logged[0]])
         {
-            $security = $users[$logged[0]]["profile"];
-            return $profiles["__SUPER_ADMIN__"] == $security;
+            $security = $users[$logged[0]]['profile'];
+            return $profiles['__SUPER_ADMIN__'] === $security;
         }
         return false;
+    }
+
+    /**
+     * Servicio que devuelve un dato de sesión
+     * @param string $key
+     * @return mixed
+     */
+    public function getSessionKey($key) {
+        $data = null;
+        if (array_key_exists($key, $this->session)) {
+            $data = $this->session[$key];
+        }
+        return $data;
+    }
+
+    /**
+     * Servicio que setea una variable de sesión
+     * @param string $key
+     * @param mixed $data
+     * @return Security
+     */
+    public function setSessionKey($key, $data = null) {
+        $this->session[$key] = $data;
+        return $this;
+    }
+
+    /**
+     * Servicio que devuelve los mensajes flash de sesiones
+     * @return mixed
+     */
+    public function getFlashes() {
+        return $this->getSessionKey(sha1('FLASHES'));
+    }
+
+    /**
+     * Servicio que limpia los mensajes flash
+     * @return $this
+     */
+    public function clearFlashes() {
+        $this->setSessionKey(sha1('FLASHES'), null);
+        return $this;
+    }
+
+    /**
+     * Servicio que actualiza
+     * @param boolean $closeSession
+     * @return Security
+     */
+    public function updateSession($closeSession = false) {
+        $_SESSION = $this->session;
+        $_SESSION[sha1('USER')] = serialize($this->user);
+        if($closeSession) {
+            session_write_close();
+        }
+        return $this;
     }
 }

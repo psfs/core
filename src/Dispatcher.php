@@ -14,7 +14,11 @@ require_once "bootstrap.php";
  * @package PSFS
  */
 class Dispatcher extends Singleton {
-
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Security security
+     */
+    protected $security;
     /**
      * @Inyectable
      * @var \PSFS\base\Router router
@@ -25,11 +29,6 @@ class Dispatcher extends Singleton {
      * @var \PSFS\base\Request parser
      */
     protected $parser;
-    /**
-     * @Inyectable
-     * @var \PSFS\base\Security security
-     */
-    protected $security;
     /**
      * @Inyectable
      * @var \PSFS\base\Logger log
