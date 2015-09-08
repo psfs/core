@@ -21,7 +21,6 @@ Componentes necesarios para su ejecución:
     * "monolog/monolog": "dev-master",
     * "pear/archive_tar": "master"
 
-
 Para instalar usar composer:
 
     composer require c15k0/psfs
@@ -30,15 +29,11 @@ Para instalar usar composer:
 RoadMap:
 
     * Gestión de sesiones
-        - Control de datos de sesión
-        - Uso de sesión en plantillas twig
-        - Generación de flashes
-        - Motores de sesión
+        - Motores de sesión(mongodb, filesystem, mysql...)
     * Adaptación backend a angular
         - Inclusión angular en gestión de menús
         - Angular Materials
     * Mejora sistema de cache(html, php, json)
-        - Gestor de ficheros de cache
         - Serializado de lógicas de negocio
         - Buffer de html
     * Gestión central de sincronizado(pSync)
@@ -49,4 +44,7 @@ RoadMap:
         - Entorno visual de creación de modelos
         - Entorno visual de control de flujos
         - Entorno visual de generación de websites
+    * Documentación framework
+        - Autodocumentación servicios
+        - Documentación general
 
