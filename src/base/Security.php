@@ -29,7 +29,9 @@ class Security {
      * Constructor por defecto
      */
     public function __construct(){
-        session_start();
+        if(PHP_SESSION_NONE === session_status()) {
+            session_start();
+        }
         $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
         if(null === $this->getSessionKey('__FLASH_CLEAR__')) {
             $this->clearFlashes();
