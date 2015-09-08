@@ -379,8 +379,14 @@ class Template {
                 $destfolder = basename($filename_path);
                 if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
                 {
-                    Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                    self::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                    if(is_dir($filename_path)) {
+                        Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        self::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                    } else {
+                        if(@copy($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === false){
+                            throw new ConfigException("Can't copy " . $filename_path . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        }
+                    }
                 }
             }
             return '';
