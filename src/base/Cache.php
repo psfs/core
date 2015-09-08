@@ -10,7 +10,7 @@
      * @package PSFS\base
      * Gestión de los ficheros de cache
      */
-    class Cache{
+    class Cache {
 
         const JSON = 1;
         const TEXT = 2;
@@ -25,9 +25,9 @@
          */
         private function saveTextToFile($data, $path) {
             $filename = basename($path);
-            Config::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . str_replace($filename, "", $path));
-            if (false === file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . $path, $data)) {
-                throw new ConfigException(_("No se tienen los permisos suficientes para escribir en el fichero ") . $path);
+            Config::createDir(CACHE_DIR.DIRECTORY_SEPARATOR.str_replace($filename, "", $path));
+            if (false === file_put_contents(CACHE_DIR.DIRECTORY_SEPARATOR.$path, $data)) {
+                throw new ConfigException(_("No se tienen los permisos suficientes para escribir en el fichero ").$path);
             }
         }
 
@@ -35,12 +35,12 @@
          * Método que extrae el texto de un fichero
          * @param string $path
          * @param int $transform
-         * @return string|null
+         * @return string
          */
         public function getDataFromFile($path, $transform = Cache::TEXT) {
             $data = null;
-            if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
-                $data = file_get_contents(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
+            if (file_exists(CACHE_DIR.DIRECTORY_SEPARATOR.$path)) {
+                $data = file_get_contents(CACHE_DIR.DIRECTORY_SEPARATOR.$path);
             }
             return Cache::extractDataWithFormat($data, $transform);
         }
@@ -52,7 +52,7 @@
          * @return bool
          */
         private function hasExpiredCache($path, $expires = 300) {
-            $lasModificationDate = filemtime(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
+            $lasModificationDate = filemtime(CACHE_DIR.DIRECTORY_SEPARATOR.$path);
             return ($lasModificationDate + $expires <= time());
         }
 
@@ -81,7 +81,7 @@
          * Método que transforma los datos de entrada del fichero
          * @param string $data
          * @param int $transform
-         * @return string|binary
+         * @return string
          */
         public static function transformData($data, $transform = Cache::TEXT) {
             switch ($transform) {
@@ -119,11 +119,11 @@
          */
         public function readFromCache($path, $expires = 300, callable $function, $transform = Cache::TEXT) {
             $data = null;
-            if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
+            if (file_exists(CACHE_DIR.DIRECTORY_SEPARATOR.$path)) {
                 if (null !== $function && $this->hasExpiredCache($path, $expires)) {
                     $data = call_user_func($function);
                     $this->storeData($path, $data, $transform);
-                } else {
+                }else {
                     $data = $this->getDataFromFile($path, $transform);
                 }
             }
