@@ -1,4 +1,9 @@
-{{ "{% extends 'base.html.twig' %}
+{% set dump = "{% extends 'base.html.twig' %}
+{% block styles %}
+    {% styles
+    '@" ~ module ~ "/css/styles.css'
+    %}{% styles %}
+{% endblock styles %}
 {% block body_header %}
     <div class='page-header'>
         <h1>{{ get_config('platform_name') }}</h1>
@@ -12,4 +17,9 @@
     </div>
 {% endblock body_content %}
 {% block scripts %}
-{% endblock scripts %}"|raw }}
+    {% scripts
+    '@" ~ module ~ "/js/app.js'
+    %}{% endscript %}
+{% endblock scripts %}" %}
+{{ dump | raw }}
+

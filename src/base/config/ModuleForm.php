@@ -13,19 +13,35 @@
     class ModuleForm extends Form {
 
         /**
+         * @Inyectable
+         * @var \PSFS\base\Router $router
+         */
+        protected $router;
+
+        /**
          * @throws \PSFS\base\exception\FormException
          * @throws \PSFS\base\exception\RouterException
          */
         public function __construct()
         {
-            $this->setAction(Router::getInstance()->getRoute('admin-module'));
+            $this->init();
+            $this->setAction($this->router->getRoute('admin-module'))
+                ->setAttrs(array(
+
+                ));
             $this->add('module', array(
                 'label' => _('Nombre del Módulo'),
+            ))
+            ->add('force', array(
+                'label' => _('Sobreescribir ficheros'),
+                'type' => 'select',
+                'data' => array(_('No'), _('Sí')),
+                'required' => false
             ));
             $data = Security::getInstance()->getAdmins();
             //Aplicamos estilo al formulario
             $this->setAttrs(array(
-                "class" => "col-md-6",
+                'class' => 'col-md-6',
             ));
             //Hidratamos el formulario
             $this->setData($data);
@@ -39,7 +55,7 @@
          */
         public function getTitle()
         {
-            return _("Gestión de Módulos");
+            return _('Gestión de Módulos');
         }
 
         /**
@@ -48,7 +64,7 @@
          */
         public function getName()
         {
-            return "admin_modules";
+            return 'admin_modules';
         }
 
     }

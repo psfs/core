@@ -7,6 +7,7 @@ use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
 use PSFS\base\config\LoginForm;
 use PSFS\base\config\ModuleForm;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -217,14 +218,15 @@ class Admin extends AuthController{
             if($form->isValid())
             {
                 $module = $form->getFieldValue("module");
+                $force = $form->getFieldValue("force");
                 try
                 {
-                    $this->gen->createStructureModule($module, Logger::getInstance());
+                    $this->gen->createStructureModule($module, $force);
                     return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin-module", true));
                 }catch(\Exception $e)
                 {
                     Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
-                    throw new \HttpException('Error al generar el módulo, prueba a cambiar los permisos', 403);
+                    throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
                 }
             }
         }

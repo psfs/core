@@ -9,8 +9,9 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Singleton;
 
-abstract class Form{
+abstract class Form extends Singleton{
 
     /**
      * Constantes de uso general

@@ -269,8 +269,8 @@ class Template {
     private function addConfigFunction()
     {
         $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('get_config', function($param) {
-            return Config::getInstance()->get($param) ?: '';
+        $function = new \Twig_SimpleFunction('get_config', function($param, $default = '') {
+            return Config::getInstance()->get($param) ?: $default;
         });
         $tpl->addFunction($function);
         return $this;
