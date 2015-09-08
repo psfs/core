@@ -219,9 +219,9 @@ class AssetsParser {
             $source_file = $source_file[0];
         }
         $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
-        $orig_part = preg_split('/\/public\//i', $orig);
+        $orig_part = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
         try {
-            if (count($orig_part) > 1) {
+            if (count($source) > 1) {
                 $dest = $this->path.$orig_part[1];
                 Config::createDir(Template::extractPath($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
@@ -250,7 +250,7 @@ class AssetsParser {
 
             $path_parts = explode("/", $file);
             $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
-            if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file)) {
+            if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file) || $debug) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
                 if (file_exists($base.$this->hash.".css") && @unlink($base.$this->hash.".css") === false) {
                     throw new ConfigException("Can't unlink file ".$base.$this->hash.".css");

@@ -244,6 +244,7 @@
          * @param $filename
          */
         private function writeTemplateToFile($fileContent, $filename) {
+            Config::createDir(dirname($filename));
             if (!file_exists($filename)) {
                 file_put_contents($filename, $fileContent);
             }else{

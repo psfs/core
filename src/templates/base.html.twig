@@ -10,17 +10,19 @@
         {% else %}
         <meta name="robots" content="INDEX,FOLLOW">
         {% endif %}
+        <link href='https://fonts.googleapis.com/css?family=Lato:400,300,700' rel='stylesheet' type='text/css'>
         {% styles
             '@ROOT/css/normalize.css'
             '@ROOT/css/bootstrap.min.css'
             '@ROOT/css/bootstrap-theme.min.css'
             '@ROOT/css/font-awesome.min.css'
             '@ROOT/css/typeahead.css'
+            '@ROOT/css/styles.css'
         %}{% endstyles %}
         {% block styles %}{% endblock styles %}
 {% block head %}
     {% block seo %}
-        <title>{% block doc_title %}{{ get_config('platform_name') }}{% endblock doc_title %}</title>
+        <title>{% block doc_title %}{{ get_config('platform_name') }}{% endblock doc_title %} {{ session('test') }}</title>
         <meta name="description" content="Php Simple Fast & Secure">
     {% endblock seo %}
 {% endblock head %}
@@ -43,7 +45,7 @@
         {% endblock body %}
         </section>
         <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
-        <a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page" data-toggle="tooltip" data-placement="left"><span class="glyphicon glyphicon-chevron-up"></span></a>
+        <a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page" data-toggle="tooltip" data-placement="left"><span class="fa fa-chevron-up"></span></a>
     {% block base_scripts %}
         {% scripts
         "@ROOT/js/jquery.min.js"

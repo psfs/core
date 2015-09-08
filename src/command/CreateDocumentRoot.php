@@ -17,7 +17,7 @@
             $path = $input->getArgument('path');
             if(empty($path)) $path = BASE_DIR . DIRECTORY_SEPARATOR . 'html';
             \PSFS\base\config\Config::createDir($path);
-            $paths = array("js", "css", "img", "media", "fonts");
+            $paths = array("js", "css", "img", "media", "font");
             foreach($paths as $htmlPath) {
                 \PSFS\base\config\Config::createDir($path . DIRECTORY_SEPARATOR . $htmlPath);
             }

@@ -12,9 +12,14 @@ class Security {
 
     use SingletonTrait;
     /**
-     * @var array user
+     * @var array $user
      */
     private $user;
+
+    /**
+     * @var array $admin
+     */
+    private $admin;
 
     private $authorized = false;
 
@@ -31,6 +36,7 @@ class Security {
             $this->setSessionKey('__FLASH_CLEAR__', microtime(true));
         }
         $this->user = (array_key_exists(sha1('USER'), $this->session)) ? unserialize($this->session[sha1('USER')]) : null;
+        $this->admin = (array_key_exists(sha1('ADMIN'), $this->session)) ? unserialize($this->session[sha1('ADMIN')]) : null;
     }
 
     /**
@@ -72,7 +78,15 @@ class Security {
         }
         $admins[$user['username']]['hash'] = sha1($user['username'].$user['password']);
         $admins[$user['username']]['profile'] = $user['profile'];
-        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins)));
+        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins, JSON_PRETTY_PRINT)));
+    }
+
+    /**
+     * Servicio que actualiza los datos del usuario
+     * @param $user
+     */
+    public function updateUser($user) {
+        $this->user = $user;
     }
 
     /**
@@ -120,7 +134,7 @@ class Security {
             {
                 $auth = $admins[$user]['hash'];
                 $this->authorized = ($auth == sha1($user.$pass));
-                $this->user = array(
+                $this->admin = array(
                     'alias' => $user,
                     'profile' => $admins[$user]['profile'],
                 );
@@ -157,6 +171,14 @@ class Security {
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Método que devuelve el usuario administrador logado
+     * @return array
+     */
+    public function getAdmin() {
+        return $this->admin;
     }
 
     /**
@@ -238,9 +260,18 @@ class Security {
     public function updateSession($closeSession = false) {
         $_SESSION = $this->session;
         $_SESSION[sha1('USER')] = serialize($this->user);
+        $_SESSION[sha1('ADMIN')] = serialize($this->admin);
         if($closeSession) {
             session_write_close();
         }
         return $this;
+    }
+
+    /**
+     * Servicio que limpia la sesión
+     */
+    public function closeSession() {
+        session_destroy();
+        session_regenerate_id(true);
     }
 }

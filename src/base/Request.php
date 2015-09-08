@@ -36,7 +36,7 @@ class Request {
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST;
-        $contentType = (isset($this->header['Content-Type'])) ? $this->header['Content-Type'] : "text/html";
+        $contentType = (array_key_exists('Content-Type', $this->header)) ? $this->header['Content-Type'] : "text/html";
         if(preg_match('/application\/json/i', $contentType))
         {
             $this->data += json_decode(file_get_contents("php://input"), true);
@@ -110,9 +110,13 @@ class Request {
     public static function requestUri(){ return self::getInstance()->getrequestUri(); }
     public function getrequestUri(){ return $this->server["REQUEST_URI"]; }
 
+    /**
+     * Método que devuelve el idioma de la petición
+     * @return string
+     */
     public function getLanguage()
     {
-
+        return array_key_exists("HTTP_ACCEPT_LANGUAGE", $this->server) ? $this->server["HTTP_ACCEPT_LANGUAGE"] : "es_ES";
     }
 
     /**
@@ -121,7 +125,7 @@ class Request {
      */
     public function isFile()
     {
-        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php)$/', $this->getrequestUri()) != 0);
+        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php|ico)$/', $this->getrequestUri()) != 0);
         return $file;
     }
 
@@ -133,7 +137,7 @@ class Request {
      */
     public function get($param)
     {
-        return (isset($this->data[$param])) ? $this->data[$param] : null;
+        return (array_key_exists($param, $this->data)) ? $this->data[$param] : null;
     }
 
     /**
@@ -163,7 +167,7 @@ class Request {
      */
     public function getServer($param)
     {
-        return isset($this->server[$param]) ?$this->server[$param] : null;
+        return array_key_exists($param, $this->server) ? $this->server[$param] : null;
     }
 
     /**
@@ -186,7 +190,7 @@ class Request {
 
     /**
      * Devuelve la url completa de base
-     * @param bool|bollean $protocol
+     * @param boolean $protocol
      * @return string
     */
     public function getRootUrl($protocol = true)
@@ -206,7 +210,7 @@ class Request {
      */
     public function getCookie($name)
     {
-        return isset($this->cookies[$name]) ? $this->cookies[$name] : null;
+        return array_key_exists($name, $this->cookies) ? $this->cookies[$name] : null;
     }
 
     /**
@@ -217,7 +221,7 @@ class Request {
      */
     public function getFile($name)
     {
-        return (isset($this->upload[$name])) ? $this->upload[$name] : array();
+        return array_key_exists($name, $this->upload) ? $this->upload[$name] : array();
     }
 
     /**

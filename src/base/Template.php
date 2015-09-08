@@ -23,11 +23,17 @@ class Template {
     private $status_code = null;
 
     /**
+     * @var \PSFS\base\Security $security
+     */
+    protected $security;
+
+    /**
      *
      */
     public function __construct()
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: false;
+        $this->security = Security::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => Config::getInstance()->getCachePath(),
@@ -41,7 +47,8 @@ class Template {
             ->addFormButtonFunction()
             ->addConfigFunction()
             ->addRouteFunction()
-            ->dumpResource();
+            ->dumpResource()
+            ->useSessionVars();
 
         //Añadimos las extensiones de los tags
         $this->tpl->addTokenParser(new AssetsTokenParser("css"));
@@ -62,7 +69,7 @@ class Template {
      * Método que activa la zona pública
      * @param bool $public
      *
-     * @return $this
+     * @return Template
      */
     public function setPublicZone($public = true)
     {
@@ -74,7 +81,7 @@ class Template {
      * Método que establece un header de http status code
      * @param null $status
      *
-     * @return $this
+     * @return Template
      */
     public function setStatus($status = null)
     {
@@ -93,21 +100,37 @@ class Template {
      * @param string $tpl
      * @param array $vars
      * @param array $cookies
-     *
-     * @return mixed
      */
-    public function render($tpl, array $vars = array(), $cookies = array())
+    public function render($tpl, array $vars = array(),array $cookies = array())
     {
+        $config = Config::getInstance();
         ob_start();
-        header("X-Powered-By: @c15k0");
+        $powered = $config->get("poweredBy");
+        if(empty($powered)) $powered = "@c15k0";
+        header("X-Powered-By: $powered");
         $vars = $this->setDebugHeaders($vars);
         $this->setStatusHeader();
         $this->setAuthHeaders();
         $this->setCookieHeaders($cookies);
 
-        echo $this->dump($tpl, $vars);
+        $data = $this->dump($tpl, $vars);
+        //TODO Cache control
+
+        echo $data;
         ob_flush();
         ob_end_clean();
+        $this->closeRender();
+    }
+
+    /**
+     *
+     */
+    public function closeRender() {
+        $this->security->setSessionKey("lastRequest", array(
+            "url" => Request::getInstance()->getRootUrl() . Request::requestUri(),
+            "ts" => microtime(true),
+        ));
+        $this->security->updateSession();
         exit;
     }
 
@@ -119,7 +142,8 @@ class Template {
      */
     public function dump($tpl, array $vars = array())
     {
-        $vars["__user__"] = Security::getInstance()->getUser();
+        $vars["__user__"] = $this->security->getUser();
+        $vars["__admin__"] = $this->security->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
         $dump = '';
         try {
@@ -127,12 +151,12 @@ class Template {
         } catch(\Exception $e) {
             echo "<pre>" . $e->getTraceAsString() . "</pre>";
         }
-        return$dump;
+        return $dump;
     }
 
     /**
      * Funcion Twig para los assets en las plantillas
-     * @return $this
+     * @return Template
      */
     private function addAssetFunction()
     {
@@ -175,7 +199,7 @@ class Template {
 
     /**
      * Función que pinta un formulario
-     * @return $this
+     * @return Template
      */
     private function addFormsFunction()
     {
@@ -194,7 +218,7 @@ class Template {
      * @param $path
      * @param $domain
      *
-     * @return $this
+     * @return Template
      */
     public function addPath($path, $domain = '')
     {
@@ -204,7 +228,7 @@ class Template {
 
     /**
      * Función que pinta un campo de un formulario
-     * @return $this
+     * @return Template
      */
     private function addFormWidgetFunction()
     {
@@ -224,7 +248,7 @@ class Template {
 
     /**
      * Función que pinta un botón de un formulario
-     * @return $this
+     * @return Template
      */
     private function addFormButtonFunction()
     {
@@ -240,7 +264,7 @@ class Template {
 
     /**
      * Método que devuelve un parámetro de configuración en la plantilla
-     * @return $this
+     * @return Template
      */
     private function addConfigFunction()
     {
@@ -296,7 +320,7 @@ class Template {
 
     /**
      * Método que añade la función path a Twig
-     * @return $this
+     * @return Template
      */
     private function addRouteFunction()
     {
@@ -314,7 +338,7 @@ class Template {
 
     /**
      * Método que copia directamente el recurso solicitado a la carpeta pública
-     * @return $this
+     * @return Template
      */
     private function dumpResource()
     {
@@ -463,5 +487,18 @@ class Template {
         }
 
         return $vars;
+    }
+
+    /**
+     * Función que devuelve el valor de una variable de sesión
+     * @return Template
+     */
+    private function useSessionVars() {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('session', function($key = "") {
+            return Security::getInstance()->getSessionKey($key);
+        });
+        $tpl->addFunction($function);
+        return $this;
     }
 }

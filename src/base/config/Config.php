@@ -118,7 +118,7 @@ class Config {
             }
         }
         }
-        return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json', json_encode($final_data)));
+        return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json', json_encode($final_data, JSON_PRETTY_PRINT)));
     }
 
     /**
