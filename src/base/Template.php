@@ -103,20 +103,39 @@ class Template {
      */
     public function render($tpl, array $vars = array(),array $cookies = array())
     {
-        $config = Config::getInstance();
-        ob_start();
-        $powered = $config->get("poweredBy");
-        if(empty($powered)) $powered = "@c15k0";
-        header("X-Powered-By: $powered");
         $vars = $this->setDebugHeaders($vars);
+        $output = $this->dump($tpl, $vars);
+
+        return $this->output($output, $cookies);
+    }
+
+    /**
+     * Servicio que establece las cabeceras de la respuesta
+     * @param array $cookies
+     */
+    private function setReponseHeaders(array $cookies = array())
+    {
+        $config = Config::getInstance();
+        $powered = $config->get("poweredBy");
+        if (empty($powered)) $powered = "@c15k0";
+        header("X-Powered-By: $powered");
         $this->setStatusHeader();
         $this->setAuthHeaders();
         $this->setCookieHeaders($cookies);
+    }
 
-        $data = $this->dump($tpl, $vars);
+    /**
+     * Servicio que devuelve el output
+     * @param string $output
+     * @param array $cookies
+     */
+    public function output($output = '', array $cookies = array()) {
+        ob_start();
+        $this->setReponseHeaders($cookies);
+
         //TODO Cache control
+        echo $output;
 
-        echo $data;
         ob_flush();
         ob_end_clean();
         $this->closeRender();

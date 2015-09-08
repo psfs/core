@@ -60,15 +60,16 @@
          * Servicio que genera la estructura de un módulo o lo actualiza en caso de ser necesario
          * @param string $module
          * @param boolean $force
+         * @param string $type
          * @return mixed
          */
-        public function createStructureModule($module, $force = false)
+        public function createStructureModule($module, $force = false, $type = "")
         {
             $mod_path = CORE_DIR . DIRECTORY_SEPARATOR;
             $module = ucfirst($module);
             $this->createModulePath($module, $mod_path);
             $this->createModulePathTree($module, $mod_path);
-            $this->createModuleBaseFiles($module, $mod_path, $force);
+            $this->createModuleBaseFiles($module, $mod_path, $force, $type);
             $this->createModuleModels($module);
             //Redireccionamos al home definido
             $this->log->infoLog("Módulo generado correctamente");
@@ -112,10 +113,11 @@
          * @param string $module
          * @param string $mod_path
          * @param boolean $force
+         * @param string $controllerType
          */
-        private function createModuleBaseFiles($module, $mod_path, $force = false)
+        private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = "")
         {
-            $this->generateControllerTemplate($module, $mod_path, $force);
+            $this->generateControllerTemplate($module, $mod_path, $force, $controllerType);
             $this->generateServiceTemplate($module, $mod_path, $force);
             $this->genereateAutoloaderTemplate($module, $mod_path, $force);
             $this->generateSchemaTemplate($module, $mod_path, $force);
@@ -148,14 +150,16 @@
          * @param string $module
          * @param string $mod_path
          * @param boolean $force
+         * @param string $controllerType
          * @return boolean
          */
-        private function generateControllerTemplate($module, $mod_path, $force = false)
+        private function generateControllerTemplate($module, $mod_path, $force = false, $controllerType = "")
         {
             //Generamos el controlador base
             $this->log->infoLog("Generamos el controlador BASE");
             $controller = $this->tpl->dump("generator/controller.template.twig", array(
                 "module" => $module,
+                "controllerType" => $controllerType,
             ));
             return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}Controller.php", $force);
         }

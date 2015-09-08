@@ -255,6 +255,32 @@ class Security {
     }
 
     /**
+     * Servicio que inserta un flash en sesión
+     * @param string $key
+     * @param mixed $data
+     */
+    public function setFlash($key, $data = null) {
+        $flashes = $this->getFlashes();
+        if(!is_array($flashes)) {
+            $flashes = array();
+        }
+        $flashes[$key] = $data;
+        $this->setSessionKey(sha1('FLASHES'), $flashes);
+    }
+
+    /**
+     * Servicio que devuelve un flash de sesión
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function getFlash($key) {
+        $flashes = $this->getFlashes();
+
+        return array_key_exists($key, $flashes) ? $flashes[$key] : null;
+    }
+
+    /**
      * Servicio que actualiza
      * @param boolean $closeSession
      * @return Security

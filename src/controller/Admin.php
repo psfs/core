@@ -11,7 +11,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
-use PSFS\base\types\AuthController;
+use PSFS\base\types\AuthAdminController;
 use PSFS\Services\GeneratorService;
 
 /**
@@ -19,7 +19,7 @@ use PSFS\Services\GeneratorService;
  * @package PSFS\controller
  * @domain ROOT
  */
-class Admin extends AuthController{
+class Admin extends AuthAdminController{
 
     const DOMAIN = 'ROOT';
 
@@ -219,9 +219,10 @@ class Admin extends AuthController{
             {
                 $module = $form->getFieldValue("module");
                 $force = $form->getFieldValue("force");
+                $type = $form->getFieldValue("controllerType");
                 try
                 {
-                    $this->gen->createStructureModule($module, $force);
+                    $this->gen->createStructureModule($module, $force, $type);
                     return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin-module", true));
                 }catch(\Exception $e)
                 {

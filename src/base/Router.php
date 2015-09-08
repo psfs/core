@@ -298,8 +298,8 @@
         protected function extractDomain($class)
         {
             //Calculamos los dominios para las plantillas
-            if(!$class->hasConstant("DOMAIN")) throw new ConfigException(_("El controlador debe tener un dominio asignado"));
-            $domain = "@" . $class->getConstant("DOMAIN") . "/";
+            if(!$class->hasConstant("DOMAIN")) $domain = "@" . get_class($class) . "/";
+            else $domain = "@" . $class->getConstant("DOMAIN") . "/";
             $path = realpath(dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
             $tpl_path = "templates";
             $public_path = "public";

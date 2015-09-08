@@ -16,27 +16,27 @@ require_once "bootstrap.php";
 class Dispatcher extends Singleton {
     /**
      * @Inyectable
-     * @var \PSFS\base\Security security
+     * @var \PSFS\base\Security $security
      */
     protected $security;
     /**
      * @Inyectable
-     * @var \PSFS\base\Router router
+     * @var \PSFS\base\Router $router
      */
     protected $router;
     /**
      * @Inyectable
-     * @var \PSFS\base\Request parser
+     * @var \PSFS\base\Request $parser
      */
     protected $parser;
     /**
      * @Inyectable
-     * @var \PSFS\base\Logger log
+     * @var \PSFS\base\Logger $log
      */
     protected $log;
     /**
      * @Inyectable
-     * @var \PSFS\base\config\Config config
+     * @var \PSFS\base\config\Config $config
      */
     protected $config;
 

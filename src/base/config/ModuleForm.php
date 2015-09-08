@@ -2,7 +2,6 @@
 
     namespace PSFS\base\config;
 
-    use PSFS\base\Router;
     use PSFS\base\Security;
     use PSFS\base\types\Form;
 
@@ -36,6 +35,16 @@
                 'label' => _('Sobreescribir ficheros'),
                 'type' => 'select',
                 'data' => array(_('No'), _('Sí')),
+                'required' => false
+            ))
+            ->add('controllerType', array(
+                'label' => _('Tipo de controlador'),
+                'type' => 'select',
+                'data' => array(
+                    "" => _("Normal"),
+                    "Auth" => _("Requiere autenticación de usuario"),
+                    "AuthAdmin" => _("Requiere autenticación de administrador"),
+                ),
                 'required' => false
             ));
             $data = Security::getInstance()->getAdmins();
