@@ -149,7 +149,7 @@ class Template {
         try {
             $dump = $this->tpl->render($tpl, $vars);
         } catch(\Exception $e) {
-            echo "<pre>" . $e->getTraceAsString() . "</pre>";
+            echo $e->getMessage() . "<pre>" . $e->getTraceAsString() . "</pre>";
         }
         return $dump;
     }
@@ -358,10 +358,10 @@ class Template {
             if (file_exists($filename_path))
             {
                 $destfolder = basename($filename_path);
-                if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force)
+                if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
                 {
-                    Config::createDir(Template::extractPath(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder));
-                    self::copyr($filename_path, WEB_DIR.$dest);
+                    Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                    self::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                 }
             }
             return '';
@@ -380,40 +380,26 @@ class Template {
     }
 
     /**
-     * @param string $dest
+     * @param string $src
+     * @param string $dst
      */
-    static public function copyr($source, $dest)
-    {
-        // recursive function to copy
-        // all subdirectories and contents:
-        if (is_dir($source)) {
-            if($dir_handle = opendir($source)) {
-                $sourcefolder = basename($source);
-                Config::createDir(Template::extractPath($dest.DIRECTORY_SEPARATOR.$sourcefolder));
-                while ($file = readdir($dir_handle)) {
-                    if ($file != "." && $file != "..") {
-                        if (is_dir($source."/".$file)) {
-                            self::copyr(Template::extractPath($source.DIRECTORY_SEPARATOR.$file), $dest.DIRECTORY_SEPARATOR.$sourcefolder);
-                        }else {
-                            if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
-                                if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {
-                                    throw new ConfigException("Can't copy " . $source.DIRECTORY_SEPARATOR.$file . " to " . $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file);
-                                }
-                            }
-                        }
+    public static function copyr($src, $dst) {
+        $dir = opendir($src);
+        Config::createDir($dst);
+        while(false !== ( $file = readdir($dir)) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if ( is_dir($src . '/' . $file) ) {
+                    self::copyr($src . '/' . $file,$dst . '/' . $file);
+                }
+                else {
+                    if(@copy($src . '/' . $file, $dst . '/' . $file) === false) {
+                        throw new ConfigException("Can't copy " . $src . " to " . $dst);
                     }
                 }
-                if(@closedir($dir_handle) === false) {
-                    throw new ConfigException("Can't close handler for directory  " . $source);
-                }
             }
-        }else {
-            // can also handle simple copy commands
-            if (!file_exists($dest)) {
-                if(@copy($source, $dest) === false) {
-                    throw new ConfigException("Can't copy " . $source . " to " . $dest);
-                }
-            }
+        }
+        if(@closedir($dir) === false) {
+            throw new ConfigException("Can't close handler for directory  " . $src);
         }
     }
 
