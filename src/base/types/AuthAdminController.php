@@ -1,7 +1,7 @@
 <?php
     namespace PSFS\base\types;
 
-    use PSFS\base\exception\AccessDeniedException;
+    use PSFS\controller\Admin;
 
     /**
      * Class AuthAdminController
@@ -11,7 +11,7 @@
         public function __construct() {
             $this->init();
             if(!$this->isAdmin()) {
-                throw new AccessDeniedException(_("Restricted zone"));
+                Admin::staticAdminLogon();
             }
         }
     }

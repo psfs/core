@@ -9,8 +9,10 @@ use PSFS\base\config\LoginForm;
 use PSFS\base\config\ModuleForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\Template;
 use PSFS\base\types\AuthAdminController;
 use PSFS\Services\GeneratorService;
 
@@ -87,44 +89,60 @@ class Admin extends AuthAdminController{
 
     /**
      * Acción que pinta un formulario genérico de login pra la zona restringida
-     * @params $route string
+     * @param string $route
      * @route /admin/login
      * @visible false
      * @return string HTML
      */
     public function adminLogin($route = null)
     {
+        return Admin::adminLogin($route);
+    }
+
+    /**
+     * Método estático de login de administrador
+     * @param string $route
+     * @return string HTML
+     * @throws \PSFS\base\exception\FormException
+     */
+    public static function staticAdminLogon($route = null) {
         $form = new LoginForm();
-        if($this->getRequest()->getMethod() == "GET") $form->setData(array("route" => $route));
+        if(Request::getInstance()->getMethod() == "GET") $form->setData(array("route" => $route));
         $form->build();
-        if($this->getRequest()->getMethod() == 'POST')
+        $tpl = Template::getInstance();
+        $tpl->setPublicZone(true);
+        $template = "login.html.twig";
+        $params = array(
+            'form' => $form,
+        );
+        $cookies = array();
+        if(Request::getInstance()->getMethod() == 'POST')
         {
             $form->hydrate();
             if($form->isValid())
             {
-                if($this->security->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass")))
+                if(Security::getInstance()->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass")))
                 {
                     $cookies = array(
                         array(
-                            "name" => $this->security->getHash(),
+                            "name" => Security::getInstance()->getHash(),
                             "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
                             "expire" => time() + 3600,
                             "http" => true,
                         )
                     );
-                    return $this->render("redirect.html.twig", array(
+                    $template = "redirect.html.twig";
+                    $params = array(
                         'route' => $form->getFieldValue("route"),
                         'status_message' => _("Acceso permitido... redirigiendo!!"),
                         'delay' => 1,
-                    ), $cookies);
+                    );
                 }else{
                     $form->setError("user", "El usuario no tiene acceso a la web");
                 }
             }
         }
-        return $this->render("login.html.twig", array(
-            'form' => $form,
-        ));
+        return $tpl->render($template, $params, $cookies);
     }
 
     /**
