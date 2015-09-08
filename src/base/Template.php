@@ -278,7 +278,7 @@ class Template {
 
     /**
      * Servicio que regenera todas las plantillas
-     * @return aray
+     * @return array
      */
     public function regenerateTemplates()
     {
@@ -393,7 +393,7 @@ class Template {
                 while ($file = readdir($dir_handle)) {
                     if ($file != "." && $file != "..") {
                         if (is_dir($source."/".$file)) {
-                            self::copyr(Template::extractPath($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder));
+                            self::copyr(Template::extractPath($source.DIRECTORY_SEPARATOR.$file), $dest.DIRECTORY_SEPARATOR.$sourcefolder);
                         }else {
                             if (!file_exists($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) || filemtime($dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) != filemtime($source.DIRECTORY_SEPARATOR.$file)) {
                                 if(@copy($source.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$sourcefolder.DIRECTORY_SEPARATOR.$file) === false) {

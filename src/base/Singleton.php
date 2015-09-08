@@ -57,7 +57,7 @@ class Singleton
 
     /**
      * Método que configura como cargada una clase
-     * @param bool|true $loaded
+     * @param bool $loaded
      */
     public function setLoaded($loaded = true) {
         $this->loaded = $loaded;
@@ -116,7 +116,7 @@ class Singleton
                 $cacheService->storeData($cacheFilename, $properties, Cache::JSON);
             }
             /** @var \ReflectionProperty $property */
-            if (!empty($properties)) foreach ($properties as $property => $class) {
+            if (!empty($properties) && is_array($properties)) foreach ($properties as $property => $class) {
                 $this->load($property, true, $class);
                 $logService->debugLog("Propiedad " . $property . " cargada con clase " . $class);
             }

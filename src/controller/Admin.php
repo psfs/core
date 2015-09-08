@@ -154,8 +154,6 @@ class Admin extends AuthController{
         ));
     }
 
-
-
     /**
      * Método que gestiona la configuración de las variables
      * @Route /admin/config

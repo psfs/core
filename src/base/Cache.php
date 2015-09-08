@@ -60,7 +60,7 @@
          * Método que transforma los datos de salida
          * @param string $data
          * @param int $transform
-         * @return string
+         * @return mixed
          */
         public static function extractDataWithFormat($data, $transform = Cache::TEXT) {
             switch ($transform) {
