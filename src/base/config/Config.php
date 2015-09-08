@@ -48,7 +48,7 @@ class Config {
         {
             $this->config = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json'), true) ?: array();
             $this->debug = (isset($this->config['debug'])) ? (bool)$this->config['debug'] : false;
-        } else {
+        }else {
             $this->debug = true;
         }
         return $this;

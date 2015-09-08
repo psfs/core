@@ -136,7 +136,7 @@ class AssetsParser {
                 if (file_exists($file)) {
                     if ($debug) {
                         $data = $this->putDebugJs($path_parts, $base, $file);
-                    }else {
+                    } else {
                         $data = $this->putProductionJs($base, $file, $data);
                     }
                 }
@@ -179,7 +179,7 @@ class AssetsParser {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
             }
-        }else {
+        } else {
             echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
@@ -198,7 +198,7 @@ class AssetsParser {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
             }
-        }else {
+        } else {
             echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
@@ -231,7 +231,7 @@ class AssetsParser {
                     $this->log->infoLog("$orig copiado a $dest");
                 }
             }
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             $this->log->errorLog($e->getMessage());
         }
     }
@@ -272,7 +272,7 @@ class AssetsParser {
             if ($debug) {
                 $data = file_get_contents($file);
                 file_put_contents($base.$file_path, $data);
-            } else {
+            }else {
                 $data .= file_get_contents($file);
             }
             $this->compiled_files[] = "/css/".$file_path;
@@ -350,7 +350,7 @@ class AssetsParser {
      * @param $name
      * @param boolean $return
      * @param boolean $debug
-     * @param $filename_path
+     * @param string $filename_path
      *
      * @return string[]
      */
@@ -364,26 +364,36 @@ class AssetsParser {
         if (preg_match('/\.css$/i', $string)) {
             $file = "/".substr(md5($string), 0, 8).".css";
             $html_base = "css";
-            if ($debug) $file = str_replace(".css", "_".$original_filename, $file);
+            if ($debug) {
+                $file = str_replace(".css", "_".$original_filename, $file);
+            }
         } elseif (preg_match('/\.js$/i', $string)) {
             $file = "/".substr(md5($string), 0, 8).".js";
             $html_base = "js";
-            if ($debug) $file = str_replace(".js", "_".$original_filename, $file);
+            if ($debug) {
+                $file = str_replace(".js", "_".$original_filename, $file);
+            }
         } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
             $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "img";
-            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            if ($debug) {
+                $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            }
         } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
             $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "docs";
-            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            if ($debug) {
+                $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            }
         } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
             $ext = explode(".", $string);
             $file = "/".substr(md5($string), 0, 8).".".$ext[count($ext) - 1];
             $html_base = "media";
-            if ($debug) $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            if ($debug) {
+                $file = str_replace(".".$ext[count($ext) - 1], "_".$original_filename, $file);
+            }
         } elseif (!$return && !is_null($name)) {
             $html_base = '';
             $file = $name;
@@ -395,7 +405,7 @@ class AssetsParser {
 
     /**
      * @param $handle
-     * @param $filename_path
+     * @param string $filename_path
      */
     public static function extractCssLineResource($handle, $filename_path)
     {
@@ -416,8 +426,8 @@ class AssetsParser {
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
                 Config::createDir(Template::extractPath($dest));
-                if(@copy($orig, $dest) === false) {
-                    throw new ConfigException("Can't copy " . $orig . " to " . $dest);
+                if (@copy($orig, $dest) === false) {
+                    throw new ConfigException("Can't copy ".$orig." to ".$dest);
                 }
             }
         }
