@@ -19,24 +19,46 @@
     class Router {
 
         use SingletonTrait;
+
+        const ROUTES_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json";
+        const DOMAINS_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json";
+
         protected $routing;
         protected $slugs;
-        private $finder;
         private $domains;
+        /**
+         * @var Finder $finder
+         */
+        private $finder;
+        /**
+         * @var \PSFS\base\Cache $cache
+         */
+        private $cache;
 
         /**
+         * Constructor Router
+         * @throws ConfigException
          */
         public function __construct()
         {
             $this->finder = new Finder();
-            if(Config::getInstance()->getDebugMode() || !file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"))
+            $this->cache = Cache::getInstance();
+            $this->init();
+        }
+
+        /**
+         * Inicializador Router
+         * @throws ConfigException
+         */
+        public function init() {
+            if(!file_exists(Router::ROUTES_CACHE_FILENAME) || Config::getInstance()->getDebugMode())
             {
                 $this->hydrateRouting();
                 $this->simpatize();
             }else
             {
-                list($this->routing, $this->slugs) = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json"), true);
-                $this->domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json"), true);
+                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(Router::ROUTES_CACHE_FILENAME, Cache::JSON, true);
+                $this->domains = $this->cache->getDataFromFile(Router::DOMAINS_CACHE_FILENAME, Cache::JSON, true);
             }
         }
 
@@ -45,12 +67,16 @@
          *
          * @param \Exception $e
          *
-         * @return mixed
+         * @return string HTML
          */
         public function httpNotFound(\Exception $e = null)
         {
-            if(empty($e)) $e = new \Exception('Página no encontrada', 404);
-            return Template::getInstance()->setStatus($e->getCode())->render('error.html.twig', array(
+            if(null === $e) {
+                $e = new \Exception(_('Página no encontrada'), 404);
+            }
+            return Template::getInstance()
+                ->setStatus($e->getCode())
+                ->render('error.html.twig', array(
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
                 'error_page' => true,
@@ -66,32 +92,40 @@
         /**
          * Método que calcula el objeto a enrutar
          * @param $route
-         *
-         * @return bool
+         * @throws \Exception
+         * @return string HTML
          */
         public function execute($route)
         {
-            // Checks restricted access
             try
             {
+                // Checks restricted access
                 $this->checkRestrictedAccess($route);
-            }catch(AccessDeniedException $e)
-            {
-                Logger::getInstance()->debugLog('Solicitamos credenciales de acceso a zona restringida');
-                if("login" === Config::getInstance()->get("admin_login")) return $this->redirectLogin($route);
-                else return $this->sentAuthHeader();
-            }
-
-            if(!$this->searchAction($route))
-            {
+                //Search action and execute
+                $this->searchAction($route);
+            } catch (AccessDeniedException $e) {
+                Logger::getInstance()->debugLog(_('Solicitamos credenciales de acceso a zona restringida'));
+                if('login' === Config::getInstance()->get('admin_login')) {
+                    return $this->redirectLogin($route);
+                } else {
+                    return $this->sentAuthHeader();
+                }
+            } catch (RouterException $r) {
                 if(false !== preg_match('/\/$/', $route))
                 {
-                    if(preg_match('/admin/', $route)) $default = Config::getInstance()->get('admin_action');
-                    else $default = Config::getInstance()->get("home_action");
+                    if(preg_match('/admin/', $route)) {
+                        $default = Config::getInstance()->get('admin_action');
+                    } else {
+                        $default = Config::getInstance()->get('home_action');
+                    }
                     return $this->execute($this->getRoute($default));
                 }
+            } catch (\Exception $e) {
+                Logger::getInstance()->errorLog($e->getMessage());
+                throw $e;
             }
-            return false;
+
+            return $this->httpNotFound();
         }
 
         /**
@@ -105,21 +139,21 @@
         {
             //Revisamos si tenemos la ruta registrada
             $parts = parse_url($route);
-            $path = (isset($parts["path"])) ? $parts["path"] : $route;
+            $path = (array_key_exists('path', $parts)) ? $parts['path'] : $route;
             foreach($this->routing as $pattern => $action)
             {
-                $expr = preg_replace('/\{(.*)\}/', "###", $pattern);
-                $expr = preg_quote($expr, "/");
-                $expr = str_replace("###", "(.*)", $expr);
-                $expr2 = preg_replace('/\(\.\*\)$/i', "", $expr);
+                $expr = preg_replace('/\{(.*)\}/', '###', $pattern);
+                $expr = preg_quote($expr, '/');
+                $expr = str_replace('###', '(.*)', $expr);
+                $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
                 if(preg_match('/^'. $expr .'\/?$/i', $path) || preg_match('/^'. $expr2 .'?$/i', $path))
                 {
                     $get = $this->extractComponents($route, $pattern);
                     /** @var $class \PSFS\base\types\Controller */
                     $class = $this->getClassToCall($action);
                     try{
-                        Logger::getInstance()->debugLog('Ruta resuelta para ' . $route);
-                        return call_user_func_array(array($class, $action["method"]), $get);
+                        Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
+                        call_user_func_array(array($class, $action['method']), $get);
                     }catch(\Exception $e)
                     {
                         Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
@@ -127,15 +161,16 @@
                     }
                 }
             }
-            return false;
+            throw new RouterException(_("Ruta no encontrada"));
         }
 
         /**
          * Método que manda las cabeceras de autenticación
+         * @return string HTML
          */
         protected function sentAuthHeader()
         {
-            AdminServices::getInstance()->setAdminHeaders();
+            return AdminServices::getInstance()->setAdminHeaders();
         }
 
         /**
@@ -195,24 +230,31 @@
 
         /**
          * Método que regenera el fichero de rutas
+         * @throws ConfigException
          */
         private function hydrateRouting()
         {
             $base = SOURCE_DIR;
             $modules = realpath(CORE_DIR);
             $this->routing = $this->inspectDir($base, "PSFS", array());
-            if(file_exists($modules)) $this->routing = $this->inspectDir($modules, "", $this->routing);
+            if(file_exists($modules)) {
+                $this->routing = $this->inspectDir($modules, "", $this->routing);
+            }
             Config::createDir(CONFIG_DIR);
-            file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", json_encode($this->domains, JSON_PRETTY_PRINT));
+            $this->cache->storeData(Router::DOMAINS_CACHE_FILENAME, $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
-            if(!empty($home))
+            if (null !== $home || $home !== '')
             {
                 $home_params = null;
-                foreach($this->routing as $pattern => $params)
+                foreach ($this->routing as $pattern => $params)
                 {
-                    if(preg_match("/".preg_quote($pattern, "/")."$/i", "/".$home)) $home_params = $params;
+                    if(preg_match("/".preg_quote($pattern, "/")."$/i", "/".$home)) {
+                        $home_params = $params;
+                    }
                 }
-                if(!empty($home_params)) $this->routing['/'] = $home_params;
+                if (null === $home_params) {
+                    $this->routing['/'] = $home_params;
+                }
             }
         }
 
@@ -222,15 +264,15 @@
          * @param string $namespace
          * @param $routing
          * @return mixed
-         * @internal param $dir
+         * @throws ConfigException
         */
-        private function inspectDir($origen, $namespace = "PSFS", $routing)
+        private function inspectDir($origen, $namespace = 'PSFS', $routing)
         {
-            $files = $this->finder->files()->in($origen)->path("/controller/i")->name("*.php");
+            $files = $this->finder->files()->in($origen)->path('/controller/i')->name("*.php");
             foreach($files as $file)
             {
                 $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
-                $routing = $this->addRouting($namespace .str_replace(".php", "", $filename), $routing);
+                $routing = $this->addRouting($namespace .str_replace('.php', '', $filename), $routing);
             }
             $this->finder = new Finder();
             return $routing;
@@ -262,7 +304,7 @@
                                 $default = '';
                                 $params = array();
                                 $parameters = $method->getParameters();
-                                if(!empty($parameters)) foreach($parameters as $param)
+                                if(count($parameters) > 0) foreach($parameters as $param)
                                 {
                                     if($param->isOptional() && !is_array($param->getDefaultValue()))
                                     {

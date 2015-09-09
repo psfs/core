@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types;
 
+use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
@@ -28,11 +29,11 @@ abstract class Controller extends Singleton implements ControllerInterface{
      *
      * @param array $cookies
      *
-     * @return html
+     * @return string HTML
      */
     public function render($template, array $vars = array(), $cookies = array())
     {
-        $vars["__menu__"] = $this->getMenu();
+        $vars['__menu__'] = $this->getMenu();
         $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
     }
 
@@ -54,7 +55,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      */
     public function dump($template, array $vars = array())
     {
-        $vars["__menu__"] = $this->getMenu();
+        $vars['__menu__'] = $this->getMenu();
         return $this->tpl->dump($this->getDomain() . $template, $vars);
     }
 
@@ -63,15 +64,9 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param $response
      * @param string $type
      */
-    public function response($response, $type = "text/html")
+    public function response($response, $type = 'text/html')
     {
-        ob_start();
-        header("Content-type: " . $type);
-        header("Content-length: " . strlen($response));
-        echo $response;
-        ob_flush();
-        ob_end_clean();
-        exit;
+        $this->tpl->output($response, $type);
     }
 
     /**
@@ -170,7 +165,8 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param bool $absolute
      * @param array $params
      *
-     * @return mixed
+     * @return array|null
+     * @throws RouterException
      */
     public function getRoute($route = '', $absolute = false, $params = array())
     {
@@ -179,12 +175,13 @@ abstract class Controller extends Singleton implements ControllerInterface{
 
     /**
      * Wrapper que hace una redirección
-     * @param $route
+     * @param string $route
      * @param array $params
      *
      * @return mixed
+     * @throws RouterException
      */
-    public function redirect($route, $params = array())
+    public function redirect($route, array $params = array())
     {
         return $this->getRequest()->redirect($this->getRoute($route, true, $params));
     }

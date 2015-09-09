@@ -44,15 +44,26 @@ class Dispatcher extends Singleton {
     protected $mem;
     protected $locale = "es_ES";
 
+    private $actualUri;
+
     /**
      * Constructor por defecto
      * @param $mem
      */
     public function __construct() {
         $this->init();
-        $this->ts = Request::getInstance()->getTs();
+    }
+
+    /**
+     * Método de inicialización del Dispatcher
+     */
+    public function init() {
+        parent::init();
+        $this->ts = $this->parser->getTs();
         $this->mem = memory_get_usage();
         $this->setLocale();
+        $this->bindWarningAsExceptions();
+        $this->actualUri = $this->parser->getServer("REQUEST_URI");
     }
 
     /**
@@ -79,22 +90,21 @@ class Dispatcher extends Singleton {
      */
     public function run()
     {
-        $this->log->infoLog("Inicio petición ".$this->parser->getrequestUri());
-        if (!$this->config->isConfigured()) return $this->router->getAdmin()->config();
+        $this->log->infoLog("Inicio petición ".$this->parser->getRequestUri());
         //
         try {
-            if (!$this->parser->isFile())
-            {
-                if ($this->config->getDebugMode())
+            if ($this->config->isConfigured()) {
+                if (!$this->parser->isFile())
                 {
-                    $this->bindWarningAsExceptions();
+                    return $this->router->execute($this->actualUri);
                 }
-                if (!$this->router->execute($this->parser->getServer("REQUEST_URI"))) return $this->router->httpNotFound();
-            }else return $this->router->httpNotFound();
+            } else {
+                return $this->router->getAdmin()->config();
+            }
         }catch (ConfigException $c) {
             return $this->config->config();
         }catch (SecurityException $s) {
-            return $this->security->notAuthorized($this->parser->getServer("REQUEST_URI"));
+            return $this->security->notAuthorized($this->actualUri);
         }catch (\Exception $e) {
             $ex = (null !== $e->getPrevious()) ? $e->getPrevious() : $e;
             $error = array(
@@ -106,7 +116,7 @@ class Dispatcher extends Singleton {
             unset($error);
             return $this->router->httpNotFound($ex);
         }
-        return false;
+        return $this->router->httpNotFound();
     }
 
     /**
@@ -142,13 +152,16 @@ class Dispatcher extends Singleton {
      */
     protected function bindWarningAsExceptions()
     {
-        //Warning & Notice handler
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-        }, E_WARNING);
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-        }, E_NOTICE);
+        if ($this->config->getDebugMode())
+        {
+            //Warning & Notice handler
+            set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+            }, E_WARNING);
+            set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+            }, E_NOTICE);
+        }
     }
 
 }

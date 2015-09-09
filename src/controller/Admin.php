@@ -180,7 +180,7 @@ class Admin extends AuthAdminController{
      * @throws \HttpException
      */
     public function config(){
-        Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getrequestUri());
+        Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm();
         $form->build();
@@ -191,10 +191,10 @@ class Admin extends AuthAdminController{
             {
                 if(Config::save($form->getData(), $form->getExtraData()))
                 {
-                    Logger::getInstance()->infoLog("Configuración guardada correctamente");
+                    Logger::getInstance()->infoLog(_('Configuración guardada correctamente'));
                     return $this->getRequest()->redirect($this->getRoute('admin'));
                 }
-                throw new \HttpException('Error al guardar la configuración, prueba a cambiar los permisos', 403);
+                throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(
@@ -226,7 +226,7 @@ class Admin extends AuthAdminController{
      */
     public function generateModule()
     {
-        Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".$this->getRequest()->getrequestUri());
+        Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".$this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ModuleForm();
         $form->build();
@@ -265,7 +265,7 @@ class Admin extends AuthAdminController{
      */
     public function getConfigParams()
     {
-        $response = json_encode(array_merge(Config::$required, Config::$optional));
+        $response = array_merge(Config::$required, Config::$optional);
         return $this->json($response);
     }
 

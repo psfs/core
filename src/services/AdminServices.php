@@ -26,7 +26,7 @@
 
         /**
          * Servicio que devuelve las cabeceras de autenticación
-         * @return mixed
+         * @return string HTML
          */
         public function setAdminHeaders()
         {

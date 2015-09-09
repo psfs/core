@@ -22,12 +22,15 @@
          * Método que guarda un text en un fichero
          * @param string $data
          * @param string $path
+         * @param boolean $absolute
+         * @throws ConfigException
          */
-        private function saveTextToFile($data, $path) {
-            $filename = basename($path);
-            Config::createDir(CACHE_DIR.DIRECTORY_SEPARATOR.str_replace($filename, "", $path));
-            if (false === file_put_contents(CACHE_DIR.DIRECTORY_SEPARATOR.$path, $data)) {
-                throw new ConfigException(_("No se tienen los permisos suficientes para escribir en el fichero ").$path);
+        private function saveTextToFile($data, $path, $absolute = false) {
+            $absolutePath = ($absolute) ? $path : CACHE_DIR.DIRECTORY_SEPARATOR  .$path;
+            $filename = basename($absolutePath);
+            Config::createDir(str_replace($filename, "", $absolutePath));
+            if (false === file_put_contents($absolutePath, $data)) {
+                throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')  .$absolutePath);
             }
         }
 
@@ -35,12 +38,14 @@
          * Método que extrae el texto de un fichero
          * @param string $path
          * @param int $transform
+         * @param boolean $absolute
          * @return string
          */
-        public function getDataFromFile($path, $transform = Cache::TEXT) {
+        public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false) {
             $data = null;
-            if (file_exists(CACHE_DIR.DIRECTORY_SEPARATOR.$path)) {
-                $data = file_get_contents(CACHE_DIR.DIRECTORY_SEPARATOR.$path);
+            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+            if (file_exists($absolutePath)) {
+                $data = file_get_contents($absolutePath);
             }
             return Cache::extractDataWithFormat($data, $transform);
         }
@@ -49,10 +54,12 @@
          * Método que verifica si un fichero tiene la cache expirada
          * @param string $path
          * @param int $expires
+         * @param boolean $absolute
          * @return bool
          */
-        private function hasExpiredCache($path, $expires = 300) {
-            $lasModificationDate = filemtime(CACHE_DIR.DIRECTORY_SEPARATOR.$path);
+        private function hasExpiredCache($path, $expires = 300, $absolute = false) {
+            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+            $lasModificationDate = filemtime($absolutePath);
             return ($lasModificationDate + $expires <= time());
         }
 
@@ -103,10 +110,11 @@
          * @param $path
          * @param $data
          * @param int $transform
+         * @param boolean $absolutePath
          */
-        public function storeData($path, $data, $transform = Cache::TEXT) {
+        public function storeData($path, $data, $transform = Cache::TEXT, $absolutePath = false) {
             $data = Cache::transformData($data, $transform);
-            $this->saveTextToFile($data, $path);
+            $this->saveTextToFile($data, $path, $absolutePath);
         }
 
         /**

@@ -3,8 +3,10 @@
 namespace PSFS\base\config;
 
 
+use PSFS\base\Cache;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\types\SingletonTrait;
-
+use PSFS\base\Logger;
 
 /**
  * Class Config
@@ -17,6 +19,7 @@ class Config {
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
+    const CONFIG_FILENAME = CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json';
 
     protected $config;
     static public $defaults = array(
@@ -30,24 +33,22 @@ class Config {
     protected $debug = false;
 
     /**
+     * Constructor Config
      */
-    public function __construct()
-    {
-        $this->configure();
+    public function __construct() {
+        $this->init();
     }
 
     /**
      * Método que carga la configuración del sistema
      * @return Config
-     * @internal param null $path
-     *
      */
-    protected function configure()
+    protected function init()
     {
         if (file_exists(CONFIG_DIR.'/config.json'))
         {
-            $this->config = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json'), true) ?: array();
-            $this->debug = (isset($this->config['debug'])) ? (bool)$this->config['debug'] : false;
+            $this->config = Cache::getInstance()->getDataFromFile(Config::CONFIG_FILENAME, Cache::JSON, true) ?: array();
+            $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
         }else {
             $this->debug = true;
         }
@@ -79,10 +80,8 @@ class Config {
     public function isConfigured()
     {
         $configured = true;
-        foreach (static::$required as $required)
-        {
-            if (empty($this->config[$required]))
-            {
+        foreach (static::$required as $required) {
+            if (!array_key_exists($required, $this->config)) {
                 $configured = false;
                 break;
             }
@@ -95,30 +94,35 @@ class Config {
      *
      * @param array $data
      * @param array|null $extra
-     * @return bool
+     * @return boolean
      */
     public static function save(array $data, array $extra = null)
     {
         //En caso de tener parámetros nuevos los guardamos
-        if (!empty($extra["label"])) {
-            foreach ($extra["label"] as $index => $field)
-        {
-            if (isset($extra["value"][$index]) && !empty($extra["value"][$index])) {
-                /** @var $data array */
-                $data[$field] = $extra["value"][$index];
+        if (!empty($extra['label'])) {
+            foreach ($extra['label'] as $index => $field) {
+                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
+                    /** @var $data array */
+                    $data[$field] = $extra['value'][$index];
+                }
             }
-        }
         }
         $final_data = array();
-        if (!empty($data)) {
-            foreach ($data as $key => $value)
-        {
-            if (!empty($value)) {
-                $final_data[$key] = $value;
+        if (count($data) > 0) {
+            foreach ($data as $key => $value) {
+                if (null !== $value || $value !== '') {
+                    $final_data[$key] = $value;
+                }
             }
         }
+        $saved = false;
+        try {
+            Cache::getInstance()->storeData(Config::CONFIG_FILENAME, $final_data, Cache::JSON, true);
+            $saved = true;
+        } catch (ConfigException $e) {
+            Logger::getInstance()->errorLog($e->getMessage());
         }
-        return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json', json_encode($final_data, JSON_PRETTY_PRINT)));
+        return $saved;
     }
 
     /**
@@ -127,17 +131,15 @@ class Config {
      *
      * @return null
      */
-    public function get($param)
-    {
-        return isset($this->config[$param]) ? $this->config[$param] : null;
+    public function get($param) {
+        return array_key_exists($param, $this->config) ? $this->config[$param] : null;
     }
 
     /**
      * Método que devuelve toda la configuración en un array
      * @return mixed
      */
-    public function dumpConfig()
-    {
+    public function dumpConfig() {
         return $this->config;
     }
 
@@ -145,20 +147,18 @@ class Config {
      * Servicio que devuelve los parámetros de configuración de Propel para las BD
      * @return mixed
      */
-    public function getPropelParams()
-    {
-        return json_decode(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'properties.json'), true);
+    public function getPropelParams() {
+        return Cache::getInstance()->getDataFromFile(__DIR__.DIRECTORY_SEPARATOR.'properties.json', Cache::JSON, true);
     }
 
     /**
      * Método estático para la generación de directorios
      * @param $dir
+     * throws ConfigException
      */
     public static function createDir($dir) {
-        if (!file_exists($dir)) {
-            if (@mkdir($dir, 0775, true) === false) {
-                throw new \PSFS\base\exception\ConfigException("Can't create directory ".$dir);
-            }
+        if (!file_exists($dir) && @mkdir($dir, 0775, true) === false ) {
+            throw new ConfigException(_('Can\'t create directory ') . $dir);
         }
     }
 }

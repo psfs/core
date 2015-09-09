@@ -2,6 +2,7 @@
     namespace PSFS\Services;
 
     use PSFS\base\config\Config;
+    use PSFS\base\exception\ConfigException;
     use PSFS\base\Service;
 
     class GeneratorService extends Service{
@@ -115,7 +116,7 @@
          * @param boolean $force
          * @param string $controllerType
          */
-        private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = "")
+        private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '')
         {
             $this->generateControllerTemplate($module, $mod_path, $force, $controllerType);
             $this->generateServiceTemplate($module, $mod_path, $force);
@@ -285,12 +286,12 @@
          * @return boolean
          */
         private function writeTemplateToFile($fileContent, $filename, $force = false) {
-            Config::createDir(dirname($filename));
             $created = false;
-            if (!file_exists($filename) || $force) {
-                $created = file_put_contents($filename, $fileContent);
+            if ($force || !file_exists($filename)) {
+                $this->cache->storeData($filename, $fileContent, true);
+                $created = true;
             }else{
-                $this->log->errorLog($filename . " not exists or cant write");
+                $this->log->errorLog($filename . _(' not exists or cant write'));
             }
             return $created;
         }

@@ -55,7 +55,7 @@ class Request {
      *
      * @return bool
      */
-    public function hasHeader($header){ return (isset($this->header[$header])); }
+    public function hasHeader($header){ return array_key_exists($header, $this->header); }
 
 
     /**
@@ -78,13 +78,13 @@ class Request {
      * @return mixed
      */
     public static function ts($formatted = false){ return self::getInstance()->getTs($formatted); }
-    public function getTs($formatted = false){ return ($formatted) ? date('Y-m-d H:i:s',$this->server["REQUEST_TIME_FLOAT"]) : $this->server["REQUEST_TIME_FLOAT"]; }
+    public function getTs($formatted = false){ return ($formatted) ? date('Y-m-d H:i:s', $this->server['REQUEST_TIME_FLOAT']) : $this->server['REQUEST_TIME_FLOAT']; }
 
     /**
      * Método que devuelve el Método HTTP utilizado
      * @return string
      */
-    public function getMethod(){ return strtoupper($this->server["REQUEST_METHOD"]); }
+    public function getMethod(){ return (array_key_exists('REQUEST_METHOD', $this->server)) ? strtoupper($this->server['REQUEST_METHOD']) : 'GET'; }
 
     /**
      * Método que devuelve una cabecera de la petición si existe
@@ -107,8 +107,8 @@ class Request {
      * Método que devuelve la url solicitada
      * @return mixed
      */
-    public static function requestUri(){ return self::getInstance()->getrequestUri(); }
-    public function getrequestUri(){ return $this->server["REQUEST_URI"]; }
+    public static function requestUri(){ return self::getInstance()->getRequestUri(); }
+    public function getRequestUri(){ return array_key_exists('REQUEST_URI', $this->server) ? $this->server['REQUEST_URI'] : ''; }
 
     /**
      * Método que devuelve el idioma de la petición
@@ -116,7 +116,7 @@ class Request {
      */
     public function getLanguage()
     {
-        return array_key_exists("HTTP_ACCEPT_LANGUAGE", $this->server) ? $this->server["HTTP_ACCEPT_LANGUAGE"] : "es_ES";
+        return array_key_exists('HTTP_ACCEPT_LANGUAGE', $this->server) ? $this->server['HTTP_ACCEPT_LANGUAGE'] : 'es_ES';
     }
 
     /**
@@ -125,7 +125,7 @@ class Request {
      */
     public function isFile()
     {
-        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php|ico)$/', $this->getrequestUri()) != 0);
+        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php|ico)$/', $this->getRequestUri()) !== 0);
         return $file;
     }
 

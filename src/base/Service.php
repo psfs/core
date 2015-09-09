@@ -24,6 +24,11 @@
          * @var \PSFS\base\Logger Log de las llamadas
          */
         protected $log;
+        /**
+         * @Inyectable
+         * @var \PSFS\base\Cache $cache
+         */
+        protected $cache;
 
         /**
          * @return String

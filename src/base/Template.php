@@ -79,7 +79,7 @@ class Template {
 
     /**
      * Método que establece un header de http status code
-     * @param null $status
+     * @param string $status
      *
      * @return Template
      */
@@ -100,20 +100,23 @@ class Template {
      * @param string $tpl
      * @param array $vars
      * @param array $cookies
+     *
+     * @return string HTML
      */
     public function render($tpl, array $vars = array(),array $cookies = array())
     {
         $vars = $this->setDebugHeaders($vars);
         $output = $this->dump($tpl, $vars);
 
-        return $this->output($output, $cookies);
+        return $this->output($output, 'text/html', $cookies);
     }
 
     /**
      * Servicio que establece las cabeceras de la respuesta
+     * @param string $contentType
      * @param array $cookies
      */
-    private function setReponseHeaders(array $cookies = array())
+    private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
     {
         $config = Config::getInstance();
         $powered = $config->get("poweredBy");
@@ -122,16 +125,21 @@ class Template {
         $this->setStatusHeader();
         $this->setAuthHeaders();
         $this->setCookieHeaders($cookies);
+        header('Content-type: ' . $contentType);
+
     }
 
     /**
      * Servicio que devuelve el output
      * @param string $output
+     * @param string $contentType
      * @param array $cookies
+     * @return string HTML
      */
-    public function output($output = '', array $cookies = array()) {
+    public function output($output = '', $contentType = 'text/html', array $cookies = array()) {
         ob_start();
-        $this->setReponseHeaders($cookies);
+        $this->setReponseHeaders($contentType, $cookies);
+        header('Content-length: ' . strlen($output));
 
         //TODO Cache control
         echo $output;
