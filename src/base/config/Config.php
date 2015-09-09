@@ -5,8 +5,8 @@ namespace PSFS\base\config;
 
 use PSFS\base\Cache;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\types\SingletonTrait;
 use PSFS\base\Logger;
+use PSFS\base\types\SingletonTrait;
 
 /**
  * Class Config
@@ -19,7 +19,6 @@ class Config {
     const DEFAULT_ENCODE = "UTF-8";
     const DEFAULT_CTYPE = "text/html";
     const DEFAULT_DATETIMEZONE = "Europe/Madrid";
-    const CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json";
 
     protected $config;
     static public $defaults = array(
@@ -45,9 +44,9 @@ class Config {
      */
     protected function init()
     {
-        if (file_exists(Config::CONFIG_FILENAME))
+        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json"))
         {
-            $this->config = Cache::getInstance()->getDataFromFile(Config::CONFIG_FILENAME, Cache::JSON, true) ?: array();
+            $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, true) ?: array();
             $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
         }else {
             $this->debug = true;
@@ -120,7 +119,7 @@ class Config {
         }
         $saved = false;
         try {
-            Cache::getInstance()->storeData(Config::CONFIG_FILENAME, $final_data, Cache::JSON, true);
+            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", $final_data, Cache::JSON, true);
             $saved = true;
         } catch (ConfigException $e) {
             Logger::getInstance()->errorLog($e->getMessage());
