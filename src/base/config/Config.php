@@ -20,7 +20,7 @@ class Config {
     const DEFAULT_CTYPE = "text/html";
     const DEFAULT_DATETIMEZONE = "Europe/Madrid";
 
-    protected $config;
+    protected $config = array();
     static public $defaults = array(
         "db_host" => "localhost",
         "db_port" => "3306",
