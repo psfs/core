@@ -2,11 +2,10 @@
 
 namespace PSFS\base\config;
 
-
 use PSFS\base\Cache;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\types\SingletonTrait;
 use PSFS\base\Logger;
+use PSFS\base\types\SingletonTrait;
 
 /**
  * Class Config
@@ -15,27 +14,28 @@ use PSFS\base\Logger;
 class Config {
 
     use SingletonTrait;
-    const DEFAULT_LANGUAGE = "es";
-    const DEFAULT_ENCODE = "UTF-8";
-    const DEFAULT_CTYPE = "text/html";
-    const DEFAULT_DATETIMEZONE = "Europe/Madrid";
-    public static $CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json";
+    const DEFAULT_LANGUAGE = 'es';
+    const DEFAULT_ENCODE = 'UTF-8';
+    const DEFAULT_CTYPE = 'text/html';
+    const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
+    public static $CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
 
     protected $config;
     static public $defaults = array(
-        "db_host" => "localhost",
-        "db_port" => "3306",
-        "default_language" => "es_ES",
+        'db_host' => 'localhost',
+        'db_port' => '3306',
+        'default_language' => 'es_ES',
     );
-    static public $required = array("db_host", "db_port", "db_name", "db_user", "db_password", "home_action", "default_language");
-    static public $encrypted = array("db_password");
-    static public $optional = array("platform_name", "debug", "restricted", "admin_login", "logger.phpFire", "logger.memory", "poweredBy", "author", "author_email", "version");
+    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language');
+    static public $encrypted = array('db_password');
+    static public $optional = array('platform_name', 'debug', 'restricted', 'admin_login', 'logger.phpFire', 'logger.memory', 'poweredBy', 'author', 'author_email', 'version');
     protected $debug = false;
 
     /**
      * Constructor Config
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->init();
     }
 
@@ -45,11 +45,10 @@ class Config {
      */
     protected function init()
     {
-        if (file_exists(CONFIG_DIR . "/config.json"))
-        {
+        if (file_exists(CONFIG_DIR . '/config.json')) {
             $this->config = Cache::getInstance()->getDataFromFile(Config::$CONFIG_FILENAME, Cache::JSON, true) ?: array();
-            $this->debug = (array_key_exists("debug", $this->config)) ? (bool)$this->config["debug"] : false;
-        }else {
+            $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
+        } else {
             $this->debug = true;
         }
         return $this;
@@ -59,20 +58,27 @@ class Config {
      * Método que devuelve si la plataforma está en modo debug
      * @return bool
      */
-    public function getDebugMode() { return $this->debug; }
+    public function getDebugMode()
+    {
+        return $this->debug;
+    }
 
     /**
      * Método que devuelve el path de cache
      * @return string
      */
-    public function getCachePath() { return CACHE_DIR; }
+    public function getCachePath()
+    {
+        return CACHE_DIR;
+    }
 
     /**
      * Método que devuelve el path general de templates de PSFS
      * @return string
      */
-    public function getTemplatePath() {
-        $path = __DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."templates".DIRECTORY_SEPARATOR;
+    public function getTemplatePath()
+    {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
         return realpath($path);
     }
 
@@ -102,18 +108,18 @@ class Config {
     public static function save(array $data, array $extra = null)
     {
         //En caso de tener parámetros nuevos los guardamos
-        if (!empty($extra["label"])) {
-            foreach ($extra["label"] as $index => $field) {
-                if (array_key_exists($index, $extra["value"]) && !empty($extra["value"][$index])) {
+        if (!empty($extra['label'])) {
+            foreach ($extra['label'] as $index => $field) {
+                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
                     /** @var $data array */
-                    $data[$field] = $extra["value"][$index];
+                    $data[$field] = $extra['value'][$index];
                 }
             }
         }
         $final_data = array();
         if (count($data) > 0) {
             foreach ($data as $key => $value) {
-                if (null !== $value || $value !== "") {
+                if (null !== $value || $value !== '') {
                     $final_data[$key] = $value;
                 }
             }
@@ -134,7 +140,8 @@ class Config {
      *
      * @return null
      */
-    public function get($param) {
+    public function get($param)
+    {
         return array_key_exists($param, $this->config) ? $this->config[$param] : null;
     }
 
@@ -142,7 +149,8 @@ class Config {
      * Método que devuelve toda la configuración en un array
      * @return mixed
      */
-    public function dumpConfig() {
+    public function dumpConfig()
+    {
         return $this->config;
     }
 
@@ -150,8 +158,9 @@ class Config {
      * Servicio que devuelve los parámetros de configuración de Propel para las BD
      * @return mixed
      */
-    public function getPropelParams() {
-        return Cache::getInstance()->getDataFromFile(__DIR__.DIRECTORY_SEPARATOR."properties.json", Cache::JSON, true);
+    public function getPropelParams()
+    {
+        return Cache::getInstance()->getDataFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json', Cache::JSON, true);
     }
 
     /**
@@ -159,9 +168,10 @@ class Config {
      * @param $dir
      * throws ConfigException
      */
-    public static function createDir($dir) {
-        if (!file_exists($dir) && @mkdir($dir, 0775, true) === false ) {
-            throw new ConfigException(_("Can\"t create directory ") . $dir);
+    public static function createDir($dir)
+    {
+        if (!file_exists($dir) && @mkdir($dir, 0775, true) === false) {
+            throw new ConfigException(_('Can\'t create directory ') . $dir);
         }
     }
 }
