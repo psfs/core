@@ -20,8 +20,8 @@
 
         use SingletonTrait;
 
-        public static $ROUTES_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json";
-        public static $DOMAINS_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json";
+        const ROUTES_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json";
+        const DOMAINS_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json";
 
         protected $routing;
         protected $slugs;
@@ -51,14 +51,14 @@
          * @throws ConfigException
          */
         public function init() {
-            if(!file_exists(Router::$ROUTES_CACHE_FILENAME) || Config::getInstance()->getDebugMode())
+            if(!file_exists(Router::ROUTES_CACHE_FILENAME) || Config::getInstance()->getDebugMode())
             {
                 $this->hydrateRouting();
                 $this->simpatize();
             }else
             {
-                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(Router::$ROUTES_CACHE_FILENAME, Cache::JSON, true);
-                $this->domains = $this->cache->getDataFromFile(Router::$DOMAINS_CACHE_FILENAME, Cache::JSON, true);
+                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(Router::ROUTES_CACHE_FILENAME, Cache::JSON, true);
+                $this->domains = $this->cache->getDataFromFile(Router::DOMAINS_CACHE_FILENAME, Cache::JSON, true);
             }
         }
 
@@ -241,7 +241,7 @@
                 $this->routing = $this->inspectDir($modules, "", $this->routing);
             }
             Config::createDir(CONFIG_DIR);
-            $this->cache->storeData(Router::$DOMAINS_CACHE_FILENAME, $this->domains, Cache::JSON, true);
+            $this->cache->storeData(Router::DOMAINS_CACHE_FILENAME, $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
             if (null !== $home || $home !== '')
             {
@@ -342,7 +342,8 @@
             //Calculamos los dominios para las plantillas
             if(!$class->hasConstant("DOMAIN")) $domain = "@" . get_class($class) . "/";
             else $domain = "@" . $class->getConstant("DOMAIN") . "/";
-            $path = realpath(dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+            $path = realpath($path) . DIRECTORY_SEPARATOR;
             $tpl_path = "templates";
             $public_path = "public";
             $model_path = "models";
@@ -367,18 +368,25 @@
          */
         private function simpatize()
         {
+            $translations = array();
+            $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
+            $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
             foreach($this->routing as $key => &$info)
             {
                 $slug = $this->slugify($key);
-                Config::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . "translations");
-                if(!file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php")) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "<?php \$translations = array();\n");
-                include(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php");
-                if(!isset($translations[$slug])) file_put_contents(CACHE_DIR . DIRECTORY_SEPARATOR . "translations" . DIRECTORY_SEPARATOR . "routes_translations.php", "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
+                if(!file_exists($absoluteTranslationFileName)) {
+                    Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
+                }
+                if(!array_key_exists($slug, $translations)) {
+                    $translations[$slug] = $key;
+                    file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
+                }
                 $this->slugs[$slug] = $key;
                 $info["slug"] = $slug;
             }
+            include($absoluteTranslationFileName);
             Config::createDir(CONFIG_DIR);
-            file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", json_encode(array($this->routing, $this->slugs), JSON_PRETTY_PRINT));
+            Cache::getInstance()->storeData(Router::ROUTES_CACHE_FILENAME, array($this->routing, $this->slugs), Cache::JSON, true);
             return $this;
         }
 
