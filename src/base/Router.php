@@ -20,8 +20,8 @@
 
         use SingletonTrait;
 
-        const ROUTES_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json";
-        const DOMAINS_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json";
+        public static $ROUTES_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json";
+        public static $DOMAINS_CACHE_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json";
 
         protected $routing;
         protected $slugs;
@@ -51,14 +51,14 @@
          * @throws ConfigException
          */
         public function init() {
-            if(!file_exists(Router::ROUTES_CACHE_FILENAME) || Config::getInstance()->getDebugMode())
+            if(!file_exists(Router::$ROUTES_CACHE_FILENAME) || Config::getInstance()->getDebugMode())
             {
                 $this->hydrateRouting();
                 $this->simpatize();
             }else
             {
-                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(Router::ROUTES_CACHE_FILENAME, Cache::JSON, true);
-                $this->domains = $this->cache->getDataFromFile(Router::DOMAINS_CACHE_FILENAME, Cache::JSON, true);
+                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(Router::$ROUTES_CACHE_FILENAME, Cache::JSON, true);
+                $this->domains = $this->cache->getDataFromFile(Router::$DOMAINS_CACHE_FILENAME, Cache::JSON, true);
             }
         }
 
@@ -241,7 +241,7 @@
                 $this->routing = $this->inspectDir($modules, "", $this->routing);
             }
             Config::createDir(CONFIG_DIR);
-            $this->cache->storeData(Router::DOMAINS_CACHE_FILENAME, $this->domains, Cache::JSON, true);
+            $this->cache->storeData(Router::$DOMAINS_CACHE_FILENAME, $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
             if (null !== $home || $home !== '')
             {
