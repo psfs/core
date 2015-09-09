@@ -19,17 +19,17 @@ class Config {
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
-    const CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
 
     protected $config;
     static public $defaults = array(
-        "db_host" => "localhost",
-        "db_port" => "3306",
-        "default_language" => "es_ES",
+        'db_host' => 'localhost',
+        'db_port' => '3306',
+        'default_language' => 'es_ES',
     );
     static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language');
     static public $encrypted = array('db_password');
     static public $optional = array('platform_name', 'debug', 'restricted', 'admin_login', 'logger.phpFire', 'logger.memory', 'poweredBy', 'author', 'author_email', 'version');
+    public static $CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
     protected $debug = false;
 
     /**
@@ -45,9 +45,9 @@ class Config {
      */
     protected function init()
     {
-        if (file_exists(CONFIG_DIR.'/config.json'))
+        if (file_exists(CONFIG_DIR . '/config.json'))
         {
-            $this->config = Cache::getInstance()->getDataFromFile(Config::CONFIG_FILENAME, Cache::JSON, true) ?: array();
+            $this->config = Cache::getInstance()->getDataFromFile(Config::$CONFIG_FILENAME, Cache::JSON, true) ?: array();
             $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
         }else {
             $this->debug = true;
@@ -120,7 +120,7 @@ class Config {
         }
         $saved = false;
         try {
-            Cache::getInstance()->storeData(Config::CONFIG_FILENAME, $final_data, Cache::JSON, true);
+            Cache::getInstance()->storeData(Config::$CONFIG_FILENAME, $final_data, Cache::JSON, true);
             $saved = true;
         } catch (ConfigException $e) {
             Logger::getInstance()->errorLog($e->getMessage());
