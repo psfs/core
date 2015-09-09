@@ -14,10 +14,10 @@ use PSFS\base\types\SingletonTrait;
 class Config {
 
     use SingletonTrait;
-    const DEFAULT_LANGUAGE = 'es';
+    /*const DEFAULT_LANGUAGE = 'es';
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
-    const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
+    const DEFAULT_DATETIMEZONE = 'Europe/Madrid';//*/
 
     protected $config;
     static public $defaults = array(
