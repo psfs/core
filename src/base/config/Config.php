@@ -19,7 +19,7 @@ class Config {
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
-    const CONFIG_FILENAME = CONFIG_DIR.DIRECTORY_SEPARATOR.'config.json';
+    const CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
 
     protected $config;
     static public $defaults = array(
@@ -71,7 +71,10 @@ class Config {
      * Método que devuelve el path general de templates de PSFS
      * @return string
      */
-    public function getTemplatePath() { return realpath(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR); }
+    public function getTemplatePath() {
+        $path = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR;
+        return realpath($path);
+    }
 
     /**
      * Método que indica si se ha configurado correctamente la plataforma
