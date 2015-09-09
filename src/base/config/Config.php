@@ -19,6 +19,7 @@ class Config {
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
+    public static $CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
 
     protected $config;
     static public $defaults = array(
@@ -29,7 +30,6 @@ class Config {
     static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language');
     static public $encrypted = array('db_password');
     static public $optional = array('platform_name', 'debug', 'restricted', 'admin_login', 'logger.phpFire', 'logger.memory', 'poweredBy', 'author', 'author_email', 'version');
-    public static $CONFIG_FILENAME = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json';
     protected $debug = false;
 
     /**
