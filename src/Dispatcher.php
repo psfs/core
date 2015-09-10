@@ -102,23 +102,31 @@ class Dispatcher extends Singleton {
                 return $this->router->getAdmin()->config();
             }
         }catch (ConfigException $c) {
-            return $this->config->config();
+            return $this->dumpException($c);
         }catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
         }catch (\Exception $e) {
-            $ex = (null !== $e->getPrevious()) ? $e->getPrevious() : $e;
-            $error = array(
-                "error" => $ex->getMessage(),
-                "file" => $ex->getFile(),
-                "line" => $ex->getLine(),
-            );
-            $this->log->errorLog(json_encode($error));
-            unset($error);
-            return $this->router->httpNotFound($ex);
+            return $this->dumpException($e);
         }
         return $this->router->httpNotFound();
     }
 
+    /**
+     * Método que parsea una excepción y la devuelve por pantalla
+     * @param \Exception $e
+     * @return string HTML
+     */
+    protected function dumpException(\Exception $e) {
+        $ex = (null !== $e->getPrevious()) ? $e->getPrevious() : $e;
+        $error = array(
+            "error" => $ex->getMessage(),
+            "file" => $ex->getFile(),
+            "line" => $ex->getLine(),
+        );
+        $this->log->errorLog(json_encode($error));
+        unset($error);
+        return $this->router->httpNotFound($ex);
+    }
     /**
      * Método que devuelve la memoria usada desde la ejecución
      * @param $unit string
@@ -157,10 +165,7 @@ class Dispatcher extends Singleton {
             //Warning & Notice handler
             set_error_handler(function($errno, $errstr, $errfile, $errline) {
                 throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-            }, E_WARNING);
-            set_error_handler(function($errno, $errstr, $errfile, $errline) {
-                throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
-            }, E_NOTICE);
+            });
         }
     }
 
