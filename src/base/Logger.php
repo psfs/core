@@ -36,10 +36,10 @@
             $args = func_get_args();
             $logger = 'general';
             $debug = $config->getDebugMode();
-            if (!empty($args))
+            if (0 !== count($args))
             {
-                if (isset($args[0][0])) $logger = $args[0][0];
-                if (isset($args[0][1])) $debug = $args[0][1];
+                if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) $logger = $args[0][0];
+                if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) $debug = $args[0][1];
             }
             $logger = preg_replace('/\\\/', ".", $logger);
             $path = LOG_DIR.DIRECTORY_SEPARATOR.$logger.DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');

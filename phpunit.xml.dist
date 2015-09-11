@@ -9,6 +9,7 @@
     <testsuites>
         <testsuite name="PSFS Test">
             <directory>./src/test/</directory>
+            <directory>./src/test/base</directory>
         </testsuite>
     </testsuites>
 </phpunit>

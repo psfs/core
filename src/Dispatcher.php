@@ -5,7 +5,7 @@ namespace PSFS;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\SecurityException;
-use PSFS\base\Request;
+use PSFS\base\exception\RouterException;
 use PSFS\base\Singleton;
 
 require_once "bootstrap.php";
@@ -105,10 +105,11 @@ class Dispatcher extends Singleton {
             return $this->dumpException($c);
         }catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
+        } catch(RouterException $r) {
+            return $this->router->httpNotFound($r);
         }catch (\Exception $e) {
             return $this->dumpException($e);
         }
-        return $this->router->httpNotFound();
     }
 
     /**
