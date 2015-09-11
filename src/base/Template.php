@@ -5,9 +5,8 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\extension\AssetsParser;
 use PSFS\base\extension\AssetsTokenParser;
-use PSFS\base\types\Form;
+use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\SingletonTrait;
 use PSFS\Dispatcher;
 
@@ -15,6 +14,9 @@ use PSFS\Dispatcher;
 class Template {
 
     use SingletonTrait;
+    /**
+     * @var \Twig_Environment tpl
+     */
     protected $tpl;
     protected $filters = array();
 
@@ -28,42 +30,22 @@ class Template {
     protected $security;
 
     /**
-     *
+     * Constructor por defecto
      */
-    public function __construct()
-    {
-        $this->debug = Config::getInstance()->getDebugMode() ?: false;
-        $this->security = Security::getInstance();
-        $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
-        $this->tpl = new \Twig_Environment($loader, array(
-            'cache' => Config::getInstance()->getCachePath(),
-            'debug' => (bool)$this->debug,
-            'auto_reload' => true,
-        ));
-        //Asignamos las funciones especiales
-        $this->addAssetFunction()
-            ->addFormsFunction()
-            ->addFormWidgetFunction()
-            ->addFormButtonFunction()
-            ->addConfigFunction()
-            ->addRouteFunction()
-            ->dumpResource()
-            ->useSessionVars();
-
-        //Añadimos las extensiones de los tags
-        $this->tpl->addTokenParser(new AssetsTokenParser("css"));
-        $this->tpl->addTokenParser(new AssetsTokenParser("js"));
-
-        //Optimizamos
-        $this->tpl->addExtension(new \Twig_Extension_Optimizer());
-        $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
+    public function __construct() {
+        $this->setup();
+        $this->addTemplateFunctions();
+        $this->addTemplateTokens();
+        $this->optimizeTemplates();
     }
 
     /**
      * Método que devuelve el loader del Template
      * @return \Twig_LoaderInterface
      */
-    public function getLoader() { return $this->tpl->getLoader(); }
+    public function getLoader() {
+        return $this->tpl->getLoader();
+    }
 
     /**
      * Método que activa la zona pública
@@ -71,8 +53,7 @@ class Template {
      *
      * @return Template
      */
-    public function setPublicZone($public = true)
-    {
+    public function setPublicZone($public = true) {
         $this->public_zone = $public;
         return $this;
     }
@@ -83,8 +64,7 @@ class Template {
      *
      * @return Template
      */
-    public function setStatus($status = null)
-    {
+    public function setStatus($status = null) {
         switch ($status)
         {
             case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
@@ -103,8 +83,7 @@ class Template {
      *
      * @return string HTML
      */
-    public function render($tpl, array $vars = array(),array $cookies = array())
-    {
+    public function render($tpl, array $vars = array(), array $cookies = array()) {
         $vars = $this->setDebugHeaders($vars);
         $output = $this->dump($tpl, $vars);
 
@@ -116,8 +95,7 @@ class Template {
      * @param string $contentType
      * @param array $cookies
      */
-    private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
-    {
+    private function setReponseHeaders($contentType = 'text/html', array $cookies = array()) {
         $config = Config::getInstance();
         $powered = $config->get("poweredBy");
         if (empty($powered)) $powered = "@c15k0";
@@ -162,13 +140,24 @@ class Template {
     }
 
     /**
+     * Método que añade una nueva ruta al path de Twig
+     * @param $path
+     * @param $domain
+     *
+     * @return Template
+     */
+    public function addPath($path, $domain = '') {
+        $this->tpl->getLoader()->addPath($path, $domain);
+        return $this;
+    }
+
+    /**
      * Método que devuelve el contenido de una plantilla
      * @param string $tpl
      * @param array $vars
      * @return string
      */
-    public function dump($tpl, array $vars = array())
-    {
+    public function dump($tpl, array $vars = array()) {
         $vars["__user__"] = $this->security->getUser();
         $vars["__admin__"] = $this->security->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
@@ -182,75 +171,32 @@ class Template {
     }
 
     /**
+     * Método que añade una función al motor de plantillas
+     * @param $templateFunction
+     * @param $functionName
+     *
+     * @return Template
+     */
+    protected function addTemplateFunction($templateFunction, $functionName) {
+        $function = new \Twig_SimpleFunction($templateFunction, $functionName);
+        $this->tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
      * Funcion Twig para los assets en las plantillas
      * @return Template
      */
-    private function addAssetFunction()
-    {
-        $function = new \Twig_SimpleFunction('asset', function($string, $name = null, $return = true) {
-
-            $file_path = "";
-            $debug = Config::getInstance()->getDebugMode();
-            if (!file_exists($file_path)) $file_path = BASE_DIR.$string;
-            $filename_path = AssetsParser::findDomainPath($string, $file_path);
-
-            if (file_exists($filename_path)) {
-                list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $filename_path);
-                //Creamos el directorio si no existe
-                Config::createDir($base.$html_base);
-                //Si se ha modificado
-                if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($filename_path))
-                {
-                    if ($html_base == 'css')
-                    {
-                        $handle = @fopen($filename_path, 'r');
-                        if ($handle)
-                        {
-                            while (!feof($handle)) {
-                                AssetsParser::extractCssLineResource($handle, $filename_path);
-                            }
-                            fclose($handle);
-                        }
-                    }
-                    $data = file_get_contents($filename_path);
-                    if (!empty($name)) file_put_contents(WEB_DIR.DIRECTORY_SEPARATOR.$name, $data);
-                    else file_put_contents($base.$file_path, $data);
-                }
-            }
-            $return_path = (empty($name)) ? Request::getInstance()->getRootUrl().'/'.$file_path : $name;
-            return ($return) ? $return_path : '';
-        });
-        $this->tpl->addFunction($function);
-        return $this;
+    private function addAssetFunction() {
+        return $this->addTemplateFunction("asset", TemplateFunctions::ASSETS_FUNCTION);
     }
 
     /**
      * Función que pinta un formulario
      * @return Template
      */
-    private function addFormsFunction()
-    {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('form', function(Form $form) use ($tpl) {
-            $tpl->display('forms/base.html.twig', array(
-                'form' => $form,
-            ));
-        });
-        $this->tpl->addFunction($function);
-        return $this;
-    }
-
-    /**
-     * Método que añade una nueva ruta al path de Twig
-     * @param $path
-     * @param $domain
-     *
-     * @return Template
-     */
-    public function addPath($path, $domain = '')
-    {
-        $this->tpl->getLoader()->addPath($path, $domain);
-        return $this;
+    private function addFormsFunction() {
+        return $this->addTemplateFunction("form", TemplateFunctions::FORM_FUNCTION);
     }
 
     /**
@@ -259,62 +205,53 @@ class Template {
      */
     private function addFormWidgetFunction()
     {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('form_widget', function(array $field, string $label = null) use ($tpl) {
-            if (!empty($label)) $field["label"] = $label;
-            //Limpiamos los campos obligatorios
-            if (!isset($field["required"])) $field["required"] = true;
-            elseif (isset($field["required"]) && (bool)$field["required"] === false) unset($field["required"]);
-            $tpl->display('forms/field.html.twig', array(
-                'field' => $field,
-            ));
-        });
-        $this->tpl->addFunction($function);
-        return $this;
+        return $this->addTemplateFunction("form_widget", TemplateFunctions::WIDGET_FUNCTION);
     }
 
     /**
      * Función que pinta un botón de un formulario
      * @return Template
      */
-    private function addFormButtonFunction()
-    {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('form_button', function(array $button) use ($tpl) {
-            $tpl->display('forms/button.html.twig', array(
-                'button' => $button,
-            ));
-        });
-        $this->tpl->addFunction($function);
-        return $this;
+    private function addFormButtonFunction() {
+        return $this->addTemplateFunction("form_button", TemplateFunctions::BUTTON_FUNCTION);
     }
 
     /**
      * Método que devuelve un parámetro de configuración en la plantilla
      * @return Template
      */
-    private function addConfigFunction()
-    {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('get_config', function($param, $default = '') {
-            return Config::getInstance()->get($param) ?: $default;
-        });
-        $tpl->addFunction($function);
-        return $this;
+    private function addConfigFunction() {
+        return $this->addTemplateFunction("get_config", TemplateFunctions::CONFIG_FUNCTION);
+    }
+
+    /**
+     * Método que añade la función path a Twig
+     * @return Template
+     */
+    private function addRouteFunction() {
+        return $this->addTemplateFunction("path", TemplateFunctions::ROUTE_FUNCTION);
+    }
+
+    /**
+     * Método que copia directamente el recurso solicitado a la carpeta pública
+     * @return Template
+     */
+    private function dumpResource() {
+        return $this->addTemplateFunction("resource", TemplateFunctions::RESOURCE_FUNCTION);
     }
 
     /**
      * Servicio que regenera todas las plantillas
      * @return array
      */
-    public function regenerateTemplates()
-    {
+    public function regenerateTemplates() {
         //Generamos los dominios por defecto del fmwk
-        foreach ($this->tpl->getLoader()->getPaths() as $path) $this->generateTemplate($path);
-        $domains = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json"), true);
+        foreach ($this->tpl->getLoader()->getPaths() as $path) {
+            $this->generateTemplate($path);
+        }
+        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
         $translations = array();
-        if (!empty($domains)) foreach ($domains as $domain => $paths)
-        {
+        if (!empty($domains)) foreach ($domains as $domain => $paths) {
             $this->addPath($paths["template"], $domain);
             $translations[] = $this->generateTemplate($paths["template"], $domain);
         }
@@ -328,16 +265,15 @@ class Template {
      *
      * @return mixed
      */
-    protected function generateTemplate($tplDir, $domain = '')
-    {
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file)
+    protected function generateTemplate($tplDir, $domain = '') {
+        $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
+        foreach ($templatesDir as $file)
         {
             // force compilation
             if ($file->isFile()) {
                 try {
                     $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
-                }catch (\Exception $e)
-                {
+                }catch (\Exception $e) {
                     Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
@@ -346,63 +282,11 @@ class Template {
     }
 
     /**
-     * Método que añade la función path a Twig
-     * @return Template
+     * Método que extrae el path de un string
+     * @param $path
+     *
+     * @return string
      */
-    private function addRouteFunction()
-    {
-        $function = new \Twig_SimpleFunction('path', function($path = '', $absolute = false, $params = null) {
-            try {
-                return Router::getInstance()->getRoute($path, $absolute, $params);
-            }catch (\Exception $e)
-            {
-                return Router::getInstance()->getRoute('', $absolute);
-            }
-        });
-        $this->tpl->addFunction($function);
-        return $this;
-    }
-
-    /**
-     * Método que copia directamente el recurso solicitado a la carpeta pública
-     * @return Template
-     */
-    private function dumpResource()
-    {
-        $function = new \Twig_SimpleFunction('resource', function($path, $dest, $force = false) {
-            $debug = Config::getInstance()->getDebugMode();
-            $domains = self::getDomains(true);
-            $filename_path = $path;
-            if (!file_exists($path) && !empty($domains)) foreach ($domains as $domain => $paths)
-            {
-                $domain_filename = str_replace($domain, $paths["public"], $path);
-                if (file_exists($domain_filename))
-                {
-                    $filename_path = $domain_filename;
-                    continue;
-                }
-            }
-            if (file_exists($filename_path))
-            {
-                $destfolder = basename($filename_path);
-                if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force)
-                {
-                    if(is_dir($filename_path)) {
-                        Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                        self::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                    } else {
-                        if(@copy($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === false){
-                            throw new ConfigException("Can't copy " . $filename_path . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                        }
-                    }
-                }
-            }
-            return '';
-        });
-        $this->tpl->addFunction($function);
-        return $this;
-    }
-
     public static function extractPath($path) {
         $explodePath = explode(DIRECTORY_SEPARATOR, $path);
         $realPath = array();
@@ -413,8 +297,10 @@ class Template {
     }
 
     /**
+     * Método que copia un recurso
      * @param string $src
      * @param string $dst
+     * @throws ConfigException
      */
     public static function copyr($src, $dst) {
         $dir = opendir($src);
@@ -423,17 +309,12 @@ class Template {
             if (( $file != '.' ) && ( $file != '..' )) {
                 if ( is_dir($src . '/' . $file) ) {
                     self::copyr($src . '/' . $file,$dst . '/' . $file);
-                }
-                else {
-                    if(@copy($src . '/' . $file, $dst . '/' . $file) === false) {
-                        throw new ConfigException("Can't copy " . $src . " to " . $dst);
-                    }
+                } elseif (@copy($src . '/' . $file, $dst . '/' . $file) === false) {
+                    throw new ConfigException("Can't copy " . $src . " to " . $dst);
                 }
             }
         }
-        if(@closedir($dir) === false) {
-            throw new ConfigException("Can't close handler for directory  " . $src);
-        }
+        closedir($dir);
     }
 
     /**
@@ -441,12 +322,12 @@ class Template {
      * @param bool $append
      * @return array
     */
-    static public function getDomains($append = false)
-    {
+    static public function getDomains($append = false) {
         $domains = Router::getInstance()->getDomains();
-        if ($append) foreach ($domains as &$domain)
-        {
-            foreach ($domain as &$path) $path .= DIRECTORY_SEPARATOR;
+        if ($append) foreach ($domains as &$domain) {
+            foreach ($domain as &$path) {
+                $path .= DIRECTORY_SEPARATOR;
+            }
         }
         return $domains;
     }
@@ -454,24 +335,25 @@ class Template {
     /**
      * @param $cookies
      */
-    protected function setCookieHeaders($cookies)
-    {
+    protected function setCookieHeaders($cookies) {
         if (!empty($cookies) && is_array($cookies)) {
             foreach ($cookies as $cookie) {
             setcookie($cookie["name"],
                 $cookie["value"],
-                (isset($cookie["expire"])) ? $cookie["expire"] : NULL,
-                (isset($cookie["path"])) ? $cookie["path"] : "/",
-                (isset($cookie["domain"])) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
-                (isset($cookie["secure"])) ? $cookie["secure"] : FALSE,
-                (isset($cookie["http"])) ? $cookie["http"] : FALSE
+                (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
+                (array_key_exists('path',$cookie)) ? $cookie["path"] : "/",
+                (array_key_exists('domain',$cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
+                (array_key_exists('secure',$cookie)) ? $cookie["secure"] : FALSE,
+                (array_key_exists('http',$cookie)) ? $cookie["http"] : FALSE
             );
         }
         }
     }
 
-    protected function setAuthHeaders()
-    {
+    /**
+     * Método que inyecta las cabeceras necesarias para la autenticación
+     */
+    protected function setAuthHeaders() {
         if ($this->public_zone) {
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
@@ -481,14 +363,17 @@ class Template {
         }
     }
 
-    protected function setStatusHeader()
-    {
+    /**
+     * Método que establece el status code
+     */
+    protected function setStatusHeader() {
         if (NULL !== $this->status_code) {
             header($this->status_code);
         }
     }
 
     /**
+     * Método que mete en las variables de las plantillas las cabeceras de debug
      * @param array $vars
      *
      * @return array
@@ -519,5 +404,60 @@ class Template {
         });
         $tpl->addFunction($function);
         return $this;
+    }
+
+    /**
+     * Método que añade todas las funciones de las plantillas
+     */
+    private function addTemplateFunctions() {
+        //Asignamos las funciones especiales
+        $this->addAssetFunction()
+            ->addFormsFunction()
+            ->addFormWidgetFunction()
+            ->addFormButtonFunction()
+            ->addConfigFunction()
+            ->addRouteFunction()
+            ->dumpResource()
+            ->useSessionVars();
+    }
+
+    /**
+     * Método que devuelve el motod de plantillas
+     * @return \Twig_Environment
+     */
+    public function getTemplateEngine() {
+        return $this->tpl;
+    }
+
+    /**
+     * Método que inicializa el motor de plantillas
+     */
+    private function setup() {
+        $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
+        $this->security = Security::getInstance();
+        $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
+        $this->tpl = new \Twig_Environment($loader, array(
+            'cache'       => Config::getInstance()->getCachePath(),
+            'debug'       => (bool)$this->debug,
+            'auto_reload' => TRUE,
+        ));
+    }
+
+    /**
+     * Método que inyecta los parseadores
+     */
+    private function addTemplateTokens() {
+        //Añadimos las extensiones de los tags
+        $this->tpl->addTokenParser(new AssetsTokenParser("css"));
+        $this->tpl->addTokenParser(new AssetsTokenParser("js"));
+    }
+
+    /**
+     * Método que inyecta las optimizaciones al motor de la plantilla
+     */
+    private function optimizeTemplates() {
+        //Optimizamos
+        $this->tpl->addExtension(new \Twig_Extension_Optimizer());
+        $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
     }
 }

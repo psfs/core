@@ -11,7 +11,7 @@
         "pear/archive_tar": "master"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.3.*@dev"
+        "phpunit/phpunit": "4.8.x-dev"
     },
     "license": "MIT",
     "authors": [

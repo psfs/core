@@ -263,19 +263,7 @@ class AssetsParser {
                 if (file_exists($base.$this->hash.".css") && @unlink($base.$this->hash.".css") === false) {
                     throw new ConfigException("Can't unlink file ".$base.$this->hash.".css");
                 }
-                $handle = @fopen($file, 'r');
-                if ($handle) {
-                    while (!feof($handle)) {
-                        $line = fgets($handle);
-                        $urls = array();
-                        if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
-                            foreach ($urls as $source) {
-                                $this->extractCssResources($source, $file);
-                            }
-                        }
-                    }
-                    fclose($handle);
-                }
+                $this->loopCssLines($file);
             }
             if ($this->debug) {
                 $data = file_get_contents($file);
@@ -355,8 +343,8 @@ class AssetsParser {
 
     /**
      * Método que calcula el path de un recurso web
-     * @param $string
-     * @param $name
+     * @param string $string
+     * @param string $name
      * @param boolean $return
      * @param string $filename_path
      *
@@ -453,5 +441,25 @@ class AssetsParser {
             return $source_file;
         }
         return $source_file;
+    }
+
+    /**
+     * @param $file
+     */
+    protected function loopCssLines($file)
+    {
+        $handle = @fopen($file, 'r');
+        if ($handle) {
+            while (!feof($handle)) {
+                $line = fgets($handle);
+                $urls = array();
+                if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+                    foreach ($urls as $source) {
+                        $this->extractCssResources($source, $file);
+                    }
+                }
+            }
+            fclose($handle);
+        }
     }
 }

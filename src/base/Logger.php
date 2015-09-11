@@ -30,25 +30,74 @@
         /**
          * @internal param string $path
          */
-        public function __construct()
-        {
+        public function __construct() {
             $config = Config::getInstance();
             $args = func_get_args();
-            $logger = 'general';
-            $debug = $config->getDebugMode();
-            if (0 !== count($args))
-            {
-                if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) $logger = $args[0][0];
-                if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) $debug = $args[0][1];
-            }
-            $logger = preg_replace('/\\\/', ".", $logger);
-            $path = LOG_DIR.DIRECTORY_SEPARATOR.$logger.DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
-            Config::createDir($path);
+            list($logger, $debug, $path) = $this->setup($config, $args);
             $this->stream = fopen($path.DIRECTORY_SEPARATOR.date("Ymd").".log", "a+");
+            $this->addPushLogger($logger, $debug, $config);
+        }
+
+        /**
+         * Destruye el recurso
+         */
+        public function __destroy() {
+            fclose($this->stream);
+        }
+
+        /**
+         * Método que escribe un log de información
+         * @param string $msg
+         * @param array $context
+         *
+         * @return bool
+         */
+        public function infoLog($msg = '', $context = array()) {
+            return $this->logger->addInfo($msg, $context);
+        }
+
+        /**
+         * Método que escribe un log de Debug
+         * @param string $msg
+         * @param array $context
+         *
+         * @return bool
+         */
+        public function debugLog($msg = '', $context = array()) {
+            return $this->logger->addDebug($msg, $context);
+        }
+
+        /**
+         * Método que escribe un log de Error
+         * @param $msg
+         * @param array $context
+         *
+         * @return bool
+         */
+        public function errorLog($msg, $context = array()) {
+            return $this->logger->addError($msg, $context);
+        }
+
+        /**
+         * Método que escribe un log de Warning
+         * @param $msg
+         * @param array $context
+         * @return bool
+         */
+        public function warningLog($msg, $context = array()) {
+            return $this->logger->addWarning($msg, $context);
+        }
+
+        /**
+         * Método que añade los push processors
+         * @param string $logger
+         * @param boolean $debug
+         * @param Config $config
+         */
+        private function addPushLogger($logger, $debug, $config) {
             $this->logger = new Monolog(strtoupper($logger));
             $this->logger->pushHandler(new StreamHandler($this->stream));
-            if ($debug)
-            {
+            if ($debug) {
                 $phpFireLog = $config->get("logger.phpFire");
                 if (!empty($phpFireLog)) {
                     $this->logger->pushHandler(new FirePHPHandler());
@@ -62,56 +111,62 @@
         }
 
         /**
-         * Destruye el recurso
-         */
-        public function __destroy()
-        {
-            fclose($this->stream);
-        }
-
-        /**
-         * Método que escribe un log de información
-         * @param string $msg
-         * @param array $context
+         * Método que inicializa el Logger
+         * @param Config $config
+         * @param array $args
          *
-         * @return bool
+         * @return array
          */
-        public function infoLog($msg = '', $context = array())
-        {
-            return $this->logger->addInfo($msg, $context);
+        private function setup(Config $config, array $args = array()) {
+            $debug = $config->getDebugMode();
+            $namespace = "PSFS";
+            if (0 !== count($args)) {
+                if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) $namespace = $args[0][0];
+                if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) $debug = $args[0][1];
+            }
+            $path = $this->createLoggerPath($config);
+            return array($this->cleanLoggerName($namespace), $debug, $path);
         }
 
         /**
-         * Método que escribe un log de Debug
-         * @param string $msg
-         * @param array $context
+         * Método que construye el nombre del logger
+         * @param Config $config
          *
-         * @return bool
+         * @return string
          */
-        public function debugLog($msg = '', $context = array())
-        {
-            return $this->logger->addDebug($msg, $context);
+        private function setLoggerName(Config $config) {
+            $logger = $config->get("platform_name") ?: "PSFS";
+            $logger = $this->cleanLoggerName($logger);
+
+            return $logger;
         }
 
         /**
-         * Método que escribe un log de Error
-         * @param $msg
-         * @param array $context
+         * Método para limpiar el nombre del logger
+         * @param $logger
          *
-         * @return bool
+         * @return mixed
          */
-        public function errorLog($msg, $context = array())
+        private function cleanLoggerName($logger)
         {
-            return $this->logger->addError($msg, $context);
+            $logger = str_replace(' ', '', $logger);
+            $logger = preg_replace('/\\\/', ".", $logger);
+
+            return $logger;
         }
 
         /**
-         * Método que escribe un log de Warning
-         * @param $msg
-         * @param array $context
-         * @return bool
+         * Método que crea el path del logger
+         * @param Config $config
+         *
+         * @return string
          */
-        public function warningLog($msg, $context = array()) {
-            return $this->logger->addWarning($msg, $context);
+        private function createLoggerPath(Config $config)
+        {
+            $logger = $this->setLoggerName($config);
+            $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
+            Config::createDir($path);
+
+            return $path;
         }
     }
