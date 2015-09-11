@@ -150,7 +150,7 @@ class Template {
     }
 
     /**
-     *
+     * Método que cierra y limpia los buffers de salida
      */
     public function closeRender() {
         $this->security->setSessionKey("lastRequest", array(
@@ -163,7 +163,7 @@ class Template {
 
     /**
      * Método que devuelve el contenido de una plantilla
-     * @param $tpl
+     * @param string $tpl
      * @param array $vars
      * @return string
      */

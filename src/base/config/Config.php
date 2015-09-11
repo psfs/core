@@ -42,8 +42,7 @@ class Config {
      * Método que carga la configuración del sistema
      * @return Config
      */
-    protected function init()
-    {
+    protected function init() {
         if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json"))
         {
             $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, true) ?: array();
@@ -56,7 +55,7 @@ class Config {
 
     /**
      * Método que devuelve si la plataforma está en modo debug
-     * @return bool
+     * @return boolean
      */
     public function getDebugMode() { return $this->debug; }
 
@@ -77,7 +76,7 @@ class Config {
 
     /**
      * Método que indica si se ha configurado correctamente la plataforma
-     * @return bool
+     * @return boolean
      */
     public function isConfigured()
     {
@@ -129,9 +128,9 @@ class Config {
 
     /**
      * Método que devuelve un parámetro de configuración
-     * @param $param
+     * @param string $param
      *
-     * @return null
+     * @return mixed|null
      */
     public function get($param) {
         return array_key_exists($param, $this->config) ? $this->config[$param] : null;
@@ -139,7 +138,7 @@ class Config {
 
     /**
      * Método que devuelve toda la configuración en un array
-     * @return mixed
+     * @return array|null
      */
     public function dumpConfig() {
         return $this->config;
@@ -147,7 +146,7 @@ class Config {
 
     /**
      * Servicio que devuelve los parámetros de configuración de Propel para las BD
-     * @return mixed
+     * @return array|null
      */
     public function getPropelParams() {
         return Cache::getInstance()->getDataFromFile(__DIR__.DIRECTORY_SEPARATOR.'properties.json', Cache::JSON, true);
@@ -155,7 +154,7 @@ class Config {
 
     /**
      * Método estático para la generación de directorios
-     * @param $dir
+     * @param string $dir
      * throws ConfigException
      */
     public static function createDir($dir) {

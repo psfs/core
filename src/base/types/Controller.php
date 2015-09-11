@@ -165,7 +165,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param bool $absolute
      * @param array $params
      *
-     * @return array|null
+     * @return string|null
      * @throws RouterException
      */
     public function getRoute($route = '', $absolute = false, $params = array())

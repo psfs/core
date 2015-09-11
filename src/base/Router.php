@@ -82,13 +82,13 @@
 
         /**
          * Método que devuelve las rutas
-         * @return mixed
+         * @return string|null
          */
         public function getSlugs(){ return $this->slugs; }
 
         /**
          * Método que calcula el objeto a enrutar
-         * @param $route
+         * @param string $route
          * @throws \Exception
          * @return string HTML
          */
@@ -127,9 +127,8 @@
 
         /**
          * Método que busca el componente que ejecuta la ruta
-         * @param $route
+         * @param string $route
          *
-         * @return mixed|boolean
          * @throws \Exception
          */
         protected function searchAction($route)
@@ -172,9 +171,9 @@
 
         /**
          * Método que redirige a la pantalla web del login
-         * @param $route
+         * @param string $route
          *
-         * @return \PSFS\controller\html
+         * @return string HTML
          */
         public function redirectLogin($route)
         {
@@ -183,7 +182,7 @@
 
         /**
          * Método que chequea el acceso a una zona restringida
-         * @param $route
+         * @param string $route
          *
          * @throws AccessDeniedException
          */
@@ -202,9 +201,9 @@
 
         /**
          * Método que extrae de la url los parámetros REST
-         * @param $route
+         * @param string $route
          *
-         * @param $pattern
+         * @param string $pattern
          * @return array
         */
         protected function extractComponents($route, $pattern)
@@ -257,10 +256,10 @@
 
         /**
          * Método que inspecciona los directorios en busca de clases que registren rutas
-         * @param $origen
+         * @param string $origen
          * @param string $namespace
-         * @param $routing
-         * @return mixed
+         * @param array $routing
+         * @return array
          * @throws ConfigException
         */
         private function inspectDir($origen, $namespace = 'PSFS', $routing)
@@ -277,9 +276,9 @@
 
         /**
          * Método que añade nuevas rutas al array de referencia
-         * @param $namespace
-         * @param $routing
-         * @return mixed
+         * @param string $namespace
+         * @param array $routing
+         * @return array
          * @throws ConfigException
         */
         private function addRouting($namespace, $routing)
@@ -329,9 +328,9 @@
         /**
          * Método que extrae de la ReflectionClass los datos necesarios para componer los dominios en los templates
          *
-         * @param $class
+         * @param Object $class
          *
-         * @return $this
+         * @return Router
          * @throws ConfigException
          */
         protected function extractDomain($class)
@@ -361,7 +360,7 @@
 
         /**
          * Método que genera las urls amigables para usar dentro del framework
-         * @return $this
+         * @return Router
          */
         private function simpatize()
         {
@@ -389,9 +388,9 @@
 
         /**
          * Método que devuelve el slug de un string dado
-         * @param $text
+         * @param string $text
          *
-         * @return mixed|string
+         * @return string
          */
         private function slugify($text)
         {
@@ -425,16 +424,20 @@
          * Método que devuelve una ruta del framework
          *
          * @param string $slug
-         * @param bool $absolute
-         * @param $params
+         * @param boolean $absolute
+         * @param array $params
          *
-         * @return mixed
+         * @return string|null
          * @throws RouterException
          */
         public function getRoute($slug = '', $absolute = false, $params = null)
         {
-            if(strlen($slug) == 0) return ($absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
-            if(!isset($this->slugs[$slug])) throw new RouterException("No existe la ruta especificada");
+            if (strlen($slug) === 0) {
+                return ($absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
+            }
+            if (!array_key_exists($slug, $this->slugs)) {
+                throw new RouterException("No existe la ruta especificada");
+            }
             $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
             if(!empty($params)) foreach($params as $key => $value)
             {
@@ -455,19 +458,21 @@
             $routes = array();
             foreach($this->routing as $route => $params)
             {
-                if(preg_match('/^\/admin(\/|$)/', $route))
-                {
-                    if(preg_match('/^PSFS/', $params["class"]))
-                    {
+                if (preg_match('/^\/admin(\/|$)/', $route)) {
+                    if (preg_match('/^PSFS/', $params["class"])) {
                         $profile = "superadmin";
-                    }else{
+                    }else {
                         $profile = "admin";
                     }
-                    if(!empty($params["default"]) && $params["visible"]) $routes[$profile][] = $params["slug"];
+                    if (!empty($params["default"]) && $params["visible"]) {
+                        $routes[$profile][] = $params["slug"];
+                    }
                 }
             }
             asort($routes["superadmin"]);
-            if(isset($routes["admin"])) asort($routes["admin"]);
+            if (array_key_exists('admin', $routes)) {
+                asort($routes["admin"]);
+            }
             return $routes;
         }
 
@@ -482,7 +487,7 @@
 
         /**
          * Método que extrae los dominios
-         * @return mixed
+         * @return array|null
          */
         public function getDomains()
         {
@@ -491,8 +496,8 @@
 
         /**
          * Método que extrae el controller a invocar
-         * @param $action
-         * @return mixed
+         * @param string $action
+         * @return Object
          */
         protected function getClassToCall($action)
         {

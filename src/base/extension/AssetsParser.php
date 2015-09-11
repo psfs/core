@@ -21,6 +21,9 @@ class AssetsParser {
     protected $type;
     protected $path;
     protected $domains = array();
+    /**
+     * @var \PSFS\base\Logger $log
+     */
     private $log;
 
     /**

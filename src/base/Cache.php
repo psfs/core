@@ -39,7 +39,7 @@
          * @param string $path
          * @param int $transform
          * @param boolean $absolute
-         * @return string
+         * @return mixed
          */
         public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false) {
             $data = null;
