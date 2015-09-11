@@ -8,5 +8,5 @@ namespace PSFS\base\types\interfaces;
  */
 interface ControllerInterface{
     public function render($template, Array $vars = null);
-    public function response($response, $type = "text/html");
+    public function response($response, $type = 'text/html');
 }

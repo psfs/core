@@ -17,15 +17,13 @@ class AssetsNode extends \Twig_Node {
      * @param null $tag
      * @param string $type
      */
-    public function __construct($name, $values, $line, $tag = null, $type = 'js')
-    {
+    public function __construct($name, $values, $line, $tag = null, $type = 'js') {
         parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line, $tag);
         $this->hash = $values["hash"];
         $this->type = $type;
     }
 
-    public function compile(\Twig_Compiler $compiler)
-    {
+    public function compile(\Twig_Compiler $compiler) {
         $scripts = $this->getNode("scripts");
 
         //Creamos el parser
@@ -37,8 +35,7 @@ class AssetsNode extends \Twig_Node {
             ->raw(";\n");
 
         //Asociamos los ficheros
-        foreach ($scripts->getAttribute("value") as $value)
-        {
+        foreach ($scripts->getAttribute("value") as $value) {
             $compiler->write('$parser->addFile(\''.$value.'\')')->raw(";\n");
         }
 

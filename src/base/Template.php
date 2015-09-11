@@ -195,7 +195,7 @@ class Template {
             $filename_path = AssetsParser::findDomainPath($string, $file_path);
 
             if (file_exists($filename_path)) {
-                list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $debug, $filename_path);
+                list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $filename_path);
                 //Creamos el directorio si no existe
                 Config::createDir($base.$html_base);
                 //Si se ha modificado

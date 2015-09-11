@@ -23,16 +23,13 @@ abstract class Controller extends Singleton implements ControllerInterface{
 
     /**
      * Método que renderiza una plantilla
-     *
-     * @param $template
+     * @param string $template
      * @param array $vars
-     *
      * @param array $cookies
      *
      * @return string HTML
      */
-    public function render($template, array $vars = array(), $cookies = array())
-    {
+    public function render($template, array $vars = array(), $cookies = array()) {
         $vars['__menu__'] = $this->getMenu();
         $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
     }
@@ -41,20 +38,18 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * Método del controlador que añade los menús automáticamente a las vistas
      * @return array
      */
-    protected function getMenu()
-    {
+    protected function getMenu() {
         return array();
     }
 
     /**
      * Método que renderiza una plantilla
-     * @param $template
+     * @param string $template
      * @param array $vars
      *
-     * @return mixed
+     * @return string
      */
-    public function dump($template, array $vars = array())
-    {
+    public function dump($template, array $vars = array()) {
         $vars['__menu__'] = $this->getMenu();
         return $this->tpl->dump($this->getDomain() . $template, $vars);
     }
@@ -64,8 +59,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param $response
      * @param string $type
      */
-    public function response($response, $type = 'text/html')
-    {
+    public function response($response, $type = 'text/html') {
         $this->tpl->output($response, $type);
     }
 
@@ -74,10 +68,9 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param $data
      * @param string $content
      * @param string $filename
-     * @return data
+     * @return mixed
      */
-    public function download($data, $content = "text/html", $filename = 'data.txt')
-    {
+    public function download($data, $content = "text/html", $filename = 'data.txt') {
         ob_start();
         header('Pragma: public');
         /////////////////////////////////////////////////////////////
@@ -102,17 +95,16 @@ abstract class Controller extends Singleton implements ControllerInterface{
 
     /**
      * Método que devuelve una salida en formato JSON
-     * @param $response
+     * @param mixed $response
      */
-    public function json($response)
-    {
+    public function json($response) {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
         return $this->response($data, "application/json");
     }
 
     /**
      * Método que devuelve una salida en formato JSON
-     * @param $response
+     * @param mixed $response
      */
     public function jsonp($response)
     {
@@ -124,28 +116,27 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * Método que devuelve el objeto de petición
      * @return \PSFS\base\Request
      */
-    protected function getRequest(){ return Request::getInstance();
+    protected function getRequest() {
+        return Request::getInstance();
     }
 
     /**
      * Método que añade la ruta del controlador a los path de plantillas Twig
-     * @param $path
-     * @return mixed
-    */
-    protected function setTemplatePath($path)
-    {
+     * @param string $path
+     * @return $this
+     */
+    protected function setTemplatePath($path) {
         $this->tpl->addPath($path, $this->domain);
         return $this;
     }
 
     /**
      * Método que setea el dominio del controlador para las plantillas
-     * @param $domain
+     * @param string $domain
      *
      * @return $this
      */
-    protected function setDomain($domain)
-    {
+    protected function setDomain($domain) {
         $this->domain = $domain;
         return $this;
     }
@@ -154,8 +145,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * Método que devuelve el dominio del controlador
      * @return string
      */
-    public function getDomain()
-    {
+    public function getDomain() {
         return "@{$this->domain}/";
     }
 
@@ -164,12 +154,10 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @param string $route
      * @param bool $absolute
      * @param array $params
-     *
      * @return string|null
      * @throws RouterException
      */
-    public function getRoute($route = '', $absolute = false, $params = array())
-    {
+    public function getRoute($route = '', $absolute = false, array $params = array()) {
         return Router::getInstance()->getRoute($route, $absolute, $params);
     }
 
@@ -181,8 +169,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      * @return mixed
      * @throws RouterException
      */
-    public function redirect($route, array $params = array())
-    {
+    public function redirect($route, array $params = array()) {
         return $this->getRequest()->redirect($this->getRoute($route, true, $params));
     }
 

@@ -18,6 +18,10 @@ abstract class AuthController extends Controller implements AuthInterface{
      */
     protected $security;
 
+    /**
+     * Constructor por defecto
+     * @throws AccessDeniedException
+     */
     public function __construct() {
         $this->init();
         if(!$this->isLogged()) {
@@ -27,18 +31,17 @@ abstract class AuthController extends Controller implements AuthInterface{
 
     /**
      * Método que verifica si está autenticado el usuario
+     * @return boolean
      */
-    public function isLogged()
-    {
+    public function isLogged() {
         return (null !== $this->security->getUser());
     }
 
     /**
      * Método que devuelve si un usuario es administrador de la plataforma
-     * @return bool
+     * @return boolean
      */
-    public function isAdmin()
-    {
+    public function isAdmin() {
         return (null !== $this->security->getAdmin());
     }
 
@@ -48,8 +51,7 @@ abstract class AuthController extends Controller implements AuthInterface{
      * TODO
      * @return bool
      */
-    public function canDo($action)
-    {
+    public function canDo($action) {
         return true;
     }
 }

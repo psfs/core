@@ -61,7 +61,7 @@ class CssMinifier
      */
     public function run($css = '', $linebreak_pos = FALSE)
     {
-        if (empty($css)) {
+        if ('' === $css) {
             return '';
         }
 

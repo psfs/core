@@ -21,6 +21,7 @@ class AssetsParser {
     protected $type;
     protected $path;
     protected $domains = array();
+    private $debug = false;
     /**
      * @var \PSFS\base\Logger $log
      */
@@ -37,12 +38,34 @@ class AssetsParser {
         $this->path = WEB_DIR.DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
         $this->log = Logger::getInstance();
+        $this->debug = Config::getInstance()->getDebugMode();
+    }
+
+    /**
+     * Método que calcula el path completo a copiar un recurso
+     * @param $filename_path
+     * @param $source
+     * @return string
+     */
+    protected static function calculateResourcePathname($filename_path, $source)
+    {
+        $source_file = preg_replace("/'/", "", $source[1]);
+        if (preg_match('/\#/', $source_file)) {
+            $source_file = explode("#", $source_file);
+            $source_file = $source_file[0];
+        }
+        if (preg_match('/\?/', $source_file)) {
+            $source_file = explode("?", $source_file);
+            $source_file = $source_file[0];
+        }
+        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+        return $orig;
     }
 
     /**
      * Método que añade un nuevo fichero al proceso de generación de los assets
      * @param $filename
-     * @return $this
+     * @return AssetsParser
      * @internal param string $type
      *
      */
@@ -65,7 +88,7 @@ class AssetsParser {
      * Método que establece el hash con el que compilar los assets
      * @param $hash
      *
-     * @return $this
+     * @return AssetsParser
      */
     public function setHash($hash)
     {
@@ -75,22 +98,18 @@ class AssetsParser {
 
     /**
      * Método que procesa los ficheros solicitados en función del modo de ejecución
-     * @return $this
+     * @return AssetsParser
      * @internal param string $type
-     *
+     * @throws ConfigException
      */
     public function compile()
     {
-        /* @var $config \PSFS\base\config\Config */
-        $config = Config::getInstance();
-        $debug = $config->getDebugMode();
         //Unificamos ficheros para que no se retarde mucho el proceso
         $this->files = array_unique($this->files);
-        switch ($this->type)
-        {
+        switch ($this->type) {
             default:
-            case "js": $this->compileJs($debug); break;
-            case "css": $this->compileCss($debug); break;
+            case "js": $this->compileJs(); break;
+            case "css": $this->compileCss(); break;
         }
 
         return $this;
@@ -98,58 +117,66 @@ class AssetsParser {
 
     /**
      * Método que compila los ficheros css y los procesa en función del modo de ejecución
-     * @param bool $debug
-     *
-     * @return $this
+     * @return AssetsParser
+     * @throws ConfigException
      */
-    protected function compileCss($debug = false)
+    protected function compileCss()
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
         Config::createDir(Template::extractPath($base));
         $data = '';
-        if (!empty($this->files)) {
-            foreach ($this->files as $file)
-        {
-            $data = $this->processCssLine($debug, $file, $base, $data);
+        if (0 < count($this->files)) {
+            foreach ($this->files as $file) {
+                $data = $this->processCssLine($file, $base, $data);
+            }
         }
-        }
-        if (!$debug && !file_exists($base.$this->hash.".css"))
+        if (!$this->debug && !file_exists($base.$this->hash.".css"))
         {
-            $minifier = new CssMinifier();
-            $data = $minifier->run($data);
-            file_put_contents($base.$this->hash.".css", $data);
+            $cssMinifier = new CssMinifier();
+            $data = $cssMinifier->run($data);
+            $this->storeContents($base.$this->hash.".css", $data);
+            unset($cssMinifier);
         }
         return $this;
     }
 
     /**
      * Método que compila los ficheros javascript en función del modo de ejecución
-     * @param bool $debug
-     *
      * @return $this
+     * @throws ConfigException
      */
-    protected function compileJs($debug = false)
+    protected function compileJs()
     {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
         Config::createDir(Template::extractPath($base));
         $data = '';
-        if (!empty($this->files)) {
+        if (0 < count($this->files)) {
             foreach ($this->files as $file) {
                 $path_parts = explode("/", $file);
-                if (file_exists($file)) {
-                    if ($debug) {
-                        $data = $this->putDebugJs($path_parts, $base, $file);
-                    } else {
-                        $data = $this->putProductionJs($base, $file, $data);
-                    }
+                if (!file_exists($file) || $this->debug) {
+                    $data = $this->putDebugJs($path_parts, $base, $file);
+                } elseif (!file_exists($file)) {
+                    $data = $this->putProductionJs($base, $file, $data);
                 }
             }
         }
-        if (!$debug && !file_exists($base.$this->hash.".js"))
-        {
-            file_put_contents($base.$this->hash.".js", $data);
+        if (!$this->debug && !file_exists($base.$this->hash.".js")) {
+            $this->storeContents($base.$this->hash.".js", $data);
         }
         return $this;
+    }
+
+    /**
+     * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
+     * @param $path
+     * @param string $content
+     * @throws ConfigException
+     */
+    private function storeContents($path, $content = "") {
+        Config::createDir($path);
+        if (null !== $content && false === file_put_contents($path, $content)) {
+            throw new ConfigException(_('No se tienen permisos para escribir en ' . $path));
+        }
     }
 
     /**
@@ -157,70 +184,48 @@ class AssetsParser {
      */
     public function printHtml()
     {
-        /* @var $config \PSFS\base\config\Config */
-        $config = Config::getInstance();
-        $debug = $config->getDebugMode();
-        switch ($this->type)
-        {
+        switch ($this->type) {
             default:
-            case "js": $this->printJs($debug); break;
-            case "css": $this->printCss($debug); break;
+            case "js": $this->printJs(); break;
+            case "css": $this->printCss(); break;
         }
     }
 
     /**
      * Método que devuelve el html con la ruta compilada del recurso javascript
-     * @param boolean $debug
      */
-    protected function printJs($debug)
+    protected function printJs()
     {
-        if ($debug)
-        {
-            if (!empty($this->compiled_files)) {
-                foreach ($this->compiled_files as $file)
-            {
+        if ($this->debug && 0 < count($this->compiled_files)) {
+            foreach ($this->compiled_files as $file) {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
-            }
-        } else {
+        }else {
             echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
 
     /**
      * Método que devuelve el html con la ruta compilada del recurso css
-     * @param boolean $debug
      */
-    protected function printCss($debug)
+    protected function printCss()
     {
-        if ($debug)
-        {
-            if (!empty($this->compiled_files)) {
-                foreach ($this->compiled_files as $file)
-            {
+        if ($this->debug && 0 < count($this->compiled_files)) {
+            foreach ($this->compiled_files as $file) {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
-            }
-        } else {
+        }else {
             echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
 
     /**
-     * @param string[] $source
-     * @param $file
+     * @param string $source
+     * @param string $file
      */
     protected function extractCssResources($source, $file)
     {
-        $source_file = preg_replace("/'/", "", $source[1]);
-        if (preg_match('/\#/', $source_file)) {
-            $source_file = explode("#", $source_file);
-            $source_file = $source_file[0];
-        }
-        if (preg_match('/\?/', $source_file)) {
-            $source_file = explode("?", $source_file);
-            $source_file = $source_file[0];
-        }
+        $source_file = $this->extractSourceFilename($source);
         $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
         $orig_part = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
         try {
@@ -240,20 +245,20 @@ class AssetsParser {
     }
 
     /**
-     * @param boolean $debug
-     * @param $file
+     * Método que procesa cada línea de la hoja de estilos para copiar los recursos asociados
+     * @param string $file
      * @param string $base
      * @param string $data
-     *
      * @return string
+     * @throws ConfigException
      */
-    protected function processCssLine($debug, $file, $base, $data)
+    protected function processCssLine($file, $base, $data)
     {
         if (file_exists($file)) {
 
             $path_parts = explode("/", $file);
             $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
-            if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file) || $debug) {
+            if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file) || $this->debug) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
                 if (file_exists($base.$this->hash.".css") && @unlink($base.$this->hash.".css") === false) {
                     throw new ConfigException("Can't unlink file ".$base.$this->hash.".css");
@@ -272,15 +277,13 @@ class AssetsParser {
                     fclose($handle);
                 }
             }
-            if ($debug) {
+            if ($this->debug) {
                 $data = file_get_contents($file);
-                file_put_contents($base.$file_path, $data);
+                $this->storeContents($base.$file_path, $data);
             }else {
                 $data .= file_get_contents($file);
             }
             $this->compiled_files[] = "/css/".$file_path;
-
-            return $data;
         }
 
         return $data;
@@ -290,8 +293,8 @@ class AssetsParser {
      * @param $path_parts
      * @param string $base
      * @param $file
-     *
      * @return string
+     * @throws ConfigException
      */
     protected function putDebugJs($path_parts, $base, $file)
     {
@@ -300,9 +303,8 @@ class AssetsParser {
         $data = "";
         if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file)) {
             $data = file_get_contents($file);
-            file_put_contents($base.$file_path, $data);
+            $this->storeContents($base.$file_path, $data);
         }
-
         return $data;
     }
 
@@ -312,15 +314,18 @@ class AssetsParser {
      * @param string $data
      *
      * @return string
-     * @throws \Exception
+     * @throws ConfigException
      */
     protected function putProductionJs($base, $file, $data)
     {
         if (!file_exists($base.$this->hash.".js")) {
             $js = file_get_contents($file);
-            $data .= ";".$minifiedCode = JsMinifier::minify($js);
+            try {
+                $data .= ";".$minifiedCode = JsMinifier::minify($js);
+            } catch(\Exception $e) {
+                throw new ConfigException($e->getMessage());
+            }
         }
-
         return $data;
     }
 
@@ -335,7 +340,7 @@ class AssetsParser {
     {
         $domains = Template::getDomains(TRUE);
         $filename_path = null;
-        if (!file_exists($file_path) && !empty($domains)) {
+        if (!file_exists($file_path) && 0 < count($domains)) {
             foreach ($domains as $domain => $paths) {
                 $domain_filename = str_replace($domain, $paths["public"], $string);
                 if (file_exists($domain_filename)) {
@@ -349,21 +354,22 @@ class AssetsParser {
     }
 
     /**
+     * Método que calcula el path de un recurso web
      * @param $string
      * @param $name
      * @param boolean $return
-     * @param boolean $debug
      * @param string $filename_path
      *
-     * @return string[]
+     * @return array
      */
-    public static function calculateAssetPath($string, $name, $return, $debug, $filename_path)
+    public static function calculateAssetPath($string, $name, $return, $filename_path)
     {
         $ppath = explode("/", $string);
         $original_filename = $ppath[count($ppath) - 1];
         $base = WEB_DIR.DIRECTORY_SEPARATOR;
         $file = "";
         $html_base = "";
+        $debug = Config::getInstance()->getDebugMode();
         if (preg_match('/\.css$/i', $string)) {
             $file = "/".substr(md5($string), 0, 8).".css";
             $html_base = "css";
@@ -407,8 +413,10 @@ class AssetsParser {
     }
 
     /**
+     * Método que extrae el recurso css de una línea de estilos css
      * @param $handle
      * @param string $filename_path
+     * @throws ConfigException
      */
     public static function extractCssLineResource($handle, $filename_path)
     {
@@ -416,16 +424,7 @@ class AssetsParser {
         $urls = array();
         if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
             foreach ($urls as $source) {
-                $source_file = preg_replace("/'/", "", $source[1]);
-                if (preg_match('/\#/', $source_file)) {
-                    $source_file = explode("#", $source_file);
-                    $source_file = $source_file[0];
-                }
-                if (preg_match('/\?/', $source_file)) {
-                    $source_file = explode("?", $source_file);
-                    $source_file = $source_file[0];
-                }
-                $orig = realpath(dirname($filename_path).DIRECTORY_SEPARATOR.$source_file);
+                $orig = self::calculateResourcePathname($filename_path, $source);
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
                 Config::createDir(Template::extractPath($dest));
@@ -434,5 +433,25 @@ class AssetsParser {
                 }
             }
         }
+    }
+
+    /**
+     * Método que extrae el nombre del fichero de un recurso
+     * @param $source
+     * @return array|mixed
+     */
+    protected function extractSourceFilename($source)
+    {
+        $source_file = preg_replace("/'/", "", $source[1]);
+        if (preg_match('/\#/', $source_file)) {
+            $source_file = explode("#", $source_file);
+            $source_file = $source_file[0];
+        }
+        if (preg_match('/\?/', $source_file)) {
+            $source_file = explode("?", $source_file);
+            $source_file = $source_file[0];
+            return $source_file;
+        }
+        return $source_file;
     }
 }

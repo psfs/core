@@ -54,6 +54,42 @@ class Config {
     }
 
     /**
+     * Método que guarda los datos de la configuración
+     * @param array $data
+     * @param array $extra
+     * @return array
+     */
+    protected static function saveConfigParams(array $data, array $extra) {
+        //En caso de tener parámetros nuevos los guardamos
+        if (!empty($extra['label'])) {
+            foreach ($extra['label'] as $index => $field) {
+                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
+                    /** @var $data array */
+                    $data[$field] = $extra['value'][$index];
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Método que guarda los parámetros adicionales de la configuración
+     * @param array $data
+     * @return array
+     */
+    protected static function saveExtraParams(array $data) {
+        $final_data = array();
+        if (count($data) > 0) {
+            foreach ($data as $key => $value) {
+                if (null !== $value || $value !== '') {
+                    $final_data[$key] = $value;
+                }
+            }
+        }
+        return $final_data;
+    }
+
+    /**
      * Método que devuelve si la plataforma está en modo debug
      * @return boolean
      */
@@ -97,25 +133,9 @@ class Config {
      * @param array|null $extra
      * @return boolean
      */
-    public static function save(array $data, array $extra = null)
-    {
-        //En caso de tener parámetros nuevos los guardamos
-        if (!empty($extra['label'])) {
-            foreach ($extra['label'] as $index => $field) {
-                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
-                    /** @var $data array */
-                    $data[$field] = $extra['value'][$index];
-                }
-            }
-        }
-        $final_data = array();
-        if (count($data) > 0) {
-            foreach ($data as $key => $value) {
-                if (null !== $value || $value !== '') {
-                    $final_data[$key] = $value;
-                }
-            }
-        }
+    public static function save(array $data, array $extra = null) {
+        $data = self::saveConfigParams($data, $extra);
+        $final_data = self::saveExtraParams($data);
         $saved = false;
         try {
             Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", $final_data, Cache::JSON, true);
