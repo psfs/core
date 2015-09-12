@@ -24,7 +24,7 @@ class {{ module }}Controller extends {{ controllerType }}Controller {
     * Constructor por defecto
     */
     function __construct() {
-        parent::__construct();
+        $this->init();
         $this->setDomain('{{ module }}')
             ->setTemplatePath(__DIR__. DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Templates');
     }

@@ -1,8 +1,8 @@
 <?php
     namespace PSFS\Services;
 
+    use PSFS\base\Cache;
     use PSFS\base\config\Config;
-    use PSFS\base\exception\ConfigException;
     use PSFS\base\Service;
 
     class GeneratorService extends Service{
@@ -162,6 +162,7 @@
                 "module" => $module,
                 "controllerType" => $controllerType,
             ));
+            pre($force);
             return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}Controller.php", $force);
         }
 
@@ -288,8 +289,12 @@
         private function writeTemplateToFile($fileContent, $filename, $force = false) {
             $created = false;
             if ($force || !file_exists($filename)) {
-                $this->cache->storeData($filename, $fileContent, true);
-                $created = true;
+                try {
+                    $this->cache->storeData($filename, $fileContent, Cache::TEXT,true);
+                    $created = true;
+                } catch(\Exception $e) {
+                    $this->log->errorLog($e->getMessage());
+                }
             }else{
                 $this->log->errorLog($filename . _(' not exists or cant write'));
             }

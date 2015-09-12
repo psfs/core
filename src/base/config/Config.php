@@ -178,8 +178,14 @@ class Config {
      * throws ConfigException
      */
     public static function createDir($dir) {
-        if (!file_exists($dir) && @mkdir($dir, 0775, true) === false ) {
-            throw new ConfigException(_('Can\'t create directory ') . $dir);
+        try {
+            if(@mkdir($dir, 0775, true) === false) {
+                throw new \Exception(_('Can\'t create directory ') . $dir);
+            }
+        } catch(\Exception $e) {
+            if(!file_exists(dirname($dir))) {
+                throw new ConfigException($e->getMessage() . $dir);
+            }
         }
     }
 }

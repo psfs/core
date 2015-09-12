@@ -140,7 +140,7 @@ abstract class Form extends Singleton{
         if(!is_null($this->getField($name)))
         {
             $field = $this->getField($name);
-            $value = $field["value"] ?: null;
+            $value = (null !== $field["value"]) ? $field["value"] : null;
         }
         return $value;
     }

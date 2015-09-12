@@ -123,7 +123,7 @@ class AssetsParser {
     protected function compileCss()
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
-        Config::createDir(Template::extractPath($base));
+        Config::createDir(dirname($base));
         $data = '';
         if (0 < count($this->files)) {
             foreach ($this->files as $file) {
@@ -148,7 +148,7 @@ class AssetsParser {
     protected function compileJs()
     {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
-        Config::createDir(Template::extractPath($base));
+        Config::createDir(dirname($base));
         $data = '';
         if (0 < count($this->files)) {
             foreach ($this->files as $file) {
@@ -173,7 +173,7 @@ class AssetsParser {
      * @throws ConfigException
      */
     private function storeContents($path, $content = "") {
-        Config::createDir($path);
+        Config::createDir(dirname($path));
         if (null !== $content && false === file_put_contents($path, $content)) {
             throw new ConfigException(_('No se tienen permisos para escribir en ' . $path));
         }
@@ -231,7 +231,7 @@ class AssetsParser {
         try {
             if (count($source) > 1) {
                 $dest = $this->path.$orig_part[1];
-                Config::createDir(Template::extractPath($dest));
+                Config::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
                     if (@copy($orig, $dest) === FALSE) {
                         throw new \RuntimeException('Can\' copy '.$dest.'');
@@ -415,7 +415,7 @@ class AssetsParser {
                 $orig = self::calculateResourcePathname($filename_path, $source);
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
-                Config::createDir(Template::extractPath($dest));
+                Config::createDir(dirname($dest));
                 if (@copy($orig, $dest) === false) {
                     throw new ConfigException("Can't copy ".$orig." to ".$dest);
                 }

@@ -26,7 +26,7 @@
          * @throws ConfigException
          */
         private function saveTextToFile($data, $path, $absolute = false) {
-            $absolutePath = ($absolute) ? $path : CACHE_DIR.DIRECTORY_SEPARATOR  .$path;
+            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
             $filename = basename($absolutePath);
             Config::createDir(str_replace($filename, "", $absolutePath));
             if (false === file_put_contents($absolutePath, $data)) {
