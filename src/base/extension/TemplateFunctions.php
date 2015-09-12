@@ -138,7 +138,7 @@
                 if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force) {
                     if (is_dir($filename_path)) {
                         Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                        self::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        Template::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                     } else {
                         if (@copy($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === FALSE) {
                             throw new ConfigException("Can't copy " . $filename_path . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
