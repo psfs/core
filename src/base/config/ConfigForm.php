@@ -36,7 +36,7 @@ class ConfigForm extends Form
         $data = Config::getInstance()->dumpConfig();
         if (!empty(Config::$optional) && !empty($data)) {
             foreach (Config::$optional as $field) {
-                if (array_key_exists($field, $data)) {
+                if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
                     $this->add($field, array(
                         "label" => _($field),
                         "class" => "col-md-6",
@@ -52,12 +52,14 @@ class ConfigForm extends Form
         }
         if (!empty($extra)) {
             foreach ($extra as $key => $field) {
-                $this->add($key, array(
-                    "label" => $field,
-                    "class" => "col-md-6",
-                    "required" => false,
-                    "value" => $data[$field],
-                ));
+                if(strlen($data[$field]) > 0) {
+                    $this->add($key, array(
+                        "label" => $field,
+                        "class" => "col-md-6",
+                        "required" => false,
+                        "value" => $data[$field],
+                    ));
+                }
             }
         }
         $this->add(Form::SEPARATOR);

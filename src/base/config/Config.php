@@ -188,4 +188,16 @@ class Config {
             }
         }
     }
+
+    /**
+     * Método estático que elimina los directorio del document root
+     */
+    public static function clearDocumentRoot() {
+        $rootDirs = array("css", "js", "media", "font");
+        foreach($rootDirs as $dir) {
+            if(file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
+                @shell_exec("rm -rf " . WEB_DIR . DIRECTORY_SEPARATOR . $dir);
+            }
+        }
+    }
 }

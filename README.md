@@ -3,10 +3,7 @@ PSFS
 [![Build Status](https://travis-ci.org/c15k0/psfs.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
 [![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
 [![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
-[![Latest Unstable Version](https://poser.pugx.org/c15k0/psfs/v/unstable)](https://packagist.org/packages/c15k0/psfs) [![License](https://poser.pugx.org/c15k0/psfs/license)](https://packagist.org/packages/c15k0/psfs)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/c15k0/psfs/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
-
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403/big.png)](https://insight.sensiolabs.com/projects/88c256d9-4e78-4bc3-b25f-e4ef023ac403)
 
 Framework Php Simple Fast & Secure
 
@@ -19,7 +16,9 @@ Componentes necesarios para su ejecución:
     * "twig/twig": "1.*@dev"
     * "twig/extensions": "1.1.*@dev",
     * "monolog/monolog": "dev-master",
-    * "pear/archive_tar": "master"
+    * "pear/archive_tar": "master",
+    * "tedivm/jshrink": "~1.0"
+    * "natxet/cssmin": "^3.0@dev"
 
 Para instalar usar composer:
 

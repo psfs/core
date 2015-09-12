@@ -179,19 +179,22 @@ class Admin extends AuthAdminController{
      * @return mixed
      * @throws \HttpException
      */
-    public function config(){
+    public function config() {
         Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm();
         $form->build();
-        if($this->getRequest()->getMethod() == 'POST')
-        {
+        if($this->getRequest()->getMethod() == 'POST') {
             $form->hydrate();
-            if($form->isValid())
-            {
-                if(Config::save($form->getData(), $form->getExtraData()))
-                {
+            if($form->isValid()) {
+                $debug = Config::getInstance()->getDebugMode();
+                $newDebug = $form->getFieldValue("debug");
+                if(Config::save($form->getData(), $form->getExtraData())) {
                     Logger::getInstance()->infoLog(_('Configuración guardada correctamente'));
+                    //Verificamos si tenemos que limpiar la cache del DocumentRoot
+                    if(boolval($debug) !== boolval($newDebug)) {
+                        Config::clearDocumentRoot();
+                    }
                     return $this->getRequest()->redirect($this->getRoute('admin'));
                 }
                 throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);

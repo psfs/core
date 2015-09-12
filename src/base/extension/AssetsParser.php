@@ -2,10 +2,9 @@
 
 namespace PSFS\base\extension;
 
+use JShrink\Minifier;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\lib\CssMinifier;
-use PSFS\base\lib\JsMinifier;
 use PSFS\base\Logger;
 use PSFS\base\Template;
 
@@ -130,11 +129,8 @@ class AssetsParser {
                 $data = $this->processCssLine($file, $base, $data);
             }
         }
-        if (!$this->debug && !file_exists($base.$this->hash.".css"))
-        {
-            $cssMinifier = new CssMinifier();
-            $data = $cssMinifier->run($data);
-            $this->storeContents($base.$this->hash.".css", $data);
+        if (!$this->debug && !file_exists($base.$this->hash.".css")) {
+            $this->storeContents($base.$this->hash.".css", \CssMin::minify($data));
             unset($cssMinifier);
         }
         return $this;
@@ -145,23 +141,24 @@ class AssetsParser {
      * @return $this
      * @throws ConfigException
      */
-    protected function compileJs()
-    {
+    protected function compileJs() {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
         Config::createDir(dirname($base));
         $data = '';
         if (0 < count($this->files)) {
             foreach ($this->files as $file) {
                 $path_parts = explode("/", $file);
-                if (!file_exists($file) || $this->debug) {
-                    $data = $this->putDebugJs($path_parts, $base, $file);
-                } elseif (!file_exists($file)) {
-                    $data = $this->putProductionJs($base, $file, $data);
+                if(file_exists($file)) {
+                    if($this->debug) {
+                        $data = $this->putDebugJs($path_parts, $base, $file);
+                    } elseif(!file_exists($base.$this->hash.".js")) {
+                        $data = $this->putProductionJs($base, $file, $data);
+                    }
                 }
             }
         }
         if (!$this->debug && !file_exists($base.$this->hash.".js")) {
-            $this->storeContents($base.$this->hash.".js", $data);
+            $this->storeContents($base.$this->hash.".js", Minifier::minify($data));
         }
         return $this;
     }
@@ -174,7 +171,7 @@ class AssetsParser {
      */
     private function storeContents($path, $content = "") {
         Config::createDir(dirname($path));
-        if (null !== $content && false === file_put_contents($path, $content)) {
+        if ("" !== $content && false === file_put_contents($path, $content)) {
             throw new ConfigException(_('No se tienen permisos para escribir en ' . $path));
         }
     }
@@ -284,8 +281,7 @@ class AssetsParser {
      * @return string
      * @throws ConfigException
      */
-    protected function putDebugJs($path_parts, $base, $file)
-    {
+    protected function putDebugJs($path_parts, $base, $file) {
         $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
         $this->compiled_files[] = "/js/".$file_path;
         $data = "";
@@ -304,15 +300,12 @@ class AssetsParser {
      * @return string
      * @throws ConfigException
      */
-    protected function putProductionJs($base, $file, $data)
-    {
-        if (!file_exists($base.$this->hash.".js")) {
-            $js = file_get_contents($file);
-            try {
-                $data .= ";".$minifiedCode = JsMinifier::minify($js);
-            } catch(\Exception $e) {
-                throw new ConfigException($e->getMessage());
-            }
+    protected function putProductionJs($base, $file, $data) {
+        $js = file_get_contents($file);
+        try {
+            $data .= ";".$js;
+        } catch(\Exception $e) {
+            throw new ConfigException($e->getMessage());
         }
         return $data;
     }
