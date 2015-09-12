@@ -267,8 +267,7 @@ class Template {
      */
     protected function generateTemplate($tplDir, $domain = '') {
         $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
-        foreach ($templatesDir as $file)
-        {
+        foreach ($templatesDir as $file) {
             // force compilation
             if ($file->isFile()) {
                 try {

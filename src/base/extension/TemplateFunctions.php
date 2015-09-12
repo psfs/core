@@ -118,7 +118,7 @@
          */
         public static function resource($path, $dest, $force = false) {
             $debug = Config::getInstance()->getDebugMode();
-            $domains = self::getDomains(true);
+            $domains = Template::getDomains(true);
             $filename_path = self::extractPathname($path, $domains);
             self::copyResources($dest, $force, $filename_path, $debug);
             return '';

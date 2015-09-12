@@ -228,8 +228,7 @@
          * Método que regenera el fichero de rutas
          * @throws ConfigException
          */
-        private function hydrateRouting()
-        {
+        private function hydrateRouting() {
             $base = SOURCE_DIR;
             $modules = realpath(CORE_DIR);
             $this->routing = $this->inspectDir($base, "PSFS", array());
@@ -239,11 +238,9 @@
             Config::createDir(CONFIG_DIR);
             $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
-            if (null !== $home || $home !== '')
-            {
+            if (null !== $home || $home !== '') {
                 $home_params = null;
-                foreach ($this->routing as $pattern => $params)
-                {
+                foreach ($this->routing as $pattern => $params) {
                     if(preg_match("/".preg_quote($pattern, "/")."$/i", "/".$home)) {
                         $home_params = $params;
                     }
@@ -265,8 +262,7 @@
         private function inspectDir($origen, $namespace = 'PSFS', $routing)
         {
             $files = $this->finder->files()->in($origen)->path('/controller/i')->name("*.php");
-            foreach($files as $file)
-            {
+            foreach($files as $file) {
                 $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
                 $routing = $this->addRouting($namespace .str_replace('.php', '', $filename), $routing);
             }
@@ -333,28 +329,29 @@
          * @return Router
          * @throws ConfigException
          */
-        protected function extractDomain($class)
-        {
+        protected function extractDomain($class) {
             //Calculamos los dominios para las plantillas
-            if(!$class->hasConstant("DOMAIN")) $domain = "@" . get_class($class) . "/";
-            else $domain = "@" . $class->getConstant("DOMAIN") . "/";
-            $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-            $path = realpath($path) . DIRECTORY_SEPARATOR;
-            $tpl_path = "templates";
-            $public_path = "public";
-            $model_path = "models";
-            if(!preg_match("/ROOT/", $domain))
-            {
-                $tpl_path = ucfirst($tpl_path);
-                $public_path = ucfirst($public_path);
-                $model_path = ucfirst($model_path);
+            if ($class->hasConstant("DOMAIN")) {
+                $domain = "@" . $class->getConstant("DOMAIN") . "/";
+                $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+                $path = realpath($path) . DIRECTORY_SEPARATOR;
+                $tpl_path = "templates";
+                $public_path = "public";
+                $model_path = "models";
+                if(!preg_match("/ROOT/", $domain)) {
+                    $tpl_path = ucfirst($tpl_path);
+                    $public_path = ucfirst($public_path);
+                    $model_path = ucfirst($model_path);
+                }
+                if($class->hasConstant("TPL")) {
+                    $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
+                }
+                $this->domains[$domain] = array(
+                    "template" => $path . $tpl_path,
+                    "model" => $path . $model_path,
+                    "public" => $path . $public_path,
+                );
             }
-            if($class->hasConstant("TPL")) $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
-            $this->domains[$domain] = array(
-                "template" => $path . $tpl_path,
-                "model" => $path . $model_path,
-                "public" => $path . $public_path,
-            );
             return $this;
         }
 
@@ -362,17 +359,14 @@
          * Método que genera las urls amigables para usar dentro del framework
          * @return Router
          */
-        private function simpatize()
-        {
+        private function simpatize() {
             $translations = array();
             $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
             $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
+            Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
             foreach($this->routing as $key => &$info)
             {
                 $slug = $this->slugify($key);
-                if(!file_exists($absoluteTranslationFileName)) {
-                    Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
-                }
                 if(!array_key_exists($slug, $translations)) {
                     $translations[$slug] = $key;
                     file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
