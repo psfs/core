@@ -9,7 +9,8 @@
     <ul class="list-group">
     {% for url, route in slugs %}
         <li class="list-group-item">
-            <span class="label label-danger">{{ url }}</span> <a href="{{ route }}">{{ route }}</a>
+            {% set cleanRoute = route|split("#|#") %}
+            <span class="label label-danger">{{ url }}</span> <a href="{{ cleanRoute[1] }}">{{ cleanRoute[0] }} {{ cleanRoute[1] }}</a>
         </li>
     {% endfor %}
     </ul>

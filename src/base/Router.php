@@ -36,8 +36,7 @@
          * Constructor Router
          * @throws ConfigException
          */
-        public function __construct()
-        {
+        public function __construct() {
             $this->finder = new Finder();
             $this->cache = Cache::getInstance();
             $this->init();
@@ -48,12 +47,10 @@
          * @throws ConfigException
          */
         public function init() {
-            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json") || Config::getInstance()->getDebugMode())
-            {
+            if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json") || Config::getInstance()->getDebugMode()) {
                 $this->hydrateRouting();
                 $this->simpatize();
-            }else
-            {
+            } else {
                 list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", Cache::JSON, true);
                 $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, true);
             }
@@ -66,9 +63,8 @@
          *
          * @return string HTML
          */
-        public function httpNotFound(\Exception $e = null)
-        {
-            if(null === $e) {
+        public function httpNotFound(\Exception $e = null) {
+            if (null === $e) {
                 $e = new \Exception(_('Página no encontrada'), 404);
             }
             return Template::getInstance()
@@ -92,14 +88,12 @@
          * @throws \Exception
          * @return string HTML
          */
-        public function execute($route)
-        {
-            try
-            {
+        public function execute($route) {
+            try {
                 // Checks restricted access
                 $this->checkRestrictedAccess($route);
                 //Search action and execute
-                $this->searchAction($route);
+                return $this->searchAction($route);
             } catch (AccessDeniedException $e) {
                 Logger::getInstance()->debugLog(_('Solicitamos credenciales de acceso a zona restringida'));
                 if('login' === Config::getInstance()->get('admin_login')) {
@@ -131,25 +125,22 @@
          *
          * @throws \Exception
          */
-        protected function searchAction($route)
-        {
+        protected function searchAction($route) {
             //Revisamos si tenemos la ruta registrada
             $parts = parse_url($route);
             $path = (array_key_exists('path', $parts)) ? $parts['path'] : $route;
-            foreach($this->routing as $pattern => $action)
-            {
-                $expr = preg_replace('/\{(.*)\}/', '###', $pattern);
-                $expr = preg_quote($expr, '/');
-                $expr = str_replace('###', '(.*)', $expr);
-                $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
-                if(preg_match('/^'. $expr .'\/?$/i', $path) || preg_match('/^'. $expr2 .'?$/i', $path))
-                {
-                    $get = $this->extractComponents($route, $pattern);
+            $httpRequest = Request::getInstance()->getMethod();
+            foreach($this->routing as $pattern => $action) {
+                list($httpMethod, $routePattern) = $this->extractHttpRoute($pattern);
+                $matched = $this->matchRoutePattern($routePattern, $path);
+                if($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod)) {
+                    $get = $this->extractComponents($route, $routePattern);
                     /** @var $class \PSFS\base\types\Controller */
                     $class = $this->getClassToCall($action);
                     try{
                         Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
                         call_user_func_array(array($class, $action['method']), $get);
+                        break;
                     }catch(\Exception $e)
                     {
                         Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
@@ -164,8 +155,7 @@
          * Método que manda las cabeceras de autenticación
          * @return string HTML
          */
-        protected function sentAuthHeader()
-        {
+        protected function sentAuthHeader() {
             return AdminServices::getInstance()->setAdminHeaders();
         }
 
@@ -175,8 +165,7 @@
          *
          * @return string HTML
          */
-        public function redirectLogin($route)
-        {
+        public function redirectLogin($route) {
             return Admin::getInstance()->adminLogin($route);
         }
 
@@ -186,13 +175,10 @@
          *
          * @throws AccessDeniedException
          */
-        protected function checkRestrictedAccess($route)
-        {
+        protected function checkRestrictedAccess($route) {
             //Chequeamos si entramos en el admin
-            if(preg_match('/^\/admin/i', $route) || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted')))
-            {
-                if(!Security::getInstance()->checkAdmin())
-                {
+            if (preg_match('/^\/admin/i', $route) || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted'))) {
+                if (!Security::getInstance()->checkAdmin()) {
                     throw new AccessDeniedException();
                 }
                 Logger::getInstance()->debugLog('Acceso autenticado al admin');
@@ -206,18 +192,15 @@
          * @param string $pattern
          * @return array
         */
-        protected function extractComponents($route, $pattern)
-        {
+        protected function extractComponents($route, $pattern) {
             $url = parse_url($route);
             $_route = explode("/", $url['path']);
             $_pattern = explode("/", $pattern);
             $get = array();
-            if(!empty($_pattern)) foreach($_pattern as $index => $component)
-            {
+            if(!empty($_pattern)) foreach($_pattern as $index => $component) {
                 $_get = array();
                 preg_match_all('/^\{(.*)\}$/i', $component, $_get);
-                if(!empty($_get[1]) && isset($_route[$index]))
-                {
+                if (!empty($_get[1]) && isset($_route[$index])) {
                     $get[array_pop($_get[1])] = $_route[$index];
                 }
             }
@@ -259,8 +242,7 @@
          * @return array
          * @throws ConfigException
         */
-        private function inspectDir($origen, $namespace = 'PSFS', $routing)
-        {
+        private function inspectDir($origen, $namespace = 'PSFS', $routing) {
             $files = $this->finder->files()->in($origen)->path('/controller/i')->name("*.php");
             foreach($files as $file) {
                 $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
@@ -277,41 +259,26 @@
          * @return array
          * @throws ConfigException
         */
-        private function addRouting($namespace, $routing)
-        {
-            if(class_exists($namespace))
-            {
+        private function addRouting($namespace, $routing) {
+            if (class_exists($namespace)) {
                 $reflection = new \ReflectionClass($namespace);
-                if(false === $reflection->isAbstract() && false === $reflection->isInterface())
-                {
+                if (false === $reflection->isAbstract() && false === $reflection->isInterface()) {
                     $this->extractDomain($reflection);
-                    foreach($reflection->getMethods() as $method)
-                    {
-                        if($method->isPublic())
-                        {
-                            preg_match('/@route\ (.*)\n/i', $method->getDocComment(), $sr);
-                            if(count($sr))
-                            {
-                                $regex = $sr[1] ?: $sr[0];
-                                $default = '';
-                                $params = array();
-                                $parameters = $method->getParameters();
-                                if(count($parameters) > 0) foreach($parameters as $param)
-                                {
-                                    if($param->isOptional() && !is_array($param->getDefaultValue()))
-                                    {
-                                        $params[$param->getName()] = $param->getDefaultValue();
-                                        $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
-                                    }
-                                }else $default = $regex;
-                                preg_match('/@visible\ (.*)\n/i', $method->getDocComment(), $visible);
-                                $visible = (!empty($visible) && isset($visible[1]) && $visible[1] == 'false') ? false : true;
-                                $routing[$regex] = array(
+                    foreach($reflection->getMethods() as $method) {
+                        if ($method->isPublic()) {
+                            $docComments = $method->getDocComment();
+                            preg_match('/@route\ (.*)\n/i', $docComments, $sr);
+                            if (count($sr)) {
+                                list($regex, $default, $params) = $this->extractReflectionParams($sr, $method);
+                                $httpMethod = $this->extractReflectionHttpMethod($docComments);
+                                $visible = $this->extractReflectionVisibility($docComments);
+                                $routing[$httpMethod . "#|#" . $regex] = array(
                                     "class" => $namespace,
                                     "method" => $method->getName(),
                                     "params" => $params,
                                     "default" => $default,
                                     "visible" => $visible,
+                                    "http" => $httpMethod,
                                 );
                             }
                         }
@@ -364,9 +331,9 @@
             $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
             $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
             Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
-            foreach($this->routing as $key => &$info)
-            {
-                $slug = $this->slugify($key);
+            foreach($this->routing as $key => &$info) {
+                $keyParts = explode("#|#", $key);
+                $slug = $this->slugify($keyParts[1]);
                 if(!array_key_exists($slug, $translations)) {
                     $translations[$slug] = $key;
                     file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
@@ -386,8 +353,7 @@
          *
          * @return string
          */
-        private function slugify($text)
-        {
+        private function slugify($text) {
             // replace non letter or digits by -
             $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
 
@@ -395,8 +361,7 @@
             $text = trim($text, '-');
 
             // transliterate
-            if (function_exists('iconv'))
-            {
+            if (function_exists('iconv')) {
                 $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
             }
 
@@ -406,8 +371,7 @@
             // remove unwanted characters
             $text = preg_replace('~[^-\w]+~', '', $text);
 
-            if (empty($text))
-            {
+            if (empty($text)) {
                 return 'n-a';
             }
 
@@ -424,8 +388,7 @@
          * @return string|null
          * @throws RouterException
          */
-        public function getRoute($slug = '', $absolute = false, $params = null)
-        {
+        public function getRoute($slug = '', $absolute = false, $params = null) {
             if (strlen($slug) === 0) {
                 return ($absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
             }
@@ -433,11 +396,9 @@
                 throw new RouterException("No existe la ruta especificada");
             }
             $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
-            if(!empty($params)) foreach($params as $key => $value)
-            {
+            if(!empty($params)) foreach($params as $key => $value) {
                 $url = str_replace("{".$key."}", $value, $url);
-            }elseif(!empty($this->routing[$this->slugs[$slug]]["default"]))
-            {
+            } elseif (!empty($this->routing[$this->slugs[$slug]]["default"])) {
                 $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
             }
             return $url;
@@ -447,15 +408,14 @@
          * Método que devuelve las rutas de administración
          * @return array
          */
-        public function getAdminRoutes()
-        {
+        public function getAdminRoutes() {
             $routes = array();
-            foreach($this->routing as $route => $params)
-            {
-                if (preg_match('/^\/admin(\/|$)/', $route)) {
+            foreach($this->routing as $route => $params) {
+                list($httpMethod, $routePattern) = $this->extractHttpRoute($route);
+                if (preg_match('/^\/admin(\/|$)/', $routePattern)) {
                     if (preg_match('/^PSFS/', $params["class"])) {
                         $profile = "superadmin";
-                    }else {
+                    } else {
                         $profile = "admin";
                     }
                     if (!empty($params["default"]) && $params["visible"]) {
@@ -463,7 +423,9 @@
                     }
                 }
             }
-            asort($routes["superadmin"]);
+            if (array_key_exists("superadmin", $routes)) {
+                asort($routes["superadmin"]);
+            }
             if (array_key_exists('admin', $routes)) {
                 asort($routes["admin"]);
             }
@@ -474,8 +436,7 @@
          * Método que devuelve le controlador del admin
          * @return Admin
          */
-        public function getAdmin()
-        {
+        public function getAdmin() {
             return Admin::getInstance();
         }
 
@@ -483,8 +444,7 @@
          * Método que extrae los dominios
          * @return array|null
          */
-        public function getDomains()
-        {
+        public function getDomains() {
             return $this->domains;
         }
 
@@ -493,12 +453,86 @@
          * @param string $action
          * @return Object
          */
-        protected function getClassToCall($action)
-        {
+        protected function getClassToCall($action) {
             $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
-            if(null !== $class && method_exists($class, "init")) {
+            if (null !== $class && method_exists($class, "init")) {
                 $class->init();
             }
             return $class;
+        }
+
+        /**
+         * Método que compara la ruta web con la guardada en la cache
+         * @param $routePattern
+         * @param $path
+         *
+         * @return bool
+         */
+        protected function matchRoutePattern($routePattern, $path) {
+            $expr = preg_replace('/\{(.*)\}/', '###', $routePattern);
+            $expr = preg_quote($expr, '/');
+            $expr = str_replace('###', '(.*)', $expr);
+            $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
+            $matched = preg_match('/^' . $expr . '\/?$/i', $path) || preg_match('/^' . $expr2 . '?$/i', $path);
+
+            return $matched;
+        }
+
+        /**
+         * @param $pattern
+         *
+         * @return array
+         */
+        protected function extractHttpRoute($pattern) {
+            $httpMethod = "ALL";
+            $routePattern = $pattern;
+            if (FALSE !== strstr($pattern, "#|#")) {
+                list($httpMethod, $routePattern) = explode("#|#", $pattern, 2);
+            }
+
+            return array($httpMethod, $routePattern);
+        }
+
+        /**
+         * Método que extrae los parámetros de una función
+         * @param array $sr
+         * @param $method
+         *
+         * @return array
+         */
+        private function extractReflectionParams($sr, $method) {
+            $regex = $sr[1] ?: $sr[0];
+            $default = '';
+            $params = array();
+            $parameters = $method->getParameters();
+            if (count($parameters) > 0) foreach ($parameters as $param) {
+                if ($param->isOptional() && !is_array($param->getDefaultValue())) {
+                    $params[$param->getName()] = $param->getDefaultValue();
+                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+                }
+            } else $default = $regex;
+            return array($regex, $default, $params);
+        }
+
+        /**
+         * Método que extrae el método http
+         * @param string $docComments
+         *
+         * @return string
+         */
+        private function extractReflectionHttpMethod($docComments) {
+            preg_match('/@(GET|POST|PUT|DELETE)\n/i', $docComments, $routeMethod);
+            return (count($routeMethod) > 0) ? $routeMethod[1] : "ALL";
+        }
+
+        /**
+         * Método que extrae la visibilidad de una ruta
+         * @param string $docComments
+         *
+         * @return bool
+         */
+        private function extractReflectionVisibility($docComments) {
+            preg_match('/@visible\ (.*)\n/i', $docComments, $visible);
+            return (!empty($visible) && isset($visible[1]) && $visible[1] == 'false') ? FALSE : TRUE;
         }
     }

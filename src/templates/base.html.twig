@@ -58,6 +58,34 @@
     {% endblock base_scripts %}
     {% block scripts %}
     {% endblock scripts %}
+    {% if existsFlash("callback_message") %}
+        <script type="text/javascript">
+            function showCallbackMessage() {
+                try {
+                    bootbox.dialog({
+                        title: "{{ get_config("platform_name") | default("PSFS") }}",
+                        message: "{{ getFlash("callback_message") | raw }}",
+                        buttons: {
+                            success: {
+                                label: "{{ "Aceptar" | trans }}",
+                                className: "btn-primary",
+                                callback: function() {
+                                    if({{ existsFlash("callback_route") }}) {
+                                        location.href = "{{ getFlash("callback_route") }}";
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch(err) {
+                    setTimeout(showCallbackMessage, 100);
+                }
+            }
+            (function(){
+                showCallbackMessage();
+            })();
+        </script>
+    {% endif %}
     {% include 'debug.html.twig' %}
     </body>
 </html>

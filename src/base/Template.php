@@ -161,6 +161,7 @@ class Template {
         $vars["__user__"] = $this->security->getUser();
         $vars["__admin__"] = $this->security->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
+        $vars["__flash__"] = Security::getInstance()->getFlashes();
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
@@ -357,7 +358,7 @@ class Template {
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        }else {
+        } else {
             header('Authorization:');
         }
     }
@@ -406,6 +407,34 @@ class Template {
     }
 
     /**
+     * Función que devuelve el valor de una variable de sesión flash
+     * @return Template
+     */
+    private function existsFlash() {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('existsFlash', function($key = "") {
+            return null !== Security::getInstance()->getFlash($key);
+        });
+        $tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
+     * Función que devuelve el valor de una variable de sesión flash
+     * @return Template
+     */
+    private function useFlash() {
+        $tpl = $this->tpl;
+        $function = new \Twig_SimpleFunction('getFlash', function($key = "") {
+            $var = Security::getInstance()->getFlash($key);
+            Security::getInstance()->setFlash($key, null);
+            return $var;
+        });
+        $tpl->addFunction($function);
+        return $this;
+    }
+
+    /**
      * Método que añade todas las funciones de las plantillas
      */
     private function addTemplateFunctions() {
@@ -417,7 +446,10 @@ class Template {
             ->addConfigFunction()
             ->addRouteFunction()
             ->dumpResource()
-            ->useSessionVars();
+            ->useSessionVars()
+            ->existsFlash()
+            ->useFlash()
+        ;
     }
 
     /**

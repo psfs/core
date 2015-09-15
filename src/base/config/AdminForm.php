@@ -15,8 +15,7 @@ class AdminForm extends Form {
     /**
      * @throws \PSFS\base\exception\RouterException
      */
-    public function __construct()
-    {
+    public function __construct() {
         $this->setAction(Router::getInstance()->getRoute('admin-setup'));
         $this->add('username', array(
             'label' => _('Alias de usuario'),

@@ -9,7 +9,6 @@ use PSFS\base\config\LoginForm;
 use PSFS\base\config\ModuleForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
-use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Template;
@@ -51,32 +50,47 @@ class Admin extends AuthAdminController{
      * Wrapper de asignación de los menus
      * @return array
      */
-    protected function getMenu()
-    {
+    protected function getMenu() {
         return Router::getInstance()->getAdminRoutes();
     }
 
     /**
      * Método que gestiona los usuarios administradores de la plataforma
+     * @GET
      * @route /admin/setup
      * @return mixed
      * @throws \HttpException
      */
-    public function adminers()
-    {
+    public function adminers() {
         $admins = $this->srv->getAdmins();
         $form = new AdminForm();
         $form->build();
-        if($this->getRequest()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                if(Security::save($form->getData()))
-                {
-                    Logger::getInstance()->infoLog("Configuración guardada correctamente");
-                    return $this->getRequest()->redirect($this->getRoute("admin", true));
-                }
+        return $this->render('admin.html.twig', array(
+            'admins' => $admins,
+            'form' => $form,
+            'profiles' => Security::getProfiles(),
+        ));
+    }
+
+    /**
+     * Servicio que guarda los usuarios de administración
+     * @POST
+     * @route /admin/setup
+     * @visible false
+     * @return string|void
+     * @throws \HttpException
+     */
+    public function setAdminUsers() {
+        $admins = $this->srv->getAdmins();
+        $form = new AdminForm();
+        $form->build();
+        $form->hydrate();
+        if ($form->isValid()) {
+            if (Security::save($form->getData())) {
+                Logger::getInstance()->infoLog("Configuración guardada correctamente");
+                $this->security->setFlash("callback_message", _("Usuario agregado correctamente"));
+                $this->security->setFlash("callback_route", $this->getRoute("admin"), true);
+            } else {
                 throw new \HttpException('Error al guardar los administradores, prueba a cambiar los permisos', 403);
             }
         }
@@ -90,12 +104,12 @@ class Admin extends AuthAdminController{
     /**
      * Acción que pinta un formulario genérico de login pra la zona restringida
      * @param string $route
+     * @GET
      * @route /admin/login
      * @visible false
      * @return string HTML
      */
-    public function adminLogin($route = null)
-    {
+    public function adminLogin($route = null) {
         return Admin::staticAdminLogon($route);
     }
 
@@ -107,7 +121,27 @@ class Admin extends AuthAdminController{
      */
     public static function staticAdminLogon($route = null) {
         $form = new LoginForm();
-        if(Request::getInstance()->getMethod() == "GET") $form->setData(array("route" => $route));
+        $form->setData(array("route" => $route));
+        $form->build();
+        $tpl = Template::getInstance();
+        $tpl->setPublicZone(true);
+        return $tpl->render("login.html.twig", array(
+            'form' => $form,
+        ));
+    }
+
+    /**
+     * Servicio que valida el login
+     * @param null $route
+     * @POST
+     * @visible false
+     * @route /admin/login
+     * @return string
+     * @throws \PSFS\base\exception\FormException
+     */
+    public function postLogin($route = null) {
+        $form = new LoginForm();
+        $form->setData(array("route" => $route));
         $form->build();
         $tpl = Template::getInstance();
         $tpl->setPublicZone(true);
@@ -116,30 +150,25 @@ class Admin extends AuthAdminController{
             'form' => $form,
         );
         $cookies = array();
-        if(Request::getInstance()->getMethod() == 'POST')
-        {
-            $form->hydrate();
-            if($form->isValid())
-            {
-                if(Security::getInstance()->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass")))
-                {
-                    $cookies = array(
-                        array(
-                            "name" => Security::getInstance()->getHash(),
-                            "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
-                            "expire" => time() + 3600,
-                            "http" => true,
-                        )
-                    );
-                    $template = "redirect.html.twig";
-                    $params = array(
-                        'route' => Router::getInstance()->getRoute("admin"),
-                        'status_message' => _("Acceso permitido... redirigiendo!!"),
-                        'delay' => 1,
-                    );
-                }else{
-                    $form->setError("user", "El usuario no tiene acceso a la web");
-                }
+        $form->hydrate();
+        if ($form->isValid()) {
+            if (Security::getInstance()->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass"))) {
+                $cookies = array(
+                    array(
+                        "name" => Security::getInstance()->getHash(),
+                        "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
+                        "expire" => time() + 3600,
+                        "http" => true,
+                    )
+                );
+                $template = "redirect.html.twig";
+                $params = array(
+                    'route' => Router::getInstance()->getRoute("admin"),
+                    'status_message' => _("Acceso permitido... redirigiendo!!"),
+                    'delay' => 1,
+                );
+            } else {
+                $form->setError("user", "El usuario no tiene acceso a la web");
             }
         }
         return $tpl->render($template, $params, $cookies);
@@ -150,8 +179,7 @@ class Admin extends AuthAdminController{
      * @param $locale string
      * @route /admin/translations/{locale}
      */
-    public function getTranslations($locale = '')
-    {
+    public function getTranslations($locale = '') {
         //Idioma por defecto
         if(empty($locale)) $locale = $this->config->get("default_language");
 
@@ -195,9 +223,11 @@ class Admin extends AuthAdminController{
                     if(boolval($debug) !== boolval($newDebug)) {
                         Config::clearDocumentRoot();
                     }
-                    return $this->getRequest()->redirect($this->getRoute('admin'));
+                    $this->security->setFlash("callback_message", _("Configuración actualizada correctamente"));
+                    $this->security->setFlash("callback_route", $this->getRoute("admin-config", true));
+                } else {
+                    throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
                 }
-                throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(
@@ -213,8 +243,7 @@ class Admin extends AuthAdminController{
      * @visible false
      * @return mixed
      */
-    public function index()
-    {
+    public function index() {
         return $this->render("index.html.twig", array(
             "routes" => Router::getInstance()->getAdminRoutes(),
         ));
@@ -227,26 +256,22 @@ class Admin extends AuthAdminController{
      * @return string HTML
      * @throws \HttpException
      */
-    public function generateModule()
-    {
+    public function generateModule() {
         Logger::getInstance()->infoLog("Arranque generador de módulos al solicitar ".$this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ModuleForm();
         $form->build();
-        if($this->getRequest()->getMethod() == 'POST')
-        {
+        if ($this->getRequest()->getMethod() == 'POST') {
             $form->hydrate();
-            if($form->isValid())
-            {
+            if ($form->isValid()) {
                 $module = $form->getFieldValue("module");
                 $force = $form->getFieldValue("force");
                 $type = $form->getFieldValue("controllerType");
-                try
-                {
+                try {
                     $this->gen->createStructureModule($module, $force, $type);
-                    return $this->getRequest()->redirect(Router::getInstance()->getRoute("admin-module", true));
-                }catch(\Exception $e)
-                {
+                    $this->security->setFlash("callback_message", str_replace("%s",$module, _("Módulo %s generado correctamente")));
+                    $this->security->setFlash("callback_route", $this->getRoute("admin-module", true));
+                } catch(\Exception $e) {
                     Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
                     throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
                 }
@@ -266,8 +291,7 @@ class Admin extends AuthAdminController{
      * @visible false
      * @return mixed
      */
-    public function getConfigParams()
-    {
+    public function getConfigParams() {
         $response = array_merge(Config::$required, Config::$optional);
         return $this->json($response);
     }
