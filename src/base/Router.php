@@ -332,8 +332,12 @@
             $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
             Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
             foreach($this->routing as $key => &$info) {
-                $keyParts = explode("#|#", $key);
-                $slug = $this->slugify($keyParts[1]);
+                $keyParts = $key;
+                if(false !== strstr("#|#", $key)) {
+                    $keyParts = explode("#|#", $key);
+                    $keyParts = $keyParts[1];
+                }
+                $slug = $this->slugify($keyParts);
                 if(!array_key_exists($slug, $translations)) {
                     $translations[$slug] = $key;
                     file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
