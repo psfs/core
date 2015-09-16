@@ -10,7 +10,7 @@
     class AuthAdminController extends AuthController {
         public function __construct() {
             $this->init();
-            if(!$this->isAdmin()) {
+            if (!$this->isAdmin()) {
                 Admin::staticAdminLogon();
             }
         }

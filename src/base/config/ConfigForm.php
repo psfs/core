@@ -52,7 +52,7 @@ class ConfigForm extends Form
         }
         if (!empty($extra)) {
             foreach ($extra as $key => $field) {
-                if(strlen($data[$field]) > 0) {
+                if (strlen($data[$field]) > 0) {
                     $this->add($key, array(
                         "label" => $field,
                         "class" => "col-md-6",

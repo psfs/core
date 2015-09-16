@@ -11,7 +11,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
 
-abstract class Form extends Singleton{
+abstract class Form extends Singleton {
 
     /**
      * Constantes de uso general
@@ -60,14 +60,14 @@ abstract class Form extends Singleton{
      * @param string $enctype
      * @return Form
      */
-    public function setEncType($enctype){ $this->enctype = $enctype; return $this; }
-    public function setAction($action){ $this->action = $action; return $this; }
-    public function setMethod($method){ $this->method = $method; return $this; }
-    public function setAttrs(array $attrs){ $this->attrs = $attrs; return $this; }
-    public function add($name, array $value = array()){
+    public function setEncType($enctype) { $this->enctype = $enctype; return $this; }
+    public function setAction($action) { $this->action = $action; return $this; }
+    public function setMethod($method) { $this->method = $method; return $this; }
+    public function setAttrs(array $attrs) { $this->attrs = $attrs; return $this; }
+    public function add($name, array $value = array()) {
         $this->fields[$name] = $value;
-        $this->fields[$name]['name'] = $this->getName() . "[{$name}]";
-        $this->fields[$name]['id'] = $this->getName() . '_' . $name;
+        $this->fields[$name]['name'] = $this->getName()."[{$name}]";
+        $this->fields[$name]['id'] = $this->getName().'_'.$name;
         $this->fields[$name]['placeholder'] = (isset($value['placeholder'])) ? $value['placeholder'] : $name;
         $this->fields[$name]['hasLabel'] = (isset($value['hasLabel'])) ? $value['hasLabel'] : true;
         return $this;
@@ -77,13 +77,13 @@ abstract class Form extends Singleton{
         return $this;
     }
 
-    public function getEncType(){ return $this->enctype; }
-    public function getAction(){ return $this->action; }
-    public function getMethod(){ return $this->method; }
-    public function getFields(){ return $this->fields; }
-    public function getAttrs(){ return $this->attrs; }
-    public function getButtons(){ return $this->buttons; }
-    public function getLogo(){ return $this->logo; }
+    public function getEncType() { return $this->enctype; }
+    public function getAction() { return $this->action; }
+    public function getMethod() { return $this->method; }
+    public function getFields() { return $this->fields; }
+    public function getAttrs() { return $this->attrs; }
+    public function getButtons() { return $this->buttons; }
+    public function getLogo() { return $this->logo; }
 
     /**
      * Método que genera un CRFS token para los formularios
@@ -92,14 +92,14 @@ abstract class Form extends Singleton{
     private function genCrfsToken()
     {
         $hash_orig = '';
-        if(!empty($this->fields)) foreach($this->fields as $field => $value)
+        if (!empty($this->fields)) foreach ($this->fields as $field => $value)
         {
-            if($field !== self::SEPARATOR) $hash_orig .= $field;
+            if ($field !== self::SEPARATOR) $hash_orig .= $field;
         }
-        if(!empty($hash_orig))
+        if (!empty($hash_orig))
         {
             $this->crfs = sha1($hash_orig);
-            $this->add($this->getName() . '_token', array(
+            $this->add($this->getName().'_token', array(
                 "type" => "hidden",
                 "value" => $this->crfs,
             ));
@@ -116,7 +116,7 @@ abstract class Form extends Singleton{
     public function get($prop)
     {
         $return = null;
-        if(property_exists($this, $prop)) $return = $this->$prop;
+        if (property_exists($this, $prop)) $return = $this->$prop;
         return $return;
     }
 
@@ -126,7 +126,7 @@ abstract class Form extends Singleton{
      *
      * @return array|null
      */
-    public function getField($name){ return (isset($this->fields[$name])) ? $this->fields[$name] : null; }
+    public function getField($name) { return (isset($this->fields[$name])) ? $this->fields[$name] : null; }
 
     /**
      * Método que devuelve el valor de un campo
@@ -137,7 +137,7 @@ abstract class Form extends Singleton{
     public function getFieldValue($name)
     {
         $value = null;
-        if(!is_null($this->getField($name)))
+        if (!is_null($this->getField($name)))
         {
             $field = $this->getField($name);
             $value = (null !== $field["value"]) ? $field["value"] : null;
@@ -151,7 +151,7 @@ abstract class Form extends Singleton{
      */
     public function build()
     {
-        if(strtoupper($this->method) === 'POST') $this->genCrfsToken();
+        if (strtoupper($this->method) === 'POST') $this->genCrfsToken();
         return $this;
     }
 
@@ -162,20 +162,20 @@ abstract class Form extends Singleton{
     public function isValid()
     {
         $valid = true;
-        $token_field = $this->getName() . '_token';
+        $token_field = $this->getName().'_token';
         //Controlamos CSRF token
-        if($this->method === 'POST' && (empty($this->fields[$token_field]["value"]) || $this->crfs != $this->fields[$token_field]["value"]))
+        if ($this->method === 'POST' && (empty($this->fields[$token_field]["value"]) || $this->crfs != $this->fields[$token_field]["value"]))
         {
             $this->errors[$token_field] = _('Formulario no válido');
             $this->fields[$token_field]["error"] = $this->errors[$token_field];
             $valid = false;
         }
         //Validamos los campos del formulario
-        if($valid)
+        if ($valid)
         {
-            if(!empty($this->fields)) foreach($this->fields as $key => &$field)
+            if (!empty($this->fields)) foreach ($this->fields as $key => &$field)
             {
-                if($key  === self::SEPARATOR) continue;
+                if ($key === self::SEPARATOR) continue;
                 list($field, $valid) = $this->checkFieldValidation($field, $key);
             }
         }
@@ -216,12 +216,12 @@ abstract class Form extends Singleton{
         $data = Request::getInstance()->getData() ?: null;
         //Hidratamos los campos con lo que venga del formulario
         $form_name = $this->getName();
-        if(!empty($data[$form_name])) foreach($this->fields as $key => &$field)
+        if (!empty($data[$form_name])) foreach ($this->fields as $key => &$field)
         {
             list($data, $field) = $this->hydrateField($data, $form_name, $key, $field);
         }
         //Limpiamos los datos
-        if(isset($data[$form_name])) unset($data[$form_name]);
+        if (isset($data[$form_name])) unset($data[$form_name]);
         //Cargamos los campos extras
         $this->extra = $data;
         return $this;
@@ -234,9 +234,9 @@ abstract class Form extends Singleton{
     public function getData()
     {
         $data = array();
-        if(!empty($this->fields)) foreach($this->fields as $key => $field)
+        if (!empty($this->fields)) foreach ($this->fields as $key => $field)
         {
-            if(self::SEPARATOR !== $key && $key != ($this->getName()."_token")) $data[$key] = (isset($field["value"])) ? $field["value"] : null;
+            if (self::SEPARATOR !== $key && $key != ($this->getName()."_token")) $data[$key] = (isset($field["value"])) ? $field["value"] : null;
         }
         return $data;
     }
@@ -245,7 +245,7 @@ abstract class Form extends Singleton{
      * Método que devuelve los datos extras que vienen en la petición
      * @return array
      */
-    public function getExtraData(){ return $this->extra ?: array(); }
+    public function getExtraData() { return $this->extra ?: array(); }
 
     /**
      * Mëtodo que pre hidrata el formulario para su modificación
@@ -256,11 +256,11 @@ abstract class Form extends Singleton{
      */
     public function setData($data)
     {
-        if(empty($this->fields)) throw new FormException('Se tienen que configurar previamente los campos del formulario', 500);
+        if (empty($this->fields)) throw new FormException('Se tienen que configurar previamente los campos del formulario', 500);
         /** @var $field array */
-        foreach($this->fields as $key => &$field)
+        foreach ($this->fields as $key => &$field)
         {
-            if(isset($data[$key])) $field['value'] = $data[$key];
+            if (isset($data[$key])) $field['value'] = $data[$key];
         }
     }
 
@@ -279,7 +279,7 @@ abstract class Form extends Singleton{
             "type" => $type,
             "id" => $id,
         );
-        if(!empty($attrs)) foreach($attrs as $key => $attr)
+        if (!empty($attrs)) foreach ($attrs as $key => $attr)
         {
             $this->buttons[$id][$key] = $attr;
         }
@@ -294,7 +294,7 @@ abstract class Form extends Singleton{
      */
     public function dropButton($id)
     {
-        if(isset($this->buttons[$id])) unset($this->buttons[$id]);
+        if (isset($this->buttons[$id])) unset($this->buttons[$id]);
         return $this;
     }
 
@@ -304,8 +304,8 @@ abstract class Form extends Singleton{
      */
     public function getHydratedModel()
     {
-        if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
-        foreach($this->getData() as $key => $value)
+        if (method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
+        foreach ($this->getData() as $key => $value)
         {
             $this->hydrateModelField($key, $value);
         }
@@ -318,8 +318,8 @@ abstract class Form extends Singleton{
      */
     public function hydrateFromModel()
     {
-        if(method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
-        foreach($this->fields as $key => &$field)
+        if (method_exists($this->model, "setLocale")) $this->model->setLocale(Config::getInstance()->get('default_language'));
+        foreach ($this->fields as $key => &$field)
         {
             $field = $this->extractModelFieldValue($key, $field);
         }
@@ -332,15 +332,15 @@ abstract class Form extends Singleton{
      */
     public function save()
     {
-        if(empty($this->model)) throw new FormException("No se ha asociado ningún modelo al formulario");
+        if (empty($this->model)) throw new FormException("No se ha asociado ningún modelo al formulario");
         $this->model->fromArray(array($this->getData()));
         $save = false;
-        try{
+        try {
             $model = $this->getHydratedModel();
             $model->save();
             $save = true;
-            Logger::getInstance()->infoLog(get_class($this->model) . " guardado con id " . $this->model->getPrimaryKey());
-        }catch(\Exception $e)
+            Logger::getInstance()->infoLog(get_class($this->model)." guardado con id ".$this->model->getPrimaryKey());
+        }catch (\Exception $e)
         {
             Logger::getInstance()->errorLog($e->getMessage());
             throw new FormException($e->getMessage(), $e->getCode(), $e);
@@ -365,7 +365,7 @@ abstract class Form extends Singleton{
         }
         //Validamos en caso de tener validaciones
         if (!isset($field[$key]["error"]) && isset($field["pattern"]) && !empty($field["value"])) {
-            if (preg_match("/" . $field["pattern"] . "/", $field["value"]) == 0) {
+            if (preg_match("/".$field["pattern"]."/", $field["value"]) == 0) {
                 $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s no tiene un formato válido")));
                 $field["error"] = $this->getError($key);
                 $valid = false;
@@ -388,8 +388,8 @@ abstract class Form extends Singleton{
             if (preg_match("/id/i", $key) && ($data[$form_name][$key] == 0 || $data[$form_name][$key] == "%" || $data[$form_name][$key] == "")) {
                 $field["value"] = null;
                 return array($data, $field);
-            } else $field["value"] = $data[$form_name][$key];
-        } else {
+            }else $field["value"] = $data[$form_name][$key];
+        }else {
             unset($field["value"]);
         }
         return array($data, $field);
@@ -403,8 +403,8 @@ abstract class Form extends Singleton{
      */
     private function hydrateModelField($key, $value)
     {
-        $setter = "set" . ucfirst($key);
-        $getter = "get" . ucfirst($key);
+        $setter = "set".ucfirst($key);
+        $getter = "get".ucfirst($key);
         if (method_exists($this->model, $setter)) {
             if (method_exists($this->model, $getter)) {
                 $tmp = $this->model->$getter();
@@ -431,15 +431,15 @@ abstract class Form extends Singleton{
     {
         //Extraemos el dato del modelo relacionado si existe el getter
         $method = null;
-        if (isset($field["class_data"]) && method_exists($val, "get" . $field["class_data"])) {
-            $class_method = "get" . $field["class_data"];
+        if (isset($field["class_data"]) && method_exists($val, "get".$field["class_data"])) {
+            $class_method = "get".$field["class_data"];
             $class = $val->$class_method();
-            if (isset($field["class_id"]) && method_exists($class, "get" . $field["class_id"])) {
-                $method = "get" . $field["class_id"];
+            if (isset($field["class_id"]) && method_exists($class, "get".$field["class_id"])) {
+                $method = "get".$field["class_id"];
                 $data[] = $class->$method();
                 return array($field, $method, $data);
-            } else $data[] = $class->getPrimaryKey();
-        } else $data[] = $val;
+            }else $data[] = $class->getPrimaryKey();
+        }else $data[] = $val;
 
         return array($field, $method, $data);
     }
@@ -453,7 +453,7 @@ abstract class Form extends Singleton{
     private function extractModelFieldValue($key, $field)
     {
         //Extraemos el valor del campo del modelo
-        $method = "get" . ucfirst($key);
+        $method = "get".ucfirst($key);
         $type = (isset($field["type"])) ? $field["type"] : "text";
         //Extraemos los campos del modelo
         if (method_exists($this->model, $method)) {
@@ -468,8 +468,10 @@ abstract class Form extends Singleton{
                         case "checkbox":
                         case "select":
                             $data = array();
-                            if (!empty($value)) foreach ($value as $val) {
+                            if (!empty($value)) {
+                                foreach ($value as $val) {
                                 list($field, $method, $data) = $this->extractRelatedModelFieldValue($field, $val, $data);
+                            }
                                 unset($method);
                             }
                             $field["value"] = $data;
@@ -478,12 +480,12 @@ abstract class Form extends Singleton{
                             $field["value"] = (is_array($value)) ? implode(", ", $value) : $value;
                             break;
                     }
-                } else { //O una relación unitaria
+                }else { //O una relación unitaria
                     if (method_exists($value, "__toString")) $field["value"] = $value;
                     elseif ($value instanceof \DateTime) $field["value"] = $value->format("Y-m-d H:i:s");
                     else $field["value"] = $value->getPrimaryKey();
                 }
-            } else $field["value"] = $value;
+            }else $field["value"] = $value;
         }
         //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
         if (in_array($type, array("select", "checkbox")) && (!empty($field["value"]) && !is_array($field["value"]))) {

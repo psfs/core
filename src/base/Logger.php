@@ -121,8 +121,12 @@
             $debug = $config->getDebugMode();
             $namespace = "PSFS";
             if (0 !== count($args)) {
-                if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) $namespace = $args[0][0];
-                if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) $debug = $args[0][1];
+                if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) {
+                    $namespace = $args[0][0];
+                }
+                if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) {
+                    $debug = $args[0][1];
+                }
             }
             $path = $this->createLoggerPath($config);
             return array($this->cleanLoggerName($namespace), $debug, $path);
@@ -164,7 +168,7 @@
         private function createLoggerPath(Config $config)
         {
             $logger = $this->setLoggerName($config);
-            $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
+            $path = LOG_DIR.DIRECTORY_SEPARATOR.$logger.DIRECTORY_SEPARATOR.date('Y').DIRECTORY_SEPARATOR.date('m');
             Config::createDir($path);
 
             return $path;

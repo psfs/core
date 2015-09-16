@@ -10,7 +10,7 @@ use PSFS\base\types\interfaces\AuthInterface;
  * Class AuthController
  * @package PSFS\base\types
  */
-abstract class AuthController extends Controller implements AuthInterface{
+abstract class AuthController extends Controller implements AuthInterface {
 
     /**
      * @Inyectable
@@ -24,7 +24,7 @@ abstract class AuthController extends Controller implements AuthInterface{
      */
     public function __construct() {
         $this->init();
-        if(!$this->isLogged()) {
+        if (!$this->isLogged()) {
             throw new AccessDeniedException(_("User not logged in"));
         }
     }

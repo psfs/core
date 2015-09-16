@@ -146,7 +146,7 @@ class Dispatcher extends Singleton {
 
     /**
      * Método que devuelve el tiempo pasado desde el inicio del script
-     * @return mixed
+     * @return double
      */
     public function getTs()
     {

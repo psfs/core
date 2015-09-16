@@ -89,10 +89,10 @@ class Singleton
             $setter = "set".ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
-            }else {
+            } else {
                 $this->$variable = $instance;
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             Logger::getInstance()->errorLog($e->getMessage());
         }
         return $this;
@@ -104,8 +104,8 @@ class Singleton
     public function init() {
         /** @var \PSFs\base\Logger $logService */
         $logService = Logger::getInstance(get_class($this));
-        if(!$this->isLoaded()) {
-            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . sha1(get_class($this)) . ".json";
+        if (!$this->isLoaded()) {
+            $cacheFilename = "reflections".DIRECTORY_SEPARATOR.sha1(get_class($this)).".json";
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
@@ -118,11 +118,11 @@ class Singleton
             /** @var \ReflectionProperty $property */
             if (!empty($properties) && is_array($properties)) foreach ($properties as $property => $class) {
                 $this->load($property, true, $class);
-                $logService->debugLog("Propiedad " . $property . " cargada con clase " . $class);
+                $logService->debugLog("Propiedad ".$property." cargada con clase ".$class);
             }
             $this->setLoaded();
-        } else {
-            $logService->debugLog(get_class($this) . " ya cargada");
+        }else {
+            $logService->debugLog(get_class($this)." ya cargada");
         }
     }
 
@@ -133,7 +133,9 @@ class Singleton
      */
     private function getClassProperties($class = null) {
         $properties = array();
-        if (null === $class) $class = get_class($this);
+        if (null === $class) {
+            $class = get_class($this);
+        }
         $selfReflector = new \ReflectionClass($class);
         if (false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
@@ -178,7 +180,7 @@ class Singleton
         if (true === $singleton && method_exists($varInstanceType, "getInstance")) {
             $instance = $varInstanceType::getInstance();
             return $instance;
-        }else {
+        } else {
             $instance = new $varInstanceType();
             return $instance;
         }

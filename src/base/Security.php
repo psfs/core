@@ -28,12 +28,12 @@ class Security {
     /**
      * Constructor por defecto
      */
-    public function __construct(){
-        if(PHP_SESSION_NONE === session_status()) {
+    public function __construct() {
+        if (PHP_SESSION_NONE === session_status()) {
             session_start();
         }
         $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
-        if(null === $this->getSessionKey('__FLASH_CLEAR__')) {
+        if (null === $this->getSessionKey('__FLASH_CLEAR__')) {
             $this->clearFlashes();
             $this->setSessionKey('__FLASH_CLEAR__', microtime(true));
         }
@@ -74,13 +74,13 @@ class Security {
     public static function save($user)
     {
         $admins = array();
-        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
+        if (file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'))
         {
-            $admins = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'), true);
+            $admins = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'), true);
         }
         $admins[$user['username']]['hash'] = sha1($user['username'].$user['password']);
         $admins[$user['username']]['profile'] = $user['profile'];
-        return (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins, JSON_PRETTY_PRINT)));
+        return (false !== file_put_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json', json_encode($admins, JSON_PRETTY_PRINT)));
     }
 
     /**
@@ -98,9 +98,9 @@ class Security {
     public function getAdmins()
     {
         $admins = array();
-        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
+        if (file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'))
         {
-            $admins = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'), true);
+            $admins = json_decode(file_get_contents(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'), true);
         }
         return $admins;
     }
@@ -116,10 +116,10 @@ class Security {
      */
     public function checkAdmin($user = null, $pass = null)
     {
-        if(!$this->authorized)
+        if (!$this->authorized)
         {
             $request = Request::getInstance();
-            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'))
+            if (!file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'))
             {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
                 return Router::getInstance()->getAdmin()->adminers();
@@ -128,11 +128,11 @@ class Security {
             //Sacamos las credenciales de la petición
             $user = $user ?: $request->getServer('PHP_AUTH_USER');
             $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-            if(empty($user) && empty($admins[$user]))
+            if (empty($user) && empty($admins[$user]))
             {
                 list($user, $pass) = $this->getAdminFromCookie();
             }
-            if(!empty($user) && !empty($admins[$user]))
+            if (!empty($user) && !empty($admins[$user]))
             {
                 $auth = $admins[$user]['hash'];
                 $this->authorized = ($auth == sha1($user.$pass));
@@ -153,7 +153,7 @@ class Security {
     {
         $auth_cookie = Request::getInstance()->getCookie($this->getHash());
         $user = $pass = array();
-        if(!empty($auth_cookie))
+        if (!empty($auth_cookie))
         {
             list($user, $pass) = explode(':', base64_decode($auth_cookie));
         }
@@ -164,7 +164,7 @@ class Security {
      * Método privado para la generación del hash de la cookie de administración
      * @return string
      */
-    public function getHash(){ return substr(md5('admin'), 0, 8); }
+    public function getHash() { return substr(md5('admin'), 0, 8); }
 
     /**
      * Método que devuelve el usuario logado
@@ -185,9 +185,9 @@ class Security {
 
     /**
      * Servicio que devuelve una pantalla de error porque se necesita estar authenticado
-     * @param $route
+     * @param string|null $route
      *
-     * @return mixed
+     * @return string|null
      */
     public function notAuthorized($route)
     {
@@ -205,7 +205,7 @@ class Security {
         $users = $this->getAdmins();
         $logged = $this->getAdminFromCookie();
         $profiles = Security::getCleanProfiles();
-        if($users[$logged[0]])
+        if ($users[$logged[0]])
         {
             $security = $users[$logged[0]]['profile'];
             return $profiles['__SUPER_ADMIN__'] === $security;
@@ -261,7 +261,7 @@ class Security {
      */
     public function setFlash($key, $data = null) {
         $flashes = $this->getFlashes();
-        if(!is_array($flashes)) {
+        if (!is_array($flashes)) {
             $flashes = array();
         }
         $flashes[$key] = $data;
@@ -289,7 +289,7 @@ class Security {
         $_SESSION = $this->session;
         $_SESSION[sha1('USER')] = serialize($this->user);
         $_SESSION[sha1('ADMIN')] = serialize($this->admin);
-        if($closeSession) {
+        if ($closeSession) {
             session_write_close();
         }
         return $this;

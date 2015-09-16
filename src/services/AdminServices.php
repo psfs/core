@@ -105,7 +105,7 @@
 
         /**
          * Servicio que parsea el fichero de log seleccionado
-         * @param $selectedLog
+         * @param string|null $selectedLog
          *
          * @return array
          */

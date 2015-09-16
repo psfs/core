@@ -58,7 +58,7 @@ class Admin extends AuthAdminController{
      * Método que gestiona los usuarios administradores de la plataforma
      * @GET
      * @route /admin/setup
-     * @return mixed
+     * @return string|null
      * @throws \HttpException
      */
     public function adminers() {
@@ -205,7 +205,7 @@ class Admin extends AuthAdminController{
      * Método que gestiona la configuración de las variables
      * @GET
      * @Route /admin/config
-     * @return mixed
+     * @return string|null
      * @throws \HttpException
      */
     public function config() {
@@ -260,7 +260,7 @@ class Admin extends AuthAdminController{
      * Método que gestiona el menú de administración
      * @route /admin
      * @visible false
-     * @return mixed
+     * @return string|null
      */
     public function index() {
         return $this->render("index.html.twig", array(
@@ -341,7 +341,7 @@ class Admin extends AuthAdminController{
     /**
      * Servicio que muestra los logs del sistema
      * @route /admin/logs
-     * @return mixed
+     * @return string|null
      */
     public function logs()
     {

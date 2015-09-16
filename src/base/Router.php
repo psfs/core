@@ -52,12 +52,12 @@
          * @throws ConfigException
          */
         public function init() {
-            if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json") || Config::getInstance()->getDebugMode()) {
+            if (!file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR."urls.json") || Config::getInstance()->getDebugMode()) {
                 $this->hydrateRouting();
                 $this->simpatize();
-            } else {
-                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", Cache::JSON, true);
-                $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, true);
+            }else {
+                list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."urls.json", Cache::JSON, true);
+                $this->domains = $this->cache->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
             }
         }
 
@@ -85,7 +85,7 @@
          * Método que devuelve las rutas
          * @return string|null
          */
-        public function getSlugs(){ return $this->slugs; }
+        public function getSlugs() { return $this->slugs; }
 
         /**
          * Método que calcula el objeto a enrutar
@@ -99,24 +99,24 @@
                 $this->checkRestrictedAccess($route);
                 //Search action and execute
                 return $this->searchAction($route);
-            } catch (AccessDeniedException $e) {
+            }catch (AccessDeniedException $e) {
                 Logger::getInstance()->debugLog(_('Solicitamos credenciales de acceso a zona restringida'));
-                if('login' === Config::getInstance()->get('admin_login')) {
+                if ('login' === Config::getInstance()->get('admin_login')) {
                     return $this->redirectLogin($route);
-                } else {
+                }else {
                     return $this->sentAuthHeader();
                 }
-            } catch (RouterException $r) {
-                if(false !== preg_match('/\/$/', $route))
+            }catch (RouterException $r) {
+                if (false !== preg_match('/\/$/', $route))
                 {
-                    if(preg_match('/admin/', $route)) {
+                    if (preg_match('/admin/', $route)) {
                         $default = Config::getInstance()->get('admin_action');
-                    } else {
+                    }else {
                         $default = Config::getInstance()->get('home_action');
                     }
                     return $this->execute($this->getRoute($default));
                 }
-            } catch (\Exception $e) {
+            }catch (\Exception $e) {
                 Logger::getInstance()->errorLog($e->getMessage());
                 throw $e;
             }
@@ -135,16 +135,16 @@
             $parts = parse_url($route);
             $path = (array_key_exists('path', $parts)) ? $parts['path'] : $route;
             $httpRequest = Request::getInstance()->getMethod();
-            foreach($this->routing as $pattern => $action) {
+            foreach ($this->routing as $pattern => $action) {
                 list($httpMethod, $routePattern) = $this->extractHttpRoute($pattern);
                 $matched = $this->matchRoutePattern($routePattern, $path);
-                if($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod)) {
+                if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod)) {
                     $get = $this->extractComponents($route, $routePattern);
                     /** @var $class \PSFS\base\types\Controller */
                     $class = $this->getClassToCall($action);
-                    try{
+                    try {
                         return $this->executeCachedRoute($route, $action, $class, $get);
-                    }catch(\Exception $e)
+                    }catch (\Exception $e)
                     {
                         Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
                         throw new RouterException($e->getMessage(), 404, $e);
@@ -194,13 +194,13 @@
          *
          * @param string $pattern
          * @return array
-        */
+         */
         protected function extractComponents($route, $pattern) {
             $url = parse_url($route);
             $_route = explode("/", $url['path']);
             $_pattern = explode("/", $pattern);
             $get = array();
-            if(!empty($_pattern)) foreach($_pattern as $index => $component) {
+            if (!empty($_pattern)) foreach ($_pattern as $index => $component) {
                 $_get = array();
                 preg_match_all('/^\{(.*)\}$/i', $component, $_get);
                 if (!empty($_get[1]) && isset($_route[$index])) {
@@ -218,16 +218,16 @@
             $base = SOURCE_DIR;
             $modules = realpath(CORE_DIR);
             $this->routing = $this->inspectDir($base, "PSFS", array());
-            if(file_exists($modules)) {
+            if (file_exists($modules)) {
                 $this->routing = $this->inspectDir($modules, "", $this->routing);
             }
-            $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, true);
+            $this->cache->storeData(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
             if (null !== $home || $home !== '') {
                 $home_params = null;
                 foreach ($this->routing as $pattern => $params) {
                     list($method, $route) = $this->extractHttpRoute($pattern);
-                    if(preg_match("/".preg_quote($route, "/")."$/i", "/".$home)) {
+                    if (preg_match("/".preg_quote($route, "/")."$/i", "/".$home)) {
                         $home_params = $params;
                     }
                 }
@@ -244,12 +244,12 @@
          * @param array $routing
          * @return array
          * @throws ConfigException
-        */
+         */
         private function inspectDir($origen, $namespace = 'PSFS', $routing) {
             $files = $this->finder->files()->in($origen)->path('/controller/i')->name("*.php");
-            foreach($files as $file) {
+            foreach ($files as $file) {
                 $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
-                $routing = $this->addRouting($namespace .str_replace('.php', '', $filename), $routing);
+                $routing = $this->addRouting($namespace.str_replace('.php', '', $filename), $routing);
             }
             $this->finder = new Finder();
             return $routing;
@@ -261,13 +261,13 @@
          * @param array $routing
          * @return array
          * @throws ConfigException
-        */
+         */
         private function addRouting($namespace, $routing) {
             if (class_exists($namespace)) {
                 $reflection = new \ReflectionClass($namespace);
                 if (false === $reflection->isAbstract() && false === $reflection->isInterface()) {
                     $this->extractDomain($reflection);
-                    foreach($reflection->getMethods() as $method) {
+                    foreach ($reflection->getMethods() as $method) {
                         if ($method->isPublic()) {
                             $docComments = $method->getDocComment();
                             preg_match('/@route\ (.*)\n/i', $docComments, $sr);
@@ -276,7 +276,7 @@
                                 $httpMethod = $this->extractReflectionHttpMethod($docComments);
                                 $visible = $this->extractReflectionVisibility($docComments);
                                 $expiration = $this->extractReflectionCacheability($docComments);
-                                $routing[$httpMethod . "#|#" . $regex] = array(
+                                $routing[$httpMethod."#|#".$regex] = array(
                                     "class" => $namespace,
                                     "method" => $method->getName(),
                                     "params" => $params,
@@ -296,7 +296,7 @@
         /**
          * Método que extrae de la ReflectionClass los datos necesarios para componer los dominios en los templates
          *
-         * @param Object $class
+         * @param \ReflectionClass $class
          *
          * @return Router
          * @throws ConfigException
@@ -304,24 +304,24 @@
         protected function extractDomain($class) {
             //Calculamos los dominios para las plantillas
             if ($class->hasConstant("DOMAIN")) {
-                $domain = "@" . $class->getConstant("DOMAIN") . "/";
-                $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-                $path = realpath($path) . DIRECTORY_SEPARATOR;
+                $domain = "@".$class->getConstant("DOMAIN")."/";
+                $path = dirname($class->getFileName()).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR;
+                $path = realpath($path).DIRECTORY_SEPARATOR;
                 $tpl_path = "templates";
                 $public_path = "public";
                 $model_path = "models";
-                if(!preg_match("/ROOT/", $domain)) {
+                if (!preg_match("/ROOT/", $domain)) {
                     $tpl_path = ucfirst($tpl_path);
                     $public_path = ucfirst($public_path);
                     $model_path = ucfirst($model_path);
                 }
-                if($class->hasConstant("TPL")) {
-                    $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
+                if ($class->hasConstant("TPL")) {
+                    $tpl_path .= DIRECTORY_SEPARATOR.$class->getConstant("TPL");
                 }
                 $this->domains[$domain] = array(
-                    "template" => $path . $tpl_path,
-                    "model" => $path . $model_path,
-                    "public" => $path . $public_path,
+                    "template" => $path.$tpl_path,
+                    "model" => $path.$model_path,
+                    "public" => $path.$public_path,
                 );
             }
             return $this;
@@ -333,17 +333,17 @@
          */
         private function simpatize() {
             $translations = array();
-            $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
-            $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
+            $translationFileName = "translations".DIRECTORY_SEPARATOR."routes_translations.php";
+            $absoluteTranslationFileName = CACHE_DIR.DIRECTORY_SEPARATOR.$translationFileName;
             Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
-            foreach($this->routing as $key => &$info) {
+            foreach ($this->routing as $key => &$info) {
                 $keyParts = $key;
-                if(false === strstr("#|#", $key)) {
+                if (false === strstr("#|#", $key)) {
                     $keyParts = explode("#|#", $key);
                     $keyParts = $keyParts[1];
                 }
                 $slug = $this->slugify($keyParts);
-                if(null === $slug && !array_key_exists($slug, $translations)) {
+                if (null === $slug && !array_key_exists($slug, $translations)) {
                     $translations[$slug] = $key;
                     file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
                 }
@@ -352,7 +352,7 @@
             }
             include($absoluteTranslationFileName);
             Config::createDir(CONFIG_DIR);
-            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", array($this->routing, $this->slugs), Cache::JSON, true);
+            Cache::getInstance()->storeData(CONFIG_DIR.DIRECTORY_SEPARATOR."urls.json", array($this->routing, $this->slugs), Cache::JSON, true);
             return $this;
         }
 
@@ -399,16 +399,16 @@
          */
         public function getRoute($slug = '', $absolute = false, $params = null) {
             if (strlen($slug) === 0) {
-                return ($absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
+                return ($absolute) ? Request::getInstance()->getRootUrl().'/' : '/';
             }
             if (null === $slug || !array_key_exists($slug, $this->slugs)) {
                 throw new RouterException(_("No existe la ruta especificada"));
             }
-            $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
-            if(!empty($params)) foreach($params as $key => $value) {
+            $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->slugs[$slug] : $this->slugs[$slug];
+            if (!empty($params)) foreach ($params as $key => $value) {
                 $url = str_replace("{".$key."}", $value, $url);
             } elseif (!empty($this->routing[$this->slugs[$slug]]["default"])) {
-                $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
+                $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
             }
             return $url;
         }
@@ -419,12 +419,12 @@
          */
         public function getAdminRoutes() {
             $routes = array();
-            foreach($this->routing as $route => $params) {
+            foreach ($this->routing as $route => $params) {
                 list($httpMethod, $routePattern) = $this->extractHttpRoute($route);
                 if (preg_match('/^\/admin(\/|$)/', $routePattern)) {
                     if (preg_match('/^PSFS/', $params["class"])) {
                         $profile = "superadmin";
-                    } else {
+                    }else {
                         $profile = "admin";
                     }
                     if (!empty($params["default"]) && $params["visible"] && preg_match('/(GET|ALL)/i', $httpMethod)) {
@@ -482,7 +482,7 @@
             $expr = preg_quote($expr, '/');
             $expr = str_replace('###', '(.*)', $expr);
             $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
-            $matched = preg_match('/^' . $expr . '\/?$/i', $path) || preg_match('/^' . $expr2 . '?$/i', $path);
+            $matched = preg_match('/^'.$expr.'\/?$/i', $path) || preg_match('/^'.$expr2.'?$/i', $path);
 
             return $matched;
         }
@@ -505,7 +505,7 @@
         /**
          * Método que extrae los parámetros de una función
          * @param array $sr
-         * @param $method
+         * @param \ReflectionMethod $method
          *
          * @return array
          */
@@ -517,9 +517,9 @@
             if (count($parameters) > 0) foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                     $params[$param->getName()] = $param->getDefaultValue();
-                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+                    $default = str_replace('{'.$param->getName().'}', $param->getDefaultValue(), $regex);
                 }
-            } else $default = $regex;
+            }else $default = $regex;
             return array($regex, $default, $params);
         }
 
@@ -560,24 +560,24 @@
          * Método que ejecuta una acción del framework y revisa si lo tenemos cacheado ya o no
          * @param string $route
          * @param array $action
-         * @param Object $class
+         * @param types\Controller $class
          * @param array $params
          */
         protected function executeCachedRoute($route, $action, $class, $params = null) {
-            Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
+            Logger::getInstance()->debugLog(_('Ruta resuelta para ').$route);
             $this->session->setSessionKey("__CACHE__", $action);
             $cache = Cache::needCache();
             $execute = true;
-            if(false !== $cache) {
+            if (false !== $cache) {
                 $cacheDataName = $this->cache->getRequestCacheHash();
-                $cachedData = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName, $cache, function(){});
-                if(null !== $cachedData) {
-                    $headers = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName . ".headers", $cache, function(){}, Cache::JSON);
+                $cachedData = $this->cache->readFromCache("templates".DIRECTORY_SEPARATOR.$cacheDataName, $cache, function() {});
+                if (null !== $cachedData) {
+                    $headers = $this->cache->readFromCache("templates".DIRECTORY_SEPARATOR.$cacheDataName.".headers", $cache, function() {}, Cache::JSON);
                     Template::getInstance()->renderCache($cachedData, $headers);
                     $execute = false;
                 }
             }
-            if($execute) {
+            if ($execute) {
                 call_user_func_array(array($class, $action['method']), $params);
             }
         }

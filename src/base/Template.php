@@ -103,12 +103,14 @@ class Template {
     private function setReponseHeaders($contentType = 'text/html', array $cookies = array()) {
         $config = Config::getInstance();
         $powered = $config->get("poweredBy");
-        if (empty($powered)) $powered = "@c15k0";
+        if (empty($powered)) {
+            $powered = "@c15k0";
+        }
         header("X-Powered-By: $powered");
         $this->setStatusHeader();
         $this->setAuthHeaders();
         $this->setCookieHeaders($cookies);
-        header('Content-type: ' . $contentType);
+        header('Content-type: '.$contentType);
 
     }
 
@@ -122,13 +124,13 @@ class Template {
     public function output($output = '', $contentType = 'text/html', array $cookies = array()) {
         ob_start();
         $this->setReponseHeaders($contentType, $cookies);
-        header('Content-length: ' . strlen($output));
+        header('Content-length: '.strlen($output));
 
         $cache = Cache::needCache();
-        if(false !== $cache && $this->status_code == 200) {
+        if (false !== $cache && $this->status_code == 200) {
             $cacheName = $this->cache->getRequestCacheHash();
-            $this->cache->storeData("templates" . DIRECTORY_SEPARATOR . $cacheName, $output);
-            $this->cache->storeData("templates" . DIRECTORY_SEPARATOR . $cacheName . ".headers", headers_list(), Cache::JSON);
+            $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName, $output);
+            $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
         }
         echo $output;
 
@@ -142,7 +144,7 @@ class Template {
      */
     public function closeRender() {
         $this->security->setSessionKey("lastRequest", array(
-            "url" => Request::getInstance()->getRootUrl() . Request::requestUri(),
+            "url" => Request::getInstance()->getRootUrl().Request::requestUri(),
             "ts" => microtime(true),
         ));
         $this->security->updateSession();
@@ -152,11 +154,11 @@ class Template {
     /**
      * Método que devuelve los datos cacheados con las cabeceras que tenía por entonces
      * @param string $data
-     * @param array $headers
+     * @param string|null $headers
      */
     public function renderCache($data, $headers = array()) {
         ob_start();
-        for($i = 0, $ct = count($headers); $i < $ct; $i++) {
+        for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
             header($headers[$i]);
         }
         echo $data;
@@ -191,15 +193,15 @@ class Template {
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
-        } catch(\Exception $e) {
-            echo $e->getMessage() . "<pre>" . $e->getTraceAsString() . "</pre>";
+        }catch (\Exception $e) {
+            echo $e->getMessage()."<pre>".$e->getTraceAsString()."</pre>";
         }
         return $dump;
     }
 
     /**
      * Método que añade una función al motor de plantillas
-     * @param $templateFunction
+     * @param string $templateFunction
      * @param $functionName
      *
      * @return Template
@@ -278,8 +280,10 @@ class Template {
         }
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
         $translations = array();
-        if (!empty($domains)) foreach ($domains as $domain => $paths) {
+        if (!empty($domains)) {
+            foreach ($domains as $domain => $paths) {
             $this->addPath($paths["template"], $domain);
+        }
             $translations[] = $this->generateTemplate($paths["template"], $domain);
         }
         $translations[] = _("Plantillas regeneradas correctamente");
@@ -299,7 +303,7 @@ class Template {
             if ($file->isFile()) {
                 try {
                     $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
-                }catch (\Exception $e) {
+                } catch (\Exception $e) {
                     Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
@@ -316,7 +320,7 @@ class Template {
     public static function extractPath($path) {
         $explodePath = explode(DIRECTORY_SEPARATOR, $path);
         $realPath = array();
-        for($i = 0, $parts = count($explodePath) - 1; $i < $parts; $i++) {
+        for ($i = 0, $parts = count($explodePath) - 1; $i < $parts; $i++) {
             $realPath[] = $explodePath[$i];
         }
         return implode(DIRECTORY_SEPARATOR, $realPath);
@@ -331,12 +335,12 @@ class Template {
     public static function copyr($src, $dst) {
         $dir = opendir($src);
         Config::createDir($dst);
-        while(false !== ( $file = readdir($dir)) ) {
-            if (( $file != '.' ) && ( $file != '..' )) {
-                if ( is_dir($src . '/' . $file) ) {
-                    self::copyr($src . '/' . $file,$dst . '/' . $file);
-                } elseif (@copy($src . '/' . $file, $dst . '/' . $file) === false) {
-                    throw new ConfigException("Can't copy " . $src . " to " . $dst);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src.'/'.$file)) {
+                    self::copyr($src.'/'.$file, $dst.'/'.$file);
+                } elseif (@copy($src.'/'.$file, $dst.'/'.$file) === false) {
+                    throw new ConfigException("Can't copy ".$src." to ".$dst);
                 }
             }
         }
@@ -347,12 +351,14 @@ class Template {
      * Método que devuelve los dominios de una plataforma
      * @param bool $append
      * @return array
-    */
+     */
     static public function getDomains($append = false) {
         $domains = Router::getInstance()->getDomains();
-        if ($append) foreach ($domains as &$domain) {
+        if ($append) {
+            foreach ($domains as &$domain) {
             foreach ($domain as &$path) {
                 $path .= DIRECTORY_SEPARATOR;
+        }
             }
         }
         return $domains;
@@ -367,10 +373,10 @@ class Template {
             setcookie($cookie["name"],
                 $cookie["value"],
                 (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
-                (array_key_exists('path',$cookie)) ? $cookie["path"] : "/",
-                (array_key_exists('domain',$cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
-                (array_key_exists('secure',$cookie)) ? $cookie["secure"] : FALSE,
-                (array_key_exists('http',$cookie)) ? $cookie["http"] : FALSE
+                (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
+                (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
+                (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
+                (array_key_exists('http', $cookie)) ? $cookie["http"] : FALSE
             );
         }
         }
@@ -384,7 +390,7 @@ class Template {
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        } else {
+        }else {
             header('Authorization:');
         }
     }
