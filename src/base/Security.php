@@ -277,7 +277,7 @@ class Security {
     public function getFlash($key) {
         $flashes = $this->getFlashes();
 
-        return array_key_exists($key, $flashes) ? $flashes[$key] : null;
+        return (null !== $key && array_key_exists($key, $flashes)) ? $flashes[$key] : null;
     }
 
     /**
