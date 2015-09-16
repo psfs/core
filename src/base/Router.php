@@ -568,7 +568,7 @@
             $this->session->setSessionKey("__CACHE__", $action);
             $cache = Cache::needCache();
             $execute = true;
-            if (false !== $cache) {
+            if (false !== $cache && Config::getInstance()->getDebugMode() === false) {
                 $cacheDataName = $this->cache->getRequestCacheHash();
                 $cachedData = $this->cache->readFromCache("templates".DIRECTORY_SEPARATOR.$cacheDataName, $cache, function() {});
                 if (null !== $cachedData) {

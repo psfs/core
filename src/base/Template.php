@@ -127,7 +127,7 @@ class Template {
         header('Content-length: '.strlen($output));
 
         $cache = Cache::needCache();
-        if (false !== $cache && $this->status_code == 200) {
+        if (false !== $cache && $this->status_code == 200 && $this->debug === false) {
             $cacheName = $this->cache->getRequestCacheHash();
             $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName, $output);
             $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
