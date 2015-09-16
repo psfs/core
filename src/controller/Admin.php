@@ -163,7 +163,7 @@ class Admin extends AuthAdminController{
                 );
                 $template = "redirect.html.twig";
                 $params = array(
-                    'route' => Router::getInstance()->getRoute("admin"),
+                    'route' => $form->getFieldValue("route"),
                     'status_message' => _("Acceso permitido... redirigiendo!!"),
                     'delay' => 1,
                 );

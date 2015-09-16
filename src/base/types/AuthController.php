@@ -42,7 +42,7 @@ abstract class AuthController extends Controller implements AuthInterface {
      * @return boolean
      */
     public function isAdmin() {
-        return (null !== $this->security->getAdmin());
+        return (null !== $this->security->canAccessRestrictedAdmin());
     }
 
     /**

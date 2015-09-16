@@ -169,7 +169,7 @@
          * @return string HTML
          */
         public function redirectLogin($route) {
-            return Admin::getInstance()->adminLogin($route);
+            return Admin::staticAdminLogon($route);
         }
 
         /**
@@ -181,7 +181,7 @@
         protected function checkRestrictedAccess($route) {
             //Chequeamos si entramos en el admin
             if (preg_match('/^\/admin/i', $route) || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && null !== Config::getInstance()->get('restricted'))) {
-                if (!Security::getInstance()->checkAdmin()) {
+                if (!preg_match('/^\/admin\/login/i', $route) && !$this->session->checkAdmin()) {
                     throw new AccessDeniedException();
                 }
                 Logger::getInstance()->debugLog('Acceso autenticado al admin');

@@ -116,11 +116,9 @@ class Security {
      */
     public function checkAdmin($user = null, $pass = null)
     {
-        if (!$this->authorized)
-        {
+        if (!$this->authorized) {
             $request = Request::getInstance();
-            if (!file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json'))
-            {
+            if (!file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR.'admins.json')) {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
                 return Router::getInstance()->getAdmin()->adminers();
             }
@@ -128,12 +126,10 @@ class Security {
             //Sacamos las credenciales de la petición
             $user = $user ?: $request->getServer('PHP_AUTH_USER');
             $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-            if (empty($user) && empty($admins[$user]))
-            {
+            if (empty($user) && empty($admins[$user])) {
                 list($user, $pass) = $this->getAdminFromCookie();
             }
-            if (!empty($user) && !empty($admins[$user]))
-            {
+            if (!empty($user) && !empty($admins[$user])) {
                 $auth = $admins[$user]['hash'];
                 $this->authorized = ($auth == sha1($user.$pass));
                 $this->admin = array(
@@ -181,6 +177,14 @@ class Security {
      */
     public function getAdmin() {
         return $this->admin;
+    }
+
+    /**
+     * Método que calcula si se está logado o para acceder a administración
+     * @return bool
+     */
+    public function canAccessRestrictedAdmin() {
+        return $this->admin || preg_match('/^\/admin\/login/i', Request::requestUri());
     }
 
     /**
