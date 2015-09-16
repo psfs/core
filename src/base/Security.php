@@ -242,7 +242,8 @@ class Security {
      * @return mixed
      */
     public function getFlashes() {
-        return $this->getSessionKey(sha1('FLASHES'));
+        $flashes = $this->getSessionKey(sha1('FLASHES'));
+        return (null !== $flashes) ? $flashes : array();
     }
 
     /**
