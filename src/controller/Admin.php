@@ -203,6 +203,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Método que gestiona la configuración de las variables
+     * @GET
      * @Route /admin/config
      * @return mixed
      * @throws \HttpException
@@ -212,22 +213,40 @@ class Admin extends AuthAdminController{
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm();
         $form->build();
-        if($this->getRequest()->getMethod() == 'POST') {
-            $form->hydrate();
-            if($form->isValid()) {
-                $debug = Config::getInstance()->getDebugMode();
-                $newDebug = $form->getFieldValue("debug");
-                if(Config::save($form->getData(), $form->getExtraData())) {
-                    Logger::getInstance()->infoLog(_('Configuración guardada correctamente'));
-                    //Verificamos si tenemos que limpiar la cache del DocumentRoot
-                    if(boolval($debug) !== boolval($newDebug)) {
-                        Config::clearDocumentRoot();
-                    }
-                    $this->security->setFlash("callback_message", _("Configuración actualizada correctamente"));
-                    $this->security->setFlash("callback_route", $this->getRoute("admin-config", true));
-                } else {
-                    throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
+        return $this->render('welcome.html.twig', array(
+            'text' => _("Bienvenido a PSFS"),
+            'config' => $form,
+            'typeahead_data' => array_merge(Config::$required, Config::$optional),
+        ));
+    }
+
+    /**
+     * Servicio que guarda la configuración de la plataforma
+     * @POST
+     * @route /admin/config
+     * @visible false
+     * @return string
+     * @throws \HttpException
+     */
+    public function saveConfig() {
+        Logger::getInstance()->infoLog(_("Guardando configuración"));
+        /* @var $form \PSFS\base\config\ConfigForm */
+        $form = new ConfigForm();
+        $form->build();
+        $form->hydrate();
+        if($form->isValid()) {
+            $debug = Config::getInstance()->getDebugMode();
+            $newDebug = $form->getFieldValue("debug");
+            if(Config::save($form->getData(), $form->getExtraData())) {
+                Logger::getInstance()->infoLog(_('Configuración guardada correctamente'));
+                //Verificamos si tenemos que limpiar la cache del DocumentRoot
+                if(boolval($debug) !== boolval($newDebug)) {
+                    Config::clearDocumentRoot();
                 }
+                $this->security->setFlash("callback_message", _("Configuración actualizada correctamente"));
+                $this->security->setFlash("callback_route", $this->getRoute("admin-config", true));
+            } else {
+                throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(

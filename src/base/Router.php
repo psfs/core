@@ -31,6 +31,10 @@
          * @var \PSFS\base\Cache $cache
          */
         private $cache;
+        /**
+         * @var \PSFS\base\Security $session
+         */
+        private $session;
 
         /**
          * Constructor Router
@@ -39,6 +43,7 @@
         public function __construct() {
             $this->finder = new Finder();
             $this->cache = Cache::getInstance();
+            $this->session = Security::getInstance();
             $this->init();
         }
 
@@ -138,9 +143,7 @@
                     /** @var $class \PSFS\base\types\Controller */
                     $class = $this->getClassToCall($action);
                     try{
-                        Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
-                        call_user_func_array(array($class, $action['method']), $get);
-                        break;
+                        return $this->executeCachedRoute($route, $action, $class, $get);
                     }catch(\Exception $e)
                     {
                         Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
@@ -218,17 +221,17 @@
             if(file_exists($modules)) {
                 $this->routing = $this->inspectDir($modules, "", $this->routing);
             }
-            Config::createDir(CONFIG_DIR);
             $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, true);
             $home = Config::getInstance()->get('home_action');
             if (null !== $home || $home !== '') {
                 $home_params = null;
                 foreach ($this->routing as $pattern => $params) {
-                    if(preg_match("/".preg_quote($pattern, "/")."$/i", "/".$home)) {
+                    list($method, $route) = $this->extractHttpRoute($pattern);
+                    if(preg_match("/".preg_quote($route, "/")."$/i", "/".$home)) {
                         $home_params = $params;
                     }
                 }
-                if (null === $home_params) {
+                if (null !== $home_params) {
                     $this->routing['/'] = $home_params;
                 }
             }
@@ -272,6 +275,7 @@
                                 list($regex, $default, $params) = $this->extractReflectionParams($sr, $method);
                                 $httpMethod = $this->extractReflectionHttpMethod($docComments);
                                 $visible = $this->extractReflectionVisibility($docComments);
+                                $expiration = $this->extractReflectionCacheability($docComments);
                                 $routing[$httpMethod . "#|#" . $regex] = array(
                                     "class" => $namespace,
                                     "method" => $method->getName(),
@@ -279,6 +283,7 @@
                                     "default" => $default,
                                     "visible" => $visible,
                                     "http" => $httpMethod,
+                                    "cache" => $expiration,
                                 );
                             }
                         }
@@ -333,12 +338,12 @@
             Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
             foreach($this->routing as $key => &$info) {
                 $keyParts = $key;
-                if(false !== strstr("#|#", $key)) {
+                if(false === strstr("#|#", $key)) {
                     $keyParts = explode("#|#", $key);
                     $keyParts = $keyParts[1];
                 }
                 $slug = $this->slugify($keyParts);
-                if(!array_key_exists($slug, $translations)) {
+                if(null === $slug && !array_key_exists($slug, $translations)) {
                     $translations[$slug] = $key;
                     file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
                 }
@@ -396,8 +401,8 @@
             if (strlen($slug) === 0) {
                 return ($absolute) ? Request::getInstance()->getRootUrl() . '/'  : '/';
             }
-            if (!array_key_exists($slug, $this->slugs)) {
-                throw new RouterException("No existe la ruta especificada");
+            if (null === $slug || !array_key_exists($slug, $this->slugs)) {
+                throw new RouterException(_("No existe la ruta especificada"));
             }
             $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
             if(!empty($params)) foreach($params as $key => $value) {
@@ -422,7 +427,7 @@
                     } else {
                         $profile = "admin";
                     }
-                    if (!empty($params["default"]) && $params["visible"]) {
+                    if (!empty($params["default"]) && $params["visible"] && preg_match('/(GET|ALL)/i', $httpMethod)) {
                         $routes[$profile][] = $params["slug"];
                     }
                 }
@@ -538,5 +543,42 @@
         private function extractReflectionVisibility($docComments) {
             preg_match('/@visible\ (.*)\n/i', $docComments, $visible);
             return (!empty($visible) && isset($visible[1]) && $visible[1] == 'false') ? FALSE : TRUE;
+        }
+
+        /**
+         * Método que extrae el parámetro de caché
+         * @param string $docComments
+         *
+         * @return bool
+         */
+        private function extractReflectionCacheability($docComments) {
+            preg_match('/@cache\ (.*)\n/i', $docComments, $cache);
+            return (count($cache) > 0) ? $cache[1] : "0";
+        }
+
+        /**
+         * Método que ejecuta una acción del framework y revisa si lo tenemos cacheado ya o no
+         * @param string $route
+         * @param array $action
+         * @param Object $class
+         * @param array $params
+         */
+        protected function executeCachedRoute($route, $action, $class, $params = null) {
+            Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
+            $this->session->setSessionKey("__CACHE__", $action);
+            $cache = Cache::needCache();
+            $execute = true;
+            if(false !== $cache) {
+                $cacheDataName = $this->cache->getRequestCacheHash();
+                $cachedData = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName, $cache, function(){});
+                if(null !== $cachedData) {
+                    $headers = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName . ".headers", $cache, function(){}, Cache::JSON);
+                    Template::getInstance()->renderCache($cachedData, $headers);
+                    $execute = false;
+                }
+            }
+            if($execute) {
+                call_user_func_array(array($class, $action['method']), $params);
+            }
         }
     }

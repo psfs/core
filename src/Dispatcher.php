@@ -4,8 +4,8 @@ namespace PSFS;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\exception\SecurityException;
 use PSFS\base\exception\RouterException;
+use PSFS\base\exception\SecurityException;
 use PSFS\base\Singleton;
 
 require_once "bootstrap.php";
@@ -70,8 +70,7 @@ class Dispatcher extends Singleton {
      * Método que asigna el directorio de traducciones para el proyecto
      * @return $this
      */
-    private function setLocale()
-    {
+    private function setLocale() {
         $this->locale = $this->config->get("default_language");
         //Cargamos traducciones
         putenv("LC_ALL=".$this->locale);
@@ -88,14 +87,12 @@ class Dispatcher extends Singleton {
     /**
      * Método inicial
      */
-    public function run()
-    {
+    public function run() {
         $this->log->infoLog("Inicio petición ".$this->parser->getRequestUri());
         //
         try {
             if ($this->config->isConfigured()) {
-                if (!$this->parser->isFile())
-                {
+                if (!$this->parser->isFile()) {
                     return $this->router->execute($this->actualUri);
                 }
             } else {

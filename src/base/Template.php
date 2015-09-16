@@ -22,12 +22,17 @@ class Template {
 
     protected $debug = false;
     protected $public_zone = true;
-    private $status_code = null;
+    private $status_code = 200;
 
     /**
      * @var \PSFS\base\Security $security
      */
     protected $security;
+
+    /**
+     * @var \PSFS\base\Cache $cache
+     */
+    protected $cache;
 
     /**
      * Constructor por defecto
@@ -119,7 +124,12 @@ class Template {
         $this->setReponseHeaders($contentType, $cookies);
         header('Content-length: ' . strlen($output));
 
-        //TODO Cache control
+        $cache = Cache::needCache();
+        if(false !== $cache && $this->status_code == 200) {
+            $cacheName = $this->cache->getRequestCacheHash();
+            $this->cache->storeData("templates" . DIRECTORY_SEPARATOR . $cacheName, $output);
+            $this->cache->storeData("templates" . DIRECTORY_SEPARATOR . $cacheName . ".headers", headers_list(), Cache::JSON);
+        }
         echo $output;
 
         ob_flush();
@@ -137,6 +147,22 @@ class Template {
         ));
         $this->security->updateSession();
         exit;
+    }
+
+    /**
+     * Método que devuelve los datos cacheados con las cabeceras que tenía por entonces
+     * @param string $data
+     * @param array $headers
+     */
+    public function renderCache($data, $headers = array()) {
+        ob_start();
+        for($i = 0, $ct = count($headers); $i < $ct; $i++) {
+            header($headers[$i]);
+        }
+        echo $data;
+        ob_flush();
+        ob_end_clean();
+        $this->closeRender();
     }
 
     /**
@@ -466,6 +492,7 @@ class Template {
     private function setup() {
         $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
         $this->security = Security::getInstance();
+        $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
             'cache'       => Config::getInstance()->getCachePath(),

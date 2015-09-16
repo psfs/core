@@ -137,4 +137,30 @@
             }
             return $data;
         }
+
+        /**
+         * Método estático que revisa si se necesita cachear la respuesta de un servicio o no
+         * @return int|bool
+         */
+        public static function needCache() {
+            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            $needCache = false;
+            if(null !== $action && $action["cache"] > 0) {
+                $needCache = $action["cache"];
+            }
+            return $needCache;
+        }
+
+        /**
+         * Método que construye un hash para almacenar la cache
+         * @return string
+         */
+        public function getRequestCacheHash() {
+            $hash = "";
+            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            if(null !== $action && $action["cache"] > 0) {
+                $hash = $action["http"] . " " . $action["slug"];
+            }
+            return sha1($hash);
+        }
     }
