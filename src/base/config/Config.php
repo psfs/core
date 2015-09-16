@@ -43,11 +43,11 @@ class Config {
      * @return Config
      */
     protected function init() {
-        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json"))
+        if (file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json"))
         {
-            $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, true) ?: array();
+            $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json", Cache::JSON, true) ?: array();
             $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
-        }else {
+        } else {
             $this->debug = true;
         }
         return $this;
@@ -138,9 +138,9 @@ class Config {
         $final_data = self::saveExtraParams($data);
         $saved = false;
         try {
-            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", $final_data, Cache::JSON, true);
+            Cache::getInstance()->storeData(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json", $final_data, Cache::JSON, true);
             $saved = true;
-        } catch (ConfigException $e) {
+        }catch (ConfigException $e) {
             Logger::getInstance()->errorLog($e->getMessage());
         }
         return $saved;
@@ -179,12 +179,12 @@ class Config {
      */
     public static function createDir($dir) {
         try {
-            if(@mkdir($dir, 0775, true) === false) {
-                throw new \Exception(_('Can\'t create directory ') . $dir);
+            if (@mkdir($dir, 0775, true) === false) {
+                throw new \Exception(_('Can\'t create directory ').$dir);
             }
-        } catch(\Exception $e) {
-            if(!file_exists(dirname($dir))) {
-                throw new ConfigException($e->getMessage() . $dir);
+        }catch (\Exception $e) {
+            if (!file_exists(dirname($dir))) {
+                throw new ConfigException($e->getMessage().$dir);
             }
         }
     }
@@ -194,9 +194,9 @@ class Config {
      */
     public static function clearDocumentRoot() {
         $rootDirs = array("css", "js", "media", "font");
-        foreach($rootDirs as $dir) {
-            if(file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
-                @shell_exec("rm -rf " . WEB_DIR . DIRECTORY_SEPARATOR . $dir);
+        foreach ($rootDirs as $dir) {
+            if (file_exists(WEB_DIR.DIRECTORY_SEPARATOR.$dir)) {
+                @shell_exec("rm -rf ".WEB_DIR.DIRECTORY_SEPARATOR.$dir);
             }
         }
     }

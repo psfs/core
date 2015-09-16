@@ -42,8 +42,8 @@ class AssetsParser {
 
     /**
      * Método que calcula el path completo a copiar un recurso
-     * @param $filename_path
-     * @param $source
+     * @param string $filename_path
+     * @param string[] $source
      * @return string
      */
     protected static function calculateResourcePathname($filename_path, $source)
@@ -57,7 +57,7 @@ class AssetsParser {
             $source_file = explode("?", $source_file);
             $source_file = $source_file[0];
         }
-        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+        $orig = realpath(dirname($filename_path).DIRECTORY_SEPARATOR.$source_file);
         return $orig;
     }
 
@@ -148,10 +148,10 @@ class AssetsParser {
         if (0 < count($this->files)) {
             foreach ($this->files as $file) {
                 $path_parts = explode("/", $file);
-                if(file_exists($file)) {
-                    if($this->debug) {
+                if (file_exists($file)) {
+                    if ($this->debug) {
                         $data = $this->putDebugJs($path_parts, $base, $file);
-                    } elseif(!file_exists($base.$this->hash.".js")) {
+                    } elseif (!file_exists($base.$this->hash.".js")) {
                         $data = $this->putProductionJs($base, $file, $data);
                     }
                 }
@@ -165,14 +165,14 @@ class AssetsParser {
 
     /**
      * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
-     * @param $path
+     * @param string $path
      * @param string $content
      * @throws ConfigException
      */
     private function storeContents($path, $content = "") {
         Config::createDir(dirname($path));
         if ("" !== $content && false === file_put_contents($path, $content)) {
-            throw new ConfigException(_('No se tienen permisos para escribir en ' . $path));
+            throw new ConfigException(_('No se tienen permisos para escribir en '.$path));
         }
     }
 
@@ -197,7 +197,7 @@ class AssetsParser {
             foreach ($this->compiled_files as $file) {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
-        }else {
+        } else {
             echo "\t\t<script type='text/javascript' src='/js/".$this->hash.".js'></script>\n";
         }
     }
@@ -211,7 +211,7 @@ class AssetsParser {
             foreach ($this->compiled_files as $file) {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
-        }else {
+        } else {
             echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
         }
     }
@@ -236,7 +236,7 @@ class AssetsParser {
                     $this->log->infoLog("$orig copiado a $dest");
                 }
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->log->errorLog($e->getMessage());
         }
     }
@@ -265,7 +265,7 @@ class AssetsParser {
             if ($this->debug) {
                 $data = file_get_contents($file);
                 $this->storeContents($base.$file_path, $data);
-            }else {
+            } else {
                 $data .= file_get_contents($file);
             }
             $this->compiled_files[] = "/css/".$file_path;
@@ -304,7 +304,7 @@ class AssetsParser {
         $js = file_get_contents($file);
         try {
             $data .= ";".$js;
-        } catch(\Exception $e) {
+        }catch (\Exception $e) {
             throw new ConfigException($e->getMessage());
         }
         return $data;
@@ -341,7 +341,7 @@ class AssetsParser {
      * @param boolean $return
      * @param string $filename_path
      *
-     * @return array
+     * @return string[]
      */
     public static function calculateAssetPath($string, $name, $return, $filename_path)
     {
@@ -418,8 +418,8 @@ class AssetsParser {
 
     /**
      * Método que extrae el nombre del fichero de un recurso
-     * @param $source
-     * @return array|mixed
+     * @param string $source
+     * @return string
      */
     protected function extractSourceFilename($source)
     {
@@ -437,7 +437,7 @@ class AssetsParser {
     }
 
     /**
-     * @param $file
+     * @param string $file
      */
     protected function loopCssLines($file)
     {

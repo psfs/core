@@ -26,11 +26,11 @@
          * @throws ConfigException
          */
         private function saveTextToFile($data, $path, $absolute = false) {
-            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+            $absolutePath = ($absolute) ? $path : CACHE_DIR.DIRECTORY_SEPARATOR.$path;
             $filename = basename($absolutePath);
             Config::createDir(str_replace($filename, "", $absolutePath));
             if (false === file_put_contents($absolutePath, $data)) {
-                throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')  .$absolutePath);
+                throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ').$absolutePath);
             }
         }
 
@@ -43,7 +43,7 @@
          */
         public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false) {
             $data = null;
-            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+            $absolutePath = ($absolute) ? $path : CACHE_DIR.DIRECTORY_SEPARATOR.$path;
             if (file_exists($absolutePath)) {
                 $data = file_get_contents($absolutePath);
             }
@@ -58,7 +58,7 @@
          * @return bool
          */
         private function hasExpiredCache($path, $expires = 300, $absolute = false) {
-            $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+            $absolutePath = ($absolute) ? $path : CACHE_DIR.DIRECTORY_SEPARATOR.$path;
             $lasModificationDate = filemtime($absolutePath);
             return ($lasModificationDate + $expires <= time());
         }
@@ -119,7 +119,7 @@
 
         /**
          * Método que verifica si tiene que leer o no un fichero de cache
-         * @param $path
+         * @param string $path
          * @param int $expires
          * @param callable $function
          * @param int $transform
@@ -131,7 +131,7 @@
                 if (null !== $function && $this->hasExpiredCache($path, $expires)) {
                     $data = call_user_func($function);
                     $this->storeData($path, $data, $transform);
-                }else {
+                } else {
                     $data = $this->getDataFromFile($path, $transform);
                 }
             }
@@ -140,12 +140,12 @@
 
         /**
          * Método estático que revisa si se necesita cachear la respuesta de un servicio o no
-         * @return int|bool
+         * @return integer
          */
         public static function needCache() {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             $needCache = false;
-            if(null !== $action && $action["cache"] > 0) {
+            if (null !== $action && $action["cache"] > 0) {
                 $needCache = $action["cache"];
             }
             return $needCache;
@@ -158,8 +158,8 @@
         public function getRequestCacheHash() {
             $hash = "";
             $action = Security::getInstance()->getSessionKey("__CACHE__");
-            if(null !== $action && $action["cache"] > 0) {
-                $hash = $action["http"] . " " . $action["slug"];
+            if (null !== $action && $action["cache"] > 0) {
+                $hash = $action["http"]." ".$action["slug"];
             }
             return sha1($hash);
         }

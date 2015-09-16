@@ -6,7 +6,7 @@
      * Class Service
      * @package PSFS\base
      */
-    class Service extends Singleton{
+    class Service extends Singleton {
         /**
          * @var String Url de destino de la llamada
          */
@@ -122,7 +122,7 @@
             $this->url = null;
             $this->params = array();
             $this->headers = array();
-            $this->log->debugLog(_("Context service for ". get_called_class() ." cleared!"));
+            $this->log->debugLog(_("Context service for ".get_called_class()." cleared!"));
         }
 
         /**

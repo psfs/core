@@ -12,7 +12,7 @@ use PSFS\base\types\interfaces\ControllerInterface;
  * Class Controller
  * @package PSFS\base\types
  */
-abstract class Controller extends Singleton implements ControllerInterface{
+abstract class Controller extends Singleton implements ControllerInterface {
 
     /**
      * @Inyectable
@@ -31,7 +31,7 @@ abstract class Controller extends Singleton implements ControllerInterface{
      */
     public function render($template, array $vars = array(), $cookies = array()) {
         $vars['__menu__'] = $this->getMenu();
-        $this->tpl->render($this->getDomain() . $template, $vars, $cookies);
+        $this->tpl->render($this->getDomain().$template, $vars, $cookies);
     }
 
     /**
@@ -51,12 +51,12 @@ abstract class Controller extends Singleton implements ControllerInterface{
      */
     public function dump($template, array $vars = array()) {
         $vars['__menu__'] = $this->getMenu();
-        return $this->tpl->dump($this->getDomain() . $template, $vars);
+        return $this->tpl->dump($this->getDomain().$template, $vars);
     }
 
     /**
      * Método que devuelve una respuesta con formato
-     * @param $response
+     * @param string $response
      * @param string $type
      */
     public function response($response, $type = 'text/html') {
@@ -78,14 +78,14 @@ abstract class Controller extends Singleton implements ControllerInterface{
         /////////////////////////////////////////////////////////////
         // Date in the past sets the value to already have been expired.
         header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-        header('Last-Modified: '.gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: no-store, no-cache, must-revalidate');     // HTTP/1.1
-        header('Cache-Control: pre-check=0, post-check=0, max-age=0');    // HTTP/1.1
-        header ("Pragma: no-cache");
+        header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+        header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
+        header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
+        header("Pragma: no-cache");
         header("Expires: 0");
         header('Content-Transfer-Encoding: none');
-        header("Content-type: " . $content);
-        header("Content-length: " . strlen($data));
+        header("Content-type: ".$content);
+        header("Content-length: ".strlen($data));
         header('Content-Disposition: attachment; filename="'.$filename.'"');
         echo $data;
         ob_flush();

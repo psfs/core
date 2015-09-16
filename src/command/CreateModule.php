@@ -8,12 +8,12 @@
     use Symfony\Component\Console\Output\OutputInterface;
     use Symfony\Component\Console\Question\Question;
 
-    if(!class_exists("CLog")) {
+    if (!class_exists("CLog")) {
         /**
          * Wrapper para trazar logs en la consola
          * Class CLog
          */
-        class CLog{
+        class CLog {
             private $log;
             private $verbosity;
 
@@ -29,36 +29,36 @@
 
             public function infoLog($msg)
             {
-                if($this->verbosity) $this->log->writeln($msg);
+                if ($this->verbosity) $this->log->writeln($msg);
             }
         }
     }
 
-    if(!isset($console)) $console = new Application();
+    if (!isset($console)) $console = new Application();
     $console
         ->register('psfs:create:module')
         ->setDefinition(array(
             new InputArgument('module', InputArgument::OPTIONAL, 'Nombre del módulo a crear'),
         ))
         ->setDescription('Comando de creación de módulos psfs')
-        ->setCode(function (InputInterface $input, OutputInterface $output) {
+        ->setCode(function(InputInterface $input, OutputInterface $output) {
             $module = $input->getArgument('module');
             $helper = new QuestionHelper();
             $log = new CLog($output, $output->isVerbose());
             try
             {
                 //En caso de no tener nombre del módulo lo solicitamos al usuario
-                if(empty($module))
+                if (empty($module))
                 {
                     $question = new Question("Introduce el nombre del módulo a crear:\n");
                     $module = $helper->ask($input, $output, $question);
                 }
                 //Sólo si tenemos nombre del módulo
-                if(!empty($module))
+                if (!empty($module))
                 {
                     \PSFS\services\GeneratorService::getInstance()->createStructureModule($module, $log);
                 }
-            }catch(\Exception $e)
+            }catch (\Exception $e)
             {
                 $output->writeln($e->getMessage());
                 $output->writeln($e->getTraceAsString());

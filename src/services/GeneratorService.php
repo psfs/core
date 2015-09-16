@@ -40,7 +40,9 @@
                 while(false !== ($dir = $d->read()))
                 {
                     Config::createDir($locale_path);
-                    if(!file_exists($locale_path . 'translations.po')) file_put_contents($locale_path . 'translations.po', '');
+                    if(!file_exists($locale_path . 'translations.po')) {
+                        file_put_contents($locale_path . 'translations.po', '');
+                    }
                     $inspect_path = realpath($path.DIRECTORY_SEPARATOR.$dir);
                     $cmd_php = "export PATH=\$PATH:/opt/local/bin; xgettext ". $inspect_path . DIRECTORY_SEPARATOR ."*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$locale_path}translations.po";
                     if(is_dir($path.DIRECTORY_SEPARATOR.$dir) && preg_match('/^\./',$dir) == 0)
@@ -295,7 +297,7 @@
                 } catch(\Exception $e) {
                     $this->log->errorLog($e->getMessage());
                 }
-            }else{
+            } else{
                 $this->log->errorLog($filename . _(' not exists or cant write'));
             }
             return $created;

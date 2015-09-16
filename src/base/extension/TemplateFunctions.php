@@ -25,12 +25,14 @@
          * @param null $name
          * @param bool|TRUE $return
          *
-         * @return null|string
+         * @return string
          */
         public static function asset($string, $name = null, $return = true) {
 
             $file_path = "";
-            if (!file_exists($file_path)) $file_path = BASE_DIR.$string;
+            if (!file_exists($file_path)) {
+                $file_path = BASE_DIR.$string;
+            }
             $filename_path = AssetsParser::findDomainPath($string, $file_path);
 
             $file_path = self::processAsset($string, $name, $return, $filename_path);
@@ -44,13 +46,13 @@
          * @param bool|FALSE $absolute
          * @param array $params
          *
-         * @return mixed
+         * @return string|null
          */
         public static function route($path = '', $absolute = false, array $params = null) {
             $router = Router::getInstance();
             try {
                 return $router->getRoute($path, $absolute, $params);
-            }catch (\Exception $e)
+            } catch (\Exception $e)
             {
                 return $router->getRoute('', $absolute, $params);
             }
@@ -80,7 +82,7 @@
         /**
          * Función que pinta parte de un formulario
          * @param array $field
-         * @param string $label
+         * @param StringClass $label
          */
         public static function widget(array $field, StringClass $label = null) {
             if (!empty($label)) {
@@ -101,7 +103,7 @@
          * Función que deveulve un formulario en html
          * @param Form $form
          */
-        public static function form(Form $form){
+        public static function form(Form $form) {
             Template::getInstance()->getTemplateEngine()->display('forms/base.html.twig', array(
                 'form' => $form,
             ));
@@ -126,22 +128,22 @@
 
         /**
          * Método que copia los recursos recursivamente
-         * @param $dest
-         * @param $force
+         * @param string $dest
+         * @param boolean $force
          * @param $filename_path
-         * @param $debug
+         * @param boolean $debug
          */
         private static function copyResources($dest, $force, $filename_path, $debug)
         {
             if (file_exists($filename_path)) {
                 $destfolder = basename($filename_path);
-                if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force) {
+                if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force) {
                     if (is_dir($filename_path)) {
-                        Config::createDir(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                        Template::copyr($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
-                    } else {
-                        if (@copy($filename_path, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === FALSE) {
-                            throw new ConfigException("Can't copy " . $filename_path . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                        Config::createDir(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                        Template::copyr($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                    }else {
+                        if (@copy($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) === FALSE) {
+                            throw new ConfigException("Can't copy ".$filename_path." to ".WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
                         }
                     }
                 }
@@ -150,7 +152,7 @@
 
         /**
          * Método que extrae el pathname para un dominio
-         * @param $path
+         * @param string $path
          * @param $domains
          *
          * @return mixed
@@ -173,7 +175,7 @@
         }
 
         /**
-         * @param $filename_path
+         * @param string $filename_path
          */
         private static function processCssLines($filename_path)
         {
@@ -196,8 +198,8 @@
         private static function putResourceContent($name, $filename_path, $base, $file_path)
         {
             $data = file_get_contents($filename_path);
-            if (!empty($name)) file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
-            else file_put_contents($base . $file_path, $data);
+            if (!empty($name)) file_put_contents(WEB_DIR.DIRECTORY_SEPARATOR.$name, $data);
+            else file_put_contents($base.$file_path, $data);
         }
 
         /**
@@ -207,7 +209,7 @@
          * @param boolean $return
          * @param string $filename_path
          *
-         * @return mixed
+         * @return string
          */
         private static function processAsset($string, $name, $return, $filename_path)
         {
@@ -215,9 +217,9 @@
             if (file_exists($filename_path)) {
                 list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $filename_path);
                 //Creamos el directorio si no existe
-                Config::createDir($base . $html_base);
+                Config::createDir($base.$html_base);
                 //Si se ha modificado
-                if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($filename_path)) {
+                if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($filename_path)) {
                     if ($html_base == 'css') {
                         self::processCssLines($filename_path);
                     }

@@ -5,4 +5,4 @@
      * Class Inyectable
      * @package PSFS\base\types
      */
-    class Inyectable{}
+    class Inyectable {}

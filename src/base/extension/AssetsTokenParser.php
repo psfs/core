@@ -92,7 +92,7 @@ class AssetsTokenParser extends \Twig_TokenParser {
 
     /**
      * Método que busca el nodo a parsear
-     * @return Twig_Node
+     * @return \Twig_Node_Expression|null
      */
     protected function findTemplateNode()
     {
@@ -135,7 +135,7 @@ class AssetsTokenParser extends \Twig_TokenParser {
         $tmp = array();
         if (NULL === $node) {
             $node = $value;
-        } else {
+        }else {
             $tmp = $this->getTmpAttribute($node);
         }
         $tmp[] = $value->getAttribute("value");
