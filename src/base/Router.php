@@ -340,7 +340,11 @@
                 $keyParts = $key;
                 if (false === strstr("#|#", $key)) {
                     $keyParts = explode("#|#", $key);
-                    $keyParts = $keyParts[1];
+                    if(count($keyParts) > 1) {
+                        $keyParts = $keyParts[1];
+                    } else {
+                        $keyParts = $key;
+                    }
                 }
                 $slug = $this->slugify($keyParts);
                 if (null === $slug && !array_key_exists($slug, $translations)) {
