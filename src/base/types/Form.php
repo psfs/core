@@ -450,7 +450,7 @@ abstract class Form extends Singleton implements FormType{
             }
         }
         //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
-        if ((!array_key_exists('value', $field) && !is_array($field["value"]))
+        if ((array_key_exists('value', $field) && !is_array($field["value"]))
             && in_array($type, array("select", "checkbox"))) {
             $field["value"] = array($field["value"]);
         }
