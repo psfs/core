@@ -145,7 +145,7 @@
         public static function needCache() {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             $needCache = false;
-            if (null !== $action && $action["cache"] > 0) {
+            if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
                 $needCache = $action["cache"];
             }
             return $needCache;
