@@ -401,15 +401,13 @@
          * @return string|null
          * @throws RouterException
          */
-        public function getRoute($slug = '', $absolute = false, $params = null) {
-            if (strlen($slug) === 0) {
-                return ($absolute) ? Request::getInstance()->getRootUrl().'/' : '/';
-            }
+        public function getRoute($slug = '', $absolute = false, $params = array())
+        {
             if (null === $slug || !array_key_exists($slug, $this->slugs)) {
                 throw new RouterException(_("No existe la ruta especificada"));
             }
             list($domain, $url) = $this->generateRouteUrl($slug, $absolute);
-            if (!empty($params)) {
+            if (count($params) === 0) {
                 foreach ($params as $key => $value) {
                     $url = str_replace("{".$key."}", $value, $url);
                 }
@@ -598,8 +596,12 @@
         protected function generateRouteUrl($slug, $absolute)
         {
             $domain = ($absolute) ? Request::getInstance()->getRootUrl() : '';
-            $slugParts = explode("#|#", $this->slugs[$slug]);
-            $slugParts = $slugParts[1];
+            if (strlen($slug) === 0) {
+                $slugParts = "/";
+            } else {
+                $slugParts = explode("#|#", $this->slugs[$slug]);
+                $slugParts = $slugParts[1];
+            }
             $url = $domain . $slugParts;
 
             return array($domain, $url);

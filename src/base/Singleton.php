@@ -20,7 +20,7 @@ class Singleton
      * is not allowed to call from outside: private!
      *
      */
-    private function __construct() {
+    public function __construct() {
         $this->init();
     }
 
