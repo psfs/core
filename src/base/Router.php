@@ -332,25 +332,9 @@
          * @return Router
          */
         private function simpatize() {
-            $translations = array();
             $translationFileName = "translations".DIRECTORY_SEPARATOR."routes_translations.php";
             $absoluteTranslationFileName = CACHE_DIR.DIRECTORY_SEPARATOR.$translationFileName;
-            Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
-            foreach ($this->routing as $key => &$info) {
-                $keyParts = $key;
-                if (false === strstr("#|#", $key)) {
-                    $keyParts = explode("#|#", $key);
-                    $keyParts = $keyParts[1];
-                }
-                $slug = $this->slugify($keyParts);
-                if (null === $slug && !array_key_exists($slug, $translations)) {
-                    $translations[$slug] = $key;
-                    file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
-                }
-                $this->slugs[$slug] = $key;
-                $info["slug"] = $slug;
-            }
-            include($absoluteTranslationFileName);
+            $this->generateSlugs($absoluteTranslationFileName);
             Config::createDir(CONFIG_DIR);
             Cache::getInstance()->storeData(CONFIG_DIR.DIRECTORY_SEPARATOR."urls.json", array($this->routing, $this->slugs), Cache::JSON, true);
             return $this;
@@ -580,5 +564,47 @@
             if ($execute) {
                 call_user_func_array(array($class, $action['method']), $params);
             }
+        }
+
+        /**
+         * Parse slugs to create translations
+         * @param string $absoluteTranslationFileName
+         */
+        private function generateSlugs($absoluteTranslationFileName)
+        {
+            $translations = $this->generateTranslationsFile($absoluteTranslationFileName);
+            foreach ($this->routing as $key => &$info) {
+                if (preg_match('/(ALL|GET)/i', $key)) {
+                    $keyParts = $key;
+                    if (FALSE === strstr("#|#", $key)) {
+                        $keyParts = explode("#|#", $key);
+                        $keyParts = $keyParts[1];
+                    }
+                    $slug = $this->slugify($keyParts);
+                    if (NULL !== $slug && !array_key_exists($slug, $translations)) {
+                        $translations[$slug] = $key;
+                        file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
+                    }
+                    $this->slugs[$slug] = $key;
+                    $info["slug"] = $slug;
+                }
+            }
+        }
+
+        /**
+         * Create translation file if not exists
+         * @param string $absoluteTranslationFileName
+         *
+         * @return array
+         */
+        private function generateTranslationsFile($absoluteTranslationFileName)
+        {
+            $translations = array();
+            if (file_exists($absoluteTranslationFileName)) {
+                include($absoluteTranslationFileName);
+            } else {
+                Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, TRUE);
+            }
+            return $translations;
         }
     }
