@@ -75,10 +75,10 @@
             return Template::getInstance()
                 ->setStatus($e->getCode())
                 ->render('error.html.twig', array(
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
-                'error_page' => true,
-            ));
+                    'exception' => $e,
+                    'trace' => $e->getTraceAsString(),
+                    'error_page' => true,
+                ));
         }
 
         /**
@@ -340,11 +340,7 @@
                 $keyParts = $key;
                 if (false === strstr("#|#", $key)) {
                     $keyParts = explode("#|#", $key);
-                    if(count($keyParts) > 1) {
-                        $keyParts = $keyParts[1];
-                    } else {
-                        $keyParts = $key;
-                    }
+                    $keyParts = $keyParts[1];
                 }
                 $slug = $this->slugify($keyParts);
                 if (null === $slug && !array_key_exists($slug, $translations)) {
@@ -401,18 +397,18 @@
          * @return string|null
          * @throws RouterException
          */
-        public function getRoute($slug = '', $absolute = false, $params = array())
-        {
+        public function getRoute($slug = '', $absolute = false, $params = null) {
+            if (strlen($slug) === 0) {
+                return ($absolute) ? Request::getInstance()->getRootUrl().'/' : '/';
+            }
             if (null === $slug || !array_key_exists($slug, $this->slugs)) {
                 throw new RouterException(_("No existe la ruta especificada"));
             }
-            list($domain, $url) = $this->generateRouteUrl($slug, $absolute);
-            if (count($params) === 0) {
-                foreach ($params as $key => $value) {
-                    $url = str_replace("{".$key."}", $value, $url);
-                }
+            $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->slugs[$slug] : $this->slugs[$slug];
+            if (!empty($params)) foreach ($params as $key => $value) {
+                $url = str_replace("{".$key."}", $value, $url);
             } elseif (!empty($this->routing[$this->slugs[$slug]]["default"])) {
-                $url = $domain . $this->routing[$this->slugs[$slug]]["default"];
+                $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
             }
             return $url;
         }
@@ -584,26 +580,5 @@
             if ($execute) {
                 call_user_func_array(array($class, $action['method']), $params);
             }
-        }
-
-        /**
-         * Método que genera la url de la ruta
-         * @param string $slug
-         * @param bool $absolute
-         *
-         * @return array
-         */
-        protected function generateRouteUrl($slug, $absolute)
-        {
-            $domain = ($absolute) ? Request::getInstance()->getRootUrl() : '';
-            if (strlen($slug) === 0) {
-                $slugParts = "/";
-            } else {
-                $slugParts = explode("#|#", $this->slugs[$slug]);
-                $slugParts = $slugParts[1];
-            }
-            $url = $domain . $slugParts;
-
-            return array($domain, $url);
         }
     }
