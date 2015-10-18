@@ -168,7 +168,7 @@ class Admin extends AuthAdminController{
                     'delay' => 1,
                 );
             } else {
-                $form->setError("user", "El usuario no tiene acceso a la web");
+                $form->setError("user", _("El usuario no tiene acceso a la web"));
             }
         }
         return $tpl->render($template, $params, $cookies);

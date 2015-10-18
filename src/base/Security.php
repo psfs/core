@@ -126,7 +126,7 @@ class Security {
             //Sacamos las credenciales de la petición
             $user = $user ?: $request->getServer('PHP_AUTH_USER');
             $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-            if (empty($user) && empty($admins[$user])) {
+            if (null === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
                 list($user, $pass) = $this->getAdminFromCookie();
             }
             if (!empty($user) && !empty($admins[$user])) {

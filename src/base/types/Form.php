@@ -346,6 +346,7 @@
             }
             //Validamos en caso de tener validaciones
             if (array_key_exists('pattern', $field)
+                && array_key_exists($key, $field)
                 && !array_key_exists('error', $field[$key])
                 && !empty($field["value"])
                 && preg_match('/'.$field['pattern'].'/', $field['value']) === 0) {
