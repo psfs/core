@@ -395,6 +395,7 @@
             } elseif (!empty($this->routing[$this->slugs[$slug]]["default"])) {
                 $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
             }
+            list(, $url) = explode('#|#', $url, 2);
             return $url;
         }
 
