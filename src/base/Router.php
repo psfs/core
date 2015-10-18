@@ -393,11 +393,9 @@
             if (!empty($params)) foreach ($params as $key => $value) {
                 $url = str_replace("{".$key."}", $value, $url);
             } elseif (!empty($this->routing[$this->slugs[$slug]]["default"])) {
-                $parts = explode('#|#', $this->routing[$this->slugs[$slug]]["default"], 2);
-                $parts = array_pop($parts);
-                $url = ($absolute) ? Request::getInstance()->getRootUrl().$parts : $parts;
+                $url = ($absolute) ? Request::getInstance()->getRootUrl().$this->routing[$this->slugs[$slug]]["default"] : $this->routing[$this->slugs[$slug]]["default"];
             }
-            return $url;
+            return preg_replace('/(GET|POST|PUT|DELETE|ALL)\#\|\#/', '', $url);
         }
 
         /**
