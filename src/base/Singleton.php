@@ -48,6 +48,15 @@ class Singleton
     }
 
     /**
+     * Magic getter
+     * @param string $variable
+     * @return $mixed
+     */
+    public function __get($variable) {
+        return $this->$variable;
+    }
+
+    /**
      * Método que devuelve si una clase está isntanciada correctamente
      * @return bool
      */

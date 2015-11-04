@@ -268,12 +268,21 @@
                 $reflection = new \ReflectionClass($namespace);
                 if (false === $reflection->isAbstract() && false === $reflection->isInterface()) {
                     $this->extractDomain($reflection);
+                    $classComments = $reflection->getDocComment();
+                    preg_match('/@api\ (.*)\n/im', $classComments, $apiPath);
+                    $api = '';
+                    if(count($apiPath)) {
+                        $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
+                    }
                     foreach ($reflection->getMethods() as $method) {
                         if ($method->isPublic()) {
                             $docComments = $method->getDocComment();
                             preg_match('/@route\ (.*)\n/i', $docComments, $sr);
                             if (count($sr)) {
                                 list($regex, $default, $params) = $this->extractReflectionParams($sr, $method);
+                                if(strlen($api)) {
+                                    $regex = str_replace('{__API__}', $api, $regex);
+                                }
                                 $httpMethod = $this->extractReflectionHttpMethod($docComments);
                                 $visible = $this->extractReflectionVisibility($docComments);
                                 $expiration = $this->extractReflectionCacheability($docComments);

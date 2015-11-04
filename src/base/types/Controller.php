@@ -96,9 +96,13 @@ abstract class Controller extends Singleton implements ControllerInterface {
     /**
      * Método que devuelve una salida en formato JSON
      * @param mixed $response
+     * @param int $statusCode
+     *
+     * @return string JSON
      */
-    public function json($response) {
+    public function json($response, $statusCode = 200) {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
+        $this->tpl->setStatus($statusCode);
         return $this->response($data, "application/json");
     }
 

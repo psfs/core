@@ -72,6 +72,7 @@ class Template {
     public function setStatus($status = null) {
         switch ($status)
         {
+            //TODO implement all status codes
             case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
             case '404': $this->status_code = "HTTP/1.0 404 Not Found"; break;
             case '403': $this->status_code = "HTTP/1.0 403 Forbidden"; break;
@@ -127,7 +128,7 @@ class Template {
         header('Content-length: '.strlen($output));
 
         $cache = Cache::needCache();
-        if (false !== $cache && $this->status_code == 200 && $this->debug === false) {
+        if (false !== $cache && $this->status_code === 200 && $this->debug === false) {
             $cacheName = $this->cache->getRequestCacheHash();
             $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName, $output);
             $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);

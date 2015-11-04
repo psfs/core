@@ -27,6 +27,7 @@ class Request {
     protected $upload;
     protected $header;
     protected $data;
+    protected $query;
 
     /**
      */
@@ -36,10 +37,11 @@ class Request {
         $this->upload = $_FILES;
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST;
+        $this->query = $_GET;
         $contentType = (array_key_exists('Content-Type', $this->header)) ? $this->header['Content-Type'] : "text/html";
         if (preg_match('/application\/json/i', $contentType))
         {
-            $this->data += json_decode(file_get_contents("php://input"), true);
+            $this->data += json_decode(file_get_contents("php://input"), true) ?: array();
         }
     }
 
@@ -131,6 +133,28 @@ class Request {
     {
         $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php|ico)$/', $this->getRequestUri()) !== 0);
         return $file;
+    }
+
+    /**
+     * Get query params
+     *
+     * @param string $queryParams
+     *
+     * @return mixed
+     */
+    public function getQuery($queryParams)
+    {
+        return (array_key_exists($queryParams, $this->query)) ? $this->query[$queryParams] : null;
+    }
+
+    /**
+     * Get all query params
+     *
+     * @return mixed
+     */
+    public function getQueryParams()
+    {
+        return $this->query;
     }
 
     /**
