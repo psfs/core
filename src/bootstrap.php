@@ -32,6 +32,15 @@
         }
     }
 
+    if (!function_exists('jpre')) {
+        function jpre($var, $die = false) {
+            echo json_encode($var, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            if ($die) {
+                die;
+            }
+        }
+    }
+
     if (file_exists(CORE_DIR))
     {
         //Autoload de módulos

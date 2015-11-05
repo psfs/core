@@ -127,11 +127,10 @@ class Singleton
             /** @var \ReflectionProperty $property */
             if (!empty($properties) && is_array($properties)) foreach ($properties as $property => $class) {
                 $this->load($property, true, $class);
-                $logService->debugLog("Propiedad ".$property." cargada con clase ".$class);
             }
             $this->setLoaded();
         }else {
-            $logService->debugLog(get_class($this)." ya cargada");
+            $logService->warningLog(get_class($this)." ya cargada");
         }
     }
 
@@ -175,6 +174,7 @@ class Singleton
     }
 
     /**
+     * Create the depecency injected
      * @param $variable
      * @param $singleton
      * @param $classNameSpace

@@ -130,8 +130,8 @@ class Template {
         $cache = Cache::needCache();
         if (false !== $cache && $this->status_code === 200 && $this->debug === false) {
             $cacheName = $this->cache->getRequestCacheHash();
-            $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName, $output);
-            $this->cache->storeData("templates".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
+            $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName, $output);
+            $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
         }
         echo $output;
 

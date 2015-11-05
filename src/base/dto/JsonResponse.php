@@ -14,7 +14,7 @@
          */
         public $data = null;
 
-        public function __construct(array $data, $result)
+        public function __construct($data = array(), $result = 200)
         {
             $this->data = $data;
             $this->success = $result;

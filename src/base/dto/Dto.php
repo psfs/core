@@ -1,6 +1,7 @@
 <?php
     namespace PSFS\base\dto;
 
+    use PSFS\base\Logger;
     use PSFS\base\Singleton;
 
     /**
@@ -16,13 +17,17 @@
         public function __toArray()
         {
             $dto = array();
-            $reflectionClass = new \ReflectionClass($this);
-            $properties = $reflectionClass->getProperties();
-            if(count($properties) > 0) {
-                /** @var \ReflectionProperty $property */
-                foreach($properties as $property) {
-                    $dto[$property->getName()] = $property->getValue($this);
+            try {
+                $reflectionClass = new \ReflectionClass($this);
+                $properties = $reflectionClass->getProperties();
+                if(count($properties) > 0) {
+                    /** @var \ReflectionProperty $property */
+                    foreach($properties as $property) {
+                        $dto[$property->getName()] = $property->getValue($this);
+                    }
                 }
+            } catch(\Exception $e) {
+                Logger::getInstance(get_class($this))->errorLog($e->getMessage());
             }
             return $dto;
         }

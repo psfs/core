@@ -51,4 +51,28 @@
         {
             $this->fields = array($field => $direction);
         }
+
+        /**
+         * Parse direction string
+         * @param string $direction
+         *
+         * @return string
+         */
+        public static function parseDirection($direction = Order::ASC)
+        {
+            if(preg_match('/^asc$/i', $direction)) {
+                return Order::ASC;
+            } else {
+                return Order::DESC;
+            }
+        }
+
+        /**
+         * Return all order fields
+         * @return array
+         */
+        public function getOrders()
+        {
+            return $this->fields;
+        }
     }
