@@ -177,20 +177,24 @@
          */
         private function generateBaseApiTemplate($module, $mod_path, $force = false, $controllerType = "")
         {
-            //Generamos el controlador base
-            $this->log->infoLog("Generamos Api BASES");
-            $controller = $this->tpl->dump("generator/api.base.template.twig", array(
-                "module" => $module,
-                "controllerType" => $controllerType,
-                "api" => "Test"
-            ));
-            $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$module}BaseApi.php", $force);
-            $controller = $this->tpl->dump("generator/api.template.twig", array(
-                "module" => $module,
-                "controllerType" => $controllerType,
-                "api" => "Test"
-            ));
-            $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$module}.php", $force);
+            $created = true;
+            if (false)
+            {
+                //Generamos el controlador base
+                $this->log->infoLog("Generamos Api BASES");
+                $controller = $this->tpl->dump("generator/api.base.template.twig", array(
+                    "module" => $module,
+                    "controllerType" => $controllerType,
+                    "api" => "Test"
+                ));
+                $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$module}BaseApi.php", $force);
+                $controller = $this->tpl->dump("generator/api.template.twig", array(
+                    "module" => $module,
+                    "controllerType" => $controllerType,
+                    "api" => "Test"
+                ));
+                $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$module}.php", $force);
+            }
             return $created;
         }
 
