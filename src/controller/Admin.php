@@ -40,12 +40,6 @@ class Admin extends AuthAdminController{
      */
     protected $gen;
 
-    public function init() {
-        parent::init();
-        $this->setDomain('ROOT')
-            ->setTemplatePath($this->config->getTemplatePath());
-    }
-
     /**
      * Wrapper de asignación de los menus
      * @return array

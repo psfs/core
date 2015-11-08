@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block body_content %}
+    {{ resource('@ROOT/js/templates', '/js') }}
+    <br><h2 class="md-flex">{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
+    <div layout="column" class="col-md-12">
+        <md-content flex layout-padding>
+            <api-lists data-api="{{ api }}" data-url="{{ url }}"></api-lists>
+        </md-content>
+    </div>
+{% endblock body_content %}
+{% block scripts %}
+    <script>var module = module || '{{ app_name|default('psfs') }}';</script>
+    <script type="text/javascript" src="{{ asset('@ROOT/js/api-lists.js') }}"></script>
+{% endblock scripts %}

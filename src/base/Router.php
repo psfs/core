@@ -69,16 +69,23 @@
          * @return string HTML
          */
         public function httpNotFound(\Exception $e = null) {
-            if (null === $e) {
-                $e = new \Exception(_('Página no encontrada'), 404);
+            $template = Template::getInstance()
+                ->setStatus($e->getCode());
+            if(preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE'))) {
+                return $template->output(json_encode(array(
+                    "success" => false,
+                    "error" => $e->getMessage(),
+                )), 'application/json');
+            } else {
+                if (null === $e) {
+                    $e = new \Exception(_('Página no encontrada'), 404);
+                }
+                return $template->render('error.html.twig', array(
+                        'exception' => $e,
+                        'trace' => $e->getTraceAsString(),
+                        'error_page' => true,
+                    ));
             }
-            return Template::getInstance()
-                ->setStatus($e->getCode())
-                ->render('error.html.twig', array(
-                    'exception' => $e,
-                    'trace' => $e->getTraceAsString(),
-                    'error_page' => true,
-                ));
         }
 
         /**
@@ -247,7 +254,7 @@
          * @throws ConfigException
          */
         private function inspectDir($origen, $namespace = 'PSFS', $routing) {
-            $files = $this->finder->files()->in($origen)->path('/controller/i')->name("*.php");
+            $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->name("*.php");
             foreach ($files as $file) {
                 $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
                 $routing = $this->addRouting($namespace.str_replace('.php', '', $filename), $routing);
@@ -282,6 +289,7 @@
                                 list($regex, $default, $params) = $this->extractReflectionParams($sr, $method);
                                 if(strlen($api)) {
                                     $regex = str_replace('{__API__}', $api, $regex);
+                                    $default = str_replace('{__API__}', $api, $default);
                                 }
                                 $httpMethod = $this->extractReflectionHttpMethod($docComments);
                                 $visible = $this->extractReflectionVisibility($docComments);

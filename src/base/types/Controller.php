@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types;
 
+use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -40,6 +41,13 @@ abstract class Controller extends Singleton implements ControllerInterface {
      */
     protected function getMenu() {
         return array();
+    }
+
+    public function init()
+    {
+        parent::init();
+        $this->setDomain($this->domain)
+            ->setTemplatePath(Config::getInstance()->getTemplatePath());
     }
 
     /**

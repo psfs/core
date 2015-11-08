@@ -1,0 +1,13 @@
+<nav ng-if="last_page > 1">
+    <ul class="pagination">
+        <li ng-if="page - 3 > 0" ng-click="paginate(page-1, search)"><a href="javascript:void(0);">&laquo;</a></li>
+        <li ng-if="page - 2 > 0" ng-click="paginate(page-2, search)"><a href="javascript:void(0);">{{ page - 2 }}</a></li>
+        <li ng-if="page - 1 >= 1" ng-click="paginate(page-1, search)"><a href="javascript:void(0);">{{ page - 1 }}</a></li>
+        <li ng-class="{'active':page}"><a href="javascript:void(0);">{{ page }}</a></li>
+        <li ng-if="page + 1 <= last_page" ng-click="paginate(page+1, search)"><a href="javascript:void(0);"> {{ page + 1 }}</a></li>
+        <li ng-if="page + 2 <= last_page" ng-click="paginate(page+2, search)"><a href="javascript:void(0);">{{ page + 2}}</a></li>
+        <li ng-if="page < last_page" ng-click="paginate(page+1, search)"><a href="javascript:void(0);">&raquo;</a></li>
+        <li ng-if="page + 3 < last_page" ng-click="paginate(last_page, search)"><a href="javascript:void(0);">{{ last_page }}</a></li>
+        <li ng-if="total"><a href="javascript:void(0);">{{ total }} results</a></li>
+    </ul>
+</nav>

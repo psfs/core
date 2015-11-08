@@ -76,6 +76,9 @@ class Template {
             case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
             case '404': $this->status_code = "HTTP/1.0 404 Not Found"; break;
             case '403': $this->status_code = "HTTP/1.0 403 Forbidden"; break;
+            case '402': $this->status_code = "HTTP/1.0 402 Payment Required"; break;
+            case '401': $this->status_code = "HTTP/1.0 401 Unauthorized"; break;
+            case '400': $this->status_code = "HTTP/1.0 400 Bad Request"; break;
         }
         return $this;
     }

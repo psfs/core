@@ -12,6 +12,7 @@
     use PSFS\base\dto\Order;
     use PSFS\base\Logger;
     use PSFS\base\Request;
+    use PSFS\base\Router;
 
     /**
      * Class Api
@@ -25,7 +26,7 @@
         protected $model;
 
         /**
-         * @var \Propel\Runtime\Collection\Collection $list
+         * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager $list
          */
         protected $list;
 
@@ -66,6 +67,7 @@
         public function __construct()
         {
             parent::__construct();
+            $this->domain = $this->getApi();
         }
 
         /**
@@ -81,7 +83,15 @@
         }
 
         /**
-         * Extract MOdel TableMap
+         * Wrapper de asignación de los menus
+         * @return array
+         */
+        protected function getMenu() {
+            return Router::getInstance()->getAdminRoutes();
+        }
+
+        /**
+         * Extract Model TableMap
          * @return TableMap
          */
         abstract function getModelTableMap();
@@ -245,7 +255,7 @@
          *
          * @GET
          * @CACHE 600
-         * @ROUTE /{__API__}/{pk}
+         * @ROUTE /api/{__API__}/{pk}
          *
          * @param null|string $pk
          *
@@ -255,10 +265,14 @@
         {
             $code = 200;
             $return = NULL;
+            $total = null;
+            $pages = 1;
             if (NULL === $pk) {
                 try {
                     $this->paginate();
                     $return = $this->list->toArray();
+                    $total = $this->list->count();
+                    $pages = $this->list->getLastPage();
                 } catch (\Exception $e) {
                     Logger::getInstance(get_class($this))->errorLog($e->getMessage());
                 }
@@ -270,7 +284,7 @@
                 }
             }
 
-            return $this->json(new JsonResponse($return, ($code === 200)), $code);
+            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
         }
 
         /**
@@ -287,7 +301,7 @@
          * Create new model
          *
          * @POST
-         * @ROUTE /{__API__}
+         * @ROUTE /api/{__API__}
          *
          * @return JsonResponse JSON
          */
@@ -315,7 +329,7 @@
          * Delete a model
          *
          * @DELETE
-         * @ROUTE /{__API__}/{pk}
+         * @ROUTE /api/{__API__}/{pk}
          *
          * @param string $pk
          *
@@ -344,7 +358,7 @@
          * Put model fields
          *
          * @PUT
-         * @ROUTE /{__API__}/{pk}
+         * @ROUTE /api/{__API__}/{pk}
          *
          * @param string $pk
          *
@@ -440,5 +454,25 @@
             $tableMap = $this->getModelTableMap();
             $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
             $this->con->useDebug($this->debug);
+        }
+
+        private function getApi()
+        {
+            $model = explode("\\", $this->getModelNamespace());
+            return $model[count($model) - 1];
+        }
+
+        /**
+         * @GET
+         * @route /admin/{__API__}
+         * @return string HTML
+         */
+        public function admin()
+        {
+            return $this->render('api.admin.html.twig', array(
+                "api" => $this->getApi(),
+                "domain" => $this->domain,
+                "url" => preg_replace('/\/$/', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), true)),
+            ));
         }
     }

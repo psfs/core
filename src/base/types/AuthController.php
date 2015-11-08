@@ -12,12 +12,7 @@ use PSFS\base\types\interfaces\AuthInterface;
  */
 abstract class AuthController extends Controller implements AuthInterface {
 
-    /**
-     * @Inyectable
-     * @var \PSFS\base\Security Seguridad del controlador
-     */
-    protected $security;
-
+    use SecureTrait;
     /**
      * Constructor por defecto
      * @throws AccessDeniedException
@@ -29,29 +24,4 @@ abstract class AuthController extends Controller implements AuthInterface {
         }
     }
 
-    /**
-     * Método que verifica si está autenticado el usuario
-     * @return boolean
-     */
-    public function isLogged() {
-        return (null !== $this->security->getUser());
-    }
-
-    /**
-     * Método que devuelve si un usuario es administrador de la plataforma
-     * @return boolean
-     */
-    public function isAdmin() {
-        return (null !== $this->security->canAccessRestrictedAdmin());
-    }
-
-    /**
-     * Método que define si un usuario puede realizar una acción concreta
-     * @param $action
-     * TODO
-     * @return bool
-     */
-    public function canDo($action) {
-        return true;
-    }
 }

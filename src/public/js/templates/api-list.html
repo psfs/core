@@ -1,0 +1,10 @@
+<md-progress-circular md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
+<md-list data-ng-hide="loading" flex="40" flex-sm="100">
+    <md-subheader>{{ api }} list</md-subheader>
+    <md-list-item data-ng-repeat="item in list" aria-label="{{ api }} element {{getLabel(item)}}" layout="row">
+        <p data-ng-bind="getLabel(item)" ng-click="loadItem(item)" flex="80"></p>
+        <md-button aria-label="Delete" data-ng-click="deleteItem(item)" class="md-fab md-warn md-mini">
+            <i class="fa fa-trash-o"></i>
+        </md-button>
+    </md-list-item>
+</md-list>

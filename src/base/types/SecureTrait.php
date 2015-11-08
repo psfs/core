@@ -11,6 +11,10 @@ use PSFS\base\Security;
  */
 trait SecureTrait {
 
+    /**
+     * @Inyectable
+     * @var \PSFS\base\Security Seguridad del controlador
+     */
     protected $security;
 
     /**
@@ -23,30 +27,29 @@ trait SecureTrait {
 
     /**
      * Método que verifica si está autenticado el usuario
+     * @return boolean
      */
-    public function isLogged()
-    {
+    public function isLogged() {
         return (null !== $this->security->getUser());
     }
 
     /**
      * Método que devuelve si un usuario es administrador de la plataforma
-     * @return bool
+     * @return boolean
      */
-    public function isAdmin()
-    {
-        $is_admin = false;
-        return $is_admin;
+    public function isAdmin() {
+        return (null !== $this->security->canAccessRestrictedAdmin());
     }
 
     /**
      * Método que define si un usuario puede realizar una acción concreta
      * @param $action
-     *
+     * TODO
      * @return bool
      */
-    public function canDo($action)
-    {
+    public function canDo($action) {
         return true;
     }
+
+
 }
