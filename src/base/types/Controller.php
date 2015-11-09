@@ -17,7 +17,7 @@ abstract class Controller extends Singleton implements ControllerInterface {
 
     /**
      * @Inyectable
-     * @var \PSFS\base\Template Gestor de plantillas
+     * @var \PSFS\base\Template $tpl
      */
     protected $tpl;
     protected $domain = '';

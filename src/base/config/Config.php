@@ -196,7 +196,11 @@ class Config {
         $rootDirs = array("css", "js", "media", "font");
         foreach ($rootDirs as $dir) {
             if (file_exists(WEB_DIR.DIRECTORY_SEPARATOR.$dir)) {
-                @shell_exec("rm -rf ".WEB_DIR.DIRECTORY_SEPARATOR.$dir);
+                try {
+                    @shell_exec("rm -rf ".WEB_DIR.DIRECTORY_SEPARATOR.$dir);
+                } catch(\Exception $e) {
+                    Logger::getInstance()->errorLog($e->getMessage());
+                }
             }
         }
     }

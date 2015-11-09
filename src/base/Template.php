@@ -525,7 +525,6 @@ class Template {
      */
     private function optimizeTemplates() {
         //Optimizamos
-        $this->tpl->addExtension(new \Twig_Extension_Optimizer());
         $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
     }
 }

@@ -74,6 +74,7 @@
             $this->createModulePathTree($module, $mod_path);
             $this->createModuleBaseFiles($module, $mod_path, $force, $type);
             $this->createModuleModels($module);
+            $this->generateBaseApiTemplate($module, $mod_path);
             //Redireccionamos al home definido
             $this->log->infoLog("Módulo generado correctamente");
         }
@@ -120,7 +121,6 @@
          */
         private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '')
         {
-            $this->generateBaseApiTemplate($module, $mod_path);
             $this->generateControllerTemplate($module, $mod_path, $force, $controllerType);
             $this->generateServiceTemplate($module, $mod_path, $force);
             $this->genereateAutoloaderTemplate($module, $mod_path, $force);
@@ -178,22 +178,17 @@
         private function generateBaseApiTemplate($module, $mod_path, $force = false, $controllerType = "")
         {
             $created = true;
-            if (false)
-            {
-                //Generamos el controlador base
-                $this->log->infoLog("Generamos Api BASES");
-                $controller = $this->tpl->dump("generator/api.base.template.twig", array(
-                    "module" => $module,
-                    "controllerType" => $controllerType,
-                    "api" => "Test"
-                ));
-                $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$module}BaseApi.php", $force);
-                $controller = $this->tpl->dump("generator/api.template.twig", array(
-                    "module" => $module,
-                    "controllerType" => $controllerType,
-                    "api" => "Test"
-                ));
-                $created = $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$module}.php", $force);
+            $modelPath = $mod_path . $module . DIRECTORY_SEPARATOR . 'Models';
+            if(file_exists($modelPath)) {
+                $dir = dir($modelPath);
+                while($file = $dir->read()) {
+                    if(!in_array($file, array('.', '..')) && !preg_match('/Query\.php$/i', $file) && preg_match('/\.php$/i', $file)) {
+                        $filename = str_replace(".php", "", $file);
+                        $this->log->infoLog("Generamos Api BASES para {$filename}");
+                        $this->createApiBaseFile($module, $mod_path, $filename);
+                        $this->createApi($module, $mod_path, $force, $filename);
+                    }
+                }
             }
             return $created;
         }
@@ -331,5 +326,42 @@
                 $this->log->errorLog($filename . _(' not exists or cant write'));
             }
             return $created;
+        }
+
+        /**
+         * Create ApiBase
+         * @param string $module
+         * @param string $mod_path
+         * @param string $api
+         *
+         * @return bool
+         */
+        private function createApiBaseFile($module, $mod_path, $api)
+        {
+            $controller = $this->tpl->dump("generator/api.base.template.twig", array(
+                "module"         => $module,
+                "api"            => $api
+            ));
+
+            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$api}BaseApi.php", true);
+        }
+
+        /**
+         * Create Api
+         * @param string $module
+         * @param string $mod_path
+         * @param bool $force
+         * @param string $api
+         *
+         * @return bool
+         */
+        private function createApi($module, $mod_path, $force, $api)
+        {
+            $controller = $this->tpl->dump("generator/api.template.twig", array(
+                "module"         => $module,
+                "api"            => $api
+            ));
+
+            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$api}.php", $force);
         }
     }

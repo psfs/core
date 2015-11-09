@@ -3,6 +3,8 @@
 
     use PSFS\base\config\Config;
     use PSFS\base\dto\JsonResponse;
+    use PSFS\base\Request;
+    use PSFS\base\Security;
 
     abstract class AuthApi extends Api
     {
@@ -12,25 +14,32 @@
         {
             parent::__construct();
             if (!$this->checkAuth()) {
-                return $this->json(new JsonResponse(_('Not authorized'), false), 401);
+                return $this->json(new JsonResponse(_('Not authorized'), FALSE), 401);
             }
         }
 
+        /**
+         * Check service authentication
+         * @return bool
+         */
         private function checkAuth()
         {
             $namespace = explode('\\', $this->getModelTableMap());
             $module = $namespace[0];
-            $secret = Config::getInstance()->get($module. '_api_secret');
-            $auth = false;
-            if (null === $secret) {
+            $secret = Config::getInstance()->get($module . '_api_secret');
+            if (NULL === $secret) {
                 $secret = Config::getInstance()->get("api_secret");
             }
-            if (null === $secret) {
-                $auth = true;
+            if (NULL === $secret) {
+                $auth = TRUE;
             } else {
-                if(array_key_exists('API_TOKEN', $this->query)) {
+                $token = Request::getInstance()->getHeader('X-' . strtoupper($module) . '-SEC-TOKEN');
+                if (array_key_exists('API_TOKEN', $this->query)) {
+                    $token = $this->query['API_TOKEN'];
                 }
+                $auth = Security::checkToken($token ?: '', $secret, $module);
             }
+
             return $auth;
         }
     }
