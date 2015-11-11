@@ -151,9 +151,10 @@
         private function checkCORS()
         {
             $corsEnabled = Config::getInstance()->get('cors.enabled');
-            if (NULL !== $corsEnabled) {
-                if($corsEnabled == '*' || preg_match($corsEnabled, $_SERVER['HTTP_REFERER'])) {
-                    $referer = preg_replace('/\/$/', '', $_SERVER['HTTP_REFERER']);
+            $request = Request::getInstance();
+            if (NULL !== $corsEnabled && null !== $request->getServer('HTTP_REFERER')) {
+                if($corsEnabled == '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
+                    $referer = preg_replace('/\/$/', '', $request->getServer('HTTP_REFERER'));
                     header("Access-Control-Allow-Credentials: true");
                     header("Access-Control-Allow-Origin: {$referer}");
                     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
