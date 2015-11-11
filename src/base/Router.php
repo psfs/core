@@ -153,7 +153,7 @@
             $corsEnabled = Config::getInstance()->get('cors.enabled');
             if (NULL !== $corsEnabled) {
                 if($corsEnabled == '*' || preg_match($corsEnabled, $_SERVER['HTTP_REFERER'])) {
-                    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_REFERER']}");
+                    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_REFERER']}/");
                 }
             }
         }
