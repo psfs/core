@@ -227,6 +227,7 @@
             }
 
             curl_setopt($this->con, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($this->con, CURLOPT_FOLLOWLOCATION, true);
         }
 
         public function callSrv()
