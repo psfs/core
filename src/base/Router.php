@@ -155,9 +155,8 @@
             if (NULL !== $corsEnabled && null !== $request->getServer('HTTP_REFERER')) {
                 if($corsEnabled == '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
                     if(Request::getInstance()->getMethod() == 'OPTIONS') {
-                        $referer = preg_replace('/\/$/', '', $request->getServer('HTTP_REFERER'));
                         header("Access-Control-Allow-Credentials: true");
-                        header("Access-Control-Allow-Origin: {$referer}");
+                        header("Access-Control-Allow-Origin: *");
                         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
                         header("Access-Control-Allow-Headers: Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Origin, X-Requested-With, Content-Type, Accept, Authorization");
                         header( "HTTP/1.1 200 OK" );
