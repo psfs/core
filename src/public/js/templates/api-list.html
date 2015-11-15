@@ -1,22 +1,29 @@
-<md-progress-circular md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
-<md-list data-ng-hide="loading" flex="40" flex-sm="100">
-    <md-subheader>{{ api }} list [{{ list.length }} / {{ count }}]</md-subheader>
-    <div paging
-         page="actualPage"
-         page-size="limit"
-         total="count"
-         paging-action="paginate(page)">
-    </div>
-    <md-list-item class="md-avatar"  ng-click="loadItem(item, $event)" data-ng-repeat="item in list" aria-label="{{ api }} element {{getLabel(item)}}" layout="row">
-        <p data-ng-bind="getLabel(item)" flex="80"></p>
-        <md-button aria-label="Delete" data-ng-click="deleteItem(item, $event)" class="md-fab md-warn md-mini">
-            <i class="fa fa-trash-o"></i>
-        </md-button>
-    </md-list-item>
-    <div paging
-         page="actualPage"
-         page-size="limit"
-         total="count"
-         paging-action="paginate(page)">
-    </div>
-</md-list>
+<md-content flex="35" flex-sm="100" layout-padding>
+    <md-progress-circular flex="100" md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
+    <md-list data-ng-hide="loading" layout="column">
+        <md-subheader>{{ api }} list [{{ list.length }} / {{ count }}]</md-subheader>
+        <div paging
+             page="actualPage"
+             page-size="limit"
+             total="count"
+             paging-action="paginate(page)"
+             data-ng-if="count > limit">
+        </div>
+        <md-list-item ng-click="loadItem(item, $event)"
+                      data-ng-repeat="item in list"
+                      aria-label="{{ api }} element {{getLabel(item)}}"
+                      layout="row">
+            <p data-ng-bind="getLabel(item)" flex="80"></p>
+            <md-button aria-label="Delete" data-ng-click="deleteItem(item, $event)" class="md-fab md-warn md-mini">
+                <i class="fa fa-trash-o"></i>
+            </md-button>
+        </md-list-item>
+        <div paging
+             page="actualPage"
+             page-size="limit"
+             total="count"
+             paging-action="paginate(page)"
+             data-ng-if="count > limit">
+        </div>
+    </md-list>
+</md-content>

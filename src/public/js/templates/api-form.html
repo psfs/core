@@ -1,0 +1,9 @@
+<md-content flex="60" flex-sm="100" layout-padding>
+    <form name="{{ entity }}_form" action="{{ url }}" method="{{ method }}" data-ng-hide="loading" layout="row" flex="100">
+
+        <md-input-container data-ng-repeat="field in entity.fields">
+            <label data-ng-bind-html="field.label"></label>
+        </md-input-container>
+    </form>
+    <md-progress-circular md-mode="indeterminate" data-ng-show="loading" flex="100"></md-progress-circular>
+</md-content>

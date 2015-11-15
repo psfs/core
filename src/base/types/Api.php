@@ -475,4 +475,16 @@
                 "url" => preg_replace('/\/$/', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), true)),
             ));
         }
+
+        /**
+         * Returns form data for any entity
+         * @GET
+         * @visible false
+         * @route /admin/[__API__}/form
+         * @return string JSON
+         */
+        public function getForm()
+        {
+           return $this->json(new JsonResponse(), 200);
+        }
     }

@@ -13,11 +13,11 @@
         <link href='https://fonts.googleapis.com/css?family=Lato:400,300,700' rel='stylesheet' type='text/css'>
         {% styles
             '@ROOT/css/normalize.css'
+            '@ROOT/css/angular-materials.css'
             '@ROOT/css/bootstrap.min.css'
             '@ROOT/css/bootstrap-theme.min.css'
             '@ROOT/css/font-awesome.min.css'
             '@ROOT/css/typeahead.css'
-            '@ROOT/css/angular-materials.css'
             '@ROOT/css/styles.css'
         %}{% endstyles %}
         {% block styles %}{% endblock styles %}
@@ -67,7 +67,7 @@
     <script type="application/javascript">
         var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
         (function(){
-            app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging']);
+            app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
         })();
     </script>
     {% block scripts %}

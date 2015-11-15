@@ -1,23 +1,15 @@
 (function(){
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var messageService = ['$rootScope', '$log', function($rootScope, $log) {
-        return {
-            'send': function(message, data) {
-                $log.debug('Event: ' + message);
-                $log.debug(data);
-                $rootScope.$broadcast(message, data);
-            }
-        };
-    }];
-    var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv',
-    function($scope, $log, $http, $mdDialog, $msgSrv){
+    var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv', '$apiSrv',
+    function($scope, $log, $http, $mdDialog, $msgSrv, $apiSrv){
         $scope.list = [];
         $scope.loading = false;
         $scope.limit = globalLimit || 10;
         $scope.actualPage = 1;
         $scope.filters = {};
         $scope.count = 0;
+        $scope.selected = null;
 
         function catchError(response)
         {
@@ -58,53 +50,17 @@
             }
         }
 
-        function getLabel(item)
-        {
-            if (item) {
-                if (item.label || item.Label) {
-                    return item.label || item.Label;
-                } else if (item.name || item.Name) {
-                    return item.name || item.Name;
-                } else if (item.title || item.Title) {
-                    return item.title || item.Title;
-                } else {
-                    return '';
-                }
-            } else {
-                return '';
-            }
-        }
-
-        function getId(item)
-        {
-            if (item) {
-                if (item.id || item.Id) {
-                    return item.id || item.Id;
-                } else if (item['id' + $scope.api]) {
-                    return item['id' + $scope.api]
-                } else if (item['id_' + $scope.api.toLowerCase]) {
-                    return item['id_' + $scope.api.toLowerCase];
-                } else if (item[$scope.api + 'Id']) {
-                    return item[$scope.api + 'Id'];
-                } else {
-                    throw new Error('Unidentified element');
-                }
-            } else {
-                throw new Error('Null object!!!');
-            }
-        }
-
         function deleteItem(item)
         {
             $scope.loading = true;
             var confirm = $mdDialog.confirm()
-                .title('Would you like to delete ' + getLabel(item) + '?')
+                .title('Would you like to delete ' + $apiSrv.getLabel(item) + '?')
                 .content('If you delete this element, maybe lost some related data')
                 .ariaLabel('Delete Element')
                 .ok('Delete')
                 .cancel('Cancel');
             $mdDialog.show(confirm).then(function() {
-                $http.delete($scope.url + "/" + getId(item))
+                $http.delete($scope.url + "/" + $apiSrv.getId(item))
                     .then(loadData);
             }, function() {
                 $scope.loading = false;
@@ -114,22 +70,24 @@
         function loadItem(item)
         {
             $msgSrv.send('psfs.load.item', item);
+            $scope.selected = item;
         }
 
-        $scope.getLabel = getLabel;
+        $scope.getLabel = $apiSrv.getLabel;
         $scope.loadData = loadData;
         $scope.loadItem = loadItem;
         $scope.deleteItem = deleteItem;
         $scope.paginate = paginate;
+        $scope.getId = $apiSrv.getId;
 
         loadData();
     }];
 
     app
-    .service('$msgSrv', messageService)
     .directive('apiLists', function() {
         return {
             restrict: 'E',
+            replace: true,
             scope: {
                 'api': '@',
                 'url': '@'
