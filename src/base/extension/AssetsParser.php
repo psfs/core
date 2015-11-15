@@ -2,7 +2,6 @@
 
 namespace PSFS\base\extension;
 
-use JShrink\Minifier;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
@@ -158,7 +157,7 @@ class AssetsParser {
             }
         }
         if (!$this->debug && !file_exists($base.$this->hash.".js")) {
-            $this->storeContents($base.$this->hash.".js", Minifier::minify($data));
+            $this->storeContents($base.$this->hash.".js", $data);//Minifier::minify($data));
         }
         return $this;
     }
@@ -303,7 +302,7 @@ class AssetsParser {
     protected function putProductionJs($base, $file, $data) {
         $js = file_get_contents($file);
         try {
-            $data .= ";".$js;
+            $data .= ";\n".$js;
         }catch (\Exception $e) {
             throw new ConfigException($e->getMessage());
         }
