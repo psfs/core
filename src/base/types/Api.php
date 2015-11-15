@@ -271,7 +271,7 @@
                 try {
                     $this->paginate();
                     $return = $this->list->toArray();
-                    $total = $this->list->count();
+                    $total = $this->list->getNbResults();
                     $pages = $this->list->getLastPage();
                 } catch (\Exception $e) {
                     Logger::getInstance(get_class($this))->errorLog($e->getMessage());

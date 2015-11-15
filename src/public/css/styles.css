@@ -1,3 +1,6 @@
 * {
     font-family: "Lato", Verdana;
 }
+md-dialog {
+    padding: 20px;
+}

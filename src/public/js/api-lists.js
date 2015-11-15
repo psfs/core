@@ -1,5 +1,5 @@
 (function(){
-    app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize']);
+    app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
     var messageService = ['$rootScope', '$log', function($rootScope, $log) {
         return {
@@ -14,8 +14,8 @@
     function($scope, $log, $http, $mdDialog, $msgSrv){
         $scope.list = [];
         $scope.loading = false;
-        $scope.limit = 2;
-        $scope.page = 1;
+        $scope.limit = globalLimit || 10;
+        $scope.actualPage = 1;
         $scope.filters = {};
         $scope.count = 0;
 
@@ -32,15 +32,21 @@
             $scope.loading = false;
         }
 
+        function paginate(page)
+        {
+            $scope.actualPage = page || 1;
+            loadData();
+        }
+
         function loadData()
         {
             var queryParams = {
                 '__limit': $scope.limit,
-                '__page': $scope.page
+                '__page': $scope.actualPage
             };
             $scope.loading = true;
             try {
-                $http.get($scope.url, queryParams)
+                $http.get($scope.url, {params: queryParams})
                     .then(function(result) {
                         $log.info(result);
                         $scope.list = result.data.data;
@@ -114,6 +120,7 @@
         $scope.loadData = loadData;
         $scope.loadItem = loadItem;
         $scope.deleteItem = deleteItem;
+        $scope.paginate = paginate;
 
         loadData();
     }];

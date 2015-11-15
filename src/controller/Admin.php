@@ -306,6 +306,12 @@ class Admin extends AuthAdminController{
      */
     public function getConfigParams() {
         $response = array_merge(Config::$required, Config::$optional);
+        $domains = Router::getInstance()->getDomains();
+        foreach($domains as $domain => $routes) {
+            $pDomain = str_replace('@', '', $domain);
+            $pDomain = str_replace('/', '', $pDomain);
+            $response[] = strtolower($pDomain) . '.api.secret';
+        }
         return $this->json($response);
     }
 

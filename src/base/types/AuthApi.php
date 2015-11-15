@@ -26,9 +26,9 @@
         {
             $namespace = explode('\\', $this->getModelTableMap());
             $module = $namespace[0];
-            $secret = Config::getInstance()->get($module . '_api_secret');
+            $secret = Config::getInstance()->get($module . '.api.secret');
             if (NULL === $secret) {
-                $secret = Config::getInstance()->get("api_secret");
+                $secret = Config::getInstance()->get("api.secret");
             }
             if (NULL === $secret) {
                 $auth = TRUE;

@@ -57,6 +57,7 @@
         "@ROOT/js/angular/sanitize.js"
         "@ROOT/js/angular/messages.js"
         "@ROOT/js/angular/materials.js"
+        "@ROOT/js/angular/paging.js"
         "@ROOT/js/bootbox.js"
         "@ROOT/js/typeahead.js"
         "@ROOT/js/admins.js"
@@ -64,9 +65,9 @@
         %}{% endscript %}
     {% endblock base_scripts %}
     <script type="application/javascript">
-        var app;
+        var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
         (function(){
-            app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial']);
+            app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging']);
         })();
     </script>
     {% block scripts %}

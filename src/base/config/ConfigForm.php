@@ -47,13 +47,15 @@ class ConfigForm extends Form
             }
         }
         $extra = array();
+        $extraKeys = array();
         if (!empty($data)) {
-            $extra = array_diff(array_keys($data), array_merge(Config::$required, Config::$optional));
+            $extraKeys = array_keys($data);
+            $extra = array_diff($extraKeys, array_merge(Config::$required, Config::$optional));
         }
         if (!empty($extra)) {
             foreach ($extra as $key => $field) {
                 if (strlen($data[$field]) > 0) {
-                    $this->add($key, array(
+                    $this->add($extraKeys[$key], array(
                         "label" => $field,
                         "class" => "col-md-6",
                         "required" => false,
