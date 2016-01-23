@@ -1,4 +1,5 @@
 {% set super_admin_routes = __menu__['superadmin']|default([]) %}
+{% set admin_hidden_routes = __menu__['adminhidden']|default([]) %}
 {% set admin_routes = __menu__['admin']|default([]) %}
 {% if error_page is not defined %}
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -26,6 +27,16 @@
                         {% endfor %}
                     </ul>
                 </li>
+                {% endif %}
+                {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ and admin_hidden_routes|length > 0 %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin hidden menus<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for route in admin_hidden_routes %}
+                                <li><a href="{{ path(route) }}">{{ route|trans }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
                 {% endif %}
                 {% if (__admin__.profile == __profiles__.__SUPER_ADMIN__ or __admin__.profile == __profiles__.__ADMIN__) and admin_routes|length > 0 %}
                 <li class="dropdown">

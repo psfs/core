@@ -500,13 +500,20 @@
                     } else {
                         $profile = "admin";
                     }
-                    if (!empty($params["default"]) && $params["visible"] && preg_match('/(GET|ALL)/i', $httpMethod)) {
-                        $routes[$profile][] = $params["slug"];
+                    if (!empty($params["default"]) && preg_match('/(GET|ALL)/i', $httpMethod)) {
+                        $_profile = ($params["visible"]) ? $profile : 'adminhidden';
+                        if(!array_key_exists($_profile, $routes)) {
+                            $routes[$_profile] = array();
+                        }
+                        $routes[$_profile][] = $params["slug"];
                     }
                 }
             }
             if (array_key_exists("superadmin", $routes)) {
                 asort($routes["superadmin"]);
+            }
+            if (array_key_exists("adminhidden", $routes)) {
+                asort($routes["adminhidden"]);
             }
             if (array_key_exists('admin', $routes)) {
                 asort($routes["admin"]);
