@@ -8,6 +8,8 @@
     use Propel\Runtime\Map\TableMap;
     use Propel\Runtime\Propel;
     use PSFS\base\config\Config;
+    use PSFS\base\dto\Field;
+    use PSFS\base\dto\Form;
     use PSFS\base\dto\JsonResponse;
     use PSFS\base\dto\Order;
     use PSFS\base\Logger;
@@ -86,7 +88,8 @@
          * Wrapper de asignación de los menus
          * @return array
          */
-        protected function getMenu() {
+        protected function getMenu()
+        {
             return Router::getInstance()->getAdminRoutes();
         }
 
@@ -104,6 +107,7 @@
         {
             /** @var TableMap $tableMap */
             $tableMap = $this->getModelTableMap();
+
             return $tableMap::getOMClass(FALSE);
         }
 
@@ -197,7 +201,7 @@
         {
             if (count($this->query) > 0) {
                 foreach ($this->query as $field => $value) {
-                    if($this->checkFieldExists($field)) {
+                    if ($this->checkFieldExists($field)) {
                         $tableField = ucfirst($field);
                         if (preg_match('/^<=/', $value)) {
                             $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
@@ -229,7 +233,11 @@
                 $this->addFilters($query);
                 $this->addOrders($query);
                 list($page, $limit) = $this->extractPagination();
-                $this->list = $query->paginate($page, $limit, $this->con);
+                if ($limit == -1) {
+                    $this->list = $query->find($this->con);
+                } else {
+                    $this->list = $query->paginate($page, $limit, $this->con);
+                }
             } catch (\Exception $e) {
                 Logger::getInstance(get_class($this))->errorLog($e->getMessage());
             }
@@ -265,9 +273,9 @@
         {
             $code = 200;
             $return = NULL;
-            $total = null;
+            $total = NULL;
             $pages = 1;
-            if (NULL === $pk) {
+            if (NULL === $pk || '' === $pk) {
                 try {
                     $this->paginate();
                     $return = $this->list->toArray();
@@ -408,6 +416,7 @@
 
         /**
          * Wrapper for json parent method with close transactions and close connectios tasks
+         *
          * @param JsonResponse $response
          * @param int $status
          *
@@ -417,11 +426,13 @@
         {
             $this->closeTransaction($status);
             Propel::closeConnections();
+
             return parent::json($response, $status);
         }
 
         /**
          * Close transactions if are requireds
+         *
          * @param int $status
          */
         private function closeTransaction($status)
@@ -459,32 +470,41 @@
         private function getApi()
         {
             $model = explode("\\", $this->getModelNamespace());
+
             return $model[count($model) - 1];
         }
 
         /**
          * @GET
-         * @route /admin/{__API__}
+         * route /admin/{__API__}
          * @return string HTML
          */
         public function admin()
         {
             return $this->render('api.admin.html.twig', array(
-                "api" => $this->getApi(),
+                "api"    => $this->getApi(),
                 "domain" => $this->domain,
-                "url" => preg_replace('/\/$/', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), true)),
+                "url"    => preg_replace('/\/$/', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), TRUE)),
             ));
+        }
+
+        protected function extractFields()
+        {
+
         }
 
         /**
          * Returns form data for any entity
          * @GET
          * @visible false
-         * @route /admin/[__API__}/form
+         * @route /api/form/{__API__}
          * @return string JSON
          */
         public function getForm()
         {
-           return $this->json(new JsonResponse(), 200);
+            $form = new Form();
+            $form->addField(new Field('Id', _('Id')));
+            $form->addField(new Field('Name', _('Name')));
+            return $this->json(new JsonResponse($form->toArray(), true), 200);
         }
     }

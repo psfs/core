@@ -18,39 +18,39 @@ class AdminForm extends Form {
     public function __construct() {
         $this->setAction(Router::getInstance()->getRoute('admin-setup'));
         $this->add('username', array(
-            'label' => _('Alias de usuario'),
+            'label' => _('User Alias'),
             'autocomplete' => 'off',
         ))->add('password', array(
             'type' => 'password',
-            'label' => _('Contraseña'),
+            'label' => _('Password'),
             'autocomplete' => 'off',
         ))->add('profile', array(
             'type' => 'select',
-            'label' => _("Perfil"),
+            'label' => _("Role"),
             'value' => sha1('superadmin'),
             'autocomplete' => 'off',
             'data' => Security::getProfiles(),
         ));
-        //Aplicamos estilo al formulario
+        //Apply styling to the form
         $this->setAttrs(array(
             "class" => "col-md-6",
             "autocomplete" => "off",
         ));
-        //Añadimos las acciones del formulario
+        //Add action buttons to form
         $this->addButton('submit');
     }
 
     /**
-     * Método que devuelve el título del formulario
+     * Method that returns the form's title
      * @return string
      */
     public function getTitle()
     {
-        return _("Gestión de Usuarios Administradores");
+        return _("Admin user control panel");
     }
 
     /**
-     * Método que devuelve el nombre del formulario
+     * Method that returns the form's name
      * @return string
      */
     public function getName()

@@ -80,6 +80,8 @@
         $scope.paginate = paginate;
         $scope.getId = $apiSrv.getId;
 
+        $scope.$on('psfs.list.reload', loadData);
+
         loadData();
     }];
 

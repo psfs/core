@@ -32,7 +32,7 @@ class Config {
     protected $debug = false;
 
     /**
-     * Constructor Config
+     * Config Constructor
      */
     public function __construct() {
         $this->init();

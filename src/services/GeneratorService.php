@@ -216,8 +216,8 @@
         {
             //Generamos el fichero de configuración
             $this->log->infoLog("Generamos ficheros para assets base");
-            $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css", $force);
-            $js = $this->writeTemplateToFile("/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "app.js", $force);
+            $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css", false);
+            $js = $this->writeTemplateToFile("/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "app.js", false);
             return ($css && $js);
         }
 

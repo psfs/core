@@ -25,7 +25,7 @@
         public $pages = 1;
 
         /**
-         * @param array $data
+         * @param object|array $data
          * @param bool|FALSE $result
          * @param int $total
          * @param int $pages

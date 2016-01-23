@@ -10,6 +10,16 @@
      */
     class Dto extends Singleton
     {
+
+        /**
+         * ToArray wrapper
+         * @return array
+         */
+        public function toArray()
+        {
+            return $this->__toArray();
+        }
+
         /**
          * Convert dto to array representation
          * @return array
