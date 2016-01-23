@@ -25,7 +25,7 @@
         private function checkAuth()
         {
             $namespace = explode('\\', $this->getModelTableMap());
-            $module = $namespace[0];
+            $module = strtolower($namespace[0]);
             $secret = Config::getInstance()->get($module . '.api.secret');
             if (NULL === $secret) {
                 $secret = Config::getInstance()->get("api.secret");

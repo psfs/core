@@ -367,7 +367,7 @@
         }
 
         /**
-         * Extract Ts and Modulefrom token
+         * Extract Ts and Module from token
          * @param array $parts
          * @param int $partLength
          *
@@ -439,6 +439,10 @@
          */
         public static function checkToken($token, $secret, $module = 'PSFS')
         {
+            if (0 === strlen($token) || 0 === strlen($secret)) {
+                return false;
+            }
+            $module = strtolower($module);
             $decodedToken = self::decodeToken($token, $module);
             $expectedToken = self::decodeToken(self::generateToken($secret, $module), $module);
 
