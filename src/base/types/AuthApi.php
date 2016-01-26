@@ -33,7 +33,7 @@
             if (NULL === $secret) {
                 $auth = TRUE;
             } else {
-                $token = Request::getInstance()->getHeader('X-' . strtoupper($module) . '-SEC-TOKEN');
+                $token = Request::getInstance()->getHeader('X-API-SEC-TOKEN');
                 if (array_key_exists('API_TOKEN', $this->query)) {
                     $token = $this->query['API_TOKEN'];
                 }

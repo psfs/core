@@ -162,7 +162,7 @@
                         header("Access-Control-Allow-Credentials: true");
                         header("Access-Control-Allow-Origin: *");
                         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-                        header("Access-Control-Allow-Headers: Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Origin, X-Requested-With, Content-Type, Accept, Authorization");
+                        header("Access-Control-Allow-Headers: Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Origin, X-Requested-With, Content-Type, Accept, Authorization, X-API-SEC-TOKEN, X-API-USER-TOKEN");
                         $this->headersSent = true;
                     }
                     if(Request::getInstance()->getMethod() == 'OPTIONS') {
