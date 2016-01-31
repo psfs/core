@@ -35,7 +35,7 @@
         /**
          * @var array $filters
          */
-        protected $filters;
+        protected $filters = array();
 
         /**
          * @Inyectable
@@ -46,12 +46,12 @@
         /**
          * @var array $query
          */
-        protected $query;
+        protected $query = array();
 
         /**
          * @var array $data
          */
-        protected $data;
+        protected $data = array();
 
         /**
          * @var ConnectionInterface con
@@ -199,6 +199,7 @@
          */
         private function addFilters(ModelCriteria &$query)
         {
+            pre($this->query, true);
             if (count($this->query) > 0) {
                 foreach ($this->query as $field => $value) {
                     if ($this->checkFieldExists($field)) {
@@ -410,8 +411,8 @@
         private function hydrateRequestData()
         {
             $request = Request::getInstance();
-            $this->query = $request->getQueryParams();
-            $this->data = $request->getData();
+            $this->query = array_merge($this->query, $request->getQueryParams());
+            $this->data = array_merge($this->data, $request->getData());
         }
 
         /**
