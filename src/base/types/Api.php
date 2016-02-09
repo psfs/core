@@ -199,7 +199,6 @@
          */
         private function addFilters(ModelCriteria &$query)
         {
-            pre($this->query, true);
             if (count($this->query) > 0) {
                 foreach ($this->query as $field => $value) {
                     if ($this->checkFieldExists($field)) {
