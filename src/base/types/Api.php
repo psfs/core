@@ -285,14 +285,27 @@
                     Logger::getInstance(get_class($this))->errorLog($e->getMessage());
                 }
             } else {
-                $this->hydrateModel($pk);
-                $return = ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel()->toArray() : NULL;
+                $return = $this->_get($pk);
                 if (NULL === $return) {
                     $code = 404;
+                } else {
+                    $return = $return->toArray();
                 }
             }
 
             return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        }
+
+        /**
+         * Extract specific entity
+         * @param integer $pk
+         *
+         * @return null|ActiveRecordInterface
+         */
+        protected function _get($pk)
+        {
+            $this->hydrateModel($pk);
+            return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : NULL;
         }
 
         /**
