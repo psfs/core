@@ -64,6 +64,11 @@
         protected $debug = FALSE;
 
         /**
+         * @var array extraColumns
+         */
+        protected $extraColumns = array();
+
+        /**
          *
          */
         public function __construct()
@@ -193,6 +198,28 @@
         }
 
         /**
+         * Add extra columns to pagination query
+         * @param ModelCriteria $query
+         */
+        private function addExtraColumns(ModelCriteria &$query)
+        {
+            if(!empty($this->extraColumns)) {
+                foreach ($this->extraColumns as $expression => $columnName) {
+                    $query->withColumn($expression, $columnName);
+                }
+            }
+        }
+
+        /**
+         * Method that allow joins between models
+         * @param ModelCriteria $query
+         */
+        protected function joinTables(ModelCriteria &$query)
+        {
+            //TODO for specific implementations
+        }
+
+        /**
          * Add filters fields to query
          *
          * @param ModelCriteria $query
@@ -230,8 +257,10 @@
             $this->list = array();
             try {
                 $query = $this->extractQuery();
+                $this->joinTables($query);
                 $this->addFilters($query);
                 $this->addOrders($query);
+                $this->addExtraColumns($query);
                 list($page, $limit) = $this->extractPagination();
                 if ($limit == -1) {
                     $this->list = $query->find($this->con);
@@ -252,6 +281,8 @@
         {
             try {
                 $query = $this->extractQuery();
+                $this->joinTables($query);
+                $this->addExtraColumns($query);
                 $this->model = $query->findPk($pk);
             } catch (\Exception $e) {
                 Logger::getInstance(get_class($this))->errorLog($e->getMessage());
