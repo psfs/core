@@ -73,10 +73,6 @@
             }
         }
 
-
-
-
-
         /**
          * Servicio que lee los logs y los formatea para listarlos
          * @return array

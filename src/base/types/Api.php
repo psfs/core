@@ -371,6 +371,7 @@
                     $model = $this->model->toArray();
                 }
             } catch (\Exception $e) {
+                jpre($e->getMessage(), true);
                 Logger::getInstance()->errorLog($e->getMessage());
             }
 
@@ -520,7 +521,7 @@
 
         /**
          * @GET
-         * route /admin/{__API__}
+         * @route /admin/{__API__}
          * @return string HTML
          */
         public function admin()
@@ -547,7 +548,6 @@
         public function getForm()
         {
             $form = new Form();
-            $form->addField(new Field('Id', _('Id')));
             $form->addField(new Field('Name', _('Name')));
             return $this->json(new JsonResponse($form->toArray(), true), 200);
         }

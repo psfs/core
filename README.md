@@ -4,46 +4,42 @@ PSFS
 [![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
 [![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/c15k0/psfs/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/c15k0/psfs/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
 
 Framework Php Simple Fast & Secure
 
-Componentes necesarios para su ejecución:
+Needed components to execute PSFS:
 
-    * "propel/propel": "2.0.*@dev",
-    * "symfony/console": "2.6.*@dev",
-    * "symfony/finder": "2.3.*@dev",
-    * "monolog/monolog": "1.10.*@dev",
-    * "twig/twig": "1.*@dev"
-    * "twig/extensions": "1.1.*@dev",
-    * "monolog/monolog": "dev-master",
-    * "pear/archive_tar": "master",
-    * "tedivm/jshrink": "~1.0"
-    * "natxet/cssmin": "^3.0@dev"
+    * "propel/propel": "^2.0",
+    * "symfony/console": "^3.0",
+    * "symfony/finder": "2.3.x-dev",
+    * "twig/twig": "1.x-dev",
+    * "twig/extensions": "dev-master",
+    * "monolog/monolog": "1.x-dev",
+    * "pear/archive_tar": "dev-master",
+    * "tedivm/jshrink": "~1.0",
+    * "natxet/CssMin": "^3.0@dev"
 
-Para instalar usar composer:
+How to install using composer:
 
     composer require c15k0/psfs
     ./vendor/bin/psfs psfs:create:root
 
 RoadMap:
 
-    * Gestión de sesiones
-        - Motores de sesión(mongodb, filesystem, mysql...)
-    * Adaptación backend a angular
-        - Inclusión angular en gestión de menús
+    * Session management
+        - Session engines(mongodb, filesystem, mysql...)
+    * Migrate admin site to angular
+        - Use angular for menus
         - Angular Materials
-    * Mejora sistema de cache(html, php, json)
-        - Serializado de lógicas de negocio
-        - Buffer de html
-    * Gestión central de sincronizado(pSync)
-        - Control de versiones controlada desde admin
-        - Gestión composer desde admin
-        - Control de despliegues remotos
-    * Motor dinámico de creación de módulos
-        - Entorno visual de creación de modelos
-        - Entorno visual de control de flujos
-        - Entorno visual de generación de websites
-    * Documentación framework
-        - Autodocumentación servicios
-        - Documentación general
+    * Improve cache(html, php, json)
+        - Serialize business logics
+        - Html buffer
+    * Dynamic site to manage modules
+        - Admin site to manage logic models
+        - Admin site to manage workflows
+        - Admin site to manage web pages
+    * Framework documentation
+        - Self documentation for apis(swagger and postman outputs)
+        - PhpDoc for all files
 

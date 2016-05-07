@@ -49,7 +49,7 @@
                     {
                         $res = _('Revisando directorio: ') . $inspect_path;
                         $res .= _('Comando ejecutado: '). $cmd_php;
-                        $res .= shell_exec($cmd_php);// . " >> " . __DIR__ . DIRECTORY_SEPARATOR . "debug.log 2>&1");
+                        $res .= shell_exec($cmd_php);
                         usleep(10);
                         $translations[] = $res;
                         $translations = array_merge($translations, self::findTranslations($inspect_path, $locale));

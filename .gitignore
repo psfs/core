@@ -1,9 +1,7 @@
 /html/
-/locale/
 /vendor/
 /cache/
 /config/
-/html/
 /logs/
 /modules/
 composer.phar

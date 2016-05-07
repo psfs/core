@@ -15,6 +15,7 @@
         const COMBO_TYPE = 'select';
         const TEXTAREA_TYPE = 'textarea';
         const SEARCH_TYPE = 'search';
+        const HIDDEN_TYPE = 'hidden';
 
         /**
          * @var string label

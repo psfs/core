@@ -1,0 +1,845 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-03 23:42+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:77
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:65
+#: /Users/flopez/Development/PSFS/src/base/Router.php:78
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:31
+msgid "Es necesario ser administrador para ver ésta zona"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:89
+#: /Users/flopez/Development/PSFS/src/base/Router.php:92
+msgid "Espacio web restringido"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:248
+#: /Users/flopez/Development/PSFS/src/base/Router.php:255
+#: /Users/flopez/Development/PSFS/src/base/Router.php:302
+#: /Users/flopez/Development/PSFS/src/base/Router.php:301
+msgid "El controlador debe tener un dominio asignado"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Security.php:38
+#: /Users/flopez/Development/PSFS/src/base/Security.php:30
+#: /Users/flopez/Development/PSFS/src/base/Security.php:32
+#: /Users/flopez/Development/PSFS/src/base/Security.php:51
+#: /Users/flopez/Development/PSFS/src/base/Security.php:54
+msgid "Administrador"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Security.php:39
+#: /Users/flopez/Development/PSFS/src/base/Security.php:31
+#: /Users/flopez/Development/PSFS/src/base/Security.php:33
+#: /Users/flopez/Development/PSFS/src/base/Security.php:52
+#: /Users/flopez/Development/PSFS/src/base/Security.php:55
+msgid "Gestor"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Template.php:354
+#: /Users/flopez/Development/PSFS/src/base/Template.php:359
+#: /Users/flopez/Development/PSFS/src/base/Template.php:368
+#: /Users/flopez/Development/PSFS/src/base/Template.php:262
+#: /Users/flopez/Development/PSFS/src/base/Template.php:264
+#: /Users/flopez/Development/PSFS/src/base/Template.php:313
+#: /Users/flopez/Development/PSFS/src/base/Template.php:258
+#: /Users/flopez/Development/PSFS/src/base/Template.php:285
+#: /Users/flopez/Development/PSFS/src/base/Template.php:289
+#: /Users/flopez/Development/PSFS/src/base/Template.php:293
+msgid "Plantillas regeneradas correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Template.php:359
+#: /Users/flopez/Development/PSFS/src/base/Template.php:364
+#: /Users/flopez/Development/PSFS/src/base/Template.php:373
+#: /Users/flopez/Development/PSFS/src/base/Template.php:267
+#: /Users/flopez/Development/PSFS/src/base/Template.php:288
+#: /Users/flopez/Development/PSFS/src/base/Template.php:337
+#: /Users/flopez/Development/PSFS/src/base/Template.php:280
+#: /Users/flopez/Development/PSFS/src/base/Template.php:307
+#: /Users/flopez/Development/PSFS/src/base/Template.php:311
+#: /Users/flopez/Development/PSFS/src/base/Template.php:315
+#, possible-php-format
+msgid "Generando plantillas en path '%s' para el dominio '%d'"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:24
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:23
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:22
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:21
+msgid "Alias de usuario"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:28
+#: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:27
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:27
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:26
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:25
+msgid "Contraseña"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:32
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:31
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:30
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:29
+msgid "Perfil"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:52
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:51
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:50
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:49
+msgid "Gestión de Usuarios Administradores"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:63
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:67
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:68
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:71
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:73
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:75
+msgid "Guardar configuración"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:66
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:70
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:71
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:74
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:76
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:78
+msgid "Añadir nuevo parámetro"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:21
+msgid "Usuario"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:36
+msgid "Acceder como {{username}}"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:37
+msgid "Cancelar"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:25
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:24
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:23
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:33
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:32
+msgid "Nombre del Módulo"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:44
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:43
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:42
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:58
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:67
+msgid "Gestión de Módulos"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/exception/ConfigException.php:17
+#: /Users/flopez/Development/PSFS/src/base/exception/ConfigException.php:16
+msgid "Error en la configuración de la plataforma"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/exception/RouterException.php:15
+#: /Users/flopez/Development/PSFS/src/base/exception/RouterException.php:14
+#: /Users/flopez/Development/PSFS/src/base/Router.php:72
+#: /Users/flopez/Development/PSFS/src/base/Router.php:73
+#: /Users/flopez/Development/PSFS/src/base/Router.php:89
+msgid "Página no encontrada"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/exception/SecurityException.php:15
+#: /Users/flopez/Development/PSFS/src/base/exception/SecurityException.php:14
+#: /Users/flopez/Development/PSFS/src/base/types/AuthApi.php:17
+msgid "Not authorized"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/social/form/GenerateShortUrlForm.php:23
+msgid "Url Larga"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/social/form/GoogleUrlShortenerForm.php:23
+msgid "Api Key"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:155
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:166
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:168
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:169
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:152
+msgid "Formulario no válido"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:168
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:179
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:361
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:362
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:343
+#, possible-php-format
+msgid "El campo %s es oligatorio"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:177
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:188
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:368
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:369
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:352
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:353
+#, possible-php-format
+msgid "El campo %s no tiene un formato válido"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:129
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:109
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:116
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:117
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:137
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:167
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:161
+msgid "Acceso permitido... redirigiendo!!"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:162
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:144
+msgid "Compilando traducciones"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:191
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:92
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:94
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:97
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:47
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:48
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:50
+msgid "Revisando directorio: "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:192
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:93
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:95
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:98
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:48
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:49
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:51
+msgid "Comando ejecutado: "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:226
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:461
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:489
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:462
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:490
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:179
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:178
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:183
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:184
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:201
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:234
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:217
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:253
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:211
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:247
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:213
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:249
+msgid "Bienvenido a PSFS"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:408
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:409
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:292
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:291
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:282
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:283
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:302
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:329
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:348
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:368
+msgid "Selecciona un fichero de log"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/04/93/4c55992cd1adf4de4ebdc05b99a542d00ded76c57b7bef620e9be62276df.php:36
+#: /Users/flopez/Development/PSFS/cache/0/4/04934c55992cd1adf4de4ebdc05b99a542d00ded76c57b7bef620e9be62276df.php:36
+#: /Users/flopez/Development/PSFS/cache/a/d/ad1087196c2a0c2467de69ec2bbb4de57b9ca7d28794025b41b15a8966949534.php:36
+#: /Users/flopez/Development/PSFS/cache/35/35ea0d79ebea128ead353715901f3bc13f1f3e7831b5fa5ead511108b078da7c.php:36
+msgid "Opps, esto no era lo que me esperaba..."
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/11/36/8236a8c8807885b258441ce95e9de21feab7c4066ef629ff7134fd42a8db.php:35
+#: /Users/flopez/Development/PSFS/cache/1/1/11368236a8c8807885b258441ce95e9de21feab7c4066ef629ff7134fd42a8db.php:35
+#: /Users/flopez/Development/PSFS/cache/2/f/2f16046b3b84d36ee5b6899126ff725008bbcb60621aad848cc0bc344aa963e6.php:35
+#: /Users/flopez/Development/PSFS/cache/5d/5dac5d99cab70a674d5cf05ba44578ed09af298fae15683341de1124951cfb61.php:35
+msgid "Acceso Web"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/35/c1/bdf42d5574bf8d91bdd0f2344f6243c74c1408e2d989172a89c79fc09b4a.php:35
+#: /Users/flopez/Development/PSFS/cache/3/5/35c1bdf42d5574bf8d91bdd0f2344f6243c74c1408e2d989172a89c79fc09b4a.php:35
+#: /Users/flopez/Development/PSFS/cache/f/a/fa5fb90a63197159568d7e0d75c5fbd9b60653f55ac4364042417020256a3eb5.php:35
+#: /Users/flopez/Development/PSFS/cache/8b/8b34bd74f1da72f2ca34ef93085fe10ea1fde019133fb25e64233d92fc615d10.php:35
+msgid "Rutas definidas en el sistema"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/60/53/adefafea7375910b1cf831a2ce6cfe4dea6bed9abfe66f621027428ca4ba.php:36
+#: /Users/flopez/Development/PSFS/cache/6/0/6053adefafea7375910b1cf831a2ce6cfe4dea6bed9abfe66f621027428ca4ba.php:36
+#: /Users/flopez/Development/PSFS/cache/b/a/ba118c6543eb53a296a3ddcfc497cc7f9a1c5fbb7e9edd0c0fab74023e157f62.php:36
+#: /Users/flopez/Development/PSFS/cache/4/6/469addd171d2ad98cb82931f4f193882afd58213831af6dd4c562da5f907c60c.php:36
+#: /Users/flopez/Development/PSFS/cache/39/39db69e404fc8a682423510240ec8861da5de9ecd707ad1908ca1210f950d633.php:36
+msgid "Herramienta de Gestión de Módulos"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/70/86/d32d41cd7dc6c6a960576fc66599fa92fd43cd620792862d9ff7bdf5ba05.php:36
+#: /Users/flopez/Development/PSFS/cache/7/0/7086d32d41cd7dc6c6a960576fc66599fa92fd43cd620792862d9ff7bdf5ba05.php:36
+#: /Users/flopez/Development/PSFS/cache/c/d/cd98ecb04401fc2a43bb5c76027b4994b6403cc6e0e46b1bf5e6e89b28727b1f.php:36
+#: /Users/flopez/Development/PSFS/cache/7e/7eebdfdc4c22536ac05fa45abee3da68ed53ad7a68e13c7fbc2f851ee78245a2.php:36
+msgid "Herramienta de Gestión de Administradores PSFS"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/b3/92/cedef349718ea26c99602f1ff3881d5c59f014da239f68915ee5538c1858.php:35
+#: /Users/flopez/Development/PSFS/cache/b/3/b392cedef349718ea26c99602f1ff3881d5c59f014da239f68915ee5538c1858.php:35
+#: /Users/flopez/Development/PSFS/cache/d/d/ddd0367ec3992d0ecb709c30f1935d1f47e6337cec00af6e2cee213d2041ad50.php:35
+#: /Users/flopez/Development/PSFS/cache/cf/cf42560ae5c37b2105290f4f4aa64dc009fdec6e2c379ffb3d6cd6dc25ce05be.php:35
+msgid "Logs de la plataforma"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/b8/fb/0d4b30eb660b8eb12da163007cd37c480145105bca7d3c99aae9871531c0.php:36
+#: /Users/flopez/Development/PSFS/cache/b/8/b8fb0d4b30eb660b8eb12da163007cd37c480145105bca7d3c99aae9871531c0.php:36
+#: /Users/flopez/Development/PSFS/cache/8/4/84a03623ee5c289907ebedd4a172cfb5ad8eaa28d790cb4474c73786ca68d4a4.php:36
+#: /Users/flopez/Development/PSFS/cache/f7/f7cc237209834e2e0d0cd08fd588bc08f2762110062ed738b64b741ea5e1e32d.php:36
+msgid "Herramienta de Administración"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/d4/15/cb09bfcd344dca95a812dd723f410de9bcdc0f5b926cdbb441f3fde9b9b6.php:36
+#: /Users/flopez/Development/PSFS/cache/d/4/d415cb09bfcd344dca95a812dd723f410de9bcdc0f5b926cdbb441f3fde9b9b6.php:36
+#: /Users/flopez/Development/PSFS/cache/8/3/83d84a77e1e9fce1eefce755f981e1fc195ba6620f180630249b7cc18a7b07da.php:36
+#: /Users/flopez/Development/PSFS/cache/34/34df6cf34cf8cda1a4666b8bd94333bc467afb8e873e6d7132b0bf61fe902ca1.php:36
+msgid "Herramienta de configuración"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/db/5e/ff0b7b4ee6146d7fbbe852f76048f542d18e3e55dcc118a52d385de44769.php:36
+#: /Users/flopez/Development/PSFS/cache/d/b/db5eff0b7b4ee6146d7fbbe852f76048f542d18e3e55dcc118a52d385de44769.php:36
+#: /Users/flopez/Development/PSFS/cache/7/2/720373688eb3f0fcaa12790131d46e3daa306942c4df2980e4c542d5aaa70d53.php:36
+#: /Users/flopez/Development/PSFS/cache/ed/ed4def152056a65f81b7d239d2cd1a4a856c2dd2bde15b6fdae72920a1930ab9.php:36
+msgid "No tienes privilegios para acceder"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/db/5e/ff0b7b4ee6146d7fbbe852f76048f542d18e3e55dcc118a52d385de44769.php:51
+#: /Users/flopez/Development/PSFS/cache/d/b/db5eff0b7b4ee6146d7fbbe852f76048f542d18e3e55dcc118a52d385de44769.php:51
+#: /Users/flopez/Development/PSFS/cache/7/2/720373688eb3f0fcaa12790131d46e3daa306942c4df2980e4c542d5aaa70d53.php:51
+#: /Users/flopez/Development/PSFS/cache/ed/ed4def152056a65f81b7d239d2cd1a4a856c2dd2bde15b6fdae72920a1930ab9.php:51
+#, possible-php-format
+msgid "La ruta a la que accedes %s es de acceso restringido"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:2
+msgid "admin-setup"
+msgstr "Administración usuarios administración"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:3
+msgid "admin-login"
+msgstr "Login"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:4
+msgid "admin-translations-locale"
+msgstr "Generar traducciones"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:5
+msgid "admin-config"
+msgstr "Configuración general"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:6
+msgid "admin"
+msgstr "Home admin"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:7
+msgid "admin-module"
+msgstr "Generación de Módulos"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:8
+msgid "admin-config-params"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:9
+msgid "admin-routes"
+msgstr "Visor de rutas del sistema"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:10
+msgid "admin-routes-show"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:11
+msgid "admin-logs"
+msgstr "Gestor de logs del sistema"
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:12
+msgid "admin-social-gus"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:13
+msgid "admin-social-gus-generate"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:14
+msgid "base"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:15
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:16
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:17
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:18
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:19
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:20
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:21
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:22
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:23
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:24
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:25
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:26
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:27
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:28
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:29
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:30
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:31
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:32
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:33
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:34
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:35
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:36
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:37
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:38
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:39
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:40
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:41
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:42
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:43
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:44
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:45
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:46
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:47
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:48
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:49
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:50
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:51
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:52
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:53
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:54
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:55
+msgid "n-a"
+msgstr "No definida"
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:138
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:34
+#: /Users/flopez/Development/PSFS/src/services/AdminServices.php:37
+msgid "Zona restringida"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:206
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:208
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:206
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:208
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:206
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:208
+msgid "Nuevo "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:297
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:297
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:297
+msgid "Deseleccionar todo"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:307
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:307
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:307
+msgid "Deseleccionar"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:317
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:317
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:317
+msgid "Info"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:325
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:325
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:325
+msgid "Seleccionar"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/f/4/f424ec75731ee3bfc4002149fa12ef2b65dd2fdd2ddd4cc300d1bab93bd8deda.php:335
+#: /Users/flopez/Development/PSFS/cache/d/9/d97876f54f6ccf59dd8640686ad010f8563d36828c9f3be4bfa7b917840d78a7.php:335
+#: /Users/flopez/Development/PSFS/cache/47/475da023d048f996d54638e72425df8dce5b75b55b60f50b11438a11040296e0.php:335
+msgid "Seleccionar todo"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Request.php:155
+#: /Users/flopez/Development/PSFS/src/base/Request.php:159
+#: /Users/flopez/Development/PSFS/src/base/Request.php:163
+#: /Users/flopez/Development/PSFS/src/base/Request.php:187
+msgid "Redireccionando..."
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:95
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:97
+#: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:99
+msgid "Parámetros necesarios para la ejecución de PSFS"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:56
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:12
+msgid "test"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:57
+msgid "admin-redirect"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:58
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:59
+msgid "admin-ok"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Cache.php:46
+#: /Users/flopez/Development/PSFS/src/base/Cache.php:30
+#: /Users/flopez/Development/PSFS/src/base/Cache.php:33
+msgid "No se tienen los permisos suficientes para escribir en el fichero "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Service.php:120
+#: /Users/flopez/Development/PSFS/src/base/Service.php:125
+#: /Users/flopez/Development/PSFS/src/base/Service.php:180
+msgid "Context service for "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:60
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:61
+msgid "admin-inyect"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:62
+msgid "admin-google-auth-receive"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/b/a/ba118c6543eb53a296a3ddcfc497cc7f9a1c5fbb7e9edd0c0fab74023e157f62.php:36
+#: /Users/flopez/Development/PSFS/cache/4/f/4f7548f1156bc54e1f4754ff50a4cf71d90bd7eed1d0d6742614b049f5247e92.php:36
+#: /Users/flopez/Development/PSFS/cache/c5/c5f0c460c219c76b0e6328604ae92c63c8aa09dfd5d4c687c15957b43024e792.php:36
+msgid "Generación de traducciones"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:36
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:35
+msgid "Sobreescribir ficheros"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:38
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:37
+msgid "No"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:38
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:37
+msgid "Sí"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:63
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:64
+msgid "core"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:104
+#: /Users/flopez/Development/PSFS/src/base/Router.php:103
+#: /Users/flopez/Development/PSFS/src/base/Router.php:128
+msgid "Solicitamos credenciales de acceso a zona restringida"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:151
+#: /Users/flopez/Development/PSFS/src/base/Router.php:568
+#: /Users/flopez/Development/PSFS/src/base/Router.php:567
+#: /Users/flopez/Development/PSFS/src/base/Router.php:551
+#: /Users/flopez/Development/PSFS/src/base/Router.php:552
+#: /Users/flopez/Development/PSFS/src/base/Router.php:664
+#: /Users/flopez/Development/PSFS/src/base/Router.php:671
+msgid "Ruta resuelta para "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:160
+#: /Users/flopez/Development/PSFS/src/base/Router.php:154
+#: /Users/flopez/Development/PSFS/src/base/Router.php:204
+msgid "Ruta no encontrada"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/Config.php:183
+msgid "Can't create directory "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:41
+msgid "Tipo de controlador"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:44
+msgid "Normal"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:45
+msgid "Requiere autenticación de usuario"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:46
+msgid "Requiere autenticación de administrador"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/extension/AssetsParser.php:178
+#: /Users/flopez/Development/PSFS/src/base/extension/AssetsParser.php:175
+#: /Users/flopez/Development/PSFS/src/base/extension/AssetsParser.php:174
+msgid "No se tienen permisos para escribir en "
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/AuthController.php:28
+#: /Users/flopez/Development/PSFS/src/base/types/AuthController.php:23
+msgid "User not logged in"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:194
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:221
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:241
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:235
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:237
+msgid "Configuración guardada correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:197
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:229
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:249
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:243
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:245
+msgid "Error al guardar la configuración, prueba a cambiar los permisos"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:299
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:301
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:326
+msgid " not exists or cant write"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:13
+msgid "tt"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:406
+#: /Users/flopez/Development/PSFS/src/base/Router.php:405
+#: /Users/flopez/Development/PSFS/src/base/Router.php:389
+#: /Users/flopez/Development/PSFS/src/base/Router.php:390
+#: /Users/flopez/Development/PSFS/src/base/Router.php:476
+msgid "No existe la ruta especificada"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:91
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:85
+msgid "Usuario agregado correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:226
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:246
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:240
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:242
+msgid "Configuración actualizada correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:272
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:291
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:285
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:303
+#, possible-php-format
+msgid "Módulo %s generado correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/e/a/ea656f83503555314722ad9527a4c53b9de0bfa827b10069dfe0116e21ef1d2d.php:124
+#: /Users/flopez/Development/PSFS/cache/8a/8ac0d19439d54819418bebdd356e92081421f258e4e7721534b062bebe22e8a8.php:124
+#: /Users/flopez/Development/PSFS/cache/8a/8ac0d19439d54819418bebdd356e92081421f258e4e7721534b062bebe22e8a8.php:138
+msgid "Aceptar"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:232
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:226
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:228
+msgid "Guardando configuración"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:13
+msgid "admin-test"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:171
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:165
+msgid "El usuario no tiene acceso a la web"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/Api.php:506
+msgid "Id"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/types/Api.php:507
+#: /Users/flopez/Development/PSFS/src/base/types/Api.php:551
+msgid "Name"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/d1/d17d905c66bb40db2b37ea60b278b1efb8169a2f7370acb7fa1e77603f18228d.php:37
+#, possible-php-format
+msgid "Admin %s% site"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:14
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:15
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:16
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:17
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:18
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:19
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:20
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:21
+msgid "admin-test-data"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:22
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:23
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:24
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:25
+msgid "api-pk"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:26
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:27
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:28
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:29
+msgid "tests-pk"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:30
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:31
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:32
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:33
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:34
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:35
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:36
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:37
+msgid "admin-tests"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:38
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:40
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:42
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:44
+msgid "admin-api"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:39
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:41
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:43
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:45
+msgid "test-pk"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:46
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:47
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:48
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:49
+msgid "api-test-pk"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:50
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:51
+msgid "tests"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:52
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:53
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:54
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:55
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:56
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:57
+msgid "admin-api-form"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:58
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:59
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:60
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:61
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:62
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:63
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:64
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:65
+msgid "api-form-api"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:66
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:67
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:68
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:69
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:70
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:71
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:72
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:73
+msgid "api-form-test"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:74
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:75
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:76
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:77
+msgid "adnbp"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:21
+msgid "User Alias"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:25
+msgid "Password"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:29
+msgid "Role"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:49
+msgid "Admin user control panel"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:78
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:79
+msgid "api"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:395
+msgid "Rutas generadas correctamente"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:80
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:81
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:82
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:83
+msgid "psfs"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:84
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:85
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:86
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:87
+msgid "admin-routes-gen"
+msgstr "Generador de fichero de rutas"

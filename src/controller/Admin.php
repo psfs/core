@@ -170,8 +170,10 @@ class Admin extends AuthAdminController{
 
     /**
      * Método que recorre los directorios para extraer las traducciones posibles
+     * @GET
      * @param $locale string
      * @route /admin/translations/{locale}
+     * @return string HTML
      */
     public function getTranslations($locale = '') {
         //Idioma por defecto
@@ -252,6 +254,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Método que gestiona el menú de administración
+     * @GET
      * @route /admin
      * @visible false
      * @return string|null
@@ -264,6 +267,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Método que genera un nuevo módulo
+     * @GET
      * @route /admin/module
      *
      * @return string HTML
@@ -274,20 +278,33 @@ class Admin extends AuthAdminController{
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ModuleForm();
         $form->build();
-        if ($this->getRequest()->getMethod() == 'POST') {
-            $form->hydrate();
-            if ($form->isValid()) {
-                $module = $form->getFieldValue("module");
-                $force = $form->getFieldValue("force");
-                $type = $form->getFieldValue("controllerType");
-                try {
-                    $this->gen->createStructureModule($module, $force, $type);
-                    $this->security->setFlash("callback_message", str_replace("%s",$module, _("Módulo %s generado correctamente")));
-                    $this->security->setFlash("callback_route", $this->getRoute("admin-module", true));
-                } catch(\Exception $e) {
-                    Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
-                    throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
-                }
+        return $this->render("modules.html.twig", array(
+            'properties' => $this->config->getPropelParams(),
+            'form' => $form,
+        ));
+    }
+
+    /**
+     * @POST
+     * @route /admin/module
+     * @return string
+     */
+    public function doGenerateModule()
+    {
+        $form = new ModuleForm();
+        $form->build();
+        $form->hydrate();
+        if ($form->isValid()) {
+            $module = $form->getFieldValue("module");
+            $force = $form->getFieldValue("force");
+            $type = $form->getFieldValue("controllerType");
+            try {
+                $this->gen->createStructureModule($module, $force, $type);
+                $this->security->setFlash("callback_message", str_replace("%s",$module, _("Módulo %s generado correctamente")));
+                $this->security->setFlash("callback_route", $this->getRoute("admin-module", true));
+            } catch(\Exception $e) {
+                Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
+                throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
             }
         }
         return $this->render("modules.html.twig", array(
@@ -300,6 +317,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Servicio que devuelve los parámetros disponibles
+     * @GET
      * @route /admin/config/params
      * @visible false
      * @return mixed
@@ -317,6 +335,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Método que pinta por pantalla todas las rutas del sistema
+     * @GET
      * @route /admin/routes
      */
     public function printRoutes()
@@ -328,6 +347,7 @@ class Admin extends AuthAdminController{
 
     /**
      * Servicio que devuelve los parámetros disponibles
+     * @GET
      * @route /admin/routes/show
      * @visible false
      * @return mixed
@@ -362,6 +382,20 @@ class Admin extends AuthAdminController{
             "selected" => $selected,
             "month_open" => $monthOpen,
         ));
+    }
+
+    /**
+     * Service to regenerate routes
+     * @GET
+     * @route /admin/routes/gen
+     * @return string HTML
+     */
+    public function regenerateUrls()
+    {
+        
+        $this->security->setFlash("callback_message", _("Rutas generadas correctamente"));
+        $this->security->setFlash("callback_route", $this->getRoute("admin", true));
+        return $this->redirect($this->getRoute('admin'));
     }
 
 }

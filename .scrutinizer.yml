@@ -1,5 +1,6 @@
 checks:
   php: true
+
 build:
   tests:
     override:
@@ -7,4 +8,11 @@ build:
         command: 'phpunit --coverage-clover=psfs-coverage'
         coverage:
           file: 'psfs-coverage'
-          format: 'php-clover'
+          format: 'clover'
+
+filter:
+  excluded_paths:
+    - src/test/*
+    - vendor/*
+    - src/public/*
+    - src/templates/*
