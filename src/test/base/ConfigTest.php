@@ -37,6 +37,7 @@
             $this->assertFileExists($config->getCachePath());
 
             if(!$config->isConfigured()) {
+                Config::createDir(CONFIG_DIR);
                 Config::save(['test' => true], []);
             }
 
