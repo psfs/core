@@ -3,7 +3,7 @@
     "description": "Php Simple Fast & Secure",
     "require": {
         "propel/propel": "^2.0",
-        "symfony/console": "^3.0",
+        "symfony/console": "3.0.x-dev",
         "symfony/finder": "2.3.x-dev",
         "twig/twig": "1.x-dev",
         "twig/extensions": "dev-master",

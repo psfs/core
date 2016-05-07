@@ -278,18 +278,9 @@ class Template {
      * @return array
      */
     public function regenerateTemplates() {
-        //Generamos los dominios por defecto del fmwk
-        foreach ($this->tpl->getLoader()->getPaths() as $path) {
-            $this->generateTemplate($path);
-        }
+        $this->generateTemplatesCache();
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
-        $translations = array();
-        if (!empty($domains)) {
-            foreach ($domains as $domain => $paths) {
-            $this->addPath($paths["template"], $domain);
-        }
-            $translations[] = $this->generateTemplate($paths["template"], $domain);
-        }
+        $translations = $this->parsePathTranslations($domains);
         $translations[] = _("Plantillas regeneradas correctamente");
         return $translations;
     }
@@ -526,5 +517,39 @@ class Template {
     private function optimizeTemplates() {
         //Optimizamos
         $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
+    }
+
+    /**
+     * Method that extract all path tag for extracting translations
+     * @param array $domains
+     *
+     * @return array
+     */
+    private function parsePathTranslations($domains)
+    {
+        $translations = array();
+        if (!empty($domains)) {
+            foreach ($domains as $domain => $paths) {
+                if (strlen($domain) && array_key_exists("template", $paths)) {
+                    $this->addPath($paths["template"], $domain);
+                    $translations[] = $this->generateTemplate($paths["template"], $domain);
+                }
+            }
+        }
+
+        return $translations;
+    }
+
+    /**
+     * Method that generate all template caches
+     */
+    private function generateTemplatesCache()
+    {
+        $availablePaths = $this->tpl->getLoader()->getPaths();
+        if (!empty($availablePaths)) {
+            foreach ($availablePaths as $path) {
+                $this->generateTemplate($path);
+            }
+        }
     }
 }
