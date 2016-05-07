@@ -84,23 +84,33 @@
         }
 
         /**
-         * @expectedException \ErrorException
+         * Check if notice was converted to exception
          */
         public function testNotice() {
             $this->getInstance($this->mockConfiguredDebugConfig());
-            $test = array();
-            //This throws notice because position 0 in array not exists
-            $test = $test[0] === true;
-            unset($test);
+            try {
+                $test = array();
+                //This throws notice because position 0 in array not exists
+                $test = $test[0] === true;
+                unset($test);
+                $this->fail('Exception has not been thrown');
+            } catch(\Exception $e) {
+                $this->assertTrue(true);
+            }
         }
 
         /**
-         * @expectedException \ErrorException
+         * Check if warning was converted to exception
          */
         public function testWarning() {
             $this->getInstance($this->mockConfiguredDebugConfig());
-            //This throws a warning because file 'test.txt' not exists
-            file_get_contents(__DIR__ . "test.txt");
+            try {
+                //This throws a warning because file 'test.txt' not exists
+                file_get_contents(__DIR__ . "test.txt");
+                $this->fail('Exception has not been thrown');
+            } catch(\Exception $e) {
+                $this->assertTrue(true);
+            }
         }
 
         public function testNormalExecution() {

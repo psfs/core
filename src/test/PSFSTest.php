@@ -11,87 +11,87 @@ use PSFS\Dispatcher;
 class PSFSTest extends \PHPUnit_Framework_TestCase{
 
     /**
-     * Test básico para el funcionamiento del Dispatcher
+     * Basic test for the basic funcitonality
      */
     public function testDispatcher()
     {
         /** @var \PSFS\Dispatcher $dispatcher */
         $dispatcher = Dispatcher::getInstance();
 
-        // Es instancia de Dispatcher
+        // Is instance of Dispatcher?
         $this->assertTrue($dispatcher instanceof Dispatcher);
 
-        // Ha generado un timestamp
+        // Did timestamp generated?
         $this->assertTrue($dispatcher->getTs() > 0);
     }
 
     /**
-     * Text básico para el funcionamiento del Config
+     * Basic test for Config functionality
      */
     public function testConfig()
     {
         $config = Config::getInstance();
 
-        // Es instancia de Config
+        // Is config instance?
         $this->assertTrue($config instanceof Config);
 
-        // Comprobamos que devuelva correctamente si está configurada o no la plataforma
+        // Is the platform configured?
         $this->assertTrue(is_bool($config->isConfigured()));
 
-        // Comprobamos devuelva correctamente si estamos en modo debug
+        // Is the platform in debug mode?
         $this->assertTrue(is_bool($config->getDebugMode()));
 
-        // Comprobamos la extracción de variables de configuración
+        // Check the variable extraction
         $this->assertEmpty($config->get(uniqid()));
     }
 
     /**
-     * Test básico para el funcionamiento del Router
+     * Basic test for Router functionality
      */
     public function testRouter()
     {
         $router = Router::getInstance();
 
-        // Es instancia de Router
+        // Is ROuter instance?
         $this->assertTrue($router instanceof Router);
 
-        // Revisamos que exista el fichero de rutas
+        // Check if route file exists
         $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
 
-        // Revisamos que tengamos rutas de administración y como mínimo la de admin
+        // CHecks if we have admin routes as minimal routes
         $adminRoutes = $router->getAdminRoutes();
         $this->assertNotEmpty($adminRoutes);
         $this->assertArrayHasKey("superadmin", $adminRoutes);
     }
 
     /**
-     * Test básico para el funcionamiento de Security
+     * Basic test for Security functionality
      */
     public function testSecurity()
     {
         $security = Security::getInstance();
 
-        // Es instancia de Security
+        // Is Security instance?
         $this->assertTrue($security instanceof Security);
     }
 
     /**
-     * Test básico para el funcionamiento de Request
+     * Basic test for Request functionality
      */
     public function testRequest()
     {
         $request = Request::getInstance();
 
-        // Es instancia de Request
+        // Is Request instance?
         $this->assertTrue($request instanceof Request);
 
-        // Verificamos que los comprobadores de cabeceras y uploads funcionan
+        // Check headers, uploads and cookies checkers
         $this->assertTrue(is_bool($request->hasHeader("session")));
         $this->assertTrue(is_bool($request->hasUpload()));
         $this->assertTrue(is_bool($request->hasCookies()));
         $this->assertTrue(is_bool($request->isAjax()));
 
-        // Verificamos que se setee el timestamp de arranque
+        // Checks if timestamp was generated
         $this->assertNotNull($request->getTs());
     }
 

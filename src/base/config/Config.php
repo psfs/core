@@ -45,8 +45,7 @@ class Config {
     protected function init() {
         if (file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json"))
         {
-            $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json", Cache::JSON, true) ?: array();
-            $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : false;
+            $this->loadConfigData();
         } else {
             $this->debug = true;
         }
@@ -203,5 +202,14 @@ class Config {
                 }
             }
         }
+    }
+
+    /**
+     * Method that reloads config file
+     */
+    public function loadConfigData()
+    {
+        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, TRUE) ?: array();
+        $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;
     }
 }

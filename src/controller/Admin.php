@@ -392,9 +392,17 @@ class Admin extends AuthAdminController{
      */
     public function regenerateUrls()
     {
-        
-        $this->security->setFlash("callback_message", _("Rutas generadas correctamente"));
-        $this->security->setFlash("callback_route", $this->getRoute("admin", true));
+        $router = Router::getInstance();
+        try {
+            $router->hydrateRouting();
+            $router->simpatize();
+            $this->security->setFlash("callback_message", _("Rutas generadas correctamente"));
+            $this->security->setFlash("callback_route", $this->getRoute("admin", true));
+        } catch(\Exception $e) {
+            Logger::getInstance()->errorLog($e->getMessage());
+            $this->security->setFlash("callback_message", _("Algo no ha salido bien, revisa los logs"));
+            $this->security->setFlash("callback_route", $this->getRoute("admin", true));
+        }
         return $this->redirect($this->getRoute('admin'));
     }
 

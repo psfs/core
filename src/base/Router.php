@@ -275,7 +275,7 @@
          * Método que regenera el fichero de rutas
          * @throws ConfigException
          */
-        private function hydrateRouting()
+        public function hydrateRouting()
         {
             $base = SOURCE_DIR;
             $modules = realpath(CORE_DIR);
@@ -413,7 +413,7 @@
          * Método que genera las urls amigables para usar dentro del framework
          * @return Router
          */
-        private function simpatize()
+        public function simpatize()
         {
             $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
             $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
