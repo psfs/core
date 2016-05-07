@@ -36,6 +36,10 @@
             $this->assertFileExists($config->getTemplatePath());
             $this->assertFileExists($config->getCachePath());
 
+            if(!$config->isConfigured()) {
+                Config::save(['test' => true], []);
+            }
+
             $configData = $config->dumpConfig();
             $this->assertNotEmpty($configData, 'Empty configuration');
             $this->assertTrue(is_array($configData), 'Configuration is not an array');
