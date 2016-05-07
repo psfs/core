@@ -280,7 +280,9 @@ class Template {
     public function regenerateTemplates() {
         $this->generateTemplatesCache();
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
-        $translations = $this->parsePathTranslations($domains);
+        if (is_array($domains)) {
+            $translations = $this->parsePathTranslations($domains);
+        }
         $translations[] = _("Plantillas regeneradas correctamente");
         return $translations;
     }
@@ -545,7 +547,9 @@ class Template {
      */
     private function generateTemplatesCache()
     {
-        $availablePaths = $this->tpl->getLoader()->getPaths();
+        /** @var \Twig_Loader_Filesystem $loader */
+        $loader = $this->tpl->getLoader();
+        $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {
             foreach ($availablePaths as $path) {
                 $this->generateTemplate($path);

@@ -8,4 +8,6 @@ php:
 install:
   - composer self-update
   - composer install --optimize-autoloader
+
+after_deploy:
   - phpunit

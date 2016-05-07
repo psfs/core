@@ -9,6 +9,8 @@ build:
         coverage:
           file: 'psfs-coverage'
           format: 'clover'
+  environment:
+    php: '5.6.9'
 
 filter:
   excluded_paths:

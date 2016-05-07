@@ -307,21 +307,10 @@
             $total = NULL;
             $pages = 1;
             if (NULL === $pk || '' === $pk) {
-                try {
-                    $this->paginate();
-                    $return = $this->list->toArray();
-                    $total = $this->list->getNbResults();
-                    $pages = $this->list->getLastPage();
-                } catch (\Exception $e) {
-                    Logger::getInstance(get_class($this))->errorLog($e->getMessage());
-                }
+                list($return, $total, $pages) = $this->getList();
             } else {
-                $return = $this->_get($pk);
-                if (NULL === $return) {
-                    $code = 404;
-                } else {
-                    $return = $return->toArray();
-                }
+                list($code, $return) = $this->getSingleResult($pk);
+
             }
 
             return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
@@ -550,5 +539,44 @@
             $form = new Form();
             $form->addField(new Field('Name', _('Name')));
             return $this->json(new JsonResponse($form->toArray(), true), 200);
+        }
+
+        /**
+         * @return array
+         */
+        private function getList()
+        {
+            $return = array();
+            $total = 0;
+            $pages = 0;
+            try {
+                $this->paginate();
+                $return = $this->list->toArray();
+                $total = $this->list->getNbResults();
+                $pages = $this->list->getLastPage();
+            } catch (\Exception $e) {
+                Logger::getInstance(get_class($this))->errorLog($e->getMessage());
+            }
+
+            return array($return, $total, $pages);
+        }
+
+        /**
+         * @param integer $pk
+         *
+         * @return array
+         */
+        private function getSingleResult($pk)
+        {
+            /** @var ActiveRecordInterface $model */
+            $model = $this->_get($pk);
+            $code = 200;
+            $return = array();
+            if (NULL === $model) {
+                $code = 404;
+            } else {
+                $return = $model->toArray();
+            }
+            return array($code, $return);
         }
     }
