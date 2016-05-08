@@ -1,6 +1,7 @@
 <?php
     namespace PSFS\services;
 
+    use PSFS\base\Logger;
     use PSFS\base\Service;
     use Symfony\Component\Finder\Finder;
 
@@ -10,6 +11,8 @@
      */
     class DocumentorService extends Service
     {
+        const DTO_INTERFACE = '\\PSFS\\base\\dto\\Dto';
+        const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
         /**
          * @Inyectable
          * @var \PSFS\base\Router route
@@ -89,6 +92,7 @@
                                 'url'         => $route,
                                 'method'      => $this->extractMethod($docComments),
                                 'description' => str_replace('{__API__}', $reflection->getShortName(), $this->extractDescription($docComments)),
+                                'return' => $this->extractReturn(str_replace('Api', 'Models', $namespace), $docComments),
                             ];
                             if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
                                 $methodInfo['payload'] = $this->extractPayload(str_replace('Api', 'Models', $namespace), $docComments);
@@ -182,9 +186,10 @@
         protected function extractVarType($comments = '')
         {
             $type = 'string';
-            preg_match('/@var\ (.*)\n/i', $comments, $varType);
+            preg_match('/@var\ (.*) (.*)\n/i', $comments, $varType);
             if (count($varType)) {
-                $type = str_replace(' ', '', $varType[1]);
+                $aux = trim($varType[1]);
+                $type = str_replace(' ', '', strlen($aux) > 0 ? $varType[1] : $varType[2]);
             }
             return $type;
         }
@@ -203,19 +208,81 @@
             preg_match('/@payload\ (.*)\n/i', $comments, $doc);
             if (count($doc)) {
                 $namespace = str_replace('{__API__}', $model, $doc[1]);
+                $payload = $this->extractModelFields($namespace);
+            }
+            return $payload;
+        }
+
+        /**
+         * Extract return class for api endpoint
+         * @param string $model
+         * @param string $comments
+         *
+         * @return string
+         */
+        protected function extractReturn($model, $comments = '')
+        {
+            $return = [];
+            preg_match('/\@return\ (.*)\ (.*)\n/i', $comments, $returnTypes);
+            if (count($returnTypes)) {
+                $closure = $modelDto = [];
+                $isArray = false;
+                foreach($returnTypes as $returnType) {
+                    try {
+                        if (false === strpos($returnType, '@')) {
+                            $class = str_replace('{__API__}', $model, $returnType);
+                            if (false !== strpos($class, '[') && false !== strpos($class, ']')) {
+                                $class = str_replace(']', '', str_replace('[', '', $class));
+                                $isArray = true;
+                            }
+                            if (class_exists($class)) {
+                                $reflector = new \ReflectionClass($class);
+                                if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
+                                    foreach($reflector->getProperties(\ReflectionMethod::IS_PUBLIC) as $property) {
+                                        $closure[$property->getName()] = $this->extractVarType($property->getDocComment());
+                                    }
+                                } else {
+                                    $modelDto = $this->extractModelFields($class);
+                                }
+                            }
+                        }
+                    } catch(\Exception $e) {
+                        Logger::getInstance()->errorLog($e->getMessage());
+                    }
+                }
+                $closure['data'] = ($isArray) ? [$modelDto] : $modelDto;
+                $return = $closure;
+            }
+            return $return;
+        }
+
+        /**
+         * Extract all fields from a ActiveResource model
+         * @param string $namespace
+         *
+         * @return mixed
+         */
+        protected function extractModelFields($namespace)
+        {
+            $payload = [];
+            try {
                 $reflector = new \ReflectionClass($namespace);
-                if (null !== $reflector) {
+                // Checks if reflector is a subclass of propel ActiveRecords
+                if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                     $tableMap = $namespace::TABLE_MAP;
                     $fieldNames = $tableMap::getFieldNames();
                     if (count($fieldNames)) {
-                        foreach($fieldNames as $field) {
+                        foreach ($fieldNames as $field) {
                             $variable = $reflector->getProperty(strtolower($field));
                             $varDoc = $variable->getDocComment();
                             $payload[$field] = $this->extractVarType($varDoc);
                         }
                     }
                 }
+            } catch(\Exception $e) {
+                Logger::getInstance()->errorLog($e->getMessage());
             }
+
             return $payload;
         }
     }

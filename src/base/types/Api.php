@@ -199,11 +199,12 @@
 
         /**
          * Add extra columns to pagination query
+         *
          * @param ModelCriteria $query
          */
         private function addExtraColumns(ModelCriteria &$query)
         {
-            if(!empty($this->extraColumns)) {
+            if (!empty($this->extraColumns)) {
                 foreach ($this->extraColumns as $expression => $columnName) {
                     $query->withColumn($expression, $columnName);
                 }
@@ -212,6 +213,7 @@
 
         /**
          * Method that allow joins between models
+         *
          * @param ModelCriteria $query
          */
         protected function joinTables(ModelCriteria &$query)
@@ -290,34 +292,45 @@
         }
 
         /**
-         * Get unique element for {__API__} or a list of {__API__} filtered
+         * Get list of {__API__} elements filtered
+         * @GET
+         * @CACHE 600
+         * @ROUTE /api/{__API__}
+         *
+         * @return \PSFS\base\dto\JsonResponse [{__API__}]
+         */
+        public function modelList()
+        {
+            $code = 200;
+            list($return, $total, $pages) = $this->getList();
+
+            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        }
+
+        /**
+         * Get unique element for {__API__}
          *
          * @GET
          * @CACHE 600
          * @ROUTE /api/{__API__}/{pk}
          *
-         * @param null|string $pk
+         * @param int $pk
          *
-         * @return JsonResponse JSON
+         * @return \PSFS\base\dto\JsonResponse {__API__}
          */
-        public function get($pk = NULL)
+        public function get($pk)
         {
-            $code = 200;
             $return = NULL;
             $total = NULL;
             $pages = 1;
-            if (NULL === $pk || '' === $pk) {
-                list($return, $total, $pages) = $this->getList();
-            } else {
-                list($code, $return) = $this->getSingleResult($pk);
-
-            }
+            list($code, $return) = $this->getSingleResult($pk);
 
             return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
         }
 
         /**
          * Extract specific entity
+         *
          * @param integer $pk
          *
          * @return null|ActiveRecordInterface
@@ -325,6 +338,7 @@
         protected function _get($pk)
         {
             $this->hydrateModel($pk);
+
             return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : NULL;
         }
 
@@ -345,7 +359,7 @@
          * @PAYLOAD {__API__}
          * @ROUTE /api/{__API__}
          *
-         * @return JsonResponse JSON
+         * @return \PSFS\base\dto\JsonResponse {__API__}
          */
         public function post()
         {
@@ -361,7 +375,7 @@
                     $model = $this->model->toArray();
                 }
             } catch (\Exception $e) {
-                jpre($e->getMessage(), true);
+                jpre($e->getMessage(), TRUE);
                 Logger::getInstance()->errorLog($e->getMessage());
             }
 
@@ -376,7 +390,7 @@
          *
          * @param string $pk
          *
-         * @return JsonResponse JSON
+         * @return \PSFS\base\dto\JsonResponse {__API__}
          */
         public function delete($pk = NULL)
         {
@@ -406,7 +420,7 @@
          *
          * @param string $pk
          *
-         * @return JsonResponse
+         * @return \PSFS\base\dto\JsonResponse {__API__}
          *
          */
         public function put($pk)
@@ -453,12 +467,12 @@
         /**
          * Wrapper for json parent method with close transactions and close connectios tasks
          *
-         * @param JsonResponse $response
+         * @param \PSFS\base\dto\JsonResponse $response
          * @param int $status
          *
          * @return string
          */
-        public function json(JsonResponse $response, $status)
+        public function json(\PSFS\base\dto\JsonResponse $response, $status)
         {
             $this->closeTransaction($status);
             Propel::closeConnections();
@@ -541,7 +555,8 @@
         {
             $form = new Form();
             $form->addField(new Field('Name', _('Name')));
-            return $this->json(new JsonResponse($form->toArray(), true), 200);
+
+            return $this->json(new JsonResponse($form->toArray(), TRUE), 200);
         }
 
         /**
@@ -580,6 +595,7 @@
             } else {
                 $return = $model->toArray();
             }
+
             return array($code, $return);
         }
     }

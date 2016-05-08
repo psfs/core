@@ -10,6 +10,9 @@
     class Api extends Controller
     {
         const DOMAIN = 'ROOT';
+        const PSFS_DOC = 'psfs';
+        const SWAGGER_DOC = 'swagger';
+        const POSTMAN_DOC = 'postman';
 
         /**
          * @Inyectable
@@ -25,7 +28,7 @@
          *
          * @return string JSON
          */
-        public function createApiDocs($type = 'swagger')
+        public function createApiDocs($type = 'psfs')
         {
             $doc = $endpoints = [];
             $modules = $this->srv->getModules();
@@ -35,6 +38,13 @@
                 }
             }
 
-            return $this->json($endpoints, 200);
+            switch (strtolower($type)) {
+                default:
+                case self::PSFS_DOC:
+                    $doc = $endpoints;
+                    break;
+            }
+
+            return $this->json($doc, 200);
         }
     }
