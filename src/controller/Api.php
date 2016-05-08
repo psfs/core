@@ -34,7 +34,7 @@
             $modules = $this->srv->getModules();
             if (count($modules)) {
                 foreach ($modules as $module) {
-                    $endpoints = array_merge($doc, $this->srv->extractApiEndpoints($module));
+                    $endpoints = array_merge($endpoints, $this->srv->extractApiEndpoints($module));
                 }
             }
 
