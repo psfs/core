@@ -32,11 +32,15 @@
         {
             $doc = $endpoints = [];
             $modules = $this->srv->getModules();
+            ini_set('memory_limit', -1);
+            ini_set('max_execution_time', -1);
             if (count($modules)) {
                 foreach ($modules as $module) {
                     $endpoints = array_merge($endpoints, $this->srv->extractApiEndpoints($module));
                 }
             }
+            ini_restore('max_execution_time');
+            ini_restore('memory_limit');
 
             switch (strtolower($type)) {
                 default:
