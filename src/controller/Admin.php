@@ -354,7 +354,7 @@ class Admin extends AuthAdminController{
      */
     public function getRouting()
     {
-        $response = json_encode(array_keys(Router::getInstance()->getSlugs()));
+        $response = Router::getInstance()->getSlugs();
         return $this->json($response);
     }
 

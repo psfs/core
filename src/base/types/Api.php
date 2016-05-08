@@ -290,7 +290,7 @@
         }
 
         /**
-         * Get unique element model or list of models filtered
+         * Get unique element for {__API__} or a list of {__API__} filtered
          *
          * @GET
          * @CACHE 600
@@ -339,9 +339,10 @@
         }
 
         /**
-         * Create new model
+         * Create new {__API__}
          *
          * @POST
+         * @PAYLOAD {__API__}
          * @ROUTE /api/{__API__}
          *
          * @return JsonResponse JSON
@@ -368,7 +369,7 @@
         }
 
         /**
-         * Delete a model
+         * Delete a {__API__}
          *
          * @DELETE
          * @ROUTE /api/{__API__}/{pk}
@@ -397,9 +398,10 @@
         }
 
         /**
-         * Put model fields
+         * Modify {__API__} model
          *
          * @PUT
+         * @PAYLOAD {__API__}
          * @ROUTE /api/{__API__}/{pk}
          *
          * @param string $pk
@@ -510,6 +512,7 @@
 
         /**
          * @GET
+         * @visible false
          * @route /admin/{__API__}
          * @return string HTML
          */
