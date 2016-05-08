@@ -85,7 +85,7 @@
                 foreach ($publicMethods as $method) {
                     try {
                         $mInfo = $this->extractMethodInfo($namespace, $method, $reflection);
-                        if(null !== $mInfo) {
+                        if (NULL !== $mInfo) {
                             $info[] = $mInfo;
                         }
                     } catch (\Exception $e) {
@@ -170,6 +170,7 @@
 
         /**
          * Method that extract the type of a variable
+         *
          * @param string $comments
          *
          * @return string
@@ -182,6 +183,7 @@
                 $aux = trim($varType[1]);
                 $type = str_replace(' ', '', strlen($aux) > 0 ? $varType[1] : $varType[2]);
             }
+
             return $type;
         }
 
@@ -201,11 +203,38 @@
                 $namespace = str_replace('{__API__}', $model, $doc[1]);
                 $payload = $this->extractModelFields($namespace);
             }
+
             return $payload;
         }
 
         /**
+         * Extract all the properties from Dto class
+         *
+         * @param string $class
+         *
+         * @return array
+         */
+        protected function extractDtoProperties($class)
+        {
+            $properties = [];
+            $reflector = new \ReflectionClass($class);
+            if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
+                foreach ($reflector->getProperties(\ReflectionMethod::IS_PUBLIC) as $property) {
+                    $type = $this->extractVarType($property->getDocComment());
+                    if(class_exists($type)) {
+                        $properties[$property->getName()] = $this->extractModelFields($type);
+                    } else {
+                        $properties[$property->getName()] = $type;
+                    }
+                }
+            }
+
+            return $properties;
+        }
+
+        /**
          * Extract return class for api endpoint
+         *
          * @param string $model
          * @param string $comments
          *
@@ -213,42 +242,36 @@
          */
         protected function extractReturn($model, $comments = '')
         {
-            $return = [];
-            preg_match('/\@return\ (.*)\ (.*)\n/i', $comments, $returnTypes);
+            $modelDto  = [];
+            preg_match('/\@return\ (.*)\((.*)\)\n/i', $comments, $returnTypes);
             if (count($returnTypes)) {
-                $closure = $modelDto = [];
-                $isArray = false;
-                foreach($returnTypes as $returnType) {
-                    try {
-                        if (false === strpos($returnType, '@')) {
-                            $class = str_replace('{__API__}', $model, $returnType);
-                            if (false !== strpos($class, '[') && false !== strpos($class, ']')) {
-                                $class = str_replace(']', '', str_replace('[', '', $class));
+                // Extract principal DTO information
+                if (array_key_exists(1, $returnTypes)) {
+                    $modelDto = $this->extractDtoProperties($returnTypes[1]);
+                }
+                if (array_key_exists(2, $returnTypes)) {
+                    $subDtos = preg_split('/,?\ /', str_replace('{__API__}', $model, $returnTypes[2]));
+                    if (count($subDtos)) {
+                        foreach ($subDtos as $subDto) {
+                            $isArray = false;
+                            list($field, $dto) = explode('=', $subDto);
+                            if (false !== strpos($dto, '[') && false !== strpos($dto, ']')) {
+                                $dto = str_replace(']', '', str_replace('[', '', $dto));
                                 $isArray = true;
                             }
-                            if (class_exists($class)) {
-                                $reflector = new \ReflectionClass($class);
-                                if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
-                                    foreach($reflector->getProperties(\ReflectionMethod::IS_PUBLIC) as $property) {
-                                        $closure[$property->getName()] = $this->extractVarType($property->getDocComment());
-                                    }
-                                } else {
-                                    $modelDto = $this->extractModelFields($class);
-                                }
-                            }
+                            $dto = $this->extractModelFields($dto);
+                            $modelDto[$field] = ($isArray) ? [$dto] : $dto;
                         }
-                    } catch(\Exception $e) {
-                        Logger::getInstance()->errorLog($e->getMessage());
                     }
                 }
-                $closure['data'] = ($isArray) ? [$modelDto] : $modelDto;
-                $return = $closure;
             }
-            return $return;
+
+            return $modelDto;
         }
 
         /**
          * Extract all fields from a ActiveResource model
+         *
          * @param string $namespace
          *
          * @return mixed
@@ -269,8 +292,10 @@
                             $payload[$field] = $this->extractVarType($varDoc);
                         }
                     }
+                } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
+                    $payload = $this->extractDtoProperties($namespace);
                 }
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 Logger::getInstance()->errorLog($e->getMessage());
             }
 
@@ -279,15 +304,16 @@
 
         /**
          * Method that extract all the needed info for each method in each API
+         *
          * @param string $namespace
          * @param \ReflectionMethod $method
          * @param \ReflectionClass $reflection
          *
          * @return array
          */
-        protected function extractMethodInfo($namespace, $method, $reflection)
+        protected function extractMethodInfo($namespace, \ReflectionMethod $method, \ReflectionClass $reflection)
         {
-            $methodInfo = null;
+            $methodInfo = NULL;
             $docComments = $method->getDocComment();
             $shortName = $reflection->getShortName();
             $modelNamespace = str_replace('Api', 'Models', $namespace);
@@ -295,14 +321,19 @@
                 $visibility = $this->extractVisibility($docComments);
                 $route = str_replace('{__API__}', $shortName, $this->extractRoute($docComments));
                 if ($visibility && preg_match('/^\/api\//i', $route)) {
-                    $methodInfo = [
-                        'url'         => $route,
-                        'method'      => $this->extractMethod($docComments),
-                        'description' => str_replace('{__API__}', $shortName, $this->extractDescription($docComments)),
-                        'return'      => $this->extractReturn($modelNamespace, $docComments),
-                    ];
-                    if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-                        $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
+                    try {
+                        $methodInfo = [
+                            'url'         => $route,
+                            'method'      => $this->extractMethod($docComments),
+                            'description' => str_replace('{__API__}', $shortName, $this->extractDescription($docComments)),
+                            'return'      => $this->extractReturn($modelNamespace, $docComments),
+                        ];
+                        if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
+                            $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
+                        }
+                    } catch (\Exception $e) {
+                        jpre($e->getMessage());
+                        Logger::getInstance()->errorLog($e->getMessage());
                     }
                 }
             }

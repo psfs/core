@@ -16,7 +16,7 @@
 
         /**
          * @Inyectable
-         * @var \PSFS\services\DocumentorService srv
+         * @var \PSFS\services\DocumentorService $srv
          */
         protected $srv;
 

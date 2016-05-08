@@ -292,43 +292,6 @@
         }
 
         /**
-         * Get list of {__API__} elements filtered
-         * @GET
-         * @CACHE 600
-         * @ROUTE /api/{__API__}
-         *
-         * @return \PSFS\base\dto\JsonResponse [{__API__}]
-         */
-        public function modelList()
-        {
-            $code = 200;
-            list($return, $total, $pages) = $this->getList();
-
-            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
-        }
-
-        /**
-         * Get unique element for {__API__}
-         *
-         * @GET
-         * @CACHE 600
-         * @ROUTE /api/{__API__}/{pk}
-         *
-         * @param int $pk
-         *
-         * @return \PSFS\base\dto\JsonResponse {__API__}
-         */
-        public function get($pk)
-        {
-            $return = NULL;
-            $total = NULL;
-            $pages = 1;
-            list($code, $return) = $this->getSingleResult($pk);
-
-            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
-        }
-
-        /**
          * Extract specific entity
          *
          * @param integer $pk
@@ -353,13 +316,50 @@
         }
 
         /**
+         * Get list of {__API__} elements filtered
+         * @GET
+         * @CACHE 600
+         * @ROUTE /api/{__API__}
+         *
+         * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
+         */
+        public function modelList()
+        {
+            $code = 200;
+            list($return, $total, $pages) = $this->getList();
+
+            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        }
+
+        /**
+         * Get unique element for {__API__}
+         *
+         * @GET
+         * @CACHE 600
+         * @ROUTE /api/{__API__}/{pk}
+         *
+         * @param int $pk
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         */
+        public function get($pk)
+        {
+            $return = NULL;
+            $total = NULL;
+            $pages = 1;
+            list($code, $return) = $this->getSingleResult($pk);
+
+            return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        }
+
+        /**
          * Create new {__API__}
          *
          * @POST
          * @PAYLOAD {__API__}
          * @ROUTE /api/{__API__}
          *
-         * @return \PSFS\base\dto\JsonResponse {__API__}
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
          */
         public function post()
         {
@@ -390,7 +390,7 @@
          *
          * @param string $pk
          *
-         * @return \PSFS\base\dto\JsonResponse {__API__}
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
          */
         public function delete($pk = NULL)
         {
@@ -420,7 +420,7 @@
          *
          * @param string $pk
          *
-         * @return \PSFS\base\dto\JsonResponse {__API__}
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
          *
          */
         public function put($pk)
