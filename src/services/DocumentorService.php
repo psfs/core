@@ -83,22 +83,13 @@
             if (count($publicMethods)) {
                 /** @var \ReflectionMethod $method */
                 foreach ($publicMethods as $method) {
-                    $docComments = $method->getDocComment();
-                    if (FALSE !== $docComments && preg_match('/\@route\ /i', $docComments)) {
-                        $visibility = $this->extractVisibility($docComments);
-                        $route = str_replace('{__API__}', $reflection->getShortName(), $this->extractRoute($docComments));
-                        if ($visibility && preg_match('/^\/api\//i', $route)) {
-                            $methodInfo = [
-                                'url'         => $route,
-                                'method'      => $this->extractMethod($docComments),
-                                'description' => str_replace('{__API__}', $reflection->getShortName(), $this->extractDescription($docComments)),
-                                'return' => $this->extractReturn(str_replace('Api', 'Models', $namespace), $docComments),
-                            ];
-                            if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-                                $methodInfo['payload'] = $this->extractPayload(str_replace('Api', 'Models', $namespace), $docComments);
-                            }
-                            $info[] = $methodInfo;
+                    try {
+                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection);
+                        if(null !== $mInfo) {
+                            $info[] = $mInfo;
                         }
+                    } catch (\Exception $e) {
+                        Logger::getInstance()->errorLog($e->getMessage());
                     }
                 }
             }
@@ -284,5 +275,38 @@
             }
 
             return $payload;
+        }
+
+        /**
+         * Method that extract all the needed info for each method in each API
+         * @param string $namespace
+         * @param \ReflectionMethod $method
+         * @param \ReflectionClass $reflection
+         *
+         * @return array
+         */
+        protected function extractMethodInfo($namespace, $method, $reflection)
+        {
+            $methodInfo = null;
+            $docComments = $method->getDocComment();
+            $shortName = $reflection->getShortName();
+            $modelNamespace = str_replace('Api', 'Models', $namespace);
+            if (FALSE !== $docComments && preg_match('/\@route\ /i', $docComments)) {
+                $visibility = $this->extractVisibility($docComments);
+                $route = str_replace('{__API__}', $shortName, $this->extractRoute($docComments));
+                if ($visibility && preg_match('/^\/api\//i', $route)) {
+                    $methodInfo = [
+                        'url'         => $route,
+                        'method'      => $this->extractMethod($docComments),
+                        'description' => str_replace('{__API__}', $shortName, $this->extractDescription($docComments)),
+                        'return'      => $this->extractReturn($modelNamespace, $docComments),
+                    ];
+                    if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
+                        $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
+                    }
+                }
+            }
+
+            return $methodInfo;
         }
     }
