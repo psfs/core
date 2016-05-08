@@ -2,7 +2,7 @@
     "name": "c15k0/psfs",
     "description": "Php Simple Fast & Secure",
     "require": {
-        "propel/propel": "^2.0",
+        "propel/propel": "^2.0.x-dev",
         "symfony/console": "3.0.x-dev",
         "symfony/finder": "2.3.x-dev",
         "twig/twig": "1.x-dev",
