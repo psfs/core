@@ -527,7 +527,7 @@
         /**
          * @GET
          * @visible false
-         * @route /admin/{__API__}
+         * route /admin/{__API__}
          * @return string HTML
          */
         public function admin()
