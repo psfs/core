@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Angular Material style sheet -->
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.css">
+    </head>
+    <body ng-app="DocApp" ng-cloak>
+        <div ng-cloak ng-controller="ModelCtrl">
+            <md-content>
+                <md-tabs md-dynamic-height md-border-bottom>
+                    <md-tab label="[[ key ]]" ng-repeat="(key,model) in models">
+                        <md-content class="md-padding">
+                            <md-tabs md-dynamic-height md-border-bottom>
+                                <md-tab label="[[ endpoint.method + ' ' + endpoint.url ]]" ng-repeat="endpoint in model">
+                                    <md-content class="md-padding">
+                                        <md-subheader>[[endpoint.description]]</md-subheader>
+                                        <div flex="100" layout-fill layout="row">
+                                            <md-card md-theme="default" md-theme-watch flex="50">
+                                                <md-card-title>
+                                                    <md-card-title-text>
+                                                        <span class="md-headline">PAYLOAD</span>
+                                                    </md-card-title-text>
+                                                </md-card-title>
+                                                <md-card-content>
+                                                    <pre>[[endpoint.payload | json]]</pre>
+                                                </md-card-content>
+                                            </md-card>
+                                            <md-card md-theme="default" md-theme-watch flex="50">
+                                                <md-card-title>
+                                                    <md-card-title-text>
+                                                        <span class="md-headline">RETURN</span>
+                                                    </md-card-title-text>
+                                                </md-card-title>
+                                                <md-card-content>
+                                                    <pre>[[endpoint.return | json]]</pre>
+                                                </md-card-content>
+                                            </md-card>
+                                        </div>
+                                    </md-content>
+                                </md-tab>
+                            </md-tabs>
+                        </md-content>
+                    </md-tab>
+                </md-tabs>
+            </md-content>
+        </div>
+        <!-- Angular Material requires Angular.js Libraries -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-aria.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-messages.min.js"></script>
+
+        <!-- Angular Material Library -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.js"></script>
+
+        <!-- Your application bootstrap  -->
+        <script type="text/javascript">
+            /**
+             * You must include the dependency on 'ngMaterial'
+             */
+            var data = {{ data | raw }};
+            angular.module('DocApp', ['ngMaterial'])
+            .config(['$interpolateProvider', function ($interpolateProvider) {
+                $interpolateProvider.startSymbol('[[');
+                $interpolateProvider.endSymbol(']]');
+            }])
+            .controller('ModelCtrl', ['$scope', '$mdDialog', '$log',
+            function($scope, $mdDialog, $log) {
+                $scope.models = data || [];
+            }]);
+        </script>
+    </body>
+</html>

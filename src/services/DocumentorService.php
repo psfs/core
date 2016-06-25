@@ -340,4 +340,143 @@
 
             return $methodInfo;
         }
+
+        /**
+         * Translator from php types to swagger types
+         * @param string $format
+         *
+         * @return array
+         */
+        public static function translateSwaggerFormats($format)
+        {
+            switch(strtolower($format)) {
+                case 'bool':
+                case 'boolean':
+                    $swaggerType = 'boolean';
+                    $swaggerFormat = '';
+                    break;
+                default:
+                case 'string':
+                case 'varchar':
+                    $swaggerType = 'string';
+                    $swaggerFormat = '';
+                    break;
+                case 'binary':
+                case 'varbinary':
+                    $swaggerType = 'string';
+                    $swaggerFormat = 'binary';
+                    break;
+                case 'int':
+                case 'integer':
+                case 'float':
+                case 'double':
+                    $swaggerType = 'integer';
+                    $swaggerFormat = 'int32';
+                    break;
+                case 'date':
+                    $swaggerType = 'string';
+                    $swaggerFormat = 'date';
+                    break;
+                case 'datetime':
+                    $swaggerType = 'string';
+                    $swaggerFormat = 'date-time	';
+                    break;
+
+            }
+            return [$swaggerType, $swaggerFormat];
+        }
+
+        /**
+         * Method that parse the definitions for the api's
+         * @param array $endpoint
+         *
+         * @return array
+         */
+        public static function extractSwaggerDefinition(array $endpoint)
+        {
+            $definitions = [];
+            if (array_key_exists('definitions', $endpoint)) {
+                foreach ($endpoint['definitions'] as $dtoName => $definition) {
+                    $dto = [
+                        "type" => "object",
+                        "properties" => [],
+                    ];
+                    foreach ($definition as $field => $format) {
+                        if (is_array($format)) {
+                            $subDtoName = preg_replace('/Dto$/', '', $dtoName);
+                            $subDtoName = preg_replace('/DtoList$/', '', $subDtoName);
+                            $subDto = self::extractSwaggerDefinition(['definitions' => [
+                                $subDtoName => $format,
+                            ]]);
+                            if (array_key_exists($subDtoName, $subDto)) {
+                                $definitions = $subDto;
+                            } else {
+                                $definitions[$subDtoName] = $subDto;
+                            }
+                            $dto['properties'][$field] = [
+                                '$ref' => "#/definitions/" . $subDtoName,
+                            ];
+                        } else {
+                            list($type, $format) = self::translateSwaggerFormats($format);
+                            $dto['properties'][$field] = [
+                                "type" => $type,
+                            ];
+                            if (strlen($format)) {
+                               $dto['properties'][$field]['format'] = $format;
+                            }
+                        }
+                    }
+                    $definitions[$dtoName] = $dto;
+                }
+            }
+            return $definitions;
+        }
+
+        /**
+         * Method that export
+         * @param array $modules
+         *
+         * @return array
+         */
+        public static function swaggerFormatter(array $modules = [])
+        {
+            $endpoints = [];
+            pre($modules, true);
+            $dtos = [];
+            $formatted = [
+                "swagger" => "2.0",
+                "host" => Router::getInstance()->getRoute(''),
+                "basePath" => "/api",
+                "schemes" => ["http", "https"],
+                "externalDocs" => [
+                    "description" => "Principal Url",
+                    "url" => Router::getInstance()->getRoute(''),
+                ]
+            ];
+            foreach($endpoints as $model) {
+                foreach ($model as $endpoint) {
+                    $dtos += self::extractSwaggerDefinition($endpoint);
+                }
+            }
+            $formatted['definitions'] = $dtos;
+            return $formatted;
+        }
+
+        /**
+         * Method that extract the Dto class for the api documentation
+         * @param string $dto
+         * @param boolean $isArray
+         *
+         * @return string
+         */
+        protected function extractDtoName($dto, $isArray = false)
+        {
+            $dto = explode('\\', $dto);
+            $modelDto = array_pop($dto) . "Dto";
+            if ($isArray) {
+                $modelDto .= "List";
+            }
+
+            return $modelDto;
+        }
     }
