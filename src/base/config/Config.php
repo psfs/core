@@ -6,6 +6,7 @@ namespace PSFS\base\config;
 use PSFS\base\Cache;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\types\SingletonTrait;
 
 /**
@@ -115,14 +116,27 @@ class Config {
      */
     public function isConfigured()
     {
-        $configured = true;
-        foreach (static::$required as $required) {
-            if (!array_key_exists($required, $this->config)) {
-                $configured = false;
-                break;
+        $configured = (count($this->config) > 0);
+        if ($configured) {
+            foreach (static::$required as $required) {
+                if (!array_key_exists($required, $this->config)) {
+                    $configured = false;
+                    break;
+                }
             }
         }
-        return $configured;
+        return ($configured || $this->checkTryToSaveConfig());
+    }
+
+    /**
+     * Method that check if the user is trying to save the config
+     * @return bool
+     */
+    public function checkTryToSaveConfig()
+    {
+        $uri = Request::getInstance()->getRequestUri();
+        $method = Request::getInstance()->getMethod();
+        return (preg_match('/^\/admin\/(config|setup)$/', $uri) !== false && strtoupper($method) === 'POST');
     }
 
     /**

@@ -235,7 +235,7 @@
         protected function checkRestrictedAccess($route)
         {
             //Chequeamos si entramos en el admin
-            if (preg_match('/^\/admin/i', $route)
+            if (!Config::getInstance()->checkTryToSaveConfig() && preg_match('/^\/admin/i', $route)
                 || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && NULL !== Config::getInstance()->get('restricted'))
             ) {
                 if (!preg_match('/^\/admin\/login/i', $route) && !$this->session->checkAdmin()) {

@@ -472,7 +472,7 @@
          *
          * @return string
          */
-        public function json(\PSFS\base\dto\JsonResponse $response, $status)
+        public function json($response, $status = 200)
         {
             $this->closeTransaction($status);
             Propel::closeConnections();
