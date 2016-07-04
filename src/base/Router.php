@@ -174,6 +174,24 @@
         }
 
         /**
+         * Function that checks if the long of the patterns match
+         * @param $routePattern
+         * @param $path
+         * @return bool
+         */
+        private function compareSlashes($routePattern, $path) {
+            $pattern_sep = count(explode('/', $routePattern));
+            if(preg_match('/\/$/', $routePattern)) {
+                $pattern_sep--;
+            }
+            $path_sep = count(explode('/', $path));
+            if(preg_match('/\/$/', $path)) {
+                $path_sep--;
+            }
+            return abs($pattern_sep - $path_sep) < 1;
+        }
+
+        /**
          * Método que busca el componente que ejecuta la ruta
          *
          * @param string $route
@@ -189,7 +207,7 @@
             foreach ($this->routing as $pattern => $action) {
                 list($httpMethod, $routePattern) = $this->extractHttpRoute($pattern);
                 $matched = $this->matchRoutePattern($routePattern, $path);
-                if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod)) {
+                if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod) && $this->compareSlashes($routePattern, $path)) {
                     $get = $this->extractComponents($route, $routePattern);
                     /** @var $class \PSFS\base\types\Controller */
                     $class = $this->getClassToCall($action);
@@ -572,7 +590,6 @@
             $expr = str_replace('###', '(.*)', $expr);
             $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
             $matched = preg_match('/^' . $expr . '\/?$/i', $path) || preg_match('/^' . $expr2 . '?$/i', $path);
-
             return $matched;
         }
 
@@ -589,7 +606,7 @@
                 list($httpMethod, $routePattern) = explode("#|#", $pattern, 2);
             }
 
-            return array($httpMethod, $routePattern);
+            return array(strtoupper($httpMethod), $routePattern);
         }
 
         /**
