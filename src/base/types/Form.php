@@ -154,12 +154,10 @@
                 $valid = false;
             }
             //Validamos los campos del formulario
-            if ($valid) {
-                if (count($this->fields) > 0) {
-                    foreach ($this->fields as $key => &$field) {
-                        if ($key === self::SEPARATOR) continue;
-                        list($field, $valid) = $this->checkFieldValidation($field, $key);
-                    }
+            if ($valid && count($this->fields) > 0) {
+                foreach ($this->fields as $key => &$field) {
+                    if ($key === $token_field || $key === self::SEPARATOR) continue;
+                    list($field, $valid) = $this->checkFieldValidation($field, $key);
                 }
             }
             return $valid;
