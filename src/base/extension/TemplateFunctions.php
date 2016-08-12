@@ -5,8 +5,10 @@
     use PSFS\base\exception\ConfigException;
     use PSFS\base\Request;
     use PSFS\base\Router;
+    use PSFS\base\Security;
     use PSFS\base\Template;
     use PSFS\base\types\Form;
+    use PSFS\Services\GeneratorService;
     use Symfony\Component\Translation\Tests\StringClass;
 
     class TemplateFunctions {
@@ -18,6 +20,9 @@
         const WIDGET_FUNCTION       = "\\PSFS\\base\\extension\\TemplateFunctions::widget";
         const FORM_FUNCTION         = "\\PSFS\\base\\extension\\TemplateFunctions::form";
         const RESOURCE_FUNCTION     = "\\PSFS\\base\\extension\\TemplateFunctions::resource";
+        const SESSION_FUNCTION      = "\\PSFS\\base\\extension\\TemplateFunctions::session";
+        const EXISTS_FLASH_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::existsFlash";
+        const GET_FLASH_FUNCTION    = "\\PSFS\\base\\extension\\TemplateFunctions::getFlash";
 
         /**
          * Función que copia los recursos de las carpetas Public al DocumentRoot
@@ -122,32 +127,8 @@
             $debug = Config::getInstance()->getDebugMode();
             $domains = Template::getDomains(true);
             $filename_path = self::extractPathname($path, $domains);
-            self::copyResources($dest, $force, $filename_path, $debug);
+            GeneratorService::copyResources($dest, $force, $filename_path, $debug);
             return '';
-        }
-
-        /**
-         * Método que copia los recursos recursivamente
-         * @param string $dest
-         * @param boolean $force
-         * @param $filename_path
-         * @param boolean $debug
-         */
-        private static function copyResources($dest, $force, $filename_path, $debug)
-        {
-            if (file_exists($filename_path)) {
-                $destfolder = basename($filename_path);
-                if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force) {
-                    if (is_dir($filename_path)) {
-                        Config::createDir(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
-                        Template::copyr($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
-                    }else {
-                        if (@copy($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) === FALSE) {
-                            throw new ConfigException("Can't copy ".$filename_path." to ".WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
-                        }
-                    }
-                }
-            }
         }
 
         /**
@@ -228,5 +209,34 @@
             }
 
             return $file_path;
+        }
+
+        /**
+         * Template function for get a session var
+         * @param string $key
+         * @return mixed
+         */
+        public static function session($key) {
+            return Security::getInstance()->getSessionKey($key);
+        }
+
+        /**
+         * Template function that check if exists any flash session var
+         * @param string $key
+         * @return bool
+         */
+        public static function existsFlash($key = '') {
+            return null !== Security::getInstance()->getFlash($key);
+        }
+
+        /**
+         * Template function that get a flash session var
+         * @param string $key
+         * @return mixed
+         */
+        public static function getFlash($key) {
+            $var = Security::getInstance()->getFlash($key);
+            Security::getInstance()->setFlash($key, null);
+            return $var;
         }
     }

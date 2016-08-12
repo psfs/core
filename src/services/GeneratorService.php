@@ -3,6 +3,7 @@
 
     use PSFS\base\Cache;
     use PSFS\base\config\Config;
+    use PSFS\base\exception\ConfigException;
     use PSFS\base\Service;
 
     class GeneratorService extends Service{
@@ -363,5 +364,49 @@
             ));
 
             return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$api}.php", $force);
+        }
+
+        /**
+         * Method that copy resources recursively
+         * @param string $dest
+         * @param boolean $force
+         * @param $filename_path
+         * @param boolean $debug
+         */
+        public static function copyResources($dest, $force, $filename_path, $debug)
+        {
+            if (file_exists($filename_path)) {
+                $destfolder = basename($filename_path);
+                if (!file_exists(WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) || $debug || $force) {
+                    if (is_dir($filename_path)) {
+                        self::copyr($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                    }else {
+                        if (@copy($filename_path, WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder) === FALSE) {
+                            throw new ConfigException("Can't copy ".$filename_path." to ".WEB_DIR.$dest.DIRECTORY_SEPARATOR.$destfolder);
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Method that copy a resource
+         * @param string $src
+         * @param string $dst
+         * @throws ConfigException
+         */
+        public static function copyr($src, $dst) {
+            $dir = opendir($src);
+            Config::createDir($dst);
+            while (false !== ($file = readdir($dir))) {
+                if (($file != '.') && ($file != '..')) {
+                    if (is_dir($src.'/'.$file)) {
+                        self::copyr($src.'/'.$file, $dst.'/'.$file);
+                    } elseif (@copy($src.'/'.$file, $dst.'/'.$file) === false) {
+                        throw new ConfigException("Can't copy ".$src." to ".$dst);
+                    }
+                }
+            }
+            closedir($dir);
         }
     }

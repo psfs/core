@@ -274,8 +274,29 @@ class Template {
      * Método que copia directamente el recurso solicitado a la carpeta pública
      * @return Template
      */
-    private function dumpResource() {
+    private function addResourceFunction() {
         return $this->addTemplateFunction("resource", TemplateFunctions::RESOURCE_FUNCTION);
+    }
+
+    /**
+     * @return Template
+     */
+    private function addSessionFunction() {
+        return $this->addTemplateFunction("session", TemplateFunctions::SESSION_FUNCTION);
+    }
+
+    /**
+     * @return Template
+     */
+    private function addExistsFlashFunction() {
+        return $this->addTemplateFunction("existsFlash", TemplateFunctions::EXISTS_FLASH_FUNCTION);
+    }
+
+    /**
+     * @return Template
+     */
+    private function addGetFlashFunction() {
+        return $this->addTemplateFunction("getFlash", TemplateFunctions::GET_FLASH_FUNCTION);
     }
 
     /**
@@ -306,7 +327,7 @@ class Template {
                 try {
                     $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
                 } catch (\Exception $e) {
-                    Logger::getInstance()->errorLog($e->getMessage());
+                    Logger::log($e->getMessage(), LOG_ERR);
                 }
             }
         }
@@ -326,27 +347,6 @@ class Template {
             $realPath[] = $explodePath[$i];
         }
         return implode(DIRECTORY_SEPARATOR, $realPath);
-    }
-
-    /**
-     * Método que copia un recurso
-     * @param string $src
-     * @param string $dst
-     * @throws ConfigException
-     */
-    public static function copyr($src, $dst) {
-        $dir = opendir($src);
-        Config::createDir($dst);
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src.'/'.$file)) {
-                    self::copyr($src.'/'.$file, $dst.'/'.$file);
-                } elseif (@copy($src.'/'.$file, $dst.'/'.$file) === false) {
-                    throw new ConfigException("Can't copy ".$src." to ".$dst);
-                }
-            }
-        }
-        closedir($dir);
     }
 
     /**
@@ -427,47 +427,6 @@ class Template {
     }
 
     /**
-     * Función que devuelve el valor de una variable de sesión
-     * @return Template
-     */
-    private function useSessionVars() {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('session', function($key = "") {
-            return Security::getInstance()->getSessionKey($key);
-        });
-        $tpl->addFunction($function);
-        return $this;
-    }
-
-    /**
-     * Función que devuelve el valor de una variable de sesión flash
-     * @return Template
-     */
-    private function existsFlash() {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('existsFlash', function($key = "") {
-            return null !== Security::getInstance()->getFlash($key);
-        });
-        $tpl->addFunction($function);
-        return $this;
-    }
-
-    /**
-     * Función que devuelve el valor de una variable de sesión flash
-     * @return Template
-     */
-    private function useFlash() {
-        $tpl = $this->tpl;
-        $function = new \Twig_SimpleFunction('getFlash', function($key = "") {
-            $var = Security::getInstance()->getFlash($key);
-            Security::getInstance()->setFlash($key, null);
-            return $var;
-        });
-        $tpl->addFunction($function);
-        return $this;
-    }
-
-    /**
      * Método que añade todas las funciones de las plantillas
      */
     private function addTemplateFunctions() {
@@ -478,10 +437,10 @@ class Template {
             ->addFormButtonFunction()
             ->addConfigFunction()
             ->addRouteFunction()
-            ->dumpResource()
-            ->useSessionVars()
-            ->existsFlash()
-            ->useFlash()
+            ->addSessionFunction()
+            ->addExistsFlashFunction()
+            ->addGetFlashFunction()
+            ->addResourceFunction()
         ;
     }
 
