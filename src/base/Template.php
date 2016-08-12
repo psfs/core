@@ -93,6 +93,7 @@ class Template {
      * @return string HTML
      */
     public function render($tpl, array $vars = array(), array $cookies = array()) {
+        Logger::log('Start render response');
         $vars = $this->setDebugHeaders($vars);
         $output = $this->dump($tpl, $vars);
 
@@ -126,12 +127,14 @@ class Template {
      * @return string HTML
      */
     public function output($output = '', $contentType = 'text/html', array $cookies = array()) {
+        Logger::log('Start output response');
         ob_start();
         $this->setReponseHeaders($contentType, $cookies);
         header('Content-length: '.strlen($output));
 
         $cache = Cache::needCache();
         if (false !== $cache && $this->status_code === 200 && $this->debug === false) {
+            Logger::log('Saving output response into cache');
             $cacheName = $this->cache->getRequestCacheHash();
             $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName, $output);
             $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
@@ -140,6 +143,7 @@ class Template {
 
         ob_flush();
         ob_end_clean();
+        Logger::log('End output response');
         $this->closeRender();
     }
 
@@ -147,6 +151,7 @@ class Template {
      * Método que cierra y limpia los buffers de salida
      */
     public function closeRender() {
+        Logger::log('Close template render');
         $this->security->setSessionKey("lastRequest", array(
             "url" => Request::getInstance()->getRootUrl().Request::requestUri(),
             "ts" => microtime(true),
@@ -410,13 +415,12 @@ class Template {
     protected function setDebugHeaders(array $vars)
     {
         if ($this->debug) {
+            Logger::log('Adding debug headers to render response');
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             header('X-PSFS-DEBUG-TS: '.Dispatcher::getInstance()->getTs().' s');
             header('X-PSFS-DEBUG-MEM: '.Dispatcher::getInstance()->getMem('MBytes').' MBytes');
             header('X-PSFS-DEBUG-FILES: '.count(get_included_files()).' files opened');
-
-            return $vars;
         }
 
         return $vars;

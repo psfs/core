@@ -2,10 +2,13 @@
 
     namespace PSFS\base;
 
+    use Monolog\Formatter\LineFormatter;
     use Monolog\Handler\FirePHPHandler;
     use Monolog\Handler\StreamHandler;
     use Monolog\Logger as Monolog;
+    use Monolog\Processor\GitProcessor;
     use Monolog\Processor\MemoryUsageProcessor;
+    use Monolog\Processor\UidProcessor;
     use Monolog\Processor\WebProcessor;
     use PSFS\base\config\Config;
     use PSFS\base\types\SingletonTrait;
@@ -24,7 +27,13 @@
      */
     class Logger {
         use SingletonTrait;
+        /**
+         * @var \Monolog\Logger
+         */
         protected $logger;
+        /**
+         * @var resource
+         */
         private $stream;
 
         /**
@@ -52,8 +61,8 @@
          *
          * @return bool
          */
-        public function infoLog($msg = '', $context = array()) {
-            return $this->logger->addInfo($msg, $context);
+        public function infoLog($msg = '', $context = []) {
+            return $this->logger->addInfo($msg, $this->addMinimalContext($context));
         }
 
         /**
@@ -63,8 +72,8 @@
          *
          * @return bool
          */
-        public function debugLog($msg = '', $context = array()) {
-            return $this->logger->addDebug($msg, $context);
+        public function debugLog($msg = '', $context = []) {
+            return $this->logger->addDebug($msg, $this->addMinimalContext($context));
         }
 
         /**
@@ -74,8 +83,8 @@
          *
          * @return bool
          */
-        public function errorLog($msg, $context = array()) {
-            return $this->logger->addError($msg, $context);
+        public function errorLog($msg, $context = []) {
+            return $this->logger->addError($msg, $this->addMinimalContext($context));
         }
 
         /**
@@ -84,8 +93,8 @@
          * @param array $context
          * @return bool
          */
-        public function warningLog($msg, $context = array()) {
-            return $this->logger->addWarning($msg, $context);
+        public function warningLog($msg, $context = []) {
+            return $this->logger->addWarning($msg, $this->addMinimalContext($context));
         }
 
         /**
@@ -94,9 +103,9 @@
          * @param boolean $debug
          * @param Config $config
          */
-        private function addPushLogger($logger, $debug, $config) {
+        private function addPushLogger($logger, $debug, Config $config) {
             $this->logger = new Monolog(strtoupper($logger));
-            $this->logger->pushHandler(new StreamHandler($this->stream));
+            $this->logger->pushHandler($this->addDefaultStreamHandler($debug));
             if ($debug) {
                 $phpFireLog = $config->get("logger.phpFire");
                 if (!empty($phpFireLog)) {
@@ -107,7 +116,7 @@
                     $this->logger->pushProcessor(new MemoryUsageProcessor());
                 }
             }
-            $this->logger->pushProcessor(new WebProcessor());
+            $this->logger->pushProcessor(new UidProcessor());
         }
 
         /**
@@ -172,5 +181,62 @@
             Config::createDir($path);
 
             return $path;
+        }
+
+        /**
+         * Static method to trace logs
+         * @param string $msg
+         * @param int $type
+         * @param array $context
+         */
+        public static function log($msg, $type = LOG_DEBUG, $context = []) {
+            switch($type) {
+                case LOG_DEBUG:
+                    Logger::getInstance()->debugLog($msg, $context);
+                    break;
+                case LOG_WARNING:
+                    Logger::getInstance()->warningLog($msg, $context);
+                    break;
+                case LOG_CRIT:
+                case LOG_ERR:
+                Logger::getInstance()->errorLog($msg, $context);
+                    break;
+                case LOG_INFO:
+                    Logger::getInstance()->infoLog($msg, $context);
+                    break;
+                default:
+                    Logger::getInstance()->log($msg, $context);
+                    break;
+            }
+        }
+
+        /**
+         * Add the default stream handler
+         * @param bool $debug
+         * @return StreamHandler
+         */
+        private function addDefaultStreamHandler($debug = false)
+        {
+            // the default date format is "Y-m-d H:i:s"
+            $dateFormat = "Y-m-d H:i:s.u";
+            // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+            $output = "[%datetime%] [%channel%:%level_name%]\t%message%\t%context%\t%extra%\n";
+            // finally, create a formatter
+            $formatter = new LineFormatter($output, $dateFormat);
+            $stream = new StreamHandler($this->stream, $debug ? Monolog::DEBUG : Monolog::WARNING);
+            $stream->setFormatter($formatter);
+            return $stream;
+        }
+
+        /**
+         * Add a minimum context to the log
+         * @param array $context
+         * @return array
+         */
+        private function addMinimalContext(array $context = [])
+        {
+            $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
+            $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
+            return $context;
         }
     }

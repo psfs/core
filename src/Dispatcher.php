@@ -10,6 +10,7 @@
     use PSFS\base\exception\ConfigException;
     use PSFS\base\exception\RouterException;
     use PSFS\base\exception\SecurityException;
+    use PSFS\base\Logger;
     use PSFS\base\Singleton;
 
     require_once __DIR__ . DIRECTORY_SEPARATOR . "bootstrap.php";
@@ -53,25 +54,17 @@
         private $actualUri;
 
         /**
-         * Default constructor
-         */
-        public function __construct()
-        {
-            parent::__construct();
-            $this->init();
-        }
-
-        /**
          * Initializer method
          */
         public function init()
         {
+            Logger::log('Dispatcher init');
             parent::init();
-            $this->ts = $this->parser->getTs();
-            $this->mem = memory_get_usage();
+            $this->initiateStats();
             $this->setLocale();
             $this->bindWarningAsExceptions();
             $this->actualUri = $this->parser->getServer("REQUEST_URI");
+            Logger::log('End dispatcher init');
         }
 
         /**
@@ -80,6 +73,7 @@
          */
         private function setLocale()
         {
+            Logger::log('Set locale to project');
             $this->locale = $this->config->get("default_language");
             // Load translations
             putenv("LC_ALL=" . $this->locale);
@@ -99,8 +93,7 @@
          */
         public function run()
         {
-            $this->log->infoLog("Begin request " . $this->parser->getRequestUri());
-            //
+            Logger::log('Begin runner');
             try {
                 if ($this->config->isConfigured()) {
                     if (!$this->parser->isFile()) {
@@ -129,13 +122,14 @@
          */
         protected function dumpException(\Exception $e)
         {
+            Logger::log('Starting dump exception');
             $ex = (NULL !== $e->getPrevious()) ? $e->getPrevious() : $e;
             $error = array(
                 "error" => $ex->getMessage(),
                 "file"  => $ex->getFile(),
                 "line"  => $ex->getLine(),
             );
-            $this->log->errorLog(json_encode($error));
+            Logger::log('Throwing exception', LOG_ERR, $error);
             unset($error);
 
             return $this->router->httpNotFound($ex);
@@ -180,11 +174,27 @@
         protected function bindWarningAsExceptions()
         {
             if ($this->config->getDebugMode()) {
+                Logger::log('Added handlers for errors');
                 //Warning & Notice handler
                 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-                    throw new \ErrorException($errstr, 500, $errno, $errfile, $errline);
+                    Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline]);
+                    throw new \Exception($errstr, 500);
                 });
             }
+        }
+
+        /**
+         * Stats initializer
+         */
+        private function initiateStats()
+        {
+            Logger::log('Initialicing stats (mem + ts)');
+            if(null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
+                $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
+            } else {
+                $this->ts = $this->parser->getTs();
+            }
+            $this->mem = memory_get_usage();
         }
 
     }

@@ -1,20 +1,18 @@
-{% spaceless %}
-    {% if __DEBUG__ is defined %}
-        <script type="text/javascript">
-            var _debug = {
-                includes: [],
-                trace: []
-            };
-            {% for include in __DEBUG__.includes %}
-            _debug.includes.push('{{ include }}');
-            {% endfor %}
-            {% for index, trace in __DEBUG__.trace %}
-            var trace_{{ index }} = {};
-            {% for key, value in trace %}
-            trace_{{ index }}['{{key}}'] = '{{ value }}';
-            {% endfor %}
-            _debug.trace.push(trace_{{ index }});
-            {% endfor %}
-        </script>
-    {% endif %}
-{% endspaceless %}
+{% if __DEBUG__ is defined %}
+<script type="text/javascript" async>
+    var __debug = {
+        includes: [],
+        traces: []
+    };
+    {% for include in __DEBUG__.includes %}
+    __debug.includes.push('{{ include }}');
+    {% endfor %}
+    {% for index, trace in __DEBUG__.trace %}
+    __debug.traces.push({
+    {% for key, value in trace %}
+        {% if loop.index > 1 %},{% endif %}{{key}}: '{{ value | raw }}';
+    {% endfor %}
+    })
+    {% endfor %}
+</script>
+{% endif %}

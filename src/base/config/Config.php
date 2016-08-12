@@ -116,6 +116,7 @@ class Config {
      */
     public function isConfigured()
     {
+        Logger::log('Checking configuration');
         $configured = (count($this->config) > 0);
         if ($configured) {
             foreach (static::$required as $required) {
@@ -192,7 +193,7 @@ class Config {
      */
     public static function createDir($dir) {
         try {
-            if (@mkdir($dir, 0775, true) === false) {
+            if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
                 throw new \Exception(_('Can\'t create directory ').$dir);
             }
         }catch (\Exception $e) {

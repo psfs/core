@@ -122,6 +122,7 @@
          */
         public function checkAdmin($user = NULL, $pass = NULL)
         {
+            Logger::log('Checking admin session');
             if (!$this->authorized) {
                 $request = Request::getInstance();
                 if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
@@ -324,13 +325,15 @@
          */
         public function updateSession($closeSession = FALSE)
         {
+            Logger::log('Update session');
             $_SESSION = $this->session;
             $_SESSION[sha1('USER')] = serialize($this->user);
             $_SESSION[sha1('ADMIN')] = serialize($this->admin);
             if ($closeSession) {
+                Logger::log('Close session');
                 session_write_close();
             }
-
+            Logger::log('Session updated');
             return $this;
         }
 

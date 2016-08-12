@@ -1,7 +1,8 @@
 <?php
+    if(defined('PSFS_BOOTSTRAP_LOADED')) return;
     use Symfony\Component\Finder\Finder;
 
-    if (!defined('SOURCE_DIR'))define('SOURCE_DIR', __DIR__);
+    if (!defined('SOURCE_DIR')) define('SOURCE_DIR', __DIR__);
     if (preg_match('/vendor/', SOURCE_DIR))
     {
         if (!defined('BASE_DIR')) define('BASE_DIR', SOURCE_DIR.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..');
@@ -52,3 +53,7 @@
             include_once($path);
         }
     }
+
+    \PSFS\base\Logger::log('Bootstrap initialized');
+
+    defined('PSFS_BOOTSTRAP_LOADED') or define('PSFS_BOOTSTRAP_LOADED', true);

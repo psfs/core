@@ -77,8 +77,8 @@
          */
         public function httpNotFound(\Exception $e = NULL)
         {
-            $template = Template::getInstance()
-                ->setStatus($e->getCode());
+            Logger::log('Throw not found exception');
+            $template = Template::getInstance()->setStatus($e->getCode());
             if (preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE'))) {
                 return $template->output(json_encode(array(
                     "success" => FALSE,
@@ -86,7 +86,8 @@
                 )), 'application/json');
             } else {
                 if (NULL === $e) {
-                    $e = new \Exception(_('Página no encontrada'), 404);
+                    Logger::log('Not found page throwed without previus exception');
+                    $e = new \Exception(_('Page not found'), 404);
                 }
 
                 return $template->render('error.html.twig', array(
@@ -116,12 +117,12 @@
          */
         public function execute($route)
         {
+            Logger::log('Executing the request');
             try {
                 //Check CORS for requests
                 $this->checkCORS();
                 // Checks restricted access
                 $this->checkRestrictedAccess($route);
-
                 //Search action and execute
                 return $this->searchAction($route);
             } catch (AccessDeniedException $e) {
@@ -154,11 +155,13 @@
          */
         private function checkCORS()
         {
+            Logger::log('Checking CORS');
             $corsEnabled = Config::getInstance()->get('cors.enabled');
             $request = Request::getInstance();
             if (NULL !== $corsEnabled && null !== $request->getServer('HTTP_REFERER')) {
                 if($corsEnabled == '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
                     if (!$this->headersSent) {
+                        // TODO include this headers in Template class output method
                         header("Access-Control-Allow-Credentials: true");
                         header("Access-Control-Allow-Origin: *");
                         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -166,6 +169,7 @@
                         $this->headersSent = true;
                     }
                     if(Request::getInstance()->getMethod() == 'OPTIONS') {
+                        Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests');
                         header( "HTTP/1.1 200 OK" );
                         exit();
                     }
@@ -200,6 +204,7 @@
          */
         protected function searchAction($route)
         {
+            Logger::log('Searching action to execute');
             //Revisamos si tenemos la ruta registrada
             $parts = parse_url($route);
             $path = (array_key_exists('path', $parts)) ? $parts['path'] : $route;
@@ -214,7 +219,7 @@
                     try {
                         return $this->executeCachedRoute($route, $action, $class, $get);
                     } catch (\Exception $e) {
-                        Logger::getInstance()->debugLog($e->getMessage(), array($e->getFile(), $e->getLine()));
+                        Logger::log($e->getMessage(), LOG_ERR);
                         throw new RouterException($e->getMessage(), 404, $e);
                     }
                 }
@@ -252,6 +257,7 @@
          */
         protected function checkRestrictedAccess($route)
         {
+            Logger::log('Checking admin zone');
             //Chequeamos si entramos en el admin
             if (!Config::getInstance()->checkTryToSaveConfig() && preg_match('/^\/admin/i', $route)
                 || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && NULL !== Config::getInstance()->get('restricted'))
@@ -259,7 +265,7 @@
                 if (!preg_match('/^\/admin\/login/i', $route) && !$this->session->checkAdmin()) {
                     throw new AccessDeniedException();
                 }
-                Logger::getInstance()->debugLog('Acceso autenticado al admin');
+                Logger::log('Admin access granted');
             }
         }
 
@@ -274,6 +280,7 @@
          */
         protected function extractComponents($route, $pattern)
         {
+            Logger::log('Extracting parts for the request to execute');
             $url = parse_url($route);
             $_route = explode("/", $url['path']);
             $_pattern = explode("/", $pattern);
@@ -536,7 +543,6 @@
             if (array_key_exists('admin', $routes)) {
                 asort($routes["admin"]);
             }
-
             return $routes;
         }
 
@@ -567,11 +573,9 @@
          */
         protected function getClassToCall($action)
         {
-            $class = (method_exists($action["class"], "getInstance")) ? $action["class"]::getInstance() : new $action["class"];
-            if (NULL !== $class && method_exists($class, "init")) {
-                $class->init();
-            }
-
+            Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
+            $actionClass = class_exists($action["class"]) ? $action["class"] : "\\" . $action["class"];
+            $class = (method_exists($actionClass, "getInstance")) ? $actionClass::getInstance() : new $actionClass;
             return $class;
         }
 
@@ -657,8 +661,7 @@
         private function extractReflectionVisibility($docComments)
         {
             preg_match('/@visible\ (.*)\n/i', $docComments, $visible);
-
-            return (!empty($visible) && isset($visible[1]) && $visible[1] == 'false') ? FALSE : TRUE;
+            return !(array_key_exists(1, $visible) && preg_match('/false/i', $visible[1]));
         }
 
         /**
@@ -685,7 +688,7 @@
          */
         protected function executeCachedRoute($route, $action, $class, $params = NULL)
         {
-            Logger::getInstance()->debugLog(_('Ruta resuelta para ') . $route);
+            Logger::log('Executing route ' . $route);
             $this->session->setSessionKey("__CACHE__", $action);
             $cache = Cache::needCache();
             $execute = TRUE;

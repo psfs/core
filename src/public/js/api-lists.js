@@ -3,13 +3,10 @@
 
     var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv', '$apiSrv',
     function($scope, $log, $http, $mdDialog, $msgSrv, $apiSrv){
-        $scope.list = [];
         $scope.loading = false;
         $scope.limit = globalLimit || 10;
         $scope.actualPage = 1;
-        $scope.filters = {};
         $scope.count = 0;
-        $scope.selected = null;
 
         function catchError(response)
         {
@@ -69,8 +66,17 @@
 
         function loadItem(item)
         {
-            $msgSrv.send('psfs.load.item', item);
-            $scope.selected = item;
+            $scope.model = angular.copy(item);
+        }
+
+        function isModelSelected() {
+            return !angular.equals({}, $scope.model);
+        }
+
+        function addNewItem() {
+            $scope.model = {};
+            $scope.entity_form.$setDirty(false);
+            $scope.entity_form.$setPristine(true);
         }
 
         $scope.getLabel = $apiSrv.getLabel;
@@ -79,6 +85,8 @@
         $scope.deleteItem = deleteItem;
         $scope.paginate = paginate;
         $scope.getId = $apiSrv.getId;
+        $scope.isModelSelected = isModelSelected;
+        $scope.addNewItem = addNewItem;
 
         $scope.$on('psfs.list.reload', loadData);
 
@@ -90,10 +98,6 @@
         return {
             restrict: 'E',
             replace: true,
-            scope: {
-                'api': '@',
-                'url': '@'
-            },
             templateUrl: '/js/templates/api-list.html',
             controller: listCtrl
         };

@@ -32,12 +32,12 @@ class Request {
     /**
      */
     public function __construct() {
-        $this->server = $_SERVER;
-        $this->cookies = $_COOKIE;
-        $this->upload = $_FILES;
+        $this->server = $_SERVER or [];
+        $this->cookies = $_COOKIE or [];
+        $this->upload = $_FILES or [];
         $this->header = $this->parseHeaders();
-        $this->data = $_REQUEST;
-        $this->query = $_GET;
+        $this->data = $_REQUEST or [];
+        $this->query = $_GET or [];
         $contentType = (array_key_exists('Content-Type', $this->header)) ? $this->header['Content-Type'] : "text/html";
         if (preg_match('/application\/json/i', $contentType))
         {
@@ -131,7 +131,7 @@ class Request {
      */
     public function isFile()
     {
-        $file = (preg_match('/\.(css|js|png|jpg|jpeg|woff|ttf|svg|eot|xml|bmp|gif|txt|zip|yml|ini|conf|php|ico)$/', $this->getRequestUri()) !== 0);
+        $file = (preg_match('/\.[a-z0-9]{2,4}$/', $this->getRequestUri()) !== 0);
         return $file;
     }
 

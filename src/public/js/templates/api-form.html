@@ -8,14 +8,29 @@
           layout="column"
           flex="100"
           novalidate>
-        <md-input-container data-ng-repeat="field in form.fields" flex="100">
+        <md-input-container data-ng-repeat="field in form.fields" flex="100" data-ng-if="field.type !== 'hidden'">
             <label data-ng-bind-html="field.label"></label>
             <!-- INPUT TYPE TEXT, URL OR PHONE -->
-            <input type="{{ field.type }}" name="{{ field.name }}" ng-model="model[$index]" ng-if="isInputField(field)" ng-required="field.required">
+            <input type="{{ field.type }}" name="{{ entity + '_' + field.name }}" ng-model="model[field.name]" ng-if="isInputField(field)" ng-required="field.required">
             <!-- COMBO -->
-            <md-select ng-model="model[$index]" md-on-open="loadSelect(field)" ng-if="isComboField(field)" ng-required="field.required">
-                <md-option ng-value="getId(data)" ng-repeat="data in field.data">{{ getLabel(data)}}</md-option>
-            </md-select>
+            <md-autocomplete
+                    ng-if="isComboField(field)"
+                    md-no-cache="true"
+                    md-selected-item="combos[field.name].value"
+                    md-search-text="combos[field.name].search"
+                    md-selected-item-change="setComboField(item, field)"
+                    md-items="item in querySearch(combos[field.name].search, field)"
+                    md-item-text="getLabel(item)"
+                    md-min-length="1"
+                    md-delay="500"
+                    placeholder="Type something to search any {{field.label}}">
+                <md-item-template>
+                    <span md-highlight-text="combos[field.name].search" md-highlight-flags="^i">{{getLabel(item)}}</span>
+                </md-item-template>
+                <md-not-found>
+                    No states matching "{{combos[field.name].search}}" were found.
+                </md-not-found>
+            </md-autocomplete>
         </md-input-container>
         <md-button class="md-raised md-primary" ng-click="submitForm()">Save</md-button>
     </form>

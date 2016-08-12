@@ -225,7 +225,7 @@ class AssetsParser {
         $orig = realpath(dirname($file).DIRECTORY_SEPARATOR.$source_file);
         $orig_part = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
         try {
-            if (count($source) > 1) {
+            if (count($source) > 1 && array_key_exists(1, $orig_part)) {
                 $dest = $this->path.$orig_part[1];
                 Config::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {

@@ -1,27 +1,12 @@
 (function() {
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog',
-        function($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog) {
+    var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q',
+        function($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog, $q) {
             $scope.method = 'POST';
             $scope.loading = false;
-            $scope.form = {};
-            $scope.loading = false;
-            $scope.model = {};
-
-            function loadEntity($ev, data) {
-                $scope.method = 'PUT';
-                $scope.loading = true;
-                $http.get($scope.url + '/' + $apiSrv.getId(data))
-                .then(function(response){
-                    $scope.model = response.data.data || {};
-                    $msgSrv.send('psfs.entity.loaded');
-                    $scope.loading = false;
-                }, function(err, status) {
-                    $log.error(err);
-                    $scope.loading = false;
-                });
-            }
+            $scope.combos = {};
+            $apiSrv.setEntity($scope.entity);
 
             function loadFormFields()
             {
@@ -31,12 +16,6 @@
                     .then(function(response) {
                         $log.debug('Entity form loaded');
                         $scope.form = response.data.data || {};
-                        $scope.model = {};
-                        for(var i in $scope.form.fields) {
-                            var field = $scope.form.fields[i];
-                            $scope.model[i] = field.value;
-                        }
-                        $log.debug($scope.model);
                         $scope.loading = false;
                     }, function(err, status) {
                         $log.error(err);
@@ -47,7 +26,7 @@
             function isInputField(field)
             {
                 var type = (field.type || 'text').toUpperCase();
-                return (type === 'TEXT' || type === 'PHONE' || type === 'URL');
+                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER');
             }
 
             function isComboField(field)
@@ -70,16 +49,15 @@
             {
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
-                    var model = {};
-                    for(var i in $scope.form.fields) {
-                        var field = $scope.form.fields[i];
-                        model[field.name] = $scope.model[i];
-                    }
                     $scope.loading = true;
+                    var model = $scope.model;
                     try {
                         $http.put($scope.url + '/' + $apiSrv.getId(model), model)
                             .then(function(response){
                                 $scope.loading = false;
+                                $scope.model = {};
+                                $scope.entity_form.$setPristine(true);
+                                $scope.entity_form.$setDirty(false);
                             }, function(err, status) {
                                 $log.error(err);
                                 $scope.loading = false;
@@ -89,6 +67,9 @@
                         $http.post($scope.url, model)
                             .then(function(response){
                                 $scope.loading = false;
+                                $scope.model = {};
+                                $scope.entity_form.$setPristine(true);
+                                $scope.entity_form.$setDirty(false);
                             }, function(err, status) {
                                 $log.error(err);
                                 $scope.loading = false;
@@ -97,7 +78,6 @@
                         $msgSrv.send('psfs.list.reload');
                     }
                 } else {
-                    $log.debug($scope.entity_form);
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
@@ -111,8 +91,21 @@
                 return false;
             }
 
-            $scope.$on('psfs.load.item', loadEntity);
-            loadFormFields();
+            function querySearch(search, field) {
+                deferred = $q.defer();
+                $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=10&name=' + encodeURIComponent("'"+search+"'"))
+                    .then(function(response) {
+                        deferred.resolve(response.data.data || []);
+                    }, function() {
+                        deferred.resolve([]);
+                    });
+
+                return deferred.promise;
+            }
+
+            function setComboField(item, field) {
+                $scope.model[field.name] = item ? $apiSrv.getId(item, field.entity) : null;
+            }
 
             $scope.isInputField = isInputField;
             $scope.loadSelect = loadSelect;
@@ -120,6 +113,10 @@
             $scope.getId = $apiSrv.getId;
             $scope.getLabel = $apiSrv.getLabel;
             $scope.submitForm = submitForm;
+            $scope.querySearch = querySearch;
+            $scope.setComboField = setComboField;
+
+            loadFormFields();
         }];
 
     app
@@ -127,10 +124,6 @@
         return {
             restrict: 'E',
             replace: true,
-            scope: {
-                'entity': '@',
-                'url': '@'
-            },
             templateUrl: '/js/templates/api-form.html',
             controller: formCtrl
         };

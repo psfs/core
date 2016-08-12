@@ -1,7 +1,11 @@
 <md-content flex="35" flex-sm="100" layout-padding>
     <md-progress-circular flex="100" md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
     <md-list data-ng-hide="loading" layout="column">
-        <md-subheader>{{ api }} list [{{ list.length }} / {{ count }}]</md-subheader>
+        <md-subheader>
+            <span>{{ api }} list [{{ list.length }} / {{ count }}]</span>
+            <md-button md-no-focus-style ng-click="addNewItem()" ng-show="isModelSelected()" class="md-raised">Add
+            </md-button>
+        </md-subheader>
         <div paging
              page="actualPage"
              page-size="limit"

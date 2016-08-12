@@ -15,6 +15,7 @@
         const JSON = 1;
         const TEXT = 2;
         const ZIP = 3;
+        const GZIP = 4;
 
         use SingletonTrait;
 

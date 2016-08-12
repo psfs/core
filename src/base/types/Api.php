@@ -5,6 +5,7 @@
     use Propel\Runtime\ActiveQuery\ModelCriteria;
     use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
     use Propel\Runtime\Connection\ConnectionInterface;
+    use Propel\Runtime\Map\ColumnMap;
     use Propel\Runtime\Map\TableMap;
     use Propel\Runtime\Propel;
     use PSFS\base\config\Config;
@@ -242,7 +243,8 @@
                             $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
                         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
                             $text = preg_replace('/(\'|\")/', '', $value);
-                            $query->filterBy($tableField, $text, Criteria::LIKE);
+                            $text = preg_replace('/\ /', '%', $text);
+                            $query->filterBy($tableField, '%'.$text.'%', Criteria::LIKE);
                         } else {
                             $query->filterBy($tableField, $value, Criteria::EQUAL);
                         }
@@ -535,7 +537,7 @@
             return $this->render('api.admin.html.twig', array(
                 "api"    => $this->getApi(),
                 "domain" => $this->domain,
-                "url"    => preg_replace('/\/$/', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), TRUE)),
+                "url"    => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), TRUE)),
             ));
         }
 
@@ -554,7 +556,28 @@
         public function getForm()
         {
             $form = new Form();
-            $form->addField(new Field('Name', _('Name')));
+            /** @var TableMap $map */
+            $map = $this->getModelTableMap();
+            $fields = $map::getTableMap();
+            foreach($fields->getFieldNames() as $field) {
+                $fDto = new Field($field, _($field));
+                /** @var ColumnMap $mappedColumn */
+                $mappedColumn = $fields->getColumn($field);
+                if($mappedColumn->isForeignKey()) {
+                    $fDto->type = Field::COMBO_TYPE;
+                    $fDto->required = $mappedColumn->isNotNull();
+                    $relatedModel = strtolower($mappedColumn->getRelation()->getForeignTable()->getPhpName());
+                    $fDto->entity = $relatedModel;
+                    $fDto->url = Router::getInstance()->getRoute('api-' . $relatedModel . '-pk');
+                } elseif ($mappedColumn->isPrimaryKey()) {
+                    $fDto->type = Field::HIDDEN_TYPE;
+                    $fDto->required = false;
+                } elseif ($mappedColumn->isNumeric()) {
+                    $fDto->type = Field::NUMBER_TYPE;
+                }
+
+                $form->addField($fDto);
+            }
 
             return $this->json(new JsonResponse($form->toArray(), TRUE), 200);
         }

@@ -12,16 +12,13 @@ class Singleton
 {
     use SingletonTrait;
     /**
-     * @var bool flag que indica si la clase ha sido instanciada correctamente
+     * @var bool Flag that indicated if the class is already loaded
      */
     protected $loaded = false;
 
-    /**
-     * is not allowed to call from outside: private!
-     *
-     */
-    public function __construct() {
-        $this->init();
+    public function __construct()
+    {
+        Logger::log(get_class($this) . ' constructor invoked');
     }
 
     /**
@@ -44,7 +41,9 @@ class Singleton
      * @param $value
      */
     public function __set($variable, $value) {
-        $this->$variable = $value;
+        if(property_exists(get_class($this), $variable)) {
+            $this->$variable = $value;
+        }
     }
 
     /**
@@ -53,7 +52,7 @@ class Singleton
      * @return $mixed
      */
     public function __get($variable) {
-        return $this->$variable;
+        return property_exists(get_class($this), $variable) ? $this->$variable : null;
     }
 
     /**
@@ -86,9 +85,10 @@ class Singleton
     }
 
     /**
-     * Servicio de inyección de dependencias
+     * Dependency inyector service invoker
      * @param string $variable
      * @param bool $singleton
+     * @param string $classNameSpace
      * @return $this
      */
     public function load($variable, $singleton = true, $classNameSpace = null) {
@@ -102,7 +102,7 @@ class Singleton
                 $this->$variable = $instance;
             }
         } catch (\Exception $e) {
-            Logger::getInstance()->errorLog($e->getMessage());
+            Logger::log($e->getMessage() . ': ' . $e->getFile() . ' ['  . $e->getLine() . ']', LOG_ERR);
         }
         return $this;
     }
@@ -111,15 +111,13 @@ class Singleton
      * Método que inyecta automáticamente las dependencias en la clase
      */
     public function init() {
-        /** @var \PSFs\base\Logger $logService */
-        $logService = Logger::getInstance(get_class($this));
         if (!$this->isLoaded()) {
             $cacheFilename = "reflections".DIRECTORY_SEPARATOR.sha1(get_class($this)).".json";
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
             $configService = Config::getInstance();
-            $properties = $cacheService->getDataFromFile($cacheFilename, CACHE::JSON);
+            $properties = $cacheService->getDataFromFile($cacheFilename, Cache::JSON);
             if (true === $configService->getDebugMode() || null === $properties) {
                 $properties = $this->getClassProperties();
                 $cacheService->storeData($cacheFilename, $properties, Cache::JSON);
@@ -130,7 +128,7 @@ class Singleton
             }
             $this->setLoaded();
         }else {
-            $logService->warningLog(get_class($this)." ya cargada");
+            Logger::log(get_class($this) . ' already loaded', LOG_INFO);
         }
     }
 
@@ -144,6 +142,7 @@ class Singleton
         if (null === $class) {
             $class = get_class($this);
         }
+        Logger::log('Extracting annotations properties from class ' . $class);
         $selfReflector = new \ReflectionClass($class);
         if (false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
@@ -175,23 +174,23 @@ class Singleton
 
     /**
      * Create the depecency injected
-     * @param $variable
-     * @param $singleton
-     * @param $classNameSpace
-     * @param $calledClass
+     * @param string $variable
+     * @param bool $singleton
+     * @param string $classNameSpace
+     * @param string $calledClass
      * @return mixed
      */
     private function constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass)
     {
+        Logger::log('Create inyectable instance for ' . $classNameSpace . ' into ' . get_class($this));
         $reflector = new \ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
         $varInstanceType = (null === $classNameSpace) ? $this->extractVarType($property->getDocComment()) : $classNameSpace;
         if (true === $singleton && method_exists($varInstanceType, "getInstance")) {
             $instance = $varInstanceType::getInstance();
-            return $instance;
         } else {
             $instance = new $varInstanceType();
-            return $instance;
         }
+        return $instance;
     }
 }
