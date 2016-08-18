@@ -8,10 +8,10 @@ if (!defined("BASE_DIR")) {
     define("BASE_DIR", dirname(dirname(__DIR__)));
 }
 
-if (!function_exists("PSFSAutoloader"))
-{
+if (!function_exists("PSFSAutoloader")) {
     // autoloader
-    function PSFSAutoloader($class) {
+    function PSFSAutoloader($class)
+    {
         // it only autoload class into the Rain scope
         if (strpos($class, 'PSFS') !== false) {
 
@@ -21,11 +21,11 @@ if (!function_exists("PSFSAutoloader"))
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class);
 
             // filepath
-            $abs_path = SOURCE_DIR.DIRECTORY_SEPARATOR.$path.".php";
+            $abs_path = SOURCE_DIR . DIRECTORY_SEPARATOR . $path . ".php";
             if (!file_exists($abs_path)) {
-                pre('&rarr;&nbsp;'.$class);
-                pre('&rarr;&nbsp;'.$path);
-                pre('&rarr;&nbsp;'.$abs_path);
+                pre('&rarr;&nbsp;' . $class);
+                pre('&rarr;&nbsp;' . $path);
+                pre('&rarr;&nbsp;' . $abs_path);
             }
 
             // require the file

@@ -2,6 +2,7 @@
     namespace PSFS\services;
 
     use PSFS\base\config\Config;
+    use PSFS\base\Security;
     use PSFS\base\Service;
     use PSFS\controller\Admin;
     use Symfony\Component\Finder\Finder;
@@ -67,10 +68,10 @@
                 if(isset($admin["profile"]))
                 {
                     switch($admin["profile"]) {
-                        case sha1('admin'): $admin['class'] = 'warning'; break;
-                        case sha1('superadmin'): $admin['class'] = 'info'; break;
+                        case Security::MANAGER_ID_TOKEN: $admin['class'] = 'warning'; break;
+                        case Security::ADMIN_ID_TOKEN: $admin['class'] = 'info'; break;
                         default:
-                        case sha1('user'): $admin['class'] = 'primary'; break;
+                        case Security::USER_ID_TOKEN: $admin['class'] = 'primary'; break;
                     }
                 }else{
                     $admin["class"] = "primary";

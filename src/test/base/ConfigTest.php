@@ -9,7 +9,7 @@
     class ConfigTest extends \PHPUnit_Framework_TestCase {
 
         /**
-         * Cretes an instance of Config
+         * Creates an instance of Config
          * @return Config
          */
         private function getInstance()
@@ -21,13 +21,31 @@
             return $config;
         }
 
+        private function simulateRequiredConfig(){
+            $config = Config::getInstance();
+            $data = [];
+            foreach(Config::$required as $key) {
+                $data[$key] = uniqid('test');
+            }
+            Config::save($data, []);
+            $config->loadConfigData();
+        }
+
         /**
          * Test that checks basic functionality
          * @return array
          */
-        public function testBasicConfigUse()
+        public function getBasicConfigUse()
         {
             $config = $this->getInstance();
+            $previusConfigData = $config->dumpConfig();
+            $config->clearConfig();
+
+            // Check if config can create the config dir
+            $dirtmp = uniqid('test');
+            Config::createDir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
+            $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp, 'Can\'t create test dir');
+            @rmdir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
 
             // Check if platform is configured
             $this->assertTrue(is_bool($config->getDebugMode()));
@@ -36,20 +54,28 @@
             $this->assertFileExists($config->getTemplatePath());
             $this->assertFileExists($config->getCachePath());
 
-            if(!$config->isConfigured()) {
-                Config::createDir(CONFIG_DIR);
-                Config::save(['test' => true], []);
-            }
+            Config::save([], [
+                'label' => ['test'],
+                'value' => [true]
+            ]);
 
             $configData = $config->dumpConfig();
-//            $this->assertNotEmpty($configData, 'Empty configuration');
-//            $this->assertTrue(is_array($configData), 'Configuration is not an array');
+            $this->assertNotEmpty($configData, 'Empty configuration');
+            $this->assertTrue(is_array($configData), 'Configuration is not an array');
 
-//            $propelParams = $config->getPropelParams();
-//            $this->assertNotEmpty($propelParams, 'Empty configuration');
-//            $this->assertTrue(is_array($propelParams), 'Configuration is not an array');
+            $propelParams = $config->getPropelParams();
+            $this->assertNotEmpty($propelParams, 'Empty configuration');
+            $this->assertTrue(is_array($propelParams), 'Configuration is not an array');
 
-            return $configData;
+            $configured = $config->isConfigured();
+            $this->assertTrue(is_bool($configured) && false === $configured);
+            $this->assertTrue(is_bool($config->checkTryToSaveConfig()));
+
+            $this->simulateRequiredConfig();
+            $configured = $config->isConfigured();
+            $this->assertTrue(is_bool($configured) && true === $configured);
+
+            return $previusConfigData;
         }
 
         /**
@@ -85,19 +111,19 @@
             $config = $this->getInstance();
 
             // Original config data
-            $data = $this->testBasicConfigUse();
+            $original_data = $this->getBasicConfigUse();
 
-            Config::save($data, []);
-            $config->loadConfigData();
-            
-            $this->assertEquals($data, $config->dumpConfig(), 'Missmatch configurations');
+            Config::save($original_data, []);
 
-            Config::save($data, [
+            $this->assertEquals($original_data, $config->dumpConfig(), 'Missmatch configurations');
+
+            Config::save($original_data, [
                 'label' => [uniqid()],
                 'value' => [microtime(true)],
             ]);
-            $config->loadConfigData();
 
-            $this->assertNotEquals($data, $config->dumpConfig(), 'The same configuration file');
+            $this->assertNotEquals($original_data, $config->dumpConfig(), 'The same configuration file');
+
+            Config::save($original_data, []);
         }
     }

@@ -4,14 +4,14 @@ namespace PSFS\base;
 
 
 use PSFS\base\config\Config;
-use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\SingletonTrait;
 use PSFS\Dispatcher;
 
 
-class Template {
+class Template
+{
 
     use SingletonTrait;
     /**
@@ -37,7 +37,8 @@ class Template {
     /**
      * Constructor por defecto
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->setup();
         $this->addTemplateFunctions();
         $this->addTemplateTokens();
@@ -48,7 +49,8 @@ class Template {
      * Método que devuelve el loader del Template
      * @return \Twig_LoaderInterface
      */
-    public function getLoader() {
+    public function getLoader()
+    {
         return $this->tpl->getLoader();
     }
 
@@ -58,7 +60,8 @@ class Template {
      *
      * @return Template
      */
-    public function setPublicZone($public = true) {
+    public function setPublicZone($public = true)
+    {
         $this->public_zone = $public;
         return $this;
     }
@@ -69,16 +72,28 @@ class Template {
      *
      * @return Template
      */
-    public function setStatus($status = null) {
-        switch ($status)
-        {
+    public function setStatus($status = null)
+    {
+        switch ($status) {
             //TODO implement all status codes
-            case '500': $this->status_code = "HTTP/1.0 500 Internal Server Error"; break;
-            case '404': $this->status_code = "HTTP/1.0 404 Not Found"; break;
-            case '403': $this->status_code = "HTTP/1.0 403 Forbidden"; break;
-            case '402': $this->status_code = "HTTP/1.0 402 Payment Required"; break;
-            case '401': $this->status_code = "HTTP/1.0 401 Unauthorized"; break;
-            case '400': $this->status_code = "HTTP/1.0 400 Bad Request"; break;
+            case '500':
+                $this->status_code = "HTTP/1.0 500 Internal Server Error";
+                break;
+            case '404':
+                $this->status_code = "HTTP/1.0 404 Not Found";
+                break;
+            case '403':
+                $this->status_code = "HTTP/1.0 403 Forbidden";
+                break;
+            case '402':
+                $this->status_code = "HTTP/1.0 402 Payment Required";
+                break;
+            case '401':
+                $this->status_code = "HTTP/1.0 401 Unauthorized";
+                break;
+            case '400':
+                $this->status_code = "HTTP/1.0 400 Bad Request";
+                break;
         }
         return $this;
     }
@@ -92,7 +107,8 @@ class Template {
      *
      * @return string HTML
      */
-    public function render($tpl, array $vars = array(), array $cookies = array()) {
+    public function render($tpl, array $vars = array(), array $cookies = array())
+    {
         Logger::log('Start render response');
         $vars = $this->setDebugHeaders($vars);
         $output = $this->dump($tpl, $vars);
@@ -105,7 +121,8 @@ class Template {
      * @param string $contentType
      * @param array $cookies
      */
-    private function setReponseHeaders($contentType = 'text/html', array $cookies = array()) {
+    private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
+    {
         $config = Config::getInstance();
         $powered = $config->get("poweredBy");
         if (empty($powered)) {
@@ -115,7 +132,7 @@ class Template {
         $this->setStatusHeader();
         $this->setAuthHeaders();
         $this->setCookieHeaders($cookies);
-        header('Content-type: '.$contentType);
+        header('Content-type: ' . $contentType);
 
     }
 
@@ -126,18 +143,19 @@ class Template {
      * @param array $cookies
      * @return string HTML
      */
-    public function output($output = '', $contentType = 'text/html', array $cookies = array()) {
+    public function output($output = '', $contentType = 'text/html', array $cookies = array())
+    {
         Logger::log('Start output response');
         ob_start();
         $this->setReponseHeaders($contentType, $cookies);
-        header('Content-length: '.strlen($output));
+        header('Content-length: ' . strlen($output));
 
         $cache = Cache::needCache();
         if (false !== $cache && $this->status_code === 200 && $this->debug === false) {
             Logger::log('Saving output response into cache');
             $cacheName = $this->cache->getRequestCacheHash();
-            $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName, $output);
-            $this->cache->storeData("json".DIRECTORY_SEPARATOR.$cacheName.".headers", headers_list(), Cache::JSON);
+            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $cacheName, $output);
+            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $cacheName . ".headers", headers_list(), Cache::JSON);
         }
         echo $output;
 
@@ -150,10 +168,11 @@ class Template {
     /**
      * Método que cierra y limpia los buffers de salida
      */
-    public function closeRender() {
+    public function closeRender()
+    {
         Logger::log('Close template render');
         $this->security->setSessionKey("lastRequest", array(
-            "url" => Request::getInstance()->getRootUrl().Request::requestUri(),
+            "url" => Request::getInstance()->getRootUrl() . Request::requestUri(),
             "ts" => microtime(true),
         ));
         $this->security->updateSession();
@@ -165,7 +184,8 @@ class Template {
      * @param string $data
      * @param string|null $headers
      */
-    public function renderCache($data, $headers = array()) {
+    public function renderCache($data, $headers = array())
+    {
         ob_start();
         for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
             header($headers[$i]);
@@ -183,7 +203,8 @@ class Template {
      *
      * @return Template
      */
-    public function addPath($path, $domain = '') {
+    public function addPath($path, $domain = '')
+    {
         $this->tpl->getLoader()->addPath($path, $domain);
         return $this;
     }
@@ -194,7 +215,8 @@ class Template {
      * @param array $vars
      * @return string
      */
-    public function dump($tpl, array $vars = array()) {
+    public function dump($tpl, array $vars = array())
+    {
         $vars["__user__"] = $this->security->getUser();
         $vars["__admin__"] = $this->security->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
@@ -202,8 +224,8 @@ class Template {
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
-        }catch (\Exception $e) {
-            echo $e->getMessage()."<pre>".$e->getTraceAsString()."</pre>";
+        } catch (\Exception $e) {
+            echo $e->getMessage() . "<pre>" . $e->getTraceAsString() . "</pre>";
         }
         return $dump;
     }
@@ -215,7 +237,8 @@ class Template {
      *
      * @return Template
      */
-    protected function addTemplateFunction($templateFunction, $functionName) {
+    protected function addTemplateFunction($templateFunction, $functionName)
+    {
         $function = new \Twig_SimpleFunction($templateFunction, $functionName);
         $this->tpl->addFunction($function);
         return $this;
@@ -225,7 +248,8 @@ class Template {
      * Funcion Twig para los assets en las plantillas
      * @return Template
      */
-    private function addAssetFunction() {
+    private function addAssetFunction()
+    {
         return $this->addTemplateFunction("asset", TemplateFunctions::ASSETS_FUNCTION);
     }
 
@@ -233,7 +257,8 @@ class Template {
      * Función que pinta un formulario
      * @return Template
      */
-    private function addFormsFunction() {
+    private function addFormsFunction()
+    {
         return $this->addTemplateFunction("form", TemplateFunctions::FORM_FUNCTION);
     }
 
@@ -250,7 +275,8 @@ class Template {
      * Función que pinta un botón de un formulario
      * @return Template
      */
-    private function addFormButtonFunction() {
+    private function addFormButtonFunction()
+    {
         return $this->addTemplateFunction("form_button", TemplateFunctions::BUTTON_FUNCTION);
     }
 
@@ -258,7 +284,8 @@ class Template {
      * Método que devuelve un parámetro de configuración en la plantilla
      * @return Template
      */
-    private function addConfigFunction() {
+    private function addConfigFunction()
+    {
         return $this->addTemplateFunction("get_config", TemplateFunctions::CONFIG_FUNCTION);
     }
 
@@ -266,7 +293,8 @@ class Template {
      * Método que añade la función path a Twig
      * @return Template
      */
-    private function addRouteFunction() {
+    private function addRouteFunction()
+    {
         return $this->addTemplateFunction("path", TemplateFunctions::ROUTE_FUNCTION);
     }
 
@@ -274,28 +302,32 @@ class Template {
      * Método que copia directamente el recurso solicitado a la carpeta pública
      * @return Template
      */
-    private function addResourceFunction() {
+    private function addResourceFunction()
+    {
         return $this->addTemplateFunction("resource", TemplateFunctions::RESOURCE_FUNCTION);
     }
 
     /**
      * @return Template
      */
-    private function addSessionFunction() {
+    private function addSessionFunction()
+    {
         return $this->addTemplateFunction("session", TemplateFunctions::SESSION_FUNCTION);
     }
 
     /**
      * @return Template
      */
-    private function addExistsFlashFunction() {
+    private function addExistsFlashFunction()
+    {
         return $this->addTemplateFunction("existsFlash", TemplateFunctions::EXISTS_FLASH_FUNCTION);
     }
 
     /**
      * @return Template
      */
-    private function addGetFlashFunction() {
+    private function addGetFlashFunction()
+    {
         return $this->addTemplateFunction("getFlash", TemplateFunctions::GET_FLASH_FUNCTION);
     }
 
@@ -303,9 +335,10 @@ class Template {
      * Servicio que regenera todas las plantillas
      * @return array
      */
-    public function regenerateTemplates() {
+    public function regenerateTemplates()
+    {
         $this->generateTemplatesCache();
-        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
+        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, true);
         $translations = [];
         if (is_array($domains)) {
             $translations = $this->parsePathTranslations($domains);
@@ -320,13 +353,14 @@ class Template {
      *
      * @return mixed
      */
-    protected function generateTemplate($tplDir, $domain = '') {
+    protected function generateTemplate($tplDir, $domain = '')
+    {
         $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
         foreach ($templatesDir as $file) {
             // force compilation
             if ($file->isFile()) {
                 try {
-                    $this->tpl->loadTemplate(str_replace($tplDir.'/', '', $file));
+                    $this->tpl->loadTemplate(str_replace($tplDir . '/', '', $file));
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                 }
@@ -341,7 +375,8 @@ class Template {
      *
      * @return string
      */
-    public static function extractPath($path) {
+    public static function extractPath($path)
+    {
         $explodePath = explode(DIRECTORY_SEPARATOR, $path);
         $realPath = array();
         for ($i = 0, $parts = count($explodePath) - 1; $i < $parts; $i++) {
@@ -355,13 +390,14 @@ class Template {
      * @param bool $append
      * @return array
      */
-    static public function getDomains($append = false) {
+    static public function getDomains($append = false)
+    {
         $domains = Router::getInstance()->getDomains();
         if ($append) {
             foreach ($domains as &$domain) {
-            foreach ($domain as &$path) {
-                $path .= DIRECTORY_SEPARATOR;
-        }
+                foreach ($domain as &$path) {
+                    $path .= DIRECTORY_SEPARATOR;
+                }
             }
         }
         return $domains;
@@ -370,30 +406,32 @@ class Template {
     /**
      * @param $cookies
      */
-    protected function setCookieHeaders($cookies) {
+    protected function setCookieHeaders($cookies)
+    {
         if (!empty($cookies) && is_array($cookies)) {
             foreach ($cookies as $cookie) {
-            setcookie($cookie["name"],
-                $cookie["value"],
-                (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
-                (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
-                (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
-                (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
-                (array_key_exists('http', $cookie)) ? $cookie["http"] : FALSE
-            );
-        }
+                setcookie($cookie["name"],
+                    $cookie["value"],
+                    (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
+                    (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
+                    (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
+                    (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
+                    (array_key_exists('http', $cookie)) ? $cookie["http"] : FALSE
+                );
+            }
         }
     }
 
     /**
      * Método que inyecta las cabeceras necesarias para la autenticación
      */
-    protected function setAuthHeaders() {
+    protected function setAuthHeaders()
+    {
         if ($this->public_zone) {
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        }else {
+        } else {
             header('Authorization:');
         }
     }
@@ -401,7 +439,8 @@ class Template {
     /**
      * Método que establece el status code
      */
-    protected function setStatusHeader() {
+    protected function setStatusHeader()
+    {
         if (NULL !== $this->status_code) {
             header($this->status_code);
         }
@@ -419,9 +458,9 @@ class Template {
             Logger::log('Adding debug headers to render response');
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            header('X-PSFS-DEBUG-TS: '.Dispatcher::getInstance()->getTs().' s');
-            header('X-PSFS-DEBUG-MEM: '.Dispatcher::getInstance()->getMem('MBytes').' MBytes');
-            header('X-PSFS-DEBUG-FILES: '.count(get_included_files()).' files opened');
+            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
+            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
+            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
         }
 
         return $vars;
@@ -430,7 +469,8 @@ class Template {
     /**
      * Método que añade todas las funciones de las plantillas
      */
-    private function addTemplateFunctions() {
+    private function addTemplateFunctions()
+    {
         //Asignamos las funciones especiales
         $this->addAssetFunction()
             ->addFormsFunction()
@@ -441,29 +481,30 @@ class Template {
             ->addSessionFunction()
             ->addExistsFlashFunction()
             ->addGetFlashFunction()
-            ->addResourceFunction()
-        ;
+            ->addResourceFunction();
     }
 
     /**
      * Método que devuelve el motod de plantillas
      * @return \Twig_Environment
      */
-    public function getTemplateEngine() {
+    public function getTemplateEngine()
+    {
         return $this->tpl;
     }
 
     /**
      * Método que inicializa el motor de plantillas
      */
-    private function setup() {
+    private function setup()
+    {
         $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
         $this->security = Security::getInstance();
         $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
-            'cache'       => Config::getInstance()->getCachePath(),
-            'debug'       => (bool)$this->debug,
+            'cache' => Config::getInstance()->getCachePath(),
+            'debug' => (bool)$this->debug,
             'auto_reload' => TRUE,
         ));
     }
@@ -471,7 +512,8 @@ class Template {
     /**
      * Método que inyecta los parseadores
      */
-    private function addTemplateTokens() {
+    private function addTemplateTokens()
+    {
         //Añadimos las extensiones de los tags
         $this->tpl->addTokenParser(new AssetsTokenParser("css"));
         $this->tpl->addTokenParser(new AssetsTokenParser("js"));
@@ -480,7 +522,8 @@ class Template {
     /**
      * Método que inyecta las optimizaciones al motor de la plantilla
      */
-    private function optimizeTemplates() {
+    private function optimizeTemplates()
+    {
         //Optimizamos
         $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
     }

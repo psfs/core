@@ -4,14 +4,13 @@ namespace PSFS\base;
 
 use PSFS\base\types\SingletonTrait;
 
-if(!function_exists("getallheaders"))
-{
+if (!function_exists("getallheaders")) {
     function getallheaders()
     {
         $headers = array();
-        foreach($_SERVER as $h=>$v)
-            if(preg_match('/HTTP_(.+)/',$h,$hp))
-                $headers[$hp[1]]=$v;
+        foreach ($_SERVER as $h => $v)
+            if (preg_match('/HTTP_(.+)/', $h, $hp))
+                $headers[$hp[1]] = $v;
         return $headers;
     }
 }
@@ -20,7 +19,8 @@ if(!function_exists("getallheaders"))
  * Class Request
  * @package PSFS
  */
-class Request {
+class Request
+{
     use SingletonTrait;
     protected $server;
     protected $cookies;
@@ -31,7 +31,8 @@ class Request {
 
     /**
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->server = $_SERVER or [];
         $this->cookies = $_COOKIE or [];
         $this->upload = $_FILES or [];
@@ -39,8 +40,7 @@ class Request {
         $this->data = $_REQUEST or [];
         $this->query = $_GET or [];
         $contentType = (array_key_exists('Content-Type', $this->header)) ? $this->header['Content-Type'] : "text/html";
-        if (preg_match('/application\/json/i', $contentType))
-        {
+        if (preg_match('/application\/json/i', $contentType)) {
             $this->data += json_decode(file_get_contents("php://input"), true) ?: array();
         }
     }
@@ -49,7 +49,10 @@ class Request {
      * Método que devuelve las cabeceras de la petición
      * @return array
      */
-    private function parseHeaders() { return getallheaders(); }
+    private function parseHeaders()
+    {
+        return getallheaders();
+    }
 
     /**
      * Método que verifica si existe una cabecera concreta
@@ -57,20 +60,29 @@ class Request {
      *
      * @return boolean
      */
-    public function hasHeader($header) { return array_key_exists($header, $this->header); }
+    public function hasHeader($header)
+    {
+        return array_key_exists($header, $this->header);
+    }
 
 
     /**
      * Método que indica si una petición tiene cookies
      * @return boolean
      */
-    public function hasCookies() { return (null !== $this->cookies && 0 !== count($this->cookies)); }
+    public function hasCookies()
+    {
+        return (null !== $this->cookies && 0 !== count($this->cookies));
+    }
 
     /**
      * Método que indica si una petición tiene cookies
      * @return boolean
      */
-    public function hasUpload() { return (null !== $this->upload && 0 !== count($this->upload)); }
+    public function hasUpload()
+    {
+        return (null !== $this->upload && 0 !== count($this->upload));
+    }
 
     /**
      * Método que devuelve el TimeStamp de la petición
@@ -79,14 +91,24 @@ class Request {
      *
      * @return string
      */
-    public static function ts($formatted = false) { return self::getInstance()->getTs($formatted); }
-    public function getTs($formatted = false) { return ($formatted) ? date('Y-m-d H:i:s', $this->server['REQUEST_TIME_FLOAT']) : $this->server['REQUEST_TIME_FLOAT']; }
+    public static function ts($formatted = false)
+    {
+        return self::getInstance()->getTs($formatted);
+    }
+
+    public function getTs($formatted = false)
+    {
+        return ($formatted) ? date('Y-m-d H:i:s', $this->server['REQUEST_TIME_FLOAT']) : $this->server['REQUEST_TIME_FLOAT'];
+    }
 
     /**
      * Método que devuelve el Método HTTP utilizado
      * @return string
      */
-    public function getMethod() { return (array_key_exists('REQUEST_METHOD', $this->server)) ? strtoupper($this->server['REQUEST_METHOD']) : 'GET'; }
+    public function getMethod()
+    {
+        return (array_key_exists('REQUEST_METHOD', $this->server)) ? strtoupper($this->server['REQUEST_METHOD']) : 'GET';
+    }
 
     /**
      * Método que devuelve una cabecera de la petición si existe
@@ -94,12 +116,15 @@ class Request {
      *
      * @return string|null
      */
-    public static function header($name) { return self::getInstance()->getHeader($name); }
+    public static function header($name)
+    {
+        return self::getInstance()->getHeader($name);
+    }
+
     public function getHeader($name)
     {
         $header = null;
-        if ($this->hasHeader($name))
-        {
+        if ($this->hasHeader($name)) {
             $header = $this->header[$name];
         }
         return $header;
@@ -109,12 +134,18 @@ class Request {
      * Método que devuelve la url solicitada
      * @return string|null
      */
-    public static function requestUri(){ return self::getInstance()->getRequestUri(); }
+    public static function requestUri()
+    {
+        return self::getInstance()->getRequestUri();
+    }
 
     /**
      * @return string
      */
-    public function getRequestUri(){ return array_key_exists('REQUEST_URI', $this->server) ? $this->server['REQUEST_URI'] : ''; }
+    public function getRequestUri()
+    {
+        return array_key_exists('REQUEST_URI', $this->server) ? $this->server['REQUEST_URI'] : '';
+    }
 
     /**
      * Método que devuelve el idioma de la petición
@@ -172,7 +203,10 @@ class Request {
      * Método que devuelve todos los datos del Request
      * @return array
      */
-    public function getData() { return $this->data; }
+    public function getData()
+    {
+        return $this->data;
+    }
 
     /**
      * Método que realiza una redirección a la url dada
@@ -182,7 +216,7 @@ class Request {
     {
         if (null === $url) $url = $this->server['HTTP_ORIGIN'];
         ob_start();
-        header('Location: '.$url);
+        header('Location: ' . $url);
         ob_end_clean();
         exit(_("Redireccionando..."));
     }
@@ -226,7 +260,7 @@ class Request {
         $host = $this->getServerName();
         $protocol = $protocol ? $this->getProtocol() : '';
         $url = '';
-        if (!empty($host) && !empty($protocol)) $url = $protocol.$host;
+        if (!empty($host) && !empty($protocol)) $url = $protocol . $host;
         return $url;
     }
 

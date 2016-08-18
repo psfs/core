@@ -13,8 +13,8 @@ use PSFS\base\types\SingletonTrait;
  * Class Config
  * @package PSFS\base\config
  */
-class Config {
-
+class Config
+{
     use SingletonTrait;
     const DEFAULT_LANGUAGE = "es";
     const DEFAULT_ENCODE = "UTF-8";
@@ -35,33 +35,34 @@ class Config {
     /**
      * Config Constructor
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->init();
     }
 
     /**
-     * Método que carga la configuración del sistema
+     * Method that load the configuration data into the system
      * @return Config
      */
-    protected function init() {
-        if (file_exists(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json"))
-        {
+    protected function init()
+    {
+        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json")) {
             $this->loadConfigData();
-        } else {
-            $this->debug = true;
         }
         return $this;
     }
 
     /**
-     * Método que guarda los datos de la configuración
+     * Method that saves the configuration
      * @param array $data
      * @param array $extra
      * @return array
      */
-    protected static function saveConfigParams(array $data, array $extra) {
+    protected static function saveConfigParams(array $data, array $extra)
+    {
+        Logger::log('Saving required config parameters');
         //En caso de tener parámetros nuevos los guardamos
-        if (!empty($extra['label'])) {
+        if (array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
                 if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
                     /** @var $data array */
@@ -73,13 +74,15 @@ class Config {
     }
 
     /**
-     * Método que guarda los parámetros adicionales de la configuración
+     * Method that saves the extra parameters into the configuration
      * @param array $data
      * @return array
      */
-    protected static function saveExtraParams(array $data) {
+    protected static function saveExtraParams(array $data)
+    {
         $final_data = array();
         if (count($data) > 0) {
+            Logger::log('Saving extra configuration parameters');
             foreach ($data as $key => $value) {
                 if (null !== $value || $value !== '') {
                     $final_data[$key] = $value;
@@ -90,28 +93,35 @@ class Config {
     }
 
     /**
-     * Método que devuelve si la plataforma está en modo debug
+     * Method that returns if the system is in debug mode
      * @return boolean
      */
-    public function getDebugMode() { return $this->debug; }
+    public function getDebugMode()
+    {
+        return $this->debug;
+    }
 
     /**
-     * Método que devuelve el path de cache
+     * Method that returns the cache path
      * @return string
      */
-    public function getCachePath() { return CACHE_DIR; }
+    public function getCachePath()
+    {
+        return CACHE_DIR;
+    }
 
     /**
-     * Método que devuelve el path general de templates de PSFS
+     * Method that returns the templates path
      * @return string
      */
-    public function getTemplatePath() {
-        $path = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR;
+    public function getTemplatePath()
+    {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
         return realpath($path);
     }
 
     /**
-     * Método que indica si se ha configurado correctamente la plataforma
+     * Method that checks if the platform is proper configured
      * @return boolean
      */
     public function isConfigured()
@@ -141,79 +151,87 @@ class Config {
     }
 
     /**
-     * Método que guarda la configuración del framework
+     * Method that saves all the configuration in the system
      *
      * @param array $data
      * @param array|null $extra
      * @return boolean
      */
-    public static function save(array $data, array $extra = null) {
+    public static function save(array $data, array $extra = null)
+    {
         $data = self::saveConfigParams($data, $extra);
         $final_data = self::saveExtraParams($data);
         $saved = false;
         try {
-            Cache::getInstance()->storeData(CONFIG_DIR.DIRECTORY_SEPARATOR."config.json", $final_data, Cache::JSON, true);
+            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", $final_data, Cache::JSON, true);
+            Config::getInstance()->loadConfigData();
             $saved = true;
-        }catch (ConfigException $e) {
-            Logger::getInstance()->errorLog($e->getMessage());
+        } catch (ConfigException $e) {
+            Logger::log($e->getMessage(), LOG_ERR);
         }
         return $saved;
     }
 
     /**
-     * Método que devuelve un parámetro de configuración
+     * Method that returns a config value
      * @param string $param
      *
      * @return mixed|null
      */
-    public function get($param) {
+    public function get($param)
+    {
         return array_key_exists($param, $this->config) ? $this->config[$param] : null;
     }
 
     /**
-     * Método que devuelve toda la configuración en un array
-     * @return array|null
+     * Method that returns all the configuration
+     * @return array
      */
-    public function dumpConfig() {
+    public function dumpConfig()
+    {
         return $this->config ?: [];
     }
 
     /**
-     * Servicio que devuelve los parámetros de configuración de Propel para las BD
+     * Method that returns the Propel ORM parameters to setup the models
      * @return array|null
      */
-    public function getPropelParams() {
-        return Cache::getInstance()->getDataFromFile(__DIR__.DIRECTORY_SEPARATOR.'properties.json', Cache::JSON, true);
+    public function getPropelParams()
+    {
+        return Cache::getInstance()->getDataFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json', Cache::JSON, true);
     }
 
     /**
-     * Método estático para la generación de directorios
+     * Method that creates any parametrized path
      * @param string $dir
      * throws ConfigException
      */
-    public static function createDir($dir) {
+    public static function createDir($dir)
+    {
         try {
             if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
-                throw new \Exception(_('Can\'t create directory ').$dir);
+                throw new \Exception(_('Can\'t create directory ') . $dir);
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
+            Logger::log($e->getMessage(), LOG_WARNING);
             if (!file_exists(dirname($dir))) {
-                throw new ConfigException($e->getMessage().$dir);
+                throw new ConfigException($e->getMessage() . $dir);
             }
         }
     }
 
     /**
-     * Método estático que elimina los directorio del document root
+     * Method that remove all data in the document root path
      */
-    public static function clearDocumentRoot() {
+    public static function clearDocumentRoot()
+    {
         $rootDirs = array("css", "js", "media", "font");
         foreach ($rootDirs as $dir) {
-            if (file_exists(WEB_DIR.DIRECTORY_SEPARATOR.$dir)) {
+            if (file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
                 try {
-                    @shell_exec("rm -rf ".WEB_DIR.DIRECTORY_SEPARATOR.$dir);
-                } catch(\Exception $e) {
-                    Logger::getInstance()->errorLog($e->getMessage());
+                    @shell_exec("rm -rf " . WEB_DIR . DIRECTORY_SEPARATOR . $dir);
+                } catch (\Exception $e) {
+                    Logger::log($e->getMessage());
                 }
             }
         }
@@ -226,5 +244,13 @@ class Config {
     {
         $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, TRUE) ?: array();
         $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;
+    }
+
+    /**
+     * Clear configuration set
+     */
+    public function clearConfig()
+    {
+        $this->config = [];
     }
 }

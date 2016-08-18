@@ -1,6 +1,7 @@
 <?php
 
 namespace PSFS\base;
+
 use PSFS\base\config\Config;
 use PSFS\base\types\SingletonTrait;
 
@@ -26,22 +27,27 @@ class Singleton
      *
      * @return void
      */
-    private function __clone() {}
+    private function __clone()
+    {
+    }
 
     /**
      * prevent from being unserialized
      *
      * @return void
      */
-    private function __wakeup() {}
+    private function __wakeup()
+    {
+    }
 
     /**
      * Magic setter
      * @param $variable
      * @param $value
      */
-    public function __set($variable, $value) {
-        if(property_exists(get_class($this), $variable)) {
+    public function __set($variable, $value)
+    {
+        if (property_exists(get_class($this), $variable)) {
             $this->$variable = $value;
         }
     }
@@ -51,7 +57,8 @@ class Singleton
      * @param string $variable
      * @return $mixed
      */
-    public function __get($variable) {
+    public function __get($variable)
+    {
         return property_exists(get_class($this), $variable) ? $this->$variable : null;
     }
 
@@ -59,7 +66,8 @@ class Singleton
      * Método que devuelve si una clase está isntanciada correctamente
      * @return bool
      */
-    public function isLoaded() {
+    public function isLoaded()
+    {
         return $this->loaded;
     }
 
@@ -67,7 +75,8 @@ class Singleton
      * Método que configura como cargada una clase
      * @param bool $loaded
      */
-    public function setLoaded($loaded = true) {
+    public function setLoaded($loaded = true)
+    {
         $this->loaded = $loaded;
     }
 
@@ -79,7 +88,8 @@ class Singleton
      * Método que extrae el nombre de la clase
      * @return string
      */
-    public function getShortName() {
+    public function getShortName()
+    {
         $reflector = new \ReflectionClass(get_class($this));
         return $reflector->getShortName();
     }
@@ -91,18 +101,19 @@ class Singleton
      * @param string $classNameSpace
      * @return $this
      */
-    public function load($variable, $singleton = true, $classNameSpace = null) {
+    public function load($variable, $singleton = true, $classNameSpace = null)
+    {
         $calledClass = get_called_class();
         try {
             $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
-            $setter = "set".ucfirst($variable);
+            $setter = "set" . ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
             } else {
                 $this->$variable = $instance;
             }
         } catch (\Exception $e) {
-            Logger::log($e->getMessage() . ': ' . $e->getFile() . ' ['  . $e->getLine() . ']', LOG_ERR);
+            Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
         }
         return $this;
     }
@@ -110,9 +121,10 @@ class Singleton
     /**
      * Método que inyecta automáticamente las dependencias en la clase
      */
-    public function init() {
+    public function init()
+    {
         if (!$this->isLoaded()) {
-            $cacheFilename = "reflections".DIRECTORY_SEPARATOR.sha1(get_class($this)).".json";
+            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . sha1(get_class($this)) . ".json";
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
@@ -127,7 +139,7 @@ class Singleton
                 $this->load($property, true, $class);
             }
             $this->setLoaded();
-        }else {
+        } else {
             Logger::log(get_class($this) . ' already loaded', LOG_INFO);
         }
     }
@@ -137,7 +149,8 @@ class Singleton
      * @param null $class
      * @return array
      */
-    private function getClassProperties($class = null) {
+    private function getClassProperties($class = null)
+    {
         $properties = array();
         if (null === $class) {
             $class = get_class($this);
@@ -164,7 +177,8 @@ class Singleton
      * @param $doc
      * @return null|string
      */
-    private function extractVarType($doc) {
+    private function extractVarType($doc)
+    {
         $type = null;
         if (false !== preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {
             list(, $type) = $matches;
