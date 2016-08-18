@@ -40,7 +40,7 @@
          * @param string $path
          * @param int $transform
          * @param boolean $absolute
-         * @return array|string
+         * @return array|string|null
          */
         public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false) {
             $data = null;
@@ -68,7 +68,7 @@
          * Método que transforma los datos de salida
          * @param string $data
          * @param int $transform
-         * @return array|string
+         * @return array|string|null
          */
         public static function extractDataWithFormat($data, $transform = Cache::TEXT) {
             switch ($transform) {

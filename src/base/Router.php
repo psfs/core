@@ -126,7 +126,7 @@
                 //Search action and execute
                 return $this->searchAction($route);
             } catch (AccessDeniedException $e) {
-                Logger::getInstance()->debugLog(_('Solicitamos credenciales de acceso a zona restringida'));
+                Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
                 if ('login' === Config::getInstance()->get('admin_login')) {
                     return $this->redirectLogin($route);
                 } else {
@@ -143,7 +143,7 @@
                     return $this->execute($this->getRoute($default));
                 }
             } catch (\Exception $e) {
-                Logger::getInstance()->errorLog($e->getMessage());
+                Logger::log($e->getMessage(), LOG_ERR);
                 throw $e;
             }
 
@@ -259,10 +259,10 @@
         {
             Logger::log('Checking admin zone');
             //Chequeamos si entramos en el admin
-            if (!Config::getInstance()->checkTryToSaveConfig() && preg_match('/^\/admin/i', $route)
+            if (!Config::getInstance()->checkTryToSaveConfig()
                 || (!preg_match('/^\/(admin|setup\-admin)/i', $route) && NULL !== Config::getInstance()->get('restricted'))
             ) {
-                if (!preg_match('/^\/admin\/login/i', $route) && !$this->session->checkAdmin()) {
+                if (!$this->session->checkAdmin()) {
                     throw new AccessDeniedException();
                 }
                 Logger::log('Admin access granted');
@@ -406,7 +406,7 @@
          * @return Router
          * @throws ConfigException
          */
-        protected function extractDomain($class)
+        protected function extractDomain(\ReflectionClass $class)
         {
             //Calculamos los dominios para las plantillas
             if ($class->hasConstant("DOMAIN")) {

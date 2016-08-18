@@ -175,7 +175,7 @@ class Config {
      * @return array|null
      */
     public function dumpConfig() {
-        return $this->config;
+        return $this->config ?: [];
     }
 
     /**

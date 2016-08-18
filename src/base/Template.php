@@ -306,6 +306,7 @@ class Template {
     public function regenerateTemplates() {
         $this->generateTemplatesCache();
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR.DIRECTORY_SEPARATOR."domains.json", Cache::JSON, true);
+        $translations = [];
         if (is_array($domains)) {
             $translations = $this->parsePathTranslations($domains);
         }

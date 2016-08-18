@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-03 23:42+0200\n"
+"POT-Creation-Date: 2016-08-18 23:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,6 +62,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Template.php:285
 #: /Users/flopez/Development/PSFS/src/base/Template.php:289
 #: /Users/flopez/Development/PSFS/src/base/Template.php:293
+#: /Users/flopez/Development/PSFS/src/base/Template.php:312
 msgid "Plantillas regeneradas correctamente"
 msgstr ""
 
@@ -75,6 +76,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Template.php:307
 #: /Users/flopez/Development/PSFS/src/base/Template.php:311
 #: /Users/flopez/Development/PSFS/src/base/Template.php:315
+#: /Users/flopez/Development/PSFS/src/base/Template.php:334
 #, possible-php-format
 msgid "Generando plantillas en path '%s' para el dominio '%d'"
 msgstr ""
@@ -127,6 +129,7 @@ msgid "Añadir nuevo parámetro"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:21
+#: /Users/flopez/Development/PSFS/src/base/Security.php:56
 msgid "Usuario"
 msgstr ""
 
@@ -194,6 +197,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:361
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:362
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:343
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:341
 #, possible-php-format
 msgid "El campo %s es oligatorio"
 msgstr ""
@@ -204,6 +208,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:369
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:352
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:353
+#: /Users/flopez/Development/PSFS/src/base/types/Form.php:351
 #, possible-php-format
 msgid "El campo %s no tiene un formato válido"
 msgstr ""
@@ -230,6 +235,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:47
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:48
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:50
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:51
 msgid "Revisando directorio: "
 msgstr ""
 
@@ -240,6 +246,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:48
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:49
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:51
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:52
 msgid "Comando ejecutado: "
 msgstr ""
 
@@ -519,6 +526,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Cache.php:46
 #: /Users/flopez/Development/PSFS/src/base/Cache.php:30
 #: /Users/flopez/Development/PSFS/src/base/Cache.php:33
+#: /Users/flopez/Development/PSFS/src/base/Cache.php:34
 msgid "No se tienen los permisos suficientes para escribir en el fichero "
 msgstr ""
 
@@ -566,6 +574,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Router.php:104
 #: /Users/flopez/Development/PSFS/src/base/Router.php:103
 #: /Users/flopez/Development/PSFS/src/base/Router.php:128
+#: /Users/flopez/Development/PSFS/src/base/Router.php:129
 msgid "Solicitamos credenciales de acceso a zona restringida"
 msgstr ""
 
@@ -582,10 +591,12 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Router.php:160
 #: /Users/flopez/Development/PSFS/src/base/Router.php:154
 #: /Users/flopez/Development/PSFS/src/base/Router.php:204
+#: /Users/flopez/Development/PSFS/src/base/Router.php:227
 msgid "Ruta no encontrada"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/Config.php:183
+#: /Users/flopez/Development/PSFS/src/base/config/Config.php:197
 msgid "Can't create directory "
 msgstr ""
 
@@ -635,6 +646,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:299
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:301
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:326
+#: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:327
 msgid " not exists or cant write"
 msgstr ""
 
@@ -647,6 +659,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Router.php:389
 #: /Users/flopez/Development/PSFS/src/base/Router.php:390
 #: /Users/flopez/Development/PSFS/src/base/Router.php:476
+#: /Users/flopez/Development/PSFS/src/base/Router.php:501
 msgid "No existe la ruta especificada"
 msgstr ""
 
@@ -673,6 +686,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/e/a/ea656f83503555314722ad9527a4c53b9de0bfa827b10069dfe0116e21ef1d2d.php:124
 #: /Users/flopez/Development/PSFS/cache/8a/8ac0d19439d54819418bebdd356e92081421f258e4e7721534b062bebe22e8a8.php:124
 #: /Users/flopez/Development/PSFS/cache/8a/8ac0d19439d54819418bebdd356e92081421f258e4e7721534b062bebe22e8a8.php:138
+#: /Users/flopez/Development/PSFS/cache/8a/8ac0d19439d54819418bebdd356e92081421f258e4e7721534b062bebe22e8a8.php:137
 msgid "Aceptar"
 msgstr ""
 
@@ -827,6 +841,7 @@ msgid "api"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:395
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:399
 msgid "Rutas generadas correctamente"
 msgstr ""
 
@@ -843,3 +858,74 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:87
 msgid "admin-routes-gen"
 msgstr "Generador de fichero de rutas"
+
+#: /Users/flopez/Development/PSFS/src/base/Router.php:90
+msgid "Page not found"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:88
+msgid "Error al guardar los administradores, prueba a cambiar los permisos"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/src/controller/Admin.php:403
+msgid "Algo no ha salido bien, revisa los logs"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:88
+msgid "admin-test-route"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:89
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:90
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:91
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:92
+msgid "api-doc-type"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:93
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:94
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:95
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:96
+msgid "api-test"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:97
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:98
+msgid "api-test-test"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:99
+msgid "test-number"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:100
+msgid "test-number-test-number2"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:101
+msgid "test-number-test-number2-caca-number3-xxx-number4"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:102
+msgid "api-testrelated"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:103
+msgid "api-testrelated-pk"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:104
+msgid "admin-testrelated"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:105
+msgid "api-form-testrelated"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:106
+msgid "admin-test-number"
+msgstr ""
+
+#: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:107
+msgid "admin-test-number-test-number2"
+msgstr ""

@@ -66,7 +66,12 @@
             {
                 if(isset($admin["profile"]))
                 {
-                    $admin["class"] = $admin["profile"] == sha1("admin") ? 'primary' : "warning";
+                    switch($admin["profile"]) {
+                        case sha1('admin'): $admin['class'] = 'warning'; break;
+                        case sha1('superadmin'): $admin['class'] = 'info'; break;
+                        default:
+                        case sha1('user'): $admin['class'] = 'primary'; break;
+                    }
                 }else{
                     $admin["class"] = "primary";
                 }

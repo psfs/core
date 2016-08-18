@@ -53,7 +53,16 @@
             return array(
                 sha1('superadmin') => _('Administrador'),
                 sha1('admin')      => _('Gestor'),
+                sha1('user')      => _('Usuario'),
             );
+        }
+
+        /**
+         * Method that returns all the available profiles
+         */
+        public function getAdminProfiles()
+        {
+            static::getProfiles();
         }
 
         /**
@@ -65,13 +74,23 @@
             return array(
                 '__SUPER_ADMIN__' => sha1('superadmin'),
                 '__ADMIN__'       => sha1('admin'),
+                '__USER__'       => sha1('user'),
             );
+        }
+
+        /**
+         * Método estático que devuelve los perfiles disponibles
+         * @return array
+         */
+        public function getAdminCleanProfiles()
+        {
+            return static::getCleanProfiles();
         }
 
         /**
          * Método que guarda los administradores
          *
-         * @param $user
+         * @param array $user
          *
          * @return bool
          */
@@ -85,6 +104,19 @@
             $admins[$user['username']]['profile'] = $user['profile'];
 
             return (FALSE !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins, JSON_PRETTY_PRINT)));
+        }
+
+        /**
+         * Method to save a new admin user
+         * @param array $user
+         * @return bool
+         */
+        public function saveUser($user) {
+            $saved = false;
+            if(!empty($user)) {
+                $saved = static::save($user);
+            }
+            return $saved;
         }
 
         /**

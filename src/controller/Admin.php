@@ -81,11 +81,11 @@ class Admin extends AuthAdminController{
         $form->hydrate();
         if ($form->isValid()) {
             if (Security::save($form->getData())) {
-                Logger::getInstance()->infoLog("Configuración guardada correctamente");
+                Logger::log('Configuration saved successful');
                 $this->security->setFlash("callback_message", _("Usuario agregado correctamente"));
                 $this->security->setFlash("callback_route", $this->getRoute("admin"), true);
             } else {
-                throw new \HttpException('Error al guardar los administradores, prueba a cambiar los permisos', 403);
+                throw new ConfigException(_('Error al guardar los administradores, prueba a cambiar los permisos'));
             }
         }
         return $this->render('admin.html.twig', array(
@@ -205,7 +205,7 @@ class Admin extends AuthAdminController{
      * @throws \HttpException
      */
     public function config() {
-        Logger::getInstance()->infoLog("Arranque del Config Loader al solicitar ".$this->getRequest()->getRequestUri());
+        Logger::log("Config loaded executed by ".$this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm();
         $form->build();
@@ -234,7 +234,7 @@ class Admin extends AuthAdminController{
             $debug = Config::getInstance()->getDebugMode();
             $newDebug = $form->getFieldValue("debug");
             if(Config::save($form->getData(), $form->getExtraData())) {
-                Logger::getInstance()->infoLog(_('Configuración guardada correctamente'));
+                Logger::log(_('Configuración guardada correctamente'));
                 //Verificamos si tenemos que limpiar la cache del DocumentRoot
                 if(boolval($debug) !== boolval($newDebug)) {
                     Config::clearDocumentRoot();
@@ -399,7 +399,7 @@ class Admin extends AuthAdminController{
             $this->security->setFlash("callback_message", _("Rutas generadas correctamente"));
             $this->security->setFlash("callback_route", $this->getRoute("admin", true));
         } catch(\Exception $e) {
-            Logger::getInstance()->errorLog($e->getMessage());
+            Logger::log($e->getMessage(), LOG_ERR);
             $this->security->setFlash("callback_message", _("Algo no ha salido bien, revisa los logs"));
             $this->security->setFlash("callback_route", $this->getRoute("admin", true));
         }

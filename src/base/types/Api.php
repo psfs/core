@@ -111,9 +111,7 @@
          */
         private function getModelNamespace()
         {
-            /** @var TableMap $tableMap */
             $tableMap = $this->getModelTableMap();
-
             return $tableMap::getOMClass(FALSE);
         }
 
@@ -609,11 +607,10 @@
          */
         private function getSingleResult($pk)
         {
-            /** @var ActiveRecordInterface $model */
             $model = $this->_get($pk);
             $code = 200;
             $return = array();
-            if (NULL === $model) {
+            if (NULL === $model && method_exists($model, 'toArray')) {
                 $code = 404;
             } else {
                 $return = $model->toArray();

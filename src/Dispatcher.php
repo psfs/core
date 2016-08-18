@@ -73,13 +73,14 @@
          */
         private function setLocale()
         {
-            Logger::log('Set locale to project');
             $this->locale = $this->config->get("default_language");
+            Logger::log('Set locale to project [' . $this->locale . ']');
             // Load translations
             putenv("LC_ALL=" . $this->locale);
             setlocale(LC_ALL, $this->locale);
             // Load the locale path
             $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
+            Logger::log('Set locale dir ' . $locale_path);
             Config::createDir($locale_path);
             bindtextdomain('translations', $locale_path);
             textdomain('translations');
