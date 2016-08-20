@@ -15,8 +15,8 @@ class Cache
 
     const JSON = 1;
     const TEXT = 2;
-    const ZIP = 3;
-    const GZIP = 4;
+    const GZIP = 3;
+    const JSONGZ = 4;
 
     use SingletonTrait;
 
@@ -80,11 +80,15 @@ class Cache
             case Cache::JSON:
                 $data = json_decode($data, true);
                 break;
-            case Cache::ZIP:
+            case Cache::JSONGZ:
+                $data = Cache::extractDataWithFormat($data, Cache::GZIP);
+                $data = Cache::extractDataWithFormat($data, Cache::JSON);
+                break;
+            case Cache::GZIP:
                 // TODO implementar
-            case Cache::TEXT:
-            default:
-                //do nothing
+                if(function_exists('gzuncompress')) {
+                    $data = gzuncompress($data);
+                }
                 break;
         }
         return $data;
@@ -102,11 +106,14 @@ class Cache
             case Cache::JSON:
                 $data = json_encode($data, JSON_PRETTY_PRINT);
                 break;
-            case Cache::ZIP:
-                // TODO implementar
-            case Cache::TEXT:
-            default:
-                //do nothing
+            case Cache::JSONGZ:
+                $data = Cache::transformData($data, Cache::JSON);
+                $data = Cache::transformData($data, Cache::GZIP);
+                break;
+            case Cache::GZIP:
+                if(function_exists('gzcompress')) {
+                    $data = gzcompress($data);
+                }
                 break;
         }
         return $data;

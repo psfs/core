@@ -56,6 +56,17 @@ class Logger
     }
 
     /**
+     * Default log method
+     * @param string $msg
+     * @param array $context
+     * @return bool
+     */
+    public function defaultLog($msg = '', $context = [])
+    {
+        return $this->logger->addNotice($msg, $this->addMinimalContext($context));
+    }
+
+    /**
      * Método que escribe un log de información
      * @param string $msg
      * @param array $context
@@ -214,7 +225,7 @@ class Logger
                 Logger::getInstance()->infoLog($msg, $context);
                 break;
             default:
-                Logger::getInstance()->log($msg, $context);
+                Logger::getInstance()->defaultLog($msg, $context);
                 break;
         }
     }
