@@ -74,9 +74,6 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($hash, 'Invalid cache hash');
         $this->assertEquals($hash, sha1('localhost/ test'), 'Different hash returned by cache');
 
-        $this->assertTrue(false === Cache::needCache(), 'Test url expired or error checking cache');
-
-        sleep(1);
-        $this->assertTrue(false === Cache::needCache(), 'Need more time to check cache for this url');
+        $this->assertTrue(false !== Cache::needCache(), 'Test url expired or error checking cache');
     }
 }

@@ -156,7 +156,7 @@ class Cache
 
     /**
      * Método estático que revisa si se necesita cachear la respuesta de un servicio o no
-     * @return integer
+     * @return integer|boolean
      */
     public static function needCache()
     {

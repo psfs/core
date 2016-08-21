@@ -23,24 +23,6 @@ class Singleton
     }
 
     /**
-     * prevent the instance from being cloned
-     *
-     * @return void
-     */
-    private function __clone()
-    {
-    }
-
-    /**
-     * prevent from being unserialized
-     *
-     * @return void
-     */
-    private function __wakeup()
-    {
-    }
-
-    /**
      * Magic setter
      * @param $variable
      * @param $value
