@@ -21,10 +21,6 @@ class AssetsParser {
     protected $path;
     protected $domains = array();
     private $debug = false;
-    /**
-     * @var \PSFS\base\Logger $log
-     */
-    private $log;
 
     /**
      * Constructor por defecto
@@ -36,7 +32,6 @@ class AssetsParser {
         $this->type = $type;
         $this->path = WEB_DIR.DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
-        $this->log = Logger::getInstance();
         $this->debug = Config::getInstance()->getDebugMode();
     }
 
@@ -122,14 +117,13 @@ class AssetsParser {
     protected function compileCss()
     {
         $base = $this->path."css".DIRECTORY_SEPARATOR;
-        Config::createDir(dirname($base));
-        $data = '';
-        if (0 < count($this->files)) {
-            foreach ($this->files as $file) {
-                $data = $this->processCssLine($file, $base, $data);
+        if ($this->debug || !file_exists($base.$this->hash.".css")) {
+            $data = '';
+            if (0 < count($this->files)) {
+                foreach ($this->files as $file) {
+                    $data = $this->processCssLine($file, $base, $data);
+                }
             }
-        }
-        if (!$this->debug && !file_exists($base.$this->hash.".css")) {
             $this->storeContents($base.$this->hash.".css", \CssMin::minify($data));
             unset($cssMinifier);
         }
@@ -143,21 +137,20 @@ class AssetsParser {
      */
     protected function compileJs() {
         $base = $this->path."js".DIRECTORY_SEPARATOR;
-        Config::createDir(dirname($base));
-        $data = '';
-        if (0 < count($this->files)) {
-            foreach ($this->files as $file) {
-                $path_parts = explode("/", $file);
-                if (file_exists($file)) {
-                    if ($this->debug) {
-                        $data = $this->putDebugJs($path_parts, $base, $file);
-                    } elseif (!file_exists($base.$this->hash.".js")) {
-                        $data = $this->putProductionJs($base, $file, $data);
+        if ($this->debug || !file_exists($base.$this->hash.".js")) {
+            $data = '';
+            if (0 < count($this->files)) {
+                foreach ($this->files as $file) {
+                    $path_parts = explode("/", $file);
+                    if (file_exists($file)) {
+                        if ($this->debug) {
+                            $data = $this->putDebugJs($path_parts, $base, $file);
+                        } elseif (!file_exists($base.$this->hash.".js")) {
+                            $data = $this->putProductionJs($base, $file, $data);
+                        }
                     }
                 }
             }
-        }
-        if (!$this->debug && !file_exists($base.$this->hash.".js")) {
             $this->storeContents($base.$this->hash.".js", Minifier::minify($data));
         }
         return $this;
@@ -233,11 +226,11 @@ class AssetsParser {
                     if (@copy($orig, $dest) === FALSE) {
                         throw new \RuntimeException('Can\' copy '.$dest.'');
                     }
-                    $this->log->infoLog("$orig copiado a $dest");
+                    Logger::log("$orig copiado a $dest", LOG_INFO);
                 }
             }
         } catch (\Exception $e) {
-            $this->log->errorLog($e->getMessage());
+            Logger::log($e->getMessage(), LOG_ERR);
         }
     }
 
@@ -252,7 +245,6 @@ class AssetsParser {
     protected function processCssLine($file, $base, $data)
     {
         if (file_exists($file)) {
-
             $path_parts = explode("/", $file);
             $file_path = $this->hash."_".$path_parts[count($path_parts) - 1];
             if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($file) || $this->debug) {

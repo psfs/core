@@ -67,10 +67,11 @@ class Security
 
     /**
      * Method that returns all the available profiles
+     * @return array
      */
     public function getAdminProfiles()
     {
-        static::getProfiles();
+        return static::getProfiles();
     }
 
     /**
