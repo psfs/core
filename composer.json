@@ -1,5 +1,5 @@
 {
-    "name": "c15k0/psfs",
+    "name": "psfs/core",
     "description": "Php Simple Fast & Secure",
     "require": {
         "propel/propel": "^2.0",
