@@ -22,9 +22,12 @@ Needed components to execute PSFS:
 
 How to install using composer:
 
-   Install composer via: [GetComposer](https://getcomposer.org/download/)
-    php composer.phar require c15k0/psfs
-    ./vendor/bin/psfs psfs:create:root
+Install composer via: [GetComposer](https://getcomposer.org/download/)
+   
+```
+php composer.phar require c15k0/psfs
+./vendor/bin/psfs psfs:create:root
+```
 
 RoadMap:
 
