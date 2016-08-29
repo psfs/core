@@ -1,10 +1,10 @@
 PSFS
 ====
-[![Build Status](https://travis-ci.org/c15k0/psfs.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
-[![Latest Stable Version](https://poser.pugx.org/c15k0/psfs/v/stable)](https://packagist.org/packages/c15k0/psfs) 
-[![Total Downloads](https://poser.pugx.org/c15k0/psfs/downloads)](https://packagist.org/packages/c15k0/psfs) 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/c15k0/psfs/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/c15k0/psfs/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
+[![Build Status](https://travis-ci.org/psfs/core.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
+[![Latest Stable Version](https://poser.pugx.org/psfs/core/v/stable)](https://packagist.org/packages/c15k0/psfs) 
+[![Total Downloads](https://poser.pugx.org/psfs/core/downloads)](https://packagist.org/packages/c15k0/psfs) 
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/c15k0/psfs/?branch=master)
 
 Framework Php Simple Fast & Secure
 
@@ -22,7 +22,8 @@ Needed components to execute PSFS:
 
 How to install using composer:
 
-    composer require c15k0/psfs
+   Install composer via: [GetComposer](https://getcomposer.org/download/)
+    php composer.phar require c15k0/psfs
     ./vendor/bin/psfs psfs:create:root
 
 RoadMap:
@@ -31,7 +32,6 @@ RoadMap:
         - Session engines(mongodb, filesystem, mysql...)
     * Migrate admin site to angular
         - Use angular for menus
-        - Angular Materials
     * Improve cache(html, php, json)
         - Serialize business logics
         - Html buffer
@@ -42,4 +42,6 @@ RoadMap:
     * Framework documentation
         - Self documentation for apis(swagger and postman outputs)
         - PhpDoc for all files
+    * Code coverage
+        - 100% tests coverage
 
