@@ -28,7 +28,7 @@ class AssetsTokenParser extends \Twig_TokenParser {
      */
     public function parse(\Twig_Token $token) {
         $env = $this->parser->getEnvironment();
-        $path = $env->getLoader()->getCacheKey($this->parser->getFilename());
+        $path = $env->getLoader()->getCacheKey($this->parser->getStream()->getSourceContext()->getPath());
         $hash = substr(md5($path), 0, 8);
         $name = $token->getValue();
         $this->extractTemplateNodes();
