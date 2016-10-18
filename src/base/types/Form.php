@@ -191,7 +191,7 @@
          * @return Form
          */
         public function hydrate() {
-            $data = Request::getInstance()->getData() ?: null;
+            $data = Request::getInstance()->getData() ?: [];
             //Hidratamos los campos con lo que venga del formulario
             $form_name = $this->getName();
             if (array_key_exists($form_name, $data)) {
