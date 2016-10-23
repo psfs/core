@@ -14,13 +14,16 @@
         ))
         ->setDescription('Comando de creación del Document Root del projecto')
         ->setCode(function(InputInterface $input, OutputInterface $output) {
+            // Creates the html path
             $path = $input->getArgument('path');
-            if (empty($path)) $path = BASE_DIR.DIRECTORY_SEPARATOR.'html';
+            if (empty($path)) $path = WEB_DIR;
             \PSFS\base\config\Config::createDir($path);
             $paths = array("js", "css", "img", "media", "font");
             foreach ($paths as $htmlPath) {
                 \PSFS\base\config\Config::createDir($path.DIRECTORY_SEPARATOR.$htmlPath);
             }
+
+            // Generates the root needed files
             $files = [
                 '_' => '_.php',
                 'browserconfig' => 'browserconfig.xml',
@@ -36,6 +39,13 @@
                     $output->writeln($filename . ' created successfully');
                 }
             }
+
+            //Export base locale translations
+            if(!file_exists(BASE_DIR.DIRECTORY_SEPARATOR.'locale')) {
+                \PSFS\base\config\Config::createDir(BASE_DIR.DIRECTORY_SEPARATOR.'locale');
+                \PSFS\Services\GeneratorService::copyr(SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'locale', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
+            }
+
             $output->writeln("Document root generado en ".$path);
         })
     ;
