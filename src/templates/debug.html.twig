@@ -10,9 +10,9 @@
     {% for index, trace in __DEBUG__.trace %}
     __debug.traces.push({
     {% for key, value in trace %}
-        {% if loop.index > 1 %},{% endif %}{{key}}: '{{ value | raw }}';
+        {% if loop.index > 1 %},{% endif %}{{key}}: '{{ value | raw }}'
     {% endfor %}
-    })
+    });
     {% endfor %}
 </script>
 {% endif %}
