@@ -21,9 +21,21 @@
             foreach ($paths as $htmlPath) {
                 \PSFS\base\config\Config::createDir($path.DIRECTORY_SEPARATOR.$htmlPath);
             }
-            if (!file_exists(SOURCE_DIR.DIRECTORY_SEPARATOR.'html.tar.gz')) throw new \PSFS\base\exception\ConfigException("No existe el fichero del DocumentRoot");
-            $tar = new \Archive_Tar(realpath(SOURCE_DIR.DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR."html.tar.gz", true);
-            $tar->extract(realpath($path));
+            $files = [
+                '_' => '_.php',
+                'browserconfig' => 'browserconfig.xml',
+                'crossdomain' => 'crossdomain.xml',
+                'humans' => 'humans.txt',
+                'robots' => 'robots.txt',
+            ];
+            foreach ($files as $templates => $filename) {
+                $text = \PSFS\base\Template::getInstance()->dump("generator/html/". $templates . '.html.twig');
+                if(false === file_put_contents($path . DIRECTORY_SEPARATOR . $filename, $text)) {
+                    $output->writeln('Can\t create the file ' . $filename);
+                } else {
+                    $output->writeln($filename . ' created successfully');
+                }
+            }
             $output->writeln("Document root generado en ".$path);
         })
     ;

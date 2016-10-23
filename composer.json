@@ -8,7 +8,6 @@
         "twig/twig": "1.x-dev",
         "twig/extensions": "dev-master",
         "monolog/monolog": "1.x-dev",
-        "pear/archive_tar": "dev-master",
         "tedivm/jshrink": "~1.0",
         "natxet/CssMin": "^3.0@dev"
     },
