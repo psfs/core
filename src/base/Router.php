@@ -590,7 +590,7 @@ class Router
      */
     protected function matchRoutePattern($routePattern, $path)
     {
-        $expr = preg_replace('/\{(.*)\}/', '###', $routePattern);
+        $expr = preg_replace('/\{([^}]+)\}/', '###', $routePattern);
         $expr = preg_quote($expr, '/');
         $expr = str_replace('###', '(.*)', $expr);
         $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
