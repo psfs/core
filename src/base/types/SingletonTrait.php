@@ -1,7 +1,6 @@
 <?php
 
     namespace PSFS\base\types;
-    use PSFS\base\Logger;
 
     /**
      * Class SingletonTrait

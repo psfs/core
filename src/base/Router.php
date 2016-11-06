@@ -124,7 +124,7 @@ class Router
             // Checks restricted access
             $this->checkRestrictedAccess($route);
             //Search action and execute
-            return $this->searchAction($route);
+            $this->searchAction($route);
         } catch (AccessDeniedException $e) {
             Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
             if ('login' === Config::getInstance()->get('admin_login')) {
@@ -201,7 +201,7 @@ class Router
      *
      * @param string $route
      *
-     * @throws \Exception
+     * @throws \PSFS\base\exception\RouterException
      */
     protected function searchAction($route)
     {
@@ -218,7 +218,7 @@ class Router
                 /** @var $class \PSFS\base\types\Controller */
                 $class = $this->getClassToCall($action);
                 try {
-                    return $this->executeCachedRoute($route, $action, $class, $get);
+                    $this->executeCachedRoute($route, $action, $class, $get);
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                     throw new RouterException($e->getMessage(), 404, $e);
@@ -521,7 +521,7 @@ class Router
         foreach ($this->routing as $route => $params) {
             list($httpMethod, $routePattern) = $this->extractHttpRoute($route);
             if (preg_match('/^\/admin(\/|$)/', $routePattern)) {
-                if (preg_match('/^PSFS/', $params["class"])) {
+                if (preg_match('/^\\\?PSFS/', $params["class"])) {
                     $profile = "superadmin";
                 } else {
                     $profile = "admin";
