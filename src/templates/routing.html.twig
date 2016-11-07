@@ -6,12 +6,19 @@
     </div>
 {% endblock body_header %}
 {% block body_content %}
-    <ul class="list-group">
+    <p>
+        <a href="{{ path('admin-routes-gen') }}" class="btn btn-primary active">
+            <span>{{ "Generar rutas"|trans }}</span>
+        </a>
+    </p>
+    <div class="list-group">
     {% for url, route in slugs %}
-        <li class="list-group-item">
-            {% set cleanRoute = route|split("#|#") %}
-            <span class="label label-danger">{{ url }}</span> <a href="{{ cleanRoute[1] }}">{{ cleanRoute[0] }} {{ cleanRoute[1] }}</a>
-        </li>
+        {% set cleanRoute = route|split("#|#") %}
+        <a class="list-group-item" href="{{ cleanRoute[1] }}">
+            <span class="label label-success">{{ cleanRoute[0] }}</span>&nbsp;
+            <span class="label label-default">{{ url }}</span>
+            {{ cleanRoute[1] }}
+        </a>
     {% endfor %}
-    </ul>
+    </div>
 {% endblock body_content %}

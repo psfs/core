@@ -33,10 +33,6 @@ class Router
      */
     private $cache;
     /**
-     * @var \PSFS\base\Security $session
-     */
-    private $session;
-    /**
      * @var bool headersSent
      */
     protected $headersSent = false;
@@ -49,7 +45,6 @@ class Router
     {
         $this->finder = new Finder();
         $this->cache = Cache::getInstance();
-        $this->session = Security::getInstance();
         $this->init();
     }
 
@@ -105,6 +100,20 @@ class Router
     public function getSlugs()
     {
         return $this->slugs;
+    }
+
+    /**
+     * Method that extract all routes in the platform
+     * @return array
+     */
+    public function getAllRoutes() {
+        $routes = [];
+        foreach($this->routing as $path => $route) {
+            if(array_key_exists('slug', $route)) {
+                $routes[$route['slug']] = $path;
+            }
+        }
+        return $routes;
     }
 
     /**
@@ -263,7 +272,7 @@ class Router
         if (!Config::getInstance()->checkTryToSaveConfig()
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || NULL !== Config::getInstance()->get('restricted'))
         ) {
-            if (!$this->session->checkAdmin()) {
+            if (!Security::getInstance()->checkAdmin()) {
                 throw new AccessDeniedException();
             }
             Logger::log('Admin access granted');
@@ -690,7 +699,7 @@ class Router
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
     {
         Logger::log('Executing route ' . $route);
-        $this->session->setSessionKey("__CACHE__", $action);
+        Security::getInstance()->setSessionKey("__CACHE__", $action);
         $cache = Cache::needCache();
         $execute = TRUE;
         if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE) {
@@ -718,20 +727,18 @@ class Router
     {
         $translations = $this->generateTranslationsFile($absoluteTranslationFileName);
         foreach ($this->routing as $key => &$info) {
-            if (preg_match('/(ALL|GET)/i', $key)) {
-                $keyParts = $key;
-                if (FALSE === strstr("#|#", $key)) {
-                    $keyParts = explode("#|#", $key);
-                    $keyParts = $keyParts[1];
-                }
-                $slug = $this->slugify($keyParts);
-                if (NULL !== $slug && !array_key_exists($slug, $translations)) {
-                    $translations[$slug] = $key;
-                    file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
-                }
-                $this->slugs[$slug] = $key;
-                $info["slug"] = $slug;
+            $keyParts = $key;
+            if (FALSE === strstr("#|#", $key)) {
+                $keyParts = explode("#|#", $key);
+                $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : '';
             }
+            $slug = $this->slugify($keyParts);
+            if (NULL !== $slug && !array_key_exists($slug, $translations)) {
+                $translations[$slug] = $key;
+                file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
+            }
+            $this->slugs[$slug] = $key;
+            $info["slug"] = $slug;
         }
     }
 

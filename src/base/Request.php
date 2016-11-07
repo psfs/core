@@ -218,6 +218,7 @@ class Request
         ob_start();
         header('Location: ' . $url);
         ob_end_clean();
+        Security::getInstance()->updateSession();
         exit(_("Redireccionando..."));
     }
 

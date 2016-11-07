@@ -25,11 +25,6 @@ class Template
     private $status_code = 200;
 
     /**
-     * @var \PSFS\base\Security $security
-     */
-    protected $security;
-
-    /**
      * @var \PSFS\base\Cache $cache
      */
     protected $cache;
@@ -171,11 +166,11 @@ class Template
     public function closeRender()
     {
         Logger::log('Close template render');
-        $this->security->setSessionKey("lastRequest", array(
+        Security::getInstance()->setSessionKey("lastRequest", array(
             "url" => Request::getInstance()->getRootUrl() . Request::requestUri(),
             "ts" => microtime(true),
         ));
-        $this->security->updateSession();
+        Security::getInstance()->updateSession();
         exit;
     }
 
@@ -217,8 +212,8 @@ class Template
      */
     public function dump($tpl, array $vars = array())
     {
-        $vars["__user__"] = $this->security->getUser();
-        $vars["__admin__"] = $this->security->getAdmin();
+        $vars["__user__"] = Security::getInstance()->getUser();
+        $vars["__admin__"] = Security::getInstance()->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
         $vars["__flash__"] = Security::getInstance()->getFlashes();
         $dump = '';
@@ -499,7 +494,6 @@ class Template
     private function setup()
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
-        $this->security = Security::getInstance();
         $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
