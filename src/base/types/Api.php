@@ -554,13 +554,13 @@
         public function getForm()
         {
             $form = new Form();
-            /** @var TableMap $map */
             $map = $this->getModelTableMap();
+            /** @var TableMap $fields */
             $fields = $map::getTableMap();
-            foreach($fields->getFieldNames() as $field) {
+            foreach($map::getFieldNames() as $field) {
                 $fDto = new Field($field, _($field));
                 /** @var ColumnMap $mappedColumn */
-                $mappedColumn = $fields->getColumn($field);
+                $mappedColumn = $fields->getColumnByPhpName($field);
                 if($mappedColumn->isForeignKey()) {
                     $fDto->type = Field::COMBO_TYPE;
                     $fDto->required = $mappedColumn->isNotNull();
