@@ -14,9 +14,9 @@ if(!function_exists("{{ autoloader }}_Autoloader")) {
     // autoloader
     function {{ autoloader }}_Autoloader( $class ) {
         // it only autoload class into the Rain scope
-        if (strpos($class,'{{ module }}') !== false) {
+        if (false !== preg_match('/^\\\?{{ regex }}/', $class)) {
             // Change order src
-            $class = preg_replace('/^\\{{ regex }}/', '{{ module }}', $class);
+            $class = preg_replace('/^\\\?{{ regex }}/', '{{ is_module ? '' : module  }}', $class);
             // transform the namespace in path
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
             // filepath

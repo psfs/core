@@ -54,13 +54,15 @@ class GeneratorController extends Admin
             $module = $form->getFieldValue("module");
             $force = $form->getFieldValue("force");
             $type = $form->getFieldValue("controllerType");
+            $is_module = $form->getFieldValue("is_module");
             try {
                 $module = preg_replace('/(\\\|\/)/', '/', $module);
                 $module = preg_replace('/^\//', '', $module);
-                $this->gen->createStructureModule($module, $force, $type);
+                $this->gen->createStructureModule($module, $force, $type, (bool)$is_module);
                 Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, _("Módulo %s generado correctamente")));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (\Exception $e) {
+                pre($e->getMessage(), true);
                 Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
                 throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
             }

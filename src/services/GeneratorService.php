@@ -65,51 +65,63 @@
          * @param string $module
          * @param boolean $force
          * @param string $type
+         * @param boolean $is_module
          * @return mixed
          */
-        public function createStructureModule($module, $force = false, $type = "")
+        public function createStructureModule($module, $force = false, $type = "", $isModule = false)
         {
             $mod_path = CORE_DIR . DIRECTORY_SEPARATOR;
             $module = ucfirst($module);
-            $this->createModulePath($module, $mod_path);
-            $this->createModulePathTree($module, $mod_path);
-            $this->createModuleBaseFiles($module, $mod_path, $force, $type);
-            $this->createModuleModels($module);
-            $this->generateBaseApiTemplate($module, $mod_path);
+            $this->createModulePath($module, $mod_path, $isModule);
+            $this->createModulePathTree($module, $mod_path, $isModule);
+            $this->createModuleBaseFiles($module, $mod_path, $force, $type, $isModule);
+            $this->createModuleModels($module, $mod_path, $isModule);
+            //$this->generateBaseApiTemplate($module, $mod_path, $isModule);
             //Redireccionamos al home definido
             $this->log->infoLog("Módulo generado correctamente");
         }
 
         /**
-         * Servicio que genera el path base del módulo
+         * Service that creates the root paths for the modules
          * @param string $module
          * @param string $mod_path
+         * @param boolean $isModule
          */
-        private function createModulePath($module, $mod_path)
+        private function createModulePath($module, $mod_path, $isModule = false)
         {
-            //Creamos el directorio base de los módulos
+            // Creates the src folder
             Config::createDir($mod_path);
-            //Creamos la carpeta del módulo
-            Config::createDir($mod_path . $module);
+            // Create module path
+            if(false === $isModule) {
+                Config::createDir($mod_path . $module);
+            }
         }
 
         /**
          * Servicio que genera la estructura base
          * @param $module
          * @param $mod_path
+         * @param boolean $isModule
          */
-        private function createModulePathTree($module, $mod_path)
+        private function createModulePathTree($module, $mod_path, $isModule = false)
         {
             //Creamos las carpetas CORE del módulo
             $this->log->infoLog("Generamos la estructura");
             $paths = array("Api", "Api/base", "Config", "Controller", "Form", "Models", "Public", "Templates", "Services", "Test");
+            $module_path = $isModule ? $mod_path : $mod_path . $module;
             foreach($paths as $path) {
-                Config::createDir($mod_path . $module . DIRECTORY_SEPARATOR . $path);
+                Config::createDir($module_path . DIRECTORY_SEPARATOR . $path);
             }
             //Creamos las carpetas de los assets
             $htmlPaths = array("css", "js", "img", "media", "font");
             foreach($htmlPaths as $path) {
-                Config::createDir($mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $path);
+                Config::createDir($module_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $path);
+            }
+
+            if($isModule) {
+                return $this->writeTemplateToFile(json_encode([
+                    "module" => "\\" . preg_replace('/(\\\|\/)/', '\\\\',$module),
+                ], JSON_PRETTY_PRINT), $mod_path . DIRECTORY_SEPARATOR . "module.json", true);
             }
         }
 
@@ -119,36 +131,43 @@
          * @param string $mod_path
          * @param boolean $force
          * @param string $controllerType
+         * @param boolean $isModule
          */
-        private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '')
+        private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '', $isModule = false)
         {
-            $this->generateControllerTemplate($module, $mod_path, $force, $controllerType);
-            $this->generateServiceTemplate($module, $mod_path, $force);
-            $this->genereateAutoloaderTemplate($module, $mod_path, $force);
-            $this->generateSchemaTemplate($module, $mod_path, $force);
-            $this->generatePropertiesTemplate($module, $mod_path, $force);
-            $this->generateConfigTemplate($module, $mod_path, $force);
-            $this->generateIndexTemplate($module, $mod_path, $force);
-            $this->generatePublicTemplates($module, $mod_path, $force);
+            $module_path = $isModule ? $mod_path : $mod_path . $module;
+            $this->generateControllerTemplate($module, $module_path, $force, $controllerType);
+            $this->generateServiceTemplate($module, $module_path, $force);
+            $this->genereateAutoloaderTemplate($module, $module_path, $force, $isModule);
+            $this->generateSchemaTemplate($module, $module_path, $force);
+            $this->generatePropertiesTemplate($module, $module_path, $force);
+            $this->generateConfigTemplate($module_path, $force);
+            $this->generateIndexTemplate($module, $module_path, $force);
+            $this->generatePublicTemplates($module_path, $force);
         }
 
         /**
          * Servicio que ejecuta Propel y genera el modelo de datos
          * @param string $module
+         * @param string $path
+         * @param boolean $isModule
          */
-        private function createModuleModels($module)
+        private function createModuleModels($module, $path, $isModule = false)
         {
+            $module_path = $isModule ? $path : $path . $module;
+            $module_path = str_replace(BASE_DIR . DIRECTORY_SEPARATOR, '', $module_path);
             //Generamos las clases de propel y la configuración
             $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
-            $schemaOpt = " --schema-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config";
-            $opt = " --config-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
+            $schemaOpt = " --schema-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config";
+            $opt = " --config-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config --output-dir=" . CORE_DIR . " --verbose";
+            $this->log->infoLog("[GENERATOR] Ejecutamos propel:\n" . $exec . "build" . $opt . $schemaOpt);
             $ret = shell_exec($exec . "build" . $opt . $schemaOpt);
 
-            $this->log->infoLog("Generamos clases invocando a propel:\n $ret");
-            $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config" . $schemaOpt);
-            $this->log->infoLog("Generamos sql invocando a propel:\n $ret");
-            $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Config");
-            $this->log->infoLog("Generamos configuración invocando a propel:\n $ret");
+            $this->log->infoLog("[GENERATOR] Generamos clases invocando a propel:\n $ret");
+            $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config" . $schemaOpt);
+            $this->log->infoLog("[GENERATOR] Generamos sql invocando a propel:\n $ret");
+            $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config");
+            $this->log->infoLog("[GENERATOR] Generamos configuración invocando a propel:\n $ret");
         }
 
         /**
@@ -170,7 +189,7 @@
                 "class" => $class,
                 "controllerType" => $controllerType,
             ));
-            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$class}Controller.php", $force);
+            return $this->writeTemplateToFile($controller, $mod_path . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$class}Controller.php", $force);
         }
 
         /**
@@ -199,16 +218,15 @@
         }
 
         /**
-         * @param string $module
          * @param string $mod_path
          * @param boolean $force
          * @return boolean
          */
-        private function generateConfigTemplate($module, $mod_path, $force = false)
+        private function generateConfigTemplate($mod_path, $force = false)
         {
             //Generamos el fichero de configuración
             $this->log->infoLog("Generamos fichero vacío de configuración");
-            return $this->writeTemplateToFile("<?php\n\t", $mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php", $force);
+            return $this->writeTemplateToFile("<?php\n\t", $mod_path . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php", $force);
         }
 
         /**
@@ -217,12 +235,12 @@
          * @param boolean $force
          * @return boolean
          */
-        private function generatePublicTemplates($module, $mod_path, $force = false)
+        private function generatePublicTemplates($mod_path, $force = false)
         {
             //Generamos el fichero de configuración
             $this->log->infoLog("Generamos ficheros para assets base");
-            $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css", false);
-            $js = $this->writeTemplateToFile("/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();", $mod_path . $module . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "app.js", false);
+            $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n", $mod_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css", $force);
+            $js = $this->writeTemplateToFile("/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();", $mod_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "app.js", $force);
             return ($css && $js);
         }
 
@@ -242,25 +260,27 @@
                 "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
                 "class" => $class,
             ));
-            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Services" . DIRECTORY_SEPARATOR . "{$class}Service.php", $force);
+            return $this->writeTemplateToFile($controller, $mod_path . DIRECTORY_SEPARATOR . "Services" . DIRECTORY_SEPARATOR . "{$class}Service.php", $force);
         }
 
         /**
          * @param string $module
          * @param string $mod_path
          * @param boolean $force
+         * @param boolean $isModule
          * @return boolean
          */
-        private function genereateAutoloaderTemplate($module, $mod_path, $force = false)
+        private function genereateAutoloaderTemplate($module, $mod_path, $force = false, $isModule = false)
         {
             //Generamos el autoloader del módulo
             $this->log->infoLog("Generamos el autoloader");
             $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
                 "module" => $module,
                 "autoloader" => preg_replace('/(\\\|\/)/', '_', $module),
-                "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\', $module),
+                "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\\\\\\\', $module),
+                "is_module" => $isModule,
             ));
-            return $this->writeTemplateToFile($autoloader, $mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $force);
+            return $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
         }
 
         /**
@@ -279,7 +299,7 @@
                 "prefix" => preg_replace('/(\\\|\/)/', '', $module),
                 "db"     => $this->config->get("db_name"),
             ));
-            return $this->writeTemplateToFile($schema, $mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $force);
+            return $this->writeTemplateToFile($schema, $mod_path . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $force);
         }
 
         /**
@@ -300,7 +320,7 @@
                 "db"     => $this->config->get("db_name"),
                 "namespace" => preg_replace('/(\\\|\/)/', '', $module),
             ));
-            return $this->writeTemplateToFile($build_properties, $mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $force);
+            return $this->writeTemplateToFile($build_properties, $mod_path . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $force);
         }
 
         /**
@@ -316,7 +336,7 @@
             $index = $this->tpl->dump("generator/index.template.twig", array(
                 "module" => $module,
             ));
-            return $this->writeTemplateToFile($index, $mod_path . $module . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $force);
+            return $this->writeTemplateToFile($index, $mod_path . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig", $force);
         }
 
         /**

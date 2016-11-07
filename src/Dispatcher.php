@@ -91,6 +91,7 @@ class Dispatcher extends Singleton
 
     /**
      * Run method
+     * @return string HTML
      */
     public function run()
     {

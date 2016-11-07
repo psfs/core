@@ -316,7 +316,12 @@ class Router
         $modules = realpath(CORE_DIR);
         $this->routing = $this->inspectDir($base, "PSFS", array());
         if (file_exists($modules)) {
-            $this->routing = $this->inspectDir($modules, "", $this->routing);
+            $module = "";
+            if(file_exists($modules . DIRECTORY_SEPARATOR . 'module.json')) {
+                $mod_cfg = json_decode(file_get_contents($modules . DIRECTORY_SEPARATOR . 'module.json'), true);
+                $module = $mod_cfg['module'];
+            }
+            $this->routing = $this->inspectDir($modules, $module, $this->routing);
         }
         $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, TRUE);
         $home = Config::getInstance()->get('home_action');
@@ -357,6 +362,15 @@ class Router
     }
 
     /**
+     * Checks that a namespace exists
+     * @param string $namespace
+     * @return bool
+     */
+    public static function exists($namespace) {
+        return (class_exists($namespace) || interface_exists($namespace) || trait_exists($namespace));
+    }
+
+    /**
      * Método que añade nuevas rutas al array de referencia
      *
      * @param string $namespace
@@ -365,9 +379,9 @@ class Router
      * @return array
      * @throws ConfigException
      */
-    private function addRouting($namespace, $routing)
+    private function addRouting($namespace, &$routing)
     {
-        if (class_exists($namespace)) {
+        if (self::exists($namespace)) {
             $reflection = new \ReflectionClass($namespace);
             if (FALSE === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
