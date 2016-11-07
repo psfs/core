@@ -299,6 +299,8 @@ class Admin extends AuthAdminController{
             $force = $form->getFieldValue("force");
             $type = $form->getFieldValue("controllerType");
             try {
+                $module = preg_replace('/(\\\|\/)/', '/', $module);
+                $module = preg_replace('/^\//', '', $module);
                 $this->gen->createStructureModule($module, $force, $type);
                 $this->security->setFlash("callback_message", str_replace("%s",$module, _("Módulo %s generado correctamente")));
                 $this->security->setFlash("callback_route", $this->getRoute("admin-module", true));

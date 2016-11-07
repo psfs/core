@@ -10,13 +10,13 @@ define("BASE_DIR", dirname( dirname(__DIR__) ) );
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php';
 
-if(!function_exists("{{ module }}_Autoloader")) {
+if(!function_exists("{{ autoloader }}_Autoloader")) {
     // autoloader
-    function {{ module }}_Autoloader( $class ) {
+    function {{ autoloader }}_Autoloader( $class ) {
         // it only autoload class into the Rain scope
         if (strpos($class,'{{ module }}') !== false) {
             // Change order src
-            $class = preg_replace('/^\\{{ module }}/', '{{ module }}', $class);
+            $class = preg_replace('/^\\{{ regex }}/', '{{ module }}', $class);
             // transform the namespace in path
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
             // filepath
@@ -31,5 +31,5 @@ if(!function_exists("{{ module }}_Autoloader")) {
     }
 
     // register the autoloader
-    spl_autoload_register( "{{ module }}_Autoloader" );
+    spl_autoload_register( "{{ autoloader }}_Autoloader" );
 }

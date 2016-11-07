@@ -162,11 +162,15 @@
         {
             //Generamos el controlador base
             $this->log->infoLog("Generamos el controlador BASE");
+            $class = preg_replace('/(\\\|\/)/', '', $module);
             $controller = $this->tpl->dump("generator/controller.template.twig", array(
                 "module" => $module,
+                "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+                "url" => preg_replace('/(\\\|\/)/', '/', $module),
+                "class" => $class,
                 "controllerType" => $controllerType,
             ));
-            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$module}Controller.php", $force);
+            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Controller" . DIRECTORY_SEPARATOR . "{$class}Controller.php", $force);
         }
 
         /**
@@ -232,10 +236,13 @@
         {
             //Generamos el controlador base
             $this->log->infoLog("Generamos el servicio BASE");
+            $class = preg_replace('/(\\\|\/)/', '', $module);
             $controller = $this->tpl->dump("generator/service.template.twig", array(
                 "module" => $module,
+                "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+                "class" => $class,
             ));
-            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Services" . DIRECTORY_SEPARATOR . "{$module}Service.php", $force);
+            return $this->writeTemplateToFile($controller, $mod_path . $module . DIRECTORY_SEPARATOR . "Services" . DIRECTORY_SEPARATOR . "{$class}Service.php", $force);
         }
 
         /**
@@ -250,6 +257,8 @@
             $this->log->infoLog("Generamos el autoloader");
             $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
                 "module" => $module,
+                "autoloader" => preg_replace('/(\\\|\/)/', '_', $module),
+                "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\', $module),
             ));
             return $this->writeTemplateToFile($autoloader, $mod_path . $module . DIRECTORY_SEPARATOR . "autoload.php", $force);
         }
@@ -266,6 +275,8 @@
             $this->log->infoLog("Generamos el schema");
             $schema = $this->tpl->dump("generator/schema.propel.twig", array(
                 "module" => $module,
+                "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+                "prefix" => preg_replace('/(\\\|\/)/', '', $module),
                 "db"     => $this->config->get("db_name"),
             ));
             return $this->writeTemplateToFile($schema, $mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml", $force);
@@ -287,6 +298,7 @@
                 "user"   => $this->config->get("db_user"),
                 "pass"   => $this->config->get("db_password"),
                 "db"     => $this->config->get("db_name"),
+                "namespace" => preg_replace('/(\\\|\/)/', '', $module),
             ));
             return $this->writeTemplateToFile($build_properties, $mod_path . $module . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml", $force);
         }
