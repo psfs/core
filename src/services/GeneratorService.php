@@ -330,7 +330,7 @@ class GeneratorService extends Service
         $this->log->infoLog("Generamos el schema");
         $schema = $this->tpl->dump("generator/schema.propel.twig", array(
             "module" => $module,
-            "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+            "namespace" => preg_replace('/(\\\|\/)/', '', $module),
             "prefix" => preg_replace('/(\\\|\/)/', '', $module),
             "db" => $this->config->get("db_name"),
         ));

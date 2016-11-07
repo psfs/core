@@ -1,12 +1,10 @@
 <?php
 /**
  * Simple, Fast & Secure Framework
- * @author Fran López <fran.lopez84@hotmail.es>
+ * @author Fran Lopez <fran.lopez84@hotmail.es>
  * @version 0.1
  */
-if (!defined("BASE_DIR")) {
-    define("BASE_DIR", dirname(dirname(__DIR__)));
-}
+defined("BASE_DIR") or define("BASE_DIR", dirname(dirname(__DIR__)));
 
 if (!function_exists("PSFSAutoloader")) {
     // autoloader

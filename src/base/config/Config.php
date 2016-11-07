@@ -242,7 +242,9 @@ class Config
      */
     public function loadConfigData()
     {
-        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", Cache::JSON, TRUE) ?: array();
+        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json",
+            Cache::JSON,
+            TRUE) ?: [];
         $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;
     }
 

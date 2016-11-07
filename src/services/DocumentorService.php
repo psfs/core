@@ -3,6 +3,7 @@
 
     use PSFS\base\Logger;
     use PSFS\base\Service;
+    use PSFS\base\Singleton;
     use Symfony\Component\Finder\Finder;
 
     /**
@@ -219,14 +220,7 @@
             $properties = [];
             $reflector = new \ReflectionClass($class);
             if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
-                foreach ($reflector->getProperties(\ReflectionMethod::IS_PUBLIC) as $property) {
-                    $type = $this->extractVarType($property->getDocComment());
-                    if(class_exists($type)) {
-                        $properties[$property->getName()] = $this->extractModelFields($type);
-                    } else {
-                        $properties[$property->getName()] = $type;
-                    }
-                }
+                Singleton::extractProperties($reflector, $properties, \ReflectionMethod::IS_PUBLIC);
             }
 
             return $properties;

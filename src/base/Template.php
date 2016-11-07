@@ -12,8 +12,8 @@ use PSFS\Dispatcher;
 
 class Template
 {
-
     use SingletonTrait;
+    const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
      * @var \Twig_Environment tpl
      */
@@ -22,7 +22,7 @@ class Template
 
     protected $debug = false;
     protected $public_zone = true;
-    private $status_code = 200;
+    private $status_code = Template::STATUS_OK;
 
     /**
      * @var \PSFS\base\Cache $cache
@@ -146,7 +146,7 @@ class Template
         header('Content-length: ' . strlen($output));
 
         $cache = Cache::needCache();
-        if (false !== $cache && $this->status_code === 200 && $this->debug === false) {
+        if (false !== $cache && $this->status_code === Template::STATUS_OK && $this->debug === false) {
             Logger::log('Saving output response into cache');
             $cacheName = $this->cache->getRequestCacheHash();
             $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $cacheName, $output);

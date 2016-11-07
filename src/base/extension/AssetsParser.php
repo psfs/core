@@ -14,12 +14,12 @@ use PSFS\base\Template;
  */
 class AssetsParser {
 
-    protected $files = array();
-    protected $hash = array();
+    protected $files = [];
+    protected $hash = [];
     protected $compiled_files;
     protected $type;
     protected $path;
-    protected $domains = array();
+    protected $domains = [];
     private $debug = false;
 
     /**
@@ -151,7 +151,13 @@ class AssetsParser {
                     }
                 }
             }
-            $this->storeContents($base.$this->hash.".js", Minifier::minify($data));
+            try {
+                $minifiedJs = Minifier::minify($data);
+            } catch(\Exception $e) {
+                Logger::log($e->getMessage(), LOG_ERR);
+                $minifiedJs = false;
+            }
+            $this->storeContents($base.$this->hash.".js", (false !== $minifiedJs) ? $minifiedJs : $data);
         }
         return $this;
     }

@@ -127,6 +127,24 @@ class Singleton
     }
 
     /**
+     * @param \ReflectionClass $reflector
+     * @param array $properties
+     * @param integer $type
+     */
+    public static function extractProperties(\ReflectionClass $reflector, array &$properties, $type = \ReflectionProperty::IS_PROTECTED)
+    {
+        foreach ($reflector->getProperties($type) as $property) {
+            $doc = $property->getDocComment();
+            if (preg_match('/@Inyectable/im', $doc)) {
+                $instanceType = self::extractVarType($property->getDocComment());
+                if (null !== $instanceType) {
+                    $properties[$property->getName()] = $instanceType;
+                }
+            }
+        }
+    }
+
+    /**
      * Método que extrae todas las propiedades inyectables de una clase
      * @param null $class
      * @return array
@@ -142,15 +160,7 @@ class Singleton
         if (false !== $selfReflector->getParentClass()) {
             $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
         }
-        foreach ($selfReflector->getProperties(\ReflectionProperty::IS_PROTECTED) as $property) {
-            $doc = $property->getDocComment();
-            if (preg_match('/@Inyectable/im', $doc)) {
-                $instanceType = $this->extractVarType($property->getDocComment());
-                if (null !== $instanceType) {
-                    $properties[$property->getName()] = $instanceType;
-                }
-            }
-        }
+        Singleton::extractProperties($selfReflector, $properties);
         return $properties;
     }
 
@@ -159,7 +169,7 @@ class Singleton
      * @param $doc
      * @return null|string
      */
-    private function extractVarType($doc)
+    public static function extractVarType($doc)
     {
         $type = null;
         if (false !== preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {

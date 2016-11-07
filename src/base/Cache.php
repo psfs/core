@@ -33,7 +33,8 @@ class Cache
         $filename = basename($absolutePath);
         Config::createDir(str_replace($filename, "", $absolutePath));
         if (false === file_put_contents($absolutePath, $data)) {
-            throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ') . $absolutePath);
+            throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')
+                . $absolutePath);
         }
     }
 
@@ -42,7 +43,7 @@ class Cache
      * @param string $path
      * @param int $transform
      * @param boolean $absolute
-     * @return array|string|null
+     * @return mixed
      */
     public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false)
     {
@@ -138,7 +139,7 @@ class Cache
      * @param int $expires
      * @param callable $function
      * @param int $transform
-     * @return string|null
+     * @return mixed
      */
     public function readFromCache($path, $expires = 300, callable $function, $transform = Cache::TEXT)
     {

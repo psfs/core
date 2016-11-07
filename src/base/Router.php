@@ -7,7 +7,7 @@ use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\SingletonTrait;
-use PSFS\controller\Admin;
+use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 use Symfony\Component\Finder\Finder;
 
@@ -119,7 +119,7 @@ class Router
     /**
      * Método que calcula el objeto a enrutar
      *
-     * @param string $route
+     * @param string|null $route
      *
      * @throws \Exception
      * @return string HTML
@@ -307,10 +307,9 @@ class Router
     }
 
     /**
-     * Método que regenera el fichero de rutas
-     * @throws ConfigException
+     * Method that gather all the routes in the project
      */
-    public function hydrateRouting()
+    private function generateRouting()
     {
         $base = SOURCE_DIR;
         $modules = realpath(CORE_DIR);
@@ -324,6 +323,15 @@ class Router
             $this->routing = $this->inspectDir($modules, $module, $this->routing);
         }
         $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, TRUE);
+    }
+
+    /**
+     * Método que regenera el fichero de rutas
+     * @throws ConfigException
+     */
+    public function hydrateRouting()
+    {
+        $this->generateRouting();
         $home = Config::getInstance()->get('home_action');
         if (NULL !== $home || $home !== '') {
             $home_params = NULL;
@@ -516,7 +524,7 @@ class Router
      * @return string|null
      * @throws RouterException
      */
-    public function getRoute($slug = '', $absolute = FALSE, $params = NULL)
+    public function getRoute($slug = '', $absolute = FALSE, $params = [])
     {
         if (strlen($slug) === 0) {
             return ($absolute) ? Request::getInstance()->getRootUrl() . '/' : '/';
@@ -581,11 +589,11 @@ class Router
 
     /**
      * Método que extrae los dominios
-     * @return array|null
+     * @return array
      */
     public function getDomains()
     {
-        return $this->domains;
+        return $this->domains ?: [];
     }
 
     /**
@@ -706,7 +714,7 @@ class Router
      * Método que ejecuta una acción del framework y revisa si lo tenemos cacheado ya o no
      *
      * @param string $route
-     * @param array $action
+     * @param array|null $action
      * @param types\Controller $class
      * @param array $params
      */
@@ -718,11 +726,11 @@ class Router
         $execute = TRUE;
         if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE) {
             $cacheDataName = $this->cache->getRequestCacheHash();
-            $cachedData = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName, $cache, function () {
-            });
+            $cachedData = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName,
+                $cache, function () {});
             if (NULL !== $cachedData) {
-                $headers = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName . ".headers", $cache, function () {
-                }, Cache::JSON);
+                $headers = $this->cache->readFromCache("templates" . DIRECTORY_SEPARATOR . $cacheDataName . ".headers",
+                    $cache, function () {}, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);
                 $execute = FALSE;
             }

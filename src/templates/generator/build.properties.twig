@@ -2,7 +2,7 @@
 propel:
     general:
         # The name of your project.
-        project: {{ module }}
+        project: {{ namespace }}
 
     ### Directories and Filenames ###
     paths:
@@ -30,14 +30,14 @@ propel:
     database:
         # All database sources
         connections:
-            {{ module }}:
+            {{ namespace }}:
                 # The PDO dsn
                 adapter: mysql
                 dsn: mysql:host={{ host }};port={{ port }};dbname={{ db }}
                 user: {{ user }}
                 password: {{ pass }}
                 classname: Propel\Runtime\Connection\PropelPDO
-            debug{{ module }}:
+            debug{{ namespace }}:
                 # The PDO dsn
                 adapter: mysql
                 dsn: mysql:host={{ host }};port={{ port }};dbname={{ db }}
@@ -58,12 +58,12 @@ propel:
 
     ## Runtime settings ##
     runtime:
-        defaultConnection: {{ module }}
+        defaultConnection: {{ namespace }}
         # Datasources as defined in database.connections
         # This section affects config:convert command
         connections:
-            - {{ module }}
-            - debug{{ module }}
+            - {{ namespace }}
+            - debug{{ namespace }}
 
         ## Log and loggers definitions ##
         # For `type` and `level` options see Monolog documentation https://github.com/Seldaek/monolog
@@ -75,8 +75,8 @@ propel:
 
     ## Generator settings ##
     generator:
-        defaultConnection: {{ module }}
+        defaultConnection: {{ namespace }}
         # Datasources as defined in database.connections
         connections:
-            - {{ module }}
-            - debug{{ module }}
+            - {{ namespace }}
+            - debug{{ namespace }}
