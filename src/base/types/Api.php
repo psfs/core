@@ -16,6 +16,7 @@
     use PSFS\base\Logger;
     use PSFS\base\Request;
     use PSFS\base\Router;
+    use PSFS\base\types\helpers\ApiHelper;
 
     /**
      * Class Api
@@ -553,29 +554,8 @@
          */
         public function getForm()
         {
-            $form = new Form();
             $map = $this->getModelTableMap();
-            /** @var TableMap $fields */
-            $fields = $map::getTableMap();
-            foreach($map::getFieldNames() as $field) {
-                $fDto = new Field($field, _($field));
-                /** @var ColumnMap $mappedColumn */
-                $mappedColumn = $fields->getColumnByPhpName($field);
-                if($mappedColumn->isForeignKey()) {
-                    $fDto->type = Field::COMBO_TYPE;
-                    $fDto->required = $mappedColumn->isNotNull();
-                    $relatedModel = strtolower($mappedColumn->getRelation()->getForeignTable()->getPhpName());
-                    $fDto->entity = $relatedModel;
-                    $fDto->url = Router::getInstance()->getRoute('api-' . $relatedModel . '-pk');
-                } elseif ($mappedColumn->isPrimaryKey()) {
-                    $fDto->type = Field::HIDDEN_TYPE;
-                    $fDto->required = false;
-                } elseif ($mappedColumn->isNumeric()) {
-                    $fDto->type = Field::NUMBER_TYPE;
-                }
-
-                $form->addField($fDto);
-            }
+            $form = ApiHelper::generateFormFields($map);
 
             return $this->json(new JsonResponse($form->toArray(), TRUE), 200);
         }

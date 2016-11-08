@@ -44,7 +44,7 @@ class ConfigController extends Admin
     {
         Logger::log("Config loaded executed by " . $this->getRequest()->getRequestUri());
         /* @var $form \PSFS\base\config\ConfigForm */
-        $form = new ConfigForm();
+        $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         return $this->render('welcome.html.twig', array(
             'text' => _("Bienvenido a PSFS"),
@@ -65,7 +65,7 @@ class ConfigController extends Admin
     {
         Logger::getInstance()->infoLog(_("Guardando configuración"));
         /* @var $form \PSFS\base\config\ConfigForm */
-        $form = new ConfigForm();
+        $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         $form->hydrate();
         if ($form->isValid()) {

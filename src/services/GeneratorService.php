@@ -227,6 +227,9 @@ class GeneratorService extends Service
         $modelPath = $isModule ?
             $mod_path . DIRECTORY_SEPARATOR . 'Models' :
             $mod_path . $module . DIRECTORY_SEPARATOR . 'Models';
+        $api_path = $isModule ?
+            $mod_path . DIRECTORY_SEPARATOR . 'Api' :
+            $mod_path . $module . DIRECTORY_SEPARATOR . 'Api';
         if (file_exists($modelPath)) {
             $dir = dir($modelPath);
             while ($file = $dir->read()) {
@@ -236,8 +239,8 @@ class GeneratorService extends Service
                 ) {
                     $filename = str_replace(".php", "", $file);
                     $this->log->infoLog("Generamos Api BASES para {$filename}");
-                    $this->createApiBaseFile($module, $mod_path, $filename);
-                    $this->createApi($module, $mod_path, $force, $filename);
+                    $this->createApiBaseFile($module, $api_path, $filename);
+                    $this->createApi($module, $api_path, $force, $filename);
                 }
             }
         }
@@ -423,7 +426,7 @@ class GeneratorService extends Service
         ));
 
         return $this->writeTemplateToFile($controller,
-            $mod_path . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$api}BaseApi.php", true);
+            $mod_path . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$api}BaseApi.php", true);
     }
 
     /**
@@ -446,7 +449,7 @@ class GeneratorService extends Service
             "class" => $class,
         ));
 
-        return $this->writeTemplateToFile($controller, $mod_path . DIRECTORY_SEPARATOR . "Api" . DIRECTORY_SEPARATOR . "{$api}.php", $force);
+        return $this->writeTemplateToFile($controller, $mod_path . DIRECTORY_SEPARATOR . "{$api}.php", $force);
     }
 
     /**

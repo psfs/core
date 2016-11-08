@@ -14,14 +14,18 @@ class ConfigForm extends Form
 
     /**
      * Constructor por defecto
+     * @param string $route
+     * @param array $required
+     * @param array $optional
+     * @param array $data
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
      */
-    public function __construct()
+    public function __construct($route, array $required, array $optional = [], array $data = [])
     {
-        $this->setAction(Router::getInstance()->getRoute('admin-config'));
+        $this->setAction($route);
         //Añadimos los campos obligatorios
-        foreach (Config::$required as $field) {
+        foreach ($required as $field) {
             $type = (in_array($field, Config::$encrypted)) ? "password" : "text";
             $value = (isset(Config::$defaults[$field])) ? Config::$defaults[$field] : null;
             $this->add($field, array(
@@ -33,9 +37,8 @@ class ConfigForm extends Form
             ));
         }
         $this->add(Form::SEPARATOR);
-        $data = Config::getInstance()->dumpConfig();
-        if (!empty(Config::$optional) && !empty($data)) {
-            foreach (Config::$optional as $field) {
+        if (!empty($optional) && !empty($data)) {
+            foreach ($optional as $field) {
                 if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
                     $this->add($field, array(
                         "label" => _($field),
@@ -50,7 +53,7 @@ class ConfigForm extends Form
         $extraKeys = array();
         if (!empty($data)) {
             $extraKeys = array_keys($data);
-            $extra = array_diff($extraKeys, array_merge(Config::$required, Config::$optional));
+            $extra = array_diff($extraKeys, array_merge($required, $optional));
         }
         if (!empty($extra)) {
             foreach ($extra as $key => $field) {
