@@ -176,7 +176,7 @@
          *
          * @return string
          */
-        protected function extractVarType($comments = '')
+        public static function extractVarType($comments = '')
         {
             $type = 'string';
             preg_match('/@var\ (.*) (.*)\n/i', $comments, $varType);
