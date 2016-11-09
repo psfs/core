@@ -171,13 +171,14 @@ class Template
             "ts" => microtime(true),
         ));
         Security::getInstance()->updateSession();
+        Logger::log('End request: ' . Request::requestUri(), LOG_INFO);
         exit;
     }
 
     /**
      * Método que devuelve los datos cacheados con las cabeceras que tenía por entonces
      * @param string $data
-     * @param string|null $headers
+     * @param array $headers
      */
     public function renderCache($data, $headers = array())
     {

@@ -31,7 +31,6 @@
          */
         public function setAdminHeaders()
         {
-            if("login" === $this->config->get("admin_login")) return Admin::getInstance()->adminLogin("admin-setup");
             $platform = trim(Config::getInstance()->get("platform_name"));
             header('HTTP/1.1 401 Unauthorized');
             header('WWW-Authenticate: Basic Realm="' . $platform. '"');

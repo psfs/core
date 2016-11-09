@@ -2,10 +2,12 @@
 
 namespace PSFS\controller\base;
 
+use PSFS\base\config\Config;
 use PSFS\base\config\LoginForm;
 use PSFS\base\Router;
 use PSFS\base\Template;
 use PSFS\base\types\AuthAdminController;
+use PSFS\services\AdminServices;
 
 /**
  * Class Admin
@@ -42,14 +44,18 @@ class Admin extends AuthAdminController{
      * @throws \PSFS\base\exception\FormException
      */
     public static function staticAdminLogon($route = null) {
-        $form = new LoginForm();
-        $form->setData(array("route" => $route));
-        $form->build();
-        $tpl = Template::getInstance();
-        $tpl->setPublicZone(true);
-        return $tpl->render("login.html.twig", array(
-            'form' => $form,
-        ));
+        if('login' === Config::getInstance()->get('admin_login')) {
+            return AdminServices::getInstance()->setAdminHeaders();
+        } else {
+            $form = new LoginForm();
+            $form->setData(array("route" => $route));
+            $form->build();
+            $tpl = Template::getInstance();
+            $tpl->setPublicZone(true);
+            return $tpl->render("login.html.twig", array(
+                'form' => $form,
+            ));
+        }
     }
 
     /**

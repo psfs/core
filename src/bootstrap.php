@@ -28,6 +28,7 @@ if (!function_exists('pre')) {
         ob_flush();
         ob_end_clean();
         if ($die) {
+            \PSFS\base\Logger::log('Execution finished via pre', LOG_WARNING);
             die;
         }
     }

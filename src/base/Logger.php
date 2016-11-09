@@ -34,6 +34,10 @@ class Logger
      * @var resource
      */
     private $stream;
+    /**
+     * @var string
+     */
+    protected $log_level;
 
     /**
      * @internal param string $path
@@ -45,6 +49,7 @@ class Logger
         list($logger, $debug, $path) = $this->setup($config, $args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date("Ymd") . ".log", "a+");
         $this->addPushLogger($logger, $debug, $config);
+        $this->log_level = Config::getInstance()->get('log.level') ?: 'info';
     }
 
     /**
@@ -87,7 +92,7 @@ class Logger
      */
     public function debugLog($msg = '', $context = [])
     {
-        return $this->logger->addDebug($msg, $this->addMinimalContext($context));
+        return ($this->log_level === 'debug') ? $this->logger->addDebug($msg, $this->addMinimalContext($context)) : null;
     }
 
     /**

@@ -6,6 +6,9 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
+use PSFS\base\types\helpers\RequestHelper;
+use PSFS\base\types\helpers\RouterHelper;
+use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\SingletonTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
@@ -129,80 +132,32 @@ class Router
         Logger::log('Executing the request');
         try {
             //Check CORS for requests
-            $this->checkCORS();
+            RequestHelper::checkCORS();
             // Checks restricted access
-            $this->checkRestrictedAccess($route);
+            SecurityHelper::checkRestrictedAccess($route);
             //Search action and execute
             $this->searchAction($route);
         } catch (AccessDeniedException $e) {
             Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
-            if ('login' === Config::getInstance()->get('admin_login')) {
-                return $this->redirectLogin($route);
-            } else {
-                return $this->sentAuthHeader();
-            }
+            return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
             if (FALSE !== preg_match('/\/$/', $route)) {
                 if (preg_match('/admin/', $route)) {
-                    $default = Config::getInstance()->get('admin_action');
+                    $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
                 } else {
                     $default = Config::getInstance()->get('home_action');
                 }
 
                 return $this->execute($this->getRoute($default));
             }
+            Logger::log($r->getMessage(), LOG_WARNING);
+            throw $r;
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }
 
         return $this->httpNotFound();
-    }
-
-    /**
-     * Check CROS requests
-     */
-    private function checkCORS()
-    {
-        Logger::log('Checking CORS');
-        $corsEnabled = Config::getInstance()->get('cors.enabled');
-        $request = Request::getInstance();
-        if (NULL !== $corsEnabled && null !== $request->getServer('HTTP_REFERER')) {
-            if ($corsEnabled == '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
-                if (!$this->headersSent) {
-                    // TODO include this headers in Template class output method
-                    header("Access-Control-Allow-Credentials: true");
-                    header("Access-Control-Allow-Origin: *");
-                    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-                    header("Access-Control-Allow-Headers: Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Origin, X-Requested-With, Content-Type, Accept, Authorization, X-API-SEC-TOKEN, X-API-USER-TOKEN");
-                    $this->headersSent = true;
-                }
-                if (Request::getInstance()->getMethod() == 'OPTIONS') {
-                    Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests');
-                    header("HTTP/1.1 200 OK");
-                    exit();
-                }
-            }
-        }
-    }
-
-    /**
-     * Function that checks if the long of the patterns match
-     * @param $routePattern
-     * @param $path
-     * @return bool
-     */
-    private function compareSlashes($routePattern, $path)
-    {
-        $pattern_sep = count(explode('/', $routePattern));
-        if (preg_match('/\/$/', $routePattern)) {
-            $pattern_sep--;
-        }
-        $path_sep = count(explode('/', $path));
-        if (preg_match('/\/$/', $path)) {
-            $path_sep--;
-        }
-        return abs($pattern_sep - $path_sep) < 1;
     }
 
     /**
@@ -214,18 +169,18 @@ class Router
      */
     protected function searchAction($route)
     {
-        Logger::log('Searching action to execute');
+        Logger::log('Searching action to execute: ' . $route, LOG_INFO);
         //Revisamos si tenemos la ruta registrada
         $parts = parse_url($route);
         $path = (array_key_exists('path', $parts)) ? $parts['path'] : $route;
         $httpRequest = Request::getInstance()->getMethod();
         foreach ($this->routing as $pattern => $action) {
-            list($httpMethod, $routePattern) = $this->extractHttpRoute($pattern);
-            $matched = $this->matchRoutePattern($routePattern, $path);
-            if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod) && $this->compareSlashes($routePattern, $path)) {
-                $get = $this->extractComponents($route, $routePattern);
+            list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($pattern);
+            $matched = RouterHelper::matchRoutePattern($routePattern, $path);
+            if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod) && RouterHelper::compareSlashes($routePattern, $path)) {
+                $get = RouterHelper::extractComponents($route, $routePattern);
                 /** @var $class \PSFS\base\types\Controller */
-                $class = $this->getClassToCall($action);
+                $class = RouterHelper::getClassToCall($action);
                 try {
                     $this->executeCachedRoute($route, $action, $class, $get);
                 } catch (\Exception $e) {
@@ -244,66 +199,6 @@ class Router
     protected function sentAuthHeader()
     {
         return AdminServices::getInstance()->setAdminHeaders();
-    }
-
-    /**
-     * Método que redirige a la pantalla web del login
-     *
-     * @param string $route
-     *
-     * @return string HTML
-     */
-    public function redirectLogin($route)
-    {
-        return Admin::staticAdminLogon($route);
-    }
-
-    /**
-     * Método que chequea el acceso a una zona restringida
-     *
-     * @param string $route
-     *
-     * @throws AccessDeniedException
-     */
-    protected function checkRestrictedAccess($route)
-    {
-        Logger::log('Checking admin zone');
-        //Chequeamos si entramos en el admin
-        if (!Config::getInstance()->checkTryToSaveConfig()
-            && (preg_match('/^\/(admin|setup\-admin)/i', $route) || NULL !== Config::getInstance()->get('restricted'))
-        ) {
-            if (!Security::getInstance()->checkAdmin()) {
-                throw new AccessDeniedException();
-            }
-            Logger::log('Admin access granted');
-        }
-    }
-
-    /**
-     * Método que extrae de la url los parámetros REST
-     *
-     * @param string $route
-     *
-     * @param string $pattern
-     *
-     * @return array
-     */
-    protected function extractComponents($route, $pattern)
-    {
-        Logger::log('Extracting parts for the request to execute');
-        $url = parse_url($route);
-        $_route = explode("/", $url['path']);
-        $_pattern = explode("/", $pattern);
-        $get = array();
-        if (!empty($_pattern)) foreach ($_pattern as $index => $component) {
-            $_get = array();
-            preg_match_all('/^\{(.*)\}$/i', $component, $_get);
-            if (!empty($_get[1]) && isset($_route[$index])) {
-                $get[array_pop($_get[1])] = $_route[$index];
-            }
-        }
-
-        return $get;
     }
 
     /**
@@ -336,7 +231,7 @@ class Router
         if (NULL !== $home || $home !== '') {
             $home_params = NULL;
             foreach ($this->routing as $pattern => $params) {
-                list($method, $route) = $this->extractHttpRoute($pattern);
+                list($method, $route) = RouterHelper::extractHttpRoute($pattern);
                 if (preg_match("/" . preg_quote($route, "/") . "$/i", "/" . $home)) {
                     $home_params = $params;
                 }
@@ -399,29 +294,11 @@ class Router
                 if (count($apiPath)) {
                     $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
                 }
-                foreach ($reflection->getMethods() as $method) {
-                    if ($method->isPublic()) {
-                        $docComments = $method->getDocComment();
-                        preg_match('/@route\ (.*)\n/i', $docComments, $sr);
-                        if (count($sr)) {
-                            list($regex, $default, $params) = $this->extractReflectionParams($sr, $method);
-                            if (strlen($api)) {
-                                $regex = str_replace('{__API__}', $api, $regex);
-                                $default = str_replace('{__API__}', $api, $default);
-                            }
-                            $httpMethod = $this->extractReflectionHttpMethod($docComments);
-                            $visible = $this->extractReflectionVisibility($docComments);
-                            $expiration = $this->extractReflectionCacheability($docComments);
-                            $routing[$httpMethod . "#|#" . $regex] = array(
-                                "class" => $namespace,
-                                "method" => $method->getName(),
-                                "params" => $params,
-                                "default" => $default,
-                                "visible" => $visible,
-                                "http" => $httpMethod,
-                                "cache" => $expiration,
-                            );
-                        }
+                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    list($route, $info) = RouterHelper::extractRouteInfo($method, $api);
+                    if(null !== $route && null !== $info) {
+                        $info['class'] = $namespace;
+                        $routing[$route] = $info;
                     }
                 }
             }
@@ -443,24 +320,7 @@ class Router
         //Calculamos los dominios para las plantillas
         if ($class->hasConstant("DOMAIN")) {
             $domain = "@" . $class->getConstant("DOMAIN") . "/";
-            $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-            $path = realpath($path) . DIRECTORY_SEPARATOR;
-            $tpl_path = "templates";
-            $public_path = "public";
-            $model_path = "models";
-            if (!preg_match("/ROOT/", $domain)) {
-                $tpl_path = ucfirst($tpl_path);
-                $public_path = ucfirst($public_path);
-                $model_path = ucfirst($model_path);
-            }
-            if ($class->hasConstant("TPL")) {
-                $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
-            }
-            $this->domains[$domain] = array(
-                "template" => $path . $tpl_path,
-                "model" => $path . $model_path,
-                "public" => $path . $public_path,
-            );
+            $this->domains[$domain] = RouterHelper::extractDomainInfo($class, $domain);
         }
 
         return $this;
@@ -550,7 +410,7 @@ class Router
     {
         $routes = array();
         foreach ($this->routing as $route => $params) {
-            list($httpMethod, $routePattern) = $this->extractHttpRoute($route);
+            list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($route);
             if (preg_match('/^\/admin(\/|$)/', $routePattern)) {
                 if (preg_match('/^\\\?PSFS/', $params["class"])) {
                     $profile = "superadmin";
@@ -597,120 +457,6 @@ class Router
     }
 
     /**
-     * Método que extrae el controller a invocar
-     *
-     * @param string $action
-     *
-     * @return Object
-     */
-    protected function getClassToCall($action)
-    {
-        Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
-        $actionClass = class_exists($action["class"]) ? $action["class"] : "\\" . $action["class"];
-        $class = (method_exists($actionClass, "getInstance")) ? $actionClass::getInstance() : new $actionClass;
-        return $class;
-    }
-
-    /**
-     * Método que compara la ruta web con la guardada en la cache
-     *
-     * @param $routePattern
-     * @param $path
-     *
-     * @return bool
-     */
-    protected function matchRoutePattern($routePattern, $path)
-    {
-        $expr = preg_replace('/\{([^}]+)\}/', '###', $routePattern);
-        $expr = preg_quote($expr, '/');
-        $expr = str_replace('###', '(.*)', $expr);
-        $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
-        $matched = preg_match('/^' . $expr . '\/?$/i', $path) || preg_match('/^' . $expr2 . '?$/i', $path);
-        return $matched;
-    }
-
-    /**
-     * @param $pattern
-     *
-     * @return array
-     */
-    protected function extractHttpRoute($pattern)
-    {
-        $httpMethod = "ALL";
-        $routePattern = $pattern;
-        if (FALSE !== strstr($pattern, "#|#")) {
-            list($httpMethod, $routePattern) = explode("#|#", $pattern, 2);
-        }
-
-        return array(strtoupper($httpMethod), $routePattern);
-    }
-
-    /**
-     * Método que extrae los parámetros de una función
-     *
-     * @param array $sr
-     * @param \ReflectionMethod $method
-     *
-     * @return array
-     */
-    private function extractReflectionParams($sr, $method)
-    {
-        $regex = $sr[1] ?: $sr[0];
-        $default = '';
-        $params = array();
-        $parameters = $method->getParameters();
-        if (count($parameters) > 0) foreach ($parameters as $param) {
-            if ($param->isOptional() && !is_array($param->getDefaultValue())) {
-                $params[$param->getName()] = $param->getDefaultValue();
-                $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
-            }
-        } else $default = $regex;
-
-        return array($regex, $default, $params);
-    }
-
-    /**
-     * Método que extrae el método http
-     *
-     * @param string $docComments
-     *
-     * @return string
-     */
-    private function extractReflectionHttpMethod($docComments)
-    {
-        preg_match('/@(GET|POST|PUT|DELETE)\n/i', $docComments, $routeMethod);
-
-        return (count($routeMethod) > 0) ? $routeMethod[1] : "ALL";
-    }
-
-    /**
-     * Método que extrae la visibilidad de una ruta
-     *
-     * @param string $docComments
-     *
-     * @return bool
-     */
-    private function extractReflectionVisibility($docComments)
-    {
-        preg_match('/@visible\ (.*)\n/i', $docComments, $visible);
-        return !(array_key_exists(1, $visible) && preg_match('/false/i', $visible[1]));
-    }
-
-    /**
-     * Método que extrae el parámetro de caché
-     *
-     * @param string $docComments
-     *
-     * @return bool
-     */
-    private function extractReflectionCacheability($docComments)
-    {
-        preg_match('/@cache\ (.*)\n/i', $docComments, $cache);
-
-        return (count($cache) > 0) ? $cache[1] : "0";
-    }
-
-    /**
      * Método que ejecuta una acción del framework y revisa si lo tenemos cacheado ya o no
      *
      * @param string $route
@@ -720,7 +466,7 @@ class Router
      */
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
     {
-        Logger::log('Executing route ' . $route);
+        Logger::log('Executing route ' . $route, LOG_INFO);
         Security::getInstance()->setSessionKey("__CACHE__", $action);
         $cache = Cache::needCache();
         $execute = TRUE;

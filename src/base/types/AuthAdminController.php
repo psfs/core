@@ -1,7 +1,7 @@
 <?php
     namespace PSFS\base\types;
 
-    use PSFS\controller\Admin;
+    use PSFS\controller\base\Admin;
 
     /**
      * Class AuthAdminController

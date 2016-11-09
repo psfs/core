@@ -74,7 +74,11 @@ class UserController extends Admin
      */
     public function adminLogin($route = null)
     {
-        return Admin::staticAdminLogon($route);
+        if($this->isAdmin()) {
+            return $this->redirect('admin');
+        } else {
+            return Admin::staticAdminLogon($route);
+        }
     }
 
     /**
