@@ -11,12 +11,11 @@ Framework Php Simple Fast & Secure
 Needed components to execute PSFS:
 
     * "propel/propel": "^2.0",
-    * "symfony/console": "^3.0",
-    * "symfony/finder": "2.3.x-dev",
+    * "symfony/console": "3.0.x-dev",
+    * "symfony/finder": "3.0.x-dev",
     * "twig/twig": "1.x-dev",
     * "twig/extensions": "dev-master",
     * "monolog/monolog": "1.x-dev",
-    * "pear/archive_tar": "dev-master",
     * "tedivm/jshrink": "~1.0",
     * "natxet/CssMin": "^3.0@dev"
 
@@ -25,7 +24,7 @@ How to install using composer:
 Install composer via: [GetComposer](https://getcomposer.org/download/)
    
 ```
-php composer.phar require c15k0/psfs
+php composer.phar require psfs/core
 ./vendor/bin/psfs psfs:create:root
 ```
 
@@ -33,8 +32,7 @@ RoadMap:
 
     * Session management
         - Session engines(mongodb, filesystem, mysql...)
-    * Migrate admin site to angular
-        - Use angular for menus
+        - Security improvements
     * Improve cache(html, php, json)
         - Serialize business logics
         - Html buffer
@@ -42,6 +40,7 @@ RoadMap:
         - Admin site to manage logic models
         - Admin site to manage workflows
         - Admin site to manage web pages
+        - Admin site to manage auto generation for controllers, apis and services
     * Framework documentation
         - Self documentation for apis(swagger and postman outputs)
         - PhpDoc for all files
