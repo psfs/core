@@ -10,9 +10,8 @@
     {
         use SecureTrait;
 
-        public function __construct()
-        {
-            parent::__construct();
+        public function init() {
+            parent::init();
             if (!$this->checkAuth()) {
                 return $this->json(new JsonResponse(_('Not authorized'), FALSE), 401);
             }

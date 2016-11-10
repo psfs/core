@@ -8,8 +8,8 @@
      * @package PSFS\base\types
      */
     class AuthAdminController extends AuthController {
-        public function __construct() {
-            $this->init();
+        public function init() {
+            parent::init();
             if (!$this->isAdmin()) {
                 Admin::staticAdminLogon();
             }

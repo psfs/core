@@ -17,9 +17,9 @@ abstract class AuthController extends Controller implements AuthInterface {
      * Constructor por defecto
      * @throws AccessDeniedException
      */
-    public function __construct() {
-        $this->init();
-        if (!$this->isLogged()) {
+    public function init() {
+        parent::init();
+        if (!$this->isLogged() && !$this->isAdmin()) {
             throw new AccessDeniedException(_("User not logged in"));
         }
     }

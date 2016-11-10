@@ -22,6 +22,12 @@ abstract class Controller extends Singleton implements ControllerInterface {
     protected $tpl;
     protected $domain = '';
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->init();
+    }
+
     /**
      * Método que renderiza una plantilla
      * @param string $template

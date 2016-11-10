@@ -71,20 +71,12 @@
         protected $extraColumns = array();
 
         /**
-         *
-         */
-        public function __construct()
-        {
-            parent::__construct();
-            $this->domain = $this->getApi();
-        }
-
-        /**
          * Initialize api
          */
         public function init()
         {
             parent::init();
+            $this->domain = $this->getApi();
             $this->debug = Config::getInstance()->getDebugMode() || Config::getInstance()->get('debugQueries');
             $this->hydrateRequestData();
             $this->hydrateOrders();

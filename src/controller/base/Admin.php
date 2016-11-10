@@ -44,7 +44,7 @@ class Admin extends AuthAdminController{
      * @throws \PSFS\base\exception\FormException
      */
     public static function staticAdminLogon($route = null) {
-        if('login' === Config::getInstance()->get('admin_login')) {
+        if('login' !== Config::getInstance()->get('admin_login')) {
             return AdminServices::getInstance()->setAdminHeaders();
         } else {
             $form = new LoginForm();
