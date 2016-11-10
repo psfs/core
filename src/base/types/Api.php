@@ -489,7 +489,7 @@
         private function closeTransaction($status)
         {
             $this->traceDebugQuery();
-            if ($this->con->inTransaction()) {
+            if (null !== $this->con && $this->con->inTransaction()) {
                 if ($status === 200) {
                     $this->con->commit();
                 } else {
