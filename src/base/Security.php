@@ -3,6 +3,7 @@
 namespace PSFS\base;
 
 use PSFS\base\types\SingletonTrait;
+use PSFS\controller\UserController;
 
 
 /**
@@ -169,7 +170,7 @@ class Security
             $request = Request::getInstance();
             if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return Router::getInstance()->getAdmin()->adminers();
+                return UserController::getInstance()->adminers();
             }
             $admins = $this->getAdmins();
             //Sacamos las credenciales de la petición
