@@ -498,7 +498,7 @@ class Template
         $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
-            'cache' => Config::getInstance()->getCachePath(),
+            'cache' => (bool)$this->debug ? false : Config::getInstance()->getCachePath(),
             'debug' => (bool)$this->debug,
             'auto_reload' => TRUE,
         ));
