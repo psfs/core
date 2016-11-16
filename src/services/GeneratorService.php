@@ -207,7 +207,8 @@ class GeneratorService extends Service
             "class" => $class . "Base",
             "service" => $class,
             "controllerType" => $controllerType,
-            "is_base" => true
+            "is_base" => true,
+            "domain" => $class,
         ));
         $controllerBase = $this->writeTemplateToFile($controllerBody, $mod_path . DIRECTORY_SEPARATOR . "Controller" .
             DIRECTORY_SEPARATOR . "base" . DIRECTORY_SEPARATOR . "{$class}BaseController.php", true);
