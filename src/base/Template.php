@@ -221,7 +221,7 @@ class Template
         try {
             $dump = $this->tpl->render($tpl, $vars);
         } catch (\Exception $e) {
-            echo $e->getMessage() . "<pre>" . $e->getTraceAsString() . "</pre>";
+            Logger::log($e->getMessage(), LOG_ERR);
         }
         return $dump;
     }
@@ -359,6 +359,7 @@ class Template
                     $this->tpl->loadTemplate(str_replace($tplDir . '/', '', $file));
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
+                    throw $e;
                 }
             }
         }
@@ -498,7 +499,7 @@ class Template
         $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
-            'cache' => (bool)$this->debug ? false : Config::getInstance()->getCachePath(),
+            'cache' => Config::getInstance()->getCachePath() . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
             'auto_reload' => TRUE,
         ));
