@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\types\helpers;
 
+use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\dto\Field;
@@ -32,6 +33,10 @@ class ApiHelper
                 $fDto = self::generatePrimaryKeyField($field);
             } elseif ($mappedColumn->isNumeric()) {
                 $fDto = self::generateNumericField($field);
+            } elseif ($mappedColumn->isText()) {
+                $fDto = self::generateStringField($field);
+            } elseif($mappedColumn->getType() === PropelTypes::BOOLEAN) {
+                $fDto = self::generateBooleanField($field);
             }
 
             if(null !== $fDto) {
@@ -59,22 +64,57 @@ class ApiHelper
     }
 
     /**
+     * @param $field
+     * @param string $type
+     * @return Field
+     */
+    private static function createField($field, $type = Field::TEXT_TYPE)
+    {
+        $fDto = new Field($field, _($field));
+        $fDto->type = $type;
+        return $fDto;
+    }
+
+    /**
      * Extract primary key field
      * @param $field
      * @return Field
      */
     public static function generatePrimaryKeyField($field)
     {
-        $fDto = new Field($field, _($field));
-        $fDto->type = Field::HIDDEN_TYPE;
+        $fDto = self::createField($field, Field::HIDDEN_TYPE);
         $fDto->required = false;
+        $fDto->pk = true;
         return $fDto;
     }
 
+    /**
+     * Extract numeric field
+     * @param $field
+     * @return Field
+     */
     public static function generateNumericField($field)
     {
-        $fDto = new Field($field, _($field));
-        $fDto->type = Field::NUMBER_TYPE;
-        return $fDto;
+        return self::createField($field, Field::NUMBER_TYPE);
+    }
+
+    /**
+     * Extract string fields
+     * @param $field
+     * @return Field
+     */
+    public static function generateStringField($field)
+    {
+        return self::createField($field);
+    }
+
+    /**
+     * Extract string fields
+     * @param $field
+     * @return Field
+     */
+    public static function generateBooleanField($field)
+    {
+        return self::createField($field, Field::SWITCH_TYPE);
     }
 }

@@ -8,10 +8,13 @@
           layout="column"
           flex="100"
           novalidate>
+        <h2 ng-show="isSaved()">{{ entity }} #{{ getPk() }}</h2>
         <md-input-container data-ng-repeat="field in form.fields" flex="100" data-ng-if="field.type !== 'hidden'">
-            <label data-ng-bind-html="field.label"></label>
+            <label data-ng-bind-html="field.label" ng-hide="field.type == 'switch'"></label>
             <!-- INPUT TYPE TEXT, URL OR PHONE -->
             <input type="{{ field.type }}" name="{{ entity + '_' + field.name }}" ng-model="model[field.name]" ng-if="isInputField(field)" ng-required="field.required">
+            <!-- SWITCH -->
+            <md-switch ng-model="model[field.name]" aria-label="field-label" ng-if="field.type == 'switch'" name="{{ entity + '_' + field.name }}">{{ field.label }}</md-switch>
             <!-- COMBO -->
             <md-autocomplete
                     ng-if="isComboField(field)"

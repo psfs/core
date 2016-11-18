@@ -1,8 +1,8 @@
 (function(){
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv', '$apiSrv',
-    function($scope, $log, $http, $mdDialog, $msgSrv, $apiSrv){
+    var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv', '$apiSrv', '$timeout',
+    function($scope, $log, $http, $mdDialog, $msgSrv, $apiSrv, $timeout){
         $scope.loading = false;
         $scope.limit = globalLimit || 10;
         $scope.actualPage = 1;
@@ -27,8 +27,21 @@
             loadData();
         }
 
-        function loadData()
+        function checkItem(item)
         {
+            var isModel = false;
+            for(var i in $scope.form.fields) {
+                var field = $scope.form.fields[i];
+                if(field.pk) {
+                    isModel = (item[field.name] === $scope.model[field.name]);
+                }
+            }
+            return isModel;
+        }
+
+        function loadData(clean)
+        {
+            if(clean) addNewItem();
             var queryParams = {
                 '__limit': $scope.limit,
                 '__page': $scope.actualPage
@@ -58,7 +71,14 @@
                 .cancel('Cancel');
             $mdDialog.show(confirm).then(function() {
                 $http.delete($scope.url + "/" + $apiSrv.getId(item))
-                    .then(loadData);
+                    .then(function() {
+                        $timeout(function() {
+                            if(checkItem(item)) {
+                                addNewItem();
+                            }
+                            loadData();
+                        }, 250);
+                    });
             }, function() {
                 $scope.loading = false;
             });
@@ -73,10 +93,20 @@
             return !angular.equals({}, $scope.model);
         }
 
+        function cleanFormStatus(element) {
+            if(typeof element === 'object' && '$setDirty' in element) {
+                element.$setDirty(false);
+                element.$setPristine(false);
+            }
+        }
+
         function addNewItem() {
             $scope.model = {};
-            $scope.entity_form.$setDirty(false);
-            $scope.entity_form.$setPristine(true);
+            cleanFormStatus($scope.entity_form);
+            for(var i in $scope.entity_form) {
+                var _field = $scope.entity_form[i];
+                cleanFormStatus(_field);
+            }
         }
 
         $scope.getLabel = $apiSrv.getLabel;
@@ -88,7 +118,9 @@
         $scope.isModelSelected = isModelSelected;
         $scope.addNewItem = addNewItem;
 
-        $scope.$on('psfs.list.reload', loadData);
+        $scope.$on('psfs.list.reload', function(){
+            loadData();
+        });
 
         loadData();
     }];
