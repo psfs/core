@@ -18,6 +18,7 @@
         const HIDDEN_TYPE = 'hidden';
         const NUMBER_TYPE = 'number';
         const SWITCH_TYPE = 'switch';
+        const PASSWORD_FIELD = 'password';
 
         /**
          * @var string label

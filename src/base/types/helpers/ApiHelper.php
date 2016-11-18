@@ -35,8 +35,10 @@ class ApiHelper
                 $fDto = self::generateNumericField($field);
             } elseif ($mappedColumn->isText()) {
                 $fDto = self::generateStringField($field);
-            } elseif($mappedColumn->getType() === PropelTypes::BOOLEAN) {
+            } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
                 $fDto = self::generateBooleanField($field);
+            } elseif ($mappedColumn->getType() === PropelTypes::BINARY || $mappedColumn->getType() === PropelTypes::VARBINARY) {
+                $fDto = self::generatePasswordField($field);
             }
 
             if(null !== $fDto) {
@@ -116,5 +118,15 @@ class ApiHelper
     public static function generateBooleanField($field)
     {
         return self::createField($field, Field::SWITCH_TYPE);
+    }
+
+    /**
+     * Extract string fields
+     * @param $field
+     * @return Field
+     */
+    public static function generatePasswordField($field)
+    {
+        return self::createField($field, Field::PASSWORD_FIELD);
     }
 }

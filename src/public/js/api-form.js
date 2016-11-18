@@ -28,7 +28,7 @@
 
             function isInputField(field) {
                 var type = (field.type || 'text').toUpperCase();
-                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER');
+                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD');
             }
 
             function isComboField(field) {
