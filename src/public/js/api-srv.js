@@ -40,22 +40,24 @@
             return '';
         }
 
-        function getId(item, entity)
+        function getPkField(fields) {
+            var pk = null;
+            fields = fields || {};
+            for(var i in fields) {
+                var field = fields[i];
+                if(field.pk) {
+                    pk = field.name;
+                }
+            }
+            return pk;
+        }
+
+        function getId(item, fields)
         {
-            entity = entity || this.entity;
-            if (item) {
-                if (item.id || item.Id) {
-                    return item.id || item.Id;
-                } else if (item['id' + entity]) {
-                    return item['id' + entity]
-                } else if (item['Id' + entity]) {
-                    return item['Id' + entity]
-                } else if (item['Id' + entity.toLowerCase()]) {
-                    return item['Id' + entity.toLowerCase()]
-                } else if (item['id_' + entity.toLowerCase()]) {
-                    return item['id_' + entity.toLowerCase()];
-                } else if (item[entity + 'Id']) {
-                    return item[entity + 'Id'];
+            var pk = getPkField(fields);
+            if (null !== pk) {
+                if (item[pk]) {
+                    return item[pk];
                 } else {
                     throw new Error('Unidentified element');
                 }
@@ -72,7 +74,8 @@
             getLabel: getLabel,
             getLabelField: getLabelField,
             getId: getId,
-            setEntity: setEntity
+            setEntity: setEntity,
+            getPkField: getPkField
         };
     }];
     app.service('$apiSrv', entitySrv);

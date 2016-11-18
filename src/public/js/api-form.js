@@ -8,18 +8,22 @@
             $scope.combos = {};
             $apiSrv.setEntity($scope.entity);
 
-            function loadFormFields() {
-                $scope.loading = true;
-                $log.debug('Loading entity form info');
-                $http.get($scope.url.replace($scope.entity, 'form/' + $scope.entity))
-                    .then(function (response) {
-                        $log.debug('Entity form loaded');
-                        $scope.form = response.data.data || {};
-                        $scope.loading = false;
-                    }, function (err, status) {
+            function getEntityFields(url, callback) {
+                $http.get(url)
+                    .then(callback, function (err, status) {
                         $log.error(err);
                         $scope.loading = false;
                     });
+            }
+
+            function loadFormFields() {
+                $scope.loading = true;
+                $log.debug('Loading entity form info');
+                getEntityFields($scope.url.replace($scope.entity, 'form/' + $scope.entity), function (response) {
+                    $log.debug('Entity form loaded');
+                    $scope.form = response.data.data || {};
+                    $scope.loading = false;
+                });
             }
 
             function isInputField(field) {
@@ -101,7 +105,10 @@
             }
 
             function setComboField(item, field) {
-                $scope.model[field.name] = item ? $apiSrv.getId(item, field.entity) : null;
+                getEntityFields($scope.url.replace($scope.entity, 'form/' + field.entity), function (response) {
+                    $scope.model[field.name] = $apiSrv.getId(item, response.data.data.fields);
+                });
+
             }
 
             function getPk() {
