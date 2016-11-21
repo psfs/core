@@ -51,7 +51,7 @@
                     $scope.loading = true;
                     var model = $scope.model;
                     try {
-                        $http.put($scope.url + '/' + $apiSrv.getId(model), model)
+                        $http.put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
                             .then(function (response) {
                                 $scope.loading = false;
                                 $scope.model = {};
