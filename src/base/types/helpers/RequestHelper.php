@@ -14,8 +14,8 @@ class RequestHelper {
         Logger::log('Checking CORS');
         $corsEnabled = Config::getInstance()->get('cors.enabled');
         $request = Request::getInstance();
-        if (NULL !== $corsEnabled && null !== $request->getServer('HTTP_REFERER')) {
-            if ($corsEnabled == '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
+        if (NULL !== $corsEnabled) {
+            if ($corsEnabled === '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
                 if (!headers_sent()) {
                     // TODO include this headers in Template class output method
                     header("Access-Control-Allow-Credentials: true");
