@@ -20,6 +20,7 @@ class Singleton
     public function __construct()
     {
         Logger::log(get_class($this) . ' constructor invoked');
+        $this->init();
     }
 
     /**

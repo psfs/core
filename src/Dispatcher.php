@@ -12,6 +12,7 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Singleton;
+use PSFS\controller\ConfigController;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . "bootstrap.php";
 
@@ -102,7 +103,7 @@ class Dispatcher extends Singleton
                     return $this->router->execute($this->actualUri);
                 }
             } else {
-                return $this->router->getAdmin()->config();
+                return ConfigController::getInstance()->config();
             }
         } catch (ConfigException $c) {
             return $this->dumpException($c);

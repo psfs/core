@@ -17,6 +17,8 @@
         const SEARCH_TYPE = 'search';
         const HIDDEN_TYPE = 'hidden';
         const NUMBER_TYPE = 'number';
+        const SWITCH_TYPE = 'switch';
+        const PASSWORD_FIELD = 'password';
 
         /**
          * @var string label
@@ -50,6 +52,10 @@
          * @var string entity
          */
         public $entity;
+        /**
+         * @var bool pk
+         */
+        public $pk = false;
 
         public function __construct($name, $label, $type = Field::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)
         {

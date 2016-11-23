@@ -58,7 +58,7 @@
         /**
          * @var ConnectionInterface con
          */
-        protected $con;
+        protected $con = null;
 
         /**
          * @var bool debug
@@ -249,7 +249,7 @@
          */
         private function paginate()
         {
-            $this->list = array();
+            $this->list = null;
             try {
                 $query = $this->extractQuery();
                 $this->joinTables($query);
@@ -263,7 +263,7 @@
                     $this->list = $query->paginate($page, $limit, $this->con);
                 }
             } catch (\Exception $e) {
-                Logger::getInstance(get_class($this))->errorLog($e->getMessage());
+                Logger::log($e->getMessage(), LOG_ERR);
             }
         }
 
@@ -368,8 +368,7 @@
                     $model = $this->model->toArray();
                 }
             } catch (\Exception $e) {
-                jpre($e->getMessage(), TRUE);
-                Logger::getInstance()->errorLog($e->getMessage());
+                Logger::log($e->getMessage(), LOG_ERR);
             }
 
             return $this->json(new JsonResponse($model, $saved), $status);
@@ -442,7 +441,7 @@
         {
             $queryReflector = new \ReflectionClass($this->getModelNamespace() . "Query");
             /** @var \Propel\Runtime\ActiveQuery\ModelCriteria $query */
-            $query = $queryReflector->getMethod('create')->invoke(NULL);
+            $query = $queryReflector->getMethod('create')->invoke($this->con);
 
             return $query;
         }
@@ -529,7 +528,7 @@
                 "api"    => $this->getApi(),
                 "domain" => $this->domain,
                 "url"    => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), TRUE)),
-            ));
+            ), [], '');
         }
 
         protected function extractFields()
@@ -562,9 +561,11 @@
             $pages = 0;
             try {
                 $this->paginate();
-                $return = $this->list->toArray();
-                $total = $this->list->getNbResults();
-                $pages = $this->list->getLastPage();
+                if(null !== $this->list) {
+                    $return = $this->list->toArray();
+                    $total = $this->list->getNbResults();
+                    $pages = $this->list->getLastPage();
+                }
             } catch (\Exception $e) {
                 Logger::getInstance(get_class($this))->errorLog($e->getMessage());
             }

@@ -17,7 +17,7 @@ use {{ namespace }}\Controller\base\{{ controllerType }}Controller;
 {% if is_base %}abstract {% endif %}class {{ class }}Controller extends {{ controllerType }}Controller {
 {% if is_base %}
 
-    const DOMAIN = '{{ class }}';
+    const DOMAIN = '{{ domain }}';
 
     /**
     * @Inyectable
@@ -30,7 +30,7 @@ use {{ namespace }}\Controller\base\{{ controllerType }}Controller;
     */
     function __construct() {
         $this->init();
-        $this->setDomain('{{ class }}')
+        $this->setDomain('{{ domain }}')
             ->setTemplatePath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Templates');
     }
 {% else %}
