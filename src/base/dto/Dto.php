@@ -29,7 +29,7 @@
             $dto = array();
             try {
                 $reflectionClass = new \ReflectionClass($this);
-                $properties = $reflectionClass->getProperties();
+                $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
                 if(count($properties) > 0) {
                     /** @var \ReflectionProperty $property */
                     foreach($properties as $property) {
@@ -37,7 +37,7 @@
                     }
                 }
             } catch(\Exception $e) {
-                Logger::getInstance(get_class($this))->errorLog($e->getMessage());
+                Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
             }
             return $dto;
         }

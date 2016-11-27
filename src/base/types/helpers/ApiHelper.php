@@ -27,18 +27,21 @@ class ApiHelper
             $fDto = null;
             /** @var ColumnMap $mappedColumn */
             $mappedColumn = $fields->getColumnByPhpName($field);
+            $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
             if ($mappedColumn->isForeignKey()) {
                 $fDto = self::extractForeignModelsField($mappedColumn, $field);
             } elseif ($mappedColumn->isPrimaryKey()) {
-                $fDto = self::generatePrimaryKeyField($field);
+                $fDto = self::generatePrimaryKeyField($field, $required);
             } elseif ($mappedColumn->isNumeric()) {
-                $fDto = self::generateNumericField($field);
+                $fDto = self::generateNumericField($field, $required);
             } elseif ($mappedColumn->isText()) {
-                $fDto = self::generateStringField($field);
+                $fDto = self::generateStringField($field, $required);
             } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
-                $fDto = self::generateBooleanField($field);
-            } elseif ($mappedColumn->getType() === PropelTypes::BINARY || $mappedColumn->getType() === PropelTypes::VARBINARY) {
-                $fDto = self::generatePasswordField($field);
+                $fDto = self::generateBooleanField($field, $required);
+            } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
+                $fDto = self::generatePasswordField($field, $required);
+            } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP])) {
+                //$fDto = self::generateDateField($field, $required);
             }
 
             if(null !== $fDto) {
@@ -67,24 +70,27 @@ class ApiHelper
 
     /**
      * @param $field
-     * @param string $type
+     * @param string string $type
+     * @param boolean $required
      * @return Field
      */
-    private static function createField($field, $type = Field::TEXT_TYPE)
+    private static function createField($field, $type = Field::TEXT_TYPE, $required = false)
     {
         $fDto = new Field($field, _($field));
         $fDto->type = $type;
+        $fDto->required = $required;
         return $fDto;
     }
 
     /**
      * Extract primary key field
-     * @param $field
+     * @param string $field
+     * @param boolean $required
      * @return Field
      */
-    public static function generatePrimaryKeyField($field)
+    public static function generatePrimaryKeyField($field, $required = false)
     {
-        $fDto = self::createField($field, Field::HIDDEN_TYPE);
+        $fDto = self::createField($field, Field::HIDDEN_TYPE, $required);
         $fDto->required = false;
         $fDto->pk = true;
         return $fDto;
@@ -92,41 +98,56 @@ class ApiHelper
 
     /**
      * Extract numeric field
-     * @param $field
+     * @param string $field
+     * @param boolean $required
      * @return Field
      */
-    public static function generateNumericField($field)
+    public static function generateNumericField($field, $required = false)
     {
-        return self::createField($field, Field::NUMBER_TYPE);
+        return self::createField($field, Field::NUMBER_TYPE, $required);
     }
 
     /**
      * Extract string fields
-     * @param $field
+     * @param string $field
+     * @param boolean $required
      * @return Field
      */
-    public static function generateStringField($field)
+    public static function generateStringField($field, $required = false)
     {
-        return self::createField($field);
+        return self::createField($field, Field::TEXT_TYPE, $required);
     }
 
     /**
      * Extract string fields
-     * @param $field
+     * @param string $field
+     * @param boolean $required
      * @return Field
      */
-    public static function generateBooleanField($field)
+    public static function generateBooleanField($field, $required = false)
     {
-        return self::createField($field, Field::SWITCH_TYPE);
+        return self::createField($field, Field::SWITCH_TYPE, $required);
     }
 
     /**
      * Extract string fields
-     * @param $field
+     * @param string $field
+     * @param boolean $required
      * @return Field
      */
-    public static function generatePasswordField($field)
+    public static function generatePasswordField($field, $required = false)
     {
-        return self::createField($field, Field::PASSWORD_FIELD);
+        return self::createField($field, Field::PASSWORD_FIELD, $required);
+    }
+
+    /**
+     * Extract date fields
+     * @param string $field
+     * @param boolean $required
+     * @return Field
+     */
+    public static function generateDateField($field, $required = false)
+    {
+        return self::createField($field, Field::DATE, $required);
     }
 }

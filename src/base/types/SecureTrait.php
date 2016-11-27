@@ -38,7 +38,7 @@ trait SecureTrait {
      * @return boolean
      */
     public function isAdmin() {
-        return (null !== $this->security->canAccessRestrictedAdmin());
+        return $this->security->canAccessRestrictedAdmin();
     }
 
     /**

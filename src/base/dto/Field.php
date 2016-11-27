@@ -19,6 +19,7 @@
         const NUMBER_TYPE = 'number';
         const SWITCH_TYPE = 'switch';
         const PASSWORD_FIELD = 'password';
+        const DATE = 'datepicker';
 
         /**
          * @var string label

@@ -39,6 +39,6 @@
                 $auth = Security::checkToken($token ?: '', $secret, $module);
             }
 
-            return $auth;
+            return $auth || $this->isAdmin();
         }
     }
