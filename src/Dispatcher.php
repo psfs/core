@@ -10,7 +10,9 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
+use PSFS\base\exception\UserAuthException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\controller\ConfigController;
 
@@ -109,6 +111,8 @@ class Dispatcher extends Singleton
             return $this->dumpException($c);
         } catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
+        } catch (UserAuthException $u) {
+            Request::getInstance()->redirect($this->router->getRoute($this->config->get('home_action')));
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
         } catch (\Exception $e) {

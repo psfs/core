@@ -4,6 +4,7 @@ namespace PSFS\base\types;
 
 
 use PSFS\base\exception\AccessDeniedException;
+use PSFS\base\exception\UserAuthException;
 use PSFS\base\types\interfaces\AuthInterface;
 
 /**
@@ -20,7 +21,7 @@ abstract class AuthController extends Controller implements AuthInterface {
     public function init() {
         parent::init();
         if (!$this->isLogged() && !$this->isAdmin()) {
-            throw new AccessDeniedException(_("User not logged in"));
+            throw new UserAuthException(_("User not logged in"));
         }
     }
 
