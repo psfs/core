@@ -136,10 +136,6 @@ class Config
                     break;
                 }
             }
-            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-                //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return UserController::getInstance()->adminers();
-            }
         }
         return ($configured || $this->checkTryToSaveConfig());
     }

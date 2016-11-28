@@ -5,6 +5,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\Logger;
 use PSFS\base\Security;
+use PSFS\controller\UserController;
 
 class SecurityHelper {
     /**
@@ -21,6 +22,11 @@ class SecurityHelper {
         if (!Config::getInstance()->checkTryToSaveConfig()
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || NULL !== Config::getInstance()->get('restricted'))
         ) {
+
+            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+                //Si no hay fichero de usuarios redirigimos directamente al gestor
+                return UserController::getInstance()->adminers();
+            }
             if (!Security::getInstance()->checkAdmin()) {
                 throw new AccessDeniedException();
             }

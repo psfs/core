@@ -3,7 +3,6 @@
 namespace PSFS\base;
 
 use PSFS\base\types\SingletonTrait;
-use PSFS\controller\UserController;
 
 
 /**
