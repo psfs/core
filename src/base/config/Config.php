@@ -8,6 +8,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\SingletonTrait;
+use PSFS\controller\UserController;
 
 /**
  * Class Config
@@ -134,6 +135,10 @@ class Config
                     $configured = false;
                     break;
                 }
+            }
+            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+                //Si no hay fichero de usuarios redirigimos directamente al gestor
+                return UserController::getInstance()->adminers();
             }
         }
         return ($configured || $this->checkTryToSaveConfig());

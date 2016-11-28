@@ -181,27 +181,25 @@ class Security
     {
         Logger::log('Checking admin session');
         if (!$this->authorized && !$this->checked) {
-            $request = Request::getInstance();
-            if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-                //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return UserController::getInstance()->adminers();
-            }
-            $admins = $this->getAdmins();
-            //Sacamos las credenciales de la petición
-            $user = $user ?: $request->getServer('PHP_AUTH_USER');
-            $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-            if (NULL === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
-                list($user, $pass) = $this->getAdminFromCookie();
-            }
-            if (!empty($user) && !empty($admins[$user])) {
-                $auth = $admins[$user]['hash'];
-                $this->authorized = ($auth == sha1($user . $pass));
-                if($this->authorized) {
-                    $this->admin = array(
-                        'alias' => $user,
-                        'profile' => $admins[$user]['profile'],
-                    );
-                    $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+            if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+                $request = Request::getInstance();
+                $admins = $this->getAdmins();
+                //Sacamos las credenciales de la petición
+                $user = $user ?: $request->getServer('PHP_AUTH_USER');
+                $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
+                if (NULL === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
+                    list($user, $pass) = $this->getAdminFromCookie();
+                }
+                if (!empty($user) && !empty($admins[$user])) {
+                    $auth = $admins[$user]['hash'];
+                    $this->authorized = ($auth == sha1($user . $pass));
+                    if($this->authorized) {
+                        $this->admin = array(
+                            'alias' => $user,
+                            'profile' => $admins[$user]['profile'],
+                        );
+                        $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+                    }
                 }
             }
             $this->checked = true;
