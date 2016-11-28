@@ -25,15 +25,26 @@ class Security
     /**
      * @var array $user
      */
-    private $user;
+    private $user = null;
 
     /**
      * @var array $admin
      */
-    private $admin;
+    private $admin = null;
 
+    /**
+     * @var bool $authorized
+     */
     private $authorized = FALSE;
 
+    /**
+     * @var bool $checked
+     */
+    private $checked = false;
+
+    /**
+     * @var array $session
+     */
     protected $session;
 
     /**
@@ -169,7 +180,7 @@ class Security
     public function checkAdmin($user = NULL, $pass = NULL)
     {
         Logger::log('Checking admin session');
-        if (!$this->authorized) {
+        if (!$this->authorized && !$this->checked) {
             $request = Request::getInstance();
             if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
@@ -193,6 +204,7 @@ class Security
                     $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
                 }
             }
+            $this->checked = true;
         }
 
         return $this->authorized;
