@@ -112,12 +112,16 @@ class Dispatcher extends Singleton
         } catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
         } catch (UserAuthException $u) {
-            Request::getInstance()->redirect($this->router->getRoute($this->config->get('home_action')));
+            $this->redirectToHome();
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
         } catch (\Exception $e) {
             return $this->dumpException($e);
         }
+    }
+
+    private function redirectToHome() {
+        Request::getInstance()->redirect($this->router->getRoute($this->config->get('home_action')));
     }
 
     /**

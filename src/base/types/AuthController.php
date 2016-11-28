@@ -20,7 +20,7 @@ abstract class AuthController extends Controller implements AuthInterface {
      */
     public function init() {
         parent::init();
-        if (!$this->isLogged() && !$this->isAdmin()) {
+        if (!$this->isLogged()) {
             throw new UserAuthException(_("User not logged in"));
         }
     }

@@ -9,7 +9,6 @@
      */
     class AuthAdminController extends AuthController {
         public function init() {
-            parent::init();
             if (!$this->isAdmin()) {
                 Admin::staticAdminLogon();
             }

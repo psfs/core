@@ -214,7 +214,7 @@ class Request
      */
     public function redirect($url = null)
     {
-        if (null === $url) $url = $this->server['HTTP_ORIGIN'];
+        if (null === $url) $url = $this->getServer('HTTP_ORIGIN');
         ob_start();
         header('Location: ' . $url);
         ob_end_clean();
