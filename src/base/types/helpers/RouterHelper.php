@@ -2,6 +2,7 @@
 namespace PSFS\base\types\helpers;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
+use PSFS\base\Router;
 
 /**
  * Class RouterHelper
@@ -251,5 +252,24 @@ class RouterHelper {
             }
         }
         return [$route, $info];
+    }
+
+    /**
+     * @param string $route
+     * @return null|string
+     */
+    public static function checkDefaultRoute($route)
+    {
+        $default = null;
+        if (FALSE !== preg_match('/\/$/', $route)) {
+            $default = Config::getInstance()->get('home_action');
+        } elseif (false !== preg_match('/admin/', $route)) {
+            $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
+
+        }
+        if(null !== $default) {
+            return Router::getInstance()->execute(Router::getInstance()->getRoute($default));
+        }
+        return null;
     }
 }

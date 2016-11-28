@@ -51,6 +51,9 @@ class Security
         }
         $this->user = (array_key_exists(self::USER_ID_TOKEN, $this->session)) ? unserialize($this->session[self::USER_ID_TOKEN]) : NULL;
         $this->admin = (array_key_exists(self::ADMIN_ID_TOKEN, $this->session)) ? unserialize($this->session[self::ADMIN_ID_TOKEN]) : NULL;
+        if(null === $this->admin) {
+            $this->checkAdmin();
+        }
     }
 
     /**
@@ -182,10 +185,13 @@ class Security
             if (!empty($user) && !empty($admins[$user])) {
                 $auth = $admins[$user]['hash'];
                 $this->authorized = ($auth == sha1($user . $pass));
-                $this->admin = array(
-                    'alias' => $user,
-                    'profile' => $admins[$user]['profile'],
-                );
+                if($this->authorized) {
+                    $this->admin = array(
+                        'alias' => $user,
+                        'profile' => $admins[$user]['profile'],
+                    );
+                    $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+                }
             }
         }
 
@@ -240,7 +246,7 @@ class Security
      */
     public function canAccessRestrictedAdmin()
     {
-        return $this->admin || preg_match('/^\/admin\/login/i', Request::requestUri());
+        return null !== $this->admin || false != preg_match('/^\/admin\/login/i', Request::requestUri());
     }
 
     /**

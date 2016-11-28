@@ -3,6 +3,7 @@
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\SingletonTrait;
 
 /**
@@ -78,7 +79,7 @@ class Singleton
     }
 
     /**
-     * Dependency inyector service invoker
+     * Dependency injector service invoker
      * @param string $variable
      * @param bool $singleton
      * @param string $classNameSpace
@@ -88,7 +89,7 @@ class Singleton
     {
         $calledClass = get_called_class();
         try {
-            $instance = $this->constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
+            $instance = InjectorHelper::constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
             $setter = "set" . ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
@@ -114,7 +115,7 @@ class Singleton
             $configService = Config::getInstance();
             $properties = $cacheService->getDataFromFile($cacheFilename, Cache::JSON);
             if (true === $configService->getDebugMode() || null === $properties) {
-                $properties = $this->getClassProperties();
+                $properties = InjectorHelper::getClassProperties(get_class($this));
                 $cacheService->storeData($cacheFilename, $properties, Cache::JSON);
             }
             /** @var \ReflectionProperty $property */
@@ -125,79 +126,5 @@ class Singleton
         } else {
             Logger::log(get_class($this) . ' already loaded', LOG_INFO);
         }
-    }
-
-    /**
-     * @param \ReflectionClass $reflector
-     * @param array $properties
-     * @param integer $type
-     */
-    public static function extractProperties(\ReflectionClass $reflector, array &$properties, $type = \ReflectionProperty::IS_PROTECTED)
-    {
-        foreach ($reflector->getProperties($type) as $property) {
-            $doc = $property->getDocComment();
-            if (preg_match('/@Inyectable/im', $doc)) {
-                $instanceType = self::extractVarType($property->getDocComment());
-                if (null !== $instanceType) {
-                    $properties[$property->getName()] = $instanceType;
-                }
-            }
-        }
-    }
-
-    /**
-     * Método que extrae todas las propiedades inyectables de una clase
-     * @param null $class
-     * @return array
-     */
-    private function getClassProperties($class = null)
-    {
-        $properties = array();
-        if (null === $class) {
-            $class = get_class($this);
-        }
-        Logger::log('Extracting annotations properties from class ' . $class);
-        $selfReflector = new \ReflectionClass($class);
-        if (false !== $selfReflector->getParentClass()) {
-            $properties = $this->getClassProperties($selfReflector->getParentClass()->getName());
-        }
-        Singleton::extractProperties($selfReflector, $properties);
-        return $properties;
-    }
-
-    /**
-     * Método que extrae el tipo de instancia de la variable
-     * @param $doc
-     * @return null|string
-     */
-    public static function extractVarType($doc)
-    {
-        $type = null;
-        if (false !== preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {
-            list(, $type) = $matches;
-        }
-        return $type;
-    }
-
-    /**
-     * Create the depecency injected
-     * @param string $variable
-     * @param bool $singleton
-     * @param string $classNameSpace
-     * @param string $calledClass
-     * @return mixed
-     */
-    private function constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass)
-    {
-        Logger::log('Create inyectable instance for ' . $classNameSpace . ' into ' . get_class($this));
-        $reflector = new \ReflectionClass($calledClass);
-        $property = $reflector->getProperty($variable);
-        $varInstanceType = (null === $classNameSpace) ? $this->extractVarType($property->getDocComment()) : $classNameSpace;
-        if (true === $singleton && method_exists($varInstanceType, "getInstance")) {
-            $instance = $varInstanceType::getInstance();
-        } else {
-            $instance = new $varInstanceType();
-        }
-        return $instance;
     }
 }

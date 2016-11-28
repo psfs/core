@@ -13,11 +13,11 @@ class Service extends Singleton
      */
     private $url;
     /**
-     * @var Array Parámetros de la llamada
+     * @var array Parámetros de la llamada
      */
     private $params;
     /**
-     * @var Array Cabeceras de la llamada
+     * @var array Cabeceras de la llamada
      */
     private $headers;
     /**
@@ -222,6 +222,10 @@ class Service extends Singleton
                 break;
             case 'PUT':
                 curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "PUT");
+                curl_setopt($this->con, CURLOPT_POSTFIELDS, json_encode($this->params));
+                break;
+            case 'PATCH':
+                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "PATCH");
                 curl_setopt($this->con, CURLOPT_POSTFIELDS, json_encode($this->params));
                 break;
         }

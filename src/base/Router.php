@@ -84,7 +84,7 @@ class Router
             )), 'application/json');
         } else {
             if (NULL === $e) {
-                Logger::log('Not found page throwed without previus exception');
+                Logger::log('Not found page throwed without previous exception', LOG_WARNING);
                 $e = new \Exception(_('Page not found'), 404);
             }
 
@@ -141,17 +141,10 @@ class Router
             Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
             return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
-            if (FALSE !== preg_match('/\/$/', $route)) {
-                if (preg_match('/admin/', $route)) {
-                    $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
-                } else {
-                    $default = Config::getInstance()->get('home_action');
-                }
-
-                return $this->execute($this->getRoute($default));
+            if(null === RouterHelper::checkDefaultRoute($route)) {
+                Logger::log($r->getMessage(), LOG_WARNING);
+                throw $r;
             }
-            Logger::log($r->getMessage(), LOG_WARNING);
-            throw $r;
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;

@@ -8,7 +8,7 @@ use PSFS\base\Security;
 
 class SecurityHelper {
     /**
-     * Método que chequea el acceso a una zona restringida
+     * Method that checks the access to the restricted zone
      *
      * @param string $route
      *
@@ -27,4 +27,5 @@ class SecurityHelper {
             Logger::log('Admin access granted');
         }
     }
+
 }

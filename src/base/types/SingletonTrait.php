@@ -10,7 +10,7 @@
         /**
          * @var array Singleton cached reference to singleton instance
          */
-        protected static $instance = array();
+        protected static $instance = [];
 
         /**
          * gets the instance via lazy initialization (created on first usage)
@@ -22,8 +22,22 @@
             $class = get_called_class();
             if (!array_key_exists($class, self::$instance) || !self::$instance[$class] instanceof $class) {
                 self::$instance[$class] = new $class(func_get_args());
-                if (method_exists(self::$instance[$class], "init")) self::$instance[$class]->init();
+                self::__init(self::$instance[$class]);
             }
             return self::$instance[$class];
+        }
+
+        /**
+         * Try to initiate the class only once
+         * @param mixed $instance
+         */
+        private static function __init($instance) {
+            $loaded = false;
+            if(method_exists($instance, 'isLoaded')) {
+                $loaded = $instance->isLoaded();
+            }
+            if(false === $loaded && method_exists($instance, "init")) {
+                $instance->init();
+            }
         }
     }

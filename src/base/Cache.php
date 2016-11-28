@@ -88,7 +88,7 @@ class Cache
             case Cache::GZIP:
                 // TODO implementar
                 if(function_exists('gzuncompress')) {
-                    $data = gzuncompress($data);
+                    $data = gzuncompress($data ?: '');
                 }
                 break;
         }
@@ -113,7 +113,7 @@ class Cache
                 break;
             case Cache::GZIP:
                 if(function_exists('gzcompress')) {
-                    $data = gzcompress($data);
+                    $data = gzcompress($data ?: '');
                 }
                 break;
         }
