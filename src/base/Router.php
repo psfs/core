@@ -6,6 +6,8 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
+use PSFS\base\types\helpers\AdminHelper;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
@@ -335,39 +337,6 @@ class Router
     }
 
     /**
-     * Método que devuelve el slug de un string dado
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    private function slugify($text)
-    {
-        // replace non letter or digits by -
-        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-
-        // trim
-        $text = trim($text, '-');
-
-        // transliterate
-        if (function_exists('iconv')) {
-            $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        }
-
-        // lowercase
-        $text = strtolower($text);
-
-        // remove unwanted characters
-        $text = preg_replace('~[^-\w]+~', '', $text);
-
-        if (empty($text)) {
-            return 'n-a';
-        }
-
-        return $text;
-    }
-
-    /**
      * Método que devuelve una ruta del framework
      *
      * @param string $slug
@@ -401,34 +370,7 @@ class Router
      */
     public function getAdminRoutes()
     {
-        $routes = array();
-        foreach ($this->routing as $route => $params) {
-            list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($route);
-            if (preg_match('/^\/admin(\/|$)/', $routePattern)) {
-                if (preg_match('/^\\\?PSFS/', $params["class"])) {
-                    $profile = "superadmin";
-                } else {
-                    $profile = "admin";
-                }
-                if (!empty($params["default"]) && preg_match('/(GET|ALL)/i', $httpMethod)) {
-                    $_profile = ($params["visible"]) ? $profile : 'adminhidden';
-                    if (!array_key_exists($_profile, $routes)) {
-                        $routes[$_profile] = array();
-                    }
-                    $routes[$_profile][] = $params["slug"];
-                }
-            }
-        }
-        if (array_key_exists("superadmin", $routes)) {
-            asort($routes["superadmin"]);
-        }
-        if (array_key_exists("adminhidden", $routes)) {
-            asort($routes["adminhidden"]);
-        }
-        if (array_key_exists('admin', $routes)) {
-            asort($routes["admin"]);
-        }
-        return $routes;
+        return AdminHelper::getAdminRoutes($this->routing);
     }
 
     /**
@@ -486,14 +428,14 @@ class Router
      */
     private function generateSlugs($absoluteTranslationFileName)
     {
-        $translations = $this->generateTranslationsFile($absoluteTranslationFileName);
+        $translations = I18nHelper::generateTranslationsFile($absoluteTranslationFileName);
         foreach ($this->routing as $key => &$info) {
             $keyParts = $key;
             if (FALSE === strstr("#|#", $key)) {
                 $keyParts = explode("#|#", $key);
                 $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : '';
             }
-            $slug = $this->slugify($keyParts);
+            $slug = RouterHelper::slugify($keyParts);
             if (NULL !== $slug && !array_key_exists($slug, $translations)) {
                 $translations[$slug] = $key;
                 file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
@@ -501,25 +443,6 @@ class Router
             $this->slugs[$slug] = $key;
             $info["slug"] = $slug;
         }
-    }
-
-    /**
-     * Create translation file if not exists
-     *
-     * @param string $absoluteTranslationFileName
-     *
-     * @return array
-     */
-    private function generateTranslationsFile($absoluteTranslationFileName)
-    {
-        $translations = array();
-        if (file_exists($absoluteTranslationFileName)) {
-            include($absoluteTranslationFileName);
-        } else {
-            Cache::getInstance()->storeData($absoluteTranslationFileName, "<?php \$translations = array();\n", Cache::TEXT, TRUE);
-        }
-
-        return $translations;
     }
 
 }
