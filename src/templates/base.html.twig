@@ -83,7 +83,7 @@
                                 label: "{{ "Aceptar" | trans }}",
                                 className: "btn-primary",
                                 callback: function() {
-                                    if({{ existsFlash("callback_route") }}) {
+                                    if({{ existsFlash("callback_route")|default('false') }}) {
                                         location.href = "{{ getFlash("callback_route") }}";
                                     }
                                 }
