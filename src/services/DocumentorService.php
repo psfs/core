@@ -4,6 +4,7 @@
     use PSFS\base\Logger;
     use PSFS\base\Service;
     use PSFS\base\Singleton;
+    use PSFS\base\types\helpers\InjectorHelper;
     use Symfony\Component\Finder\Finder;
 
     /**
@@ -220,7 +221,7 @@
             $properties = [];
             $reflector = new \ReflectionClass($class);
             if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
-                Singleton::extractProperties($reflector, $properties, \ReflectionMethod::IS_PUBLIC);
+	            $properties = array_merge($properties, InjectorHelper::extractProperties($reflector, \ReflectionMethod::IS_PUBLIC));
             }
 
             return $properties;

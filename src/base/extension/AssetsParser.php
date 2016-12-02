@@ -86,7 +86,8 @@ class AssetsParser {
      */
     public function setHash($hash)
     {
-        $this->hash = $hash;
+	    $cache = Config::getInstance()->get('cache.var') ?: '';
+	    $this->hash = $hash . (strlen($cache) ? '.' : '') . $cache;
         return $this;
     }
 
@@ -211,7 +212,7 @@ class AssetsParser {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
         } else {
-            echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet' media='screen, print'>";
+            echo "\t\t<link href='/css/".$this->hash.".css' rel='stylesheet'>";
         }
     }
 
@@ -349,14 +350,16 @@ class AssetsParser {
         $file = "";
         $html_base = "";
         $debug = Config::getInstance()->getDebugMode();
-        if (preg_match('/\.css$/i', $string)) {
-            $file = "/".substr(md5($string), 0, 8).".css";
+	    $cache = Config::getInstance()->get('cache.var');
+	    $cache = $cache ? '.'.$cache : '';
+	    if (preg_match('/\.css$/i', $string)) {
+            $file = "/".substr(md5($string), 0, 8)."$cache.css";
             $html_base = "css";
             if ($debug) {
                 $file = str_replace(".css", "_".$original_filename, $file);
             }
         } elseif (preg_match('/\.js$/i', $string)) {
-            $file = "/".substr(md5($string), 0, 8).".js";
+            $file = "/".substr(md5($string), 0, 8)."$cache.js";
             $html_base = "js";
             if ($debug) {
                 $file = str_replace(".js", "_".$original_filename, $file);
