@@ -329,6 +329,27 @@
         }
 
         /**
+         * Checks if the value is empty
+         * @param mixed $value
+         * @return bool
+         */
+        protected function checkEmpty($value) {
+            $isEmpty = false;
+            // NULL check
+            if(null === $value) {
+                $isEmpty = true;
+            // Empty Array check
+            } else if(is_array($value) && 0 === count($value)) {
+                $isEmpty = true;
+            // Empty string check
+            } else if(0 === strlen(preg_replace('/(\ |\r|\n)/m', '', $value))) {
+                $isEmpty = true;
+            }
+
+            return $isEmpty;
+        }
+
+        /**
          * Método que valida un campo
          * @param array $field
          * @param string $key
@@ -337,7 +358,7 @@
         private function checkFieldValidation($field, $key) {
             //Verificamos si es obligatorio
             $valid = true;
-            if ((!array_key_exists('required', $field) || false !== (bool)$field["required"]) && empty($field["value"])) {
+            if ((!array_key_exists('required', $field) || false !== (bool)$field["required"]) && $this->checkEmpty($field['value'])) {
                 $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", _("El campo %s es oligatorio")));
                 $field["error"] = $this->getError($key);
                 $valid = false;

@@ -6,6 +6,9 @@ namespace PSFS\base;
 use PSFS\base\config\Config;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\extension\TemplateFunctions;
+use PSFS\base\types\helpers\ResponseHelper;
+use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\base\types\helpers\TemplateHelper;
 use PSFS\base\types\SingletonTrait;
 use PSFS\Dispatcher;
 
@@ -105,7 +108,7 @@ class Template
     public function render($tpl, array $vars = array(), array $cookies = array())
     {
         Logger::log('Start render response');
-        $vars = $this->setDebugHeaders($vars);
+        $vars = ResponseHelper::setDebugHeaders($vars);
         $output = $this->dump($tpl, $vars);
 
         return $this->output($output, 'text/html', $cookies);
@@ -124,9 +127,9 @@ class Template
             $powered = "@c15k0";
         }
         header("X-Powered-By: $powered");
-        $this->setStatusHeader();
-        $this->setAuthHeaders();
-        $this->setCookieHeaders($cookies);
+        ResponseHelper::setStatusHeader($this->status_code);
+        ResponseHelper::setAuthHeaders($this->public_zone);
+        ResponseHelper::setCookieHeaders($cookies);
         header('Content-type: ' . $contentType);
 
     }
@@ -401,69 +404,6 @@ class Template
     }
 
     /**
-     * @param $cookies
-     */
-    protected function setCookieHeaders($cookies)
-    {
-        if (!empty($cookies) && is_array($cookies)) {
-            foreach ($cookies as $cookie) {
-                setcookie($cookie["name"],
-                    $cookie["value"],
-                    (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
-                    (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
-                    (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
-                    (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
-                    (array_key_exists('http', $cookie)) ? $cookie["http"] : FALSE
-                );
-            }
-        }
-    }
-
-    /**
-     * Método que inyecta las cabeceras necesarias para la autenticación
-     */
-    protected function setAuthHeaders()
-    {
-        if ($this->public_zone) {
-            unset($_SERVER["PHP_AUTH_USER"]);
-            unset($_SERVER["PHP_AUTH_PW"]);
-            header_remove("Authorization");
-        } else {
-            header('Authorization:');
-        }
-    }
-
-    /**
-     * Método que establece el status code
-     */
-    protected function setStatusHeader()
-    {
-        if (NULL !== $this->status_code) {
-            header($this->status_code);
-        }
-    }
-
-    /**
-     * Método que mete en las variables de las plantillas las cabeceras de debug
-     * @param array $vars
-     *
-     * @return array
-     */
-    protected function setDebugHeaders(array $vars)
-    {
-        if ($this->debug) {
-            Logger::log('Adding debug headers to render response');
-            $vars["__DEBUG__"]["includes"] = get_included_files();
-            $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
-            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
-            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
-        }
-
-        return $vars;
-    }
-
-    /**
      * Método que añade todas las funciones de las plantillas
      */
     private function addTemplateFunctions()
@@ -491,6 +431,19 @@ class Template
     }
 
     /**
+     * Method that extract all domains for using them with the templates
+     */
+    private function loadDomains()
+    {
+        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
+        if(null !== $domains) {
+            foreach($domains as $domain => $paths) {
+                $this->addPath($paths['template'], preg_replace('/(@|\/)/', '', $domain));
+            }
+        }
+    }
+
+    /**
      * Método que inicializa el motor de plantillas
      */
     private function setup()
@@ -501,8 +454,9 @@ class Template
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => Config::getInstance()->getCachePath() . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
-            'auto_reload' => TRUE,
+            'auto_reload' => Config::getParam('twig.auto_reload', TRUE),
         ));
+        $this->loadDomains();
     }
 
     /**

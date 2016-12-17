@@ -120,7 +120,8 @@ class Dispatcher extends Singleton
         }
     }
 
-    private function redirectToHome() {
+    private function redirectToHome()
+    {
         Request::getInstance()->redirect($this->router->getRoute($this->config->get('home_action')));
     }
 
