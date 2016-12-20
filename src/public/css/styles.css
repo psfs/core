@@ -20,3 +20,7 @@ html *, html body * {
 md-dialog {
     padding: 20px;
 }
+.navbar .dropdown .dropdown-menu {
+    max-height: 300px;
+    overflow: auto;
+}
