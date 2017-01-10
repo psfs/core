@@ -24,7 +24,7 @@ class SecurityHelper {
         ) {
             if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
-                return UserController::getInstance()->adminers();
+                return UserController::showAdminManager();
             }
             if (!Security::getInstance()->checkAdmin()) {
                 throw new AccessDeniedException();

@@ -262,6 +262,9 @@ class Request
         $protocol = $protocol ? $this->getProtocol() : '';
         $url = '';
         if (!empty($host) && !empty($protocol)) $url = $protocol . $host;
+        if(!in_array($this->getServer('SERVER_PORT'), [80, 443])) {
+            $url .= ':' . $this->getServer('SERVER_PORT');
+        }
         return $url;
     }
 

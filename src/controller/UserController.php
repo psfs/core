@@ -5,9 +5,12 @@ use PSFS\base\config\AdminForm;
 use PSFS\base\config\LoginForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
+use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\controller\base\Admin;
+use PSFS\services\AdminServices;
 
 /**
  * Class UserController
@@ -15,6 +18,23 @@ use PSFS\controller\base\Admin;
  */
 class UserController extends Admin
 {
+    /**
+     * @return string
+     */
+    public static function showAdminManager() {
+        if(Request::getInstance()->getMethod() != 'GET') {
+            return self::updateAdminUsers();
+        }
+        $admins = AdminServices::getInstance()->getAdmins();
+        $form = new AdminForm();
+        $form->build();
+        return Template::getInstance()->render('admin.html.twig', array(
+            'admins' => $admins,
+            'form' => $form,
+            'profiles' => Security::getProfiles(),
+        ));
+    }
+
     /**
      * Método que gestiona los usuarios administradores de la plataforma
      * @GET
@@ -24,10 +44,27 @@ class UserController extends Admin
      */
     public function adminers()
     {
-        $admins = $this->srv->getAdmins();
+        return self::showAdminManager();
+    }
+
+    /**
+     * @return string
+     */
+    public static function updateAdminUsers() {
+        $admins = AdminServices::getInstance()->getAdmins();
         $form = new AdminForm();
         $form->build();
-        return $this->render('admin.html.twig', array(
+        $form->hydrate();
+        if ($form->isValid()) {
+            if (Security::save($form->getData())) {
+                Logger::log('Configuration saved successful');
+                Security::getInstance()->setFlash("callback_message", _("Usuario agregado correctamente"));
+                Security::getInstance()->setFlash("callback_route", Router::getInstance()->getRoute("admin", true));
+            } else {
+                throw new ConfigException(_('Error al guardar los administradores, prueba a cambiar los permisos'));
+            }
+        }
+        return Template::getInstance()->render('admin.html.twig', array(
             'admins' => $admins,
             'form' => $form,
             'profiles' => Security::getProfiles(),
@@ -44,24 +81,7 @@ class UserController extends Admin
      */
     public function setAdminUsers()
     {
-        $admins = $this->srv->getAdmins();
-        $form = new AdminForm();
-        $form->build();
-        $form->hydrate();
-        if ($form->isValid()) {
-            if (Security::save($form->getData())) {
-                Logger::log('Configuration saved successful');
-                Security::getInstance()->setFlash("callback_message", _("Usuario agregado correctamente"));
-                Security::getInstance()->setFlash("callback_route", $this->getRoute("admin"), true);
-            } else {
-                throw new ConfigException(_('Error al guardar los administradores, prueba a cambiar los permisos'));
-            }
-        }
-        return $this->render('admin.html.twig', array(
-            'admins' => $admins,
-            'form' => $form,
-            'profiles' => Security::getProfiles(),
-        ));
+        return self::updateAdminUsers();
     }
 
     /**

@@ -36,7 +36,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     {
         $vars['__menu__'] = $this->getMenu();
         $domain = (null ===$domain) ? $this->getDomain() : $domain;
-        $this->tpl->render($domain . $template, $vars, $cookies);
+        return $this->tpl->render($domain . $template, $vars, $cookies);
     }
 
     /**
