@@ -359,10 +359,9 @@ class Template
             // force compilation
             if ($file->isFile()) {
                 try {
-                    $this->tpl->loadTemplate(str_replace($tplDir . '/', '', $file));
+                    $this->tpl->load(str_replace($tplDir . '/', '', $file));
                 } catch (\Exception $e) {
-                    Logger::log($e->getMessage(), LOG_ERR);
-                    throw $e;
+                    Logger::log($e->getMessage(), LOG_ERR, ['file' => $e->getFile(), 'line' => $e->getLine()]);
                 }
             }
         }

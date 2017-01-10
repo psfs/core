@@ -313,9 +313,14 @@ class Router
     protected function extractDomain(\ReflectionClass $class)
     {
         //Calculamos los dominios para las plantillas
-        if ($class->hasConstant("DOMAIN")) {
+        if ($class->hasConstant("DOMAIN") && !$class->isAbstract()) {
+            if(!$this->domains) {
+                $this->domains = [];
+            }
             $domain = "@" . $class->getConstant("DOMAIN") . "/";
-            $this->domains[$domain] = RouterHelper::extractDomainInfo($class, $domain);
+            if(!array_key_exists($domain, $this->domains)) {
+                $this->domains[$domain] = RouterHelper::extractDomainInfo($class, $domain);
+            }
         }
 
         return $this;
