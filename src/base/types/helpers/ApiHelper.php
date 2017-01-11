@@ -42,6 +42,14 @@ class ApiHelper
                 $fDto = self::generatePasswordField($field, $required);
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP])) {
                 //$fDto = self::generateDateField($field, $required);
+            } elseif(in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
+                $fDto = self::generateEnumField($field, $required);
+                foreach($mappedColumn->getValueSet() as $value) {
+                    $fDto->data[] = [
+                        $field => $value,
+                        "Label" => _($value),
+                    ];
+                }
             }
 
             if(null !== $fDto) {
@@ -149,5 +157,14 @@ class ApiHelper
     public static function generateDateField($field, $required = false)
     {
         return self::createField($field, Field::DATE, $required);
+    }
+
+    /**
+     * @param $field
+     * @param bool $required
+     * @return Field
+     */
+    public static function generateEnumField($field, $required = false) {
+        return self::createField($field, Field::COMBO_TYPE, $required);
     }
 }

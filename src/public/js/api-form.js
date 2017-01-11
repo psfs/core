@@ -94,22 +94,60 @@
 
             function querySearch(search, field) {
                 deferred = $q.defer();
-                $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=10&name=' + encodeURIComponent("'" + search + "'"))
-                    .then(function (response) {
-                        deferred.resolve(response.data.data || []);
-                    }, function () {
-                        deferred.resolve([]);
-                    });
+                if(angular.isArray(field.data) && field.data.length) {
+                    deferred.resolve(field.data);
+                } else {
+                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=10&name=' + encodeURIComponent("'" + search + "'"))
+                        .then(function (response) {
+                            deferred.resolve(response.data.data || []);
+                        }, function () {
+                            deferred.resolve([]);
+                        });
+                }
 
                 return deferred.promise;
             }
 
             function setComboField(item, field) {
-                getEntityFields($scope.url.replace($scope.entity, 'form/' + field.entity), function (response) {
-                    $scope.model[field.name] = $apiSrv.getId(item, response.data.data.fields);
-                });
-
+                if(undefined !== item) {
+                    if(field.data.length) {
+                        $scope.model[field.name] = item[field.name];
+                    } else {
+                        getEntityFields($scope.url.replace($scope.entity, 'form/' + field.entity), function (response) {
+                            $scope.model[field.name] = $apiSrv.getId(item, response.data.data.fields);
+                        });
+                    }
+                }
             }
+
+            function populateCombo(field) {
+                if(undefined !== $scope.model[field.name] && null !== $scope.model[field.name]) {
+                    if(angular.isArray(field.data) && field.data.length) {
+                        for(var i in field.data) {
+                            var _data = field.data[i];
+                            try {
+                                if(_data[field.name] == $scope.model[field.name]) {
+                                    $scope.combos[field.name].item = _data;
+                                }
+                            } catch(err) {}
+                        }
+                    } else {
+                        $http.get(field.url.replace(/\{pk\}$/ig, $scope.model[field.name]))
+                            .then(function (response) {
+                                $scope.combos[field.name].item = response.data.data;
+                            });
+                    }
+                }
+                return null;
+            }
+            $scope.$on('populate_combos', function() {
+                for(var f in $scope.form.fields) {
+                    var field = $scope.form.fields[f];
+                    if(field.type == 'select') {
+                        populateCombo(field);
+                    }
+                }
+            });
 
             function getPk() {
                 var pk = '';
@@ -137,6 +175,7 @@
             $scope.submitForm = submitForm;
             $scope.querySearch = querySearch;
             $scope.setComboField = setComboField;
+            $scope.populateCombo = populateCombo;
             $scope.getPk = getPk;
             $scope.isSaved = isSaved;
 

@@ -87,6 +87,7 @@
         function loadItem(item)
         {
             $scope.model = angular.copy(item);
+            $msgSrv.send('populate_combos');
         }
 
         function isModelSelected() {
@@ -107,6 +108,7 @@
                 var _field = $scope.entity_form[i];
                 cleanFormStatus(_field);
             }
+            $msgSrv.send('populate_combos');
         }
 
         $scope.getLabel = $apiSrv.getLabel;
