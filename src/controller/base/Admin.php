@@ -15,7 +15,7 @@ use PSFS\services\AdminServices;
  * @package PSFS\controller
  * @domain ROOT
  */
-class Admin extends AuthAdminController{
+abstract class Admin extends AuthAdminController{
 
     const DOMAIN = 'ROOT';
 
