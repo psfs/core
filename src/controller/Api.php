@@ -24,6 +24,7 @@ class Api extends Controller
 
     /**
      * @GET
+     * @CACHE 600
      * @route /api/__doc/{type}
      *
      * @param string $type
