@@ -1,9 +1,9 @@
 <?php
     namespace PSFS\services;
 
+    use Propel\Runtime\Map\TableMap;
     use PSFS\base\Logger;
     use PSFS\base\Service;
-    use PSFS\base\Singleton;
     use PSFS\base\types\helpers\InjectorHelper;
     use Symfony\Component\Finder\Finder;
 
@@ -95,7 +95,6 @@
                     }
                 }
             }
-
             return $info;
         }
 
@@ -279,12 +278,12 @@
                 // Checks if reflector is a subclass of propel ActiveRecords
                 if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                     $tableMap = $namespace::TABLE_MAP;
-                    $fieldNames = $tableMap::getFieldNames();
+                    $fieldNames = $tableMap::getFieldNames(TableMap::TYPE_FIELDNAME);
                     if (count($fieldNames)) {
                         foreach ($fieldNames as $field) {
                             $variable = $reflector->getProperty(strtolower($field));
                             $varDoc = $variable->getDocComment();
-                            $payload[$field] = $this->extractVarType($varDoc);
+                            $payload[$tableMap::translateFieldName($field, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME)] = $this->extractVarType($varDoc);
                         }
                     }
                 } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {

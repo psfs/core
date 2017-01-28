@@ -390,6 +390,7 @@ class Security
         if ($closeSession) {
             Logger::log('Close session');
             session_write_close();
+            session_start();
         }
         Logger::log('Session updated');
         return $this;
@@ -402,6 +403,7 @@ class Security
     {
         session_destroy();
         session_regenerate_id(TRUE);
+        session_start();
     }
 
     /**
