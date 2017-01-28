@@ -1,7 +1,9 @@
 {
     "name": "psfs/core",
     "description": "Php Simple Fast & Secure",
+    "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "require": {
+        "php" : "^5.5 || ^7.0",
         "propel/propel": "^2.0",
         "symfony/console": "3.0.x-dev",
         "symfony/finder": "3.0.x-dev",
@@ -29,5 +31,10 @@
     "bin": [
         "src/bin/psfs"
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
 }

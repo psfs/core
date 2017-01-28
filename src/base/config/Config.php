@@ -198,12 +198,13 @@ class Config
     /**
      * Method that returns a config value
      * @param string $param
+     * @param mixed $defaultValue
      *
      * @return mixed|null
      */
-    public function get($param)
+    public function get($param, $defaultValue = null)
     {
-        return array_key_exists($param, $this->config) ? $this->config[$param] : null;
+        return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
     }
 
     /**

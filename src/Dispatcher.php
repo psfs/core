@@ -185,7 +185,7 @@ class Dispatcher extends Singleton
      */
     protected function bindWarningAsExceptions()
     {
-        if ($this->config->getDebugMode()) {
+        if ($this->config->getDebugMode() && $this->config->get('errors.strict', false)) {
             Logger::log('Added handlers for errors');
             //Warning & Notice handler
             set_error_handler(function ($errno, $errstr, $errfile, $errline) {
@@ -200,7 +200,7 @@ class Dispatcher extends Singleton
      */
     private function initiateStats()
     {
-        Logger::log('Initialicing stats (mem + ts)');
+        Logger::log('Initializing stats (mem + ts)');
         if (null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
             $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
         } else {

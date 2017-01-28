@@ -422,7 +422,10 @@ class Router
             }
         }
         if ($execute) {
-            call_user_func_array(array($class, $action['method']), $params);
+            Logger::log(_('Start executing action'), LOG_DEBUG);
+            if(false === call_user_func_array(array($class, $action['method']), $params)) {
+                Logger::log(_('An error ocurred trying to execute the action'), LOG_ERR, [error_get_last()]);
+            }
         }
     }
 

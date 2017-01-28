@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.1/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         verbose="true"
+         cacheTokens="false"
+         bootstrap="vendor/autoload.php"
+>
+    <testsuites>
+        <testsuite name="{{ module }} Suite Test">
+            <directory>/src/{{ module }}/Test/</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

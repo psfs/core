@@ -25,7 +25,7 @@
 
             // Generates the root needed files
             $files = [
-                '_' => '_.php',
+                'index' => 'index.php',
                 'browserconfig' => 'browserconfig.xml',
                 'crossdomain' => 'crossdomain.xml',
                 'humans' => 'humans.txt',

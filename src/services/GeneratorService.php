@@ -99,9 +99,10 @@ class GeneratorService extends Service
 
     /**
      * Servicio que genera la estructura base
-     * @param $module
-     * @param $mod_path
+     * @param string $module
+     * @param boolean $mod_path
      * @param boolean $isModule
+     * @return boolean
      */
     private function createModulePathTree($module, $mod_path, $isModule = false)
     {
@@ -212,7 +213,15 @@ class GeneratorService extends Service
         ));
         $controllerBase = $this->writeTemplateToFile($controllerBody, $mod_path . DIRECTORY_SEPARATOR . "Controller" .
             DIRECTORY_SEPARATOR . "base" . DIRECTORY_SEPARATOR . "{$class}BaseController.php", true);
-        return ($controller && $controllerBase);
+
+        $testTemplate = $this->tpl->dump("generator/testCase.template.twig", array(
+            "module" => $module,
+            "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+            "class" => $class,
+        ));
+        $test = $this->writeTemplateToFile($testTemplate, $mod_path . DIRECTORY_SEPARATOR . "Test" .
+            DIRECTORY_SEPARATOR . "{$class}Test.php", true);
+        return ($controller && $controllerBase && $test);
     }
 
     /**
@@ -319,7 +328,15 @@ class GeneratorService extends Service
             "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\\\\\\\', $module),
             "is_module" => $isModule,
         ));
-        return $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
+        $autoload = $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
+
+        $this->log->infoLog("Generamos el phpunit");
+        $phpUnitTemplate = $this->tpl->dump("generator/phpunit.template.twig", array(
+            "module" => $module,
+            "is_module" => $isModule,
+        ));
+        $phpunit = $this->writeTemplateToFile($phpUnitTemplate, $mod_path . DIRECTORY_SEPARATOR . "phpunit.xml.dist", $force);
+        return $autoload && $phpunit;
     }
 
     /**
