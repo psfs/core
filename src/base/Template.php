@@ -152,8 +152,9 @@ class Template
         if (false !== $cache && $this->status_code === Template::STATUS_OK && $this->debug === false) {
             Logger::log('Saving output response into cache');
             $cacheName = $this->cache->getRequestCacheHash();
-            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $cacheName, $output);
-            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $cacheName . ".headers", headers_list(), Cache::JSON);
+            $tmpDir = substr($cacheName, 0, 2) . DIRECTORY_SEPARATOR . substr($cacheName, 2, 2) . DIRECTORY_SEPARATOR;
+            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName, $output);
+            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName . ".headers", headers_list(), Cache::JSON);
         }
         echo $output;
 
