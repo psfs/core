@@ -411,6 +411,7 @@
                     $model = $this->model->toArray();
                 }
             } catch (\Exception $e) {
+                $model = _('Ha ocurrido un error intentando guardar el elemento: ') . $e->getMessage();
                 Logger::log($e->getMessage(), LOG_ERR);
             }
 
@@ -430,6 +431,7 @@
         public function delete($pk = NULL)
         {
             $deleted = FALSE;
+            $message = null;
             if (NULL !== $pk) {
                 try {
                     $this->con->beginTransaction();
@@ -439,11 +441,12 @@
                         $deleted = TRUE;
                     }
                 } catch (\Exception $e) {
+                    $message = _('Ha ocurrido un error intentando eliminar el elemento, por favor verifica que no tenga otros elementos relacionados');
                     Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
                 }
             }
 
-            return $this->json(new JsonResponse(NULL, $deleted), ($deleted) ? 200 : 400);
+            return $this->json(new JsonResponse($message, $deleted), ($deleted) ? 200 : 400);
         }
 
         /**
@@ -465,13 +468,21 @@
             $updated = FALSE;
             $model = NULL;
             if (NULL !== $this->model) {
-                $this->con->beginTransaction();
-                $this->model->fromArray($this->data);
-                if ($this->model->save($this->con) !== FALSE) {
-                    $updated = TRUE;
-                    $status = 200;
-                    $model = $this->model->toArray();
+                try {
+                    $this->model->fromArray($this->data);
+                    if ($this->model->save($this->con) !== FALSE) {
+                        $updated = TRUE;
+                        $status = 200;
+                        $model = $this->model->toArray();
+                    } else {
+                        $model = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                    }
+                } catch(\Exception $e) {
+                    $model = $e->getMessage();
+                    Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
                 }
+            } else {
+                $model = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
             }
 
             return $this->json(new JsonResponse($model, $updated), $status);

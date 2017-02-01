@@ -45,6 +45,19 @@
                 }
             }
 
+            function showError(err) {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title($scope.entity + ' Error ' + err.status)
+                        .content(err.data.data)
+                        .ariaLabel('Save error')
+                        .ok('Close')
+                );
+                $log.error(err);
+                $scope.loading = false;
+            }
+
             function submitForm() {
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
@@ -57,10 +70,7 @@
                                 $scope.model = {};
                                 $scope.entity_form.$setPristine(true);
                                 $scope.entity_form.$setDirty(false);
-                            }, function (err, status) {
-                                $log.error(err);
-                                $scope.loading = false;
-                            });
+                            }, showError);
                     } catch (err) {
                         $log.debug('Create new entity');
                         $http.post($scope.url, model)
@@ -69,10 +79,7 @@
                                 $scope.model = {};
                                 $scope.entity_form.$setPristine(true);
                                 $scope.entity_form.$setDirty(false);
-                            }, function (err, status) {
-                                $log.error(err);
-                                $scope.loading = false;
-                            });
+                            }, showError);
                     } finally {
                         $timeout(function () {
                             $msgSrv.send('psfs.list.reload');

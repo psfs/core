@@ -4,7 +4,7 @@
     var listCtrl = ['$scope', '$log', '$http', '$mdDialog', '$msgSrv', '$apiSrv', '$timeout',
     function($scope, $log, $http, $mdDialog, $msgSrv, $apiSrv, $timeout){
         $scope.loading = false;
-        $scope.limit = globalLimit || 10;
+        $scope.limit = globalLimit || 25;
         $scope.actualPage = 1;
         $scope.count = 0;
 
@@ -72,6 +72,21 @@
             $mdDialog.show(confirm).then(function() {
                 $http.delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
                     .then(function() {
+                        $timeout(function() {
+                            if(checkItem(item)) {
+                                addNewItem();
+                            }
+                            loadData();
+                        }, 250);
+                    }, function(err){
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title($scope.entity + ' Delete Error ' + err.status)
+                                .content(err.data.data)
+                                .ariaLabel('Delete error')
+                                .ok('Close')
+                        );
                         $timeout(function() {
                             if(checkItem(item)) {
                                 addNewItem();
