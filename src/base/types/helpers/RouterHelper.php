@@ -177,6 +177,19 @@ class RouterHelper {
     }
 
     /**
+     * Método que extrae el método http
+     *
+     * @param string $docComments
+     *
+     * @return string
+     */
+    public static function extractReflectionLabel($docComments)
+    {
+        preg_match('/@label\ \n/i', $docComments, $label);
+        return (count($label) > 0) ? $label[1] : null;
+    }
+
+    /**
      * Método que extrae la visibilidad de una ruta
      *
      * @param string $docComments
@@ -239,12 +252,14 @@ class RouterHelper {
                 $default = str_replace('{__API__}', $api, $default);
             }
             $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
+            $label = RouterHelper::extractReflectionLabel($docComments);
             if(self::checkCanAddRoute($regex, $api)) {
                 $route = $httpMethod . "#|#" . $regex;
                 $info = [
                     "method" => $method->getName(),
                     "params" => $params,
                     "default" => $default,
+                    "label" => $label,
                     "visible" => RouterHelper::extractReflectionVisibility($docComments),
                     "http" => $httpMethod,
                     "cache" => RouterHelper::extractReflectionCacheability($docComments),

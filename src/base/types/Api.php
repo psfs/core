@@ -5,12 +5,9 @@
     use Propel\Runtime\ActiveQuery\ModelCriteria;
     use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
     use Propel\Runtime\Connection\ConnectionInterface;
-    use Propel\Runtime\Map\ColumnMap;
     use Propel\Runtime\Map\TableMap;
     use Propel\Runtime\Propel;
     use PSFS\base\config\Config;
-    use PSFS\base\dto\Field;
-    use PSFS\base\dto\Form;
     use PSFS\base\dto\JsonResponse;
     use PSFS\base\dto\Order;
     use PSFS\base\Logger;
@@ -159,11 +156,19 @@
          *
          * @param string $field
          *
-         * @return bool
+         * @return \Propel\Runtime\Map\ColumnMap|null
          */
         private function checkFieldExists($field)
         {
-            return property_exists($this->getModelNamespace(), $field);
+            $tableMapClass = $this->getModelTableMap();
+            $tableMap = $tableMapClass::getTableMap();
+            try {
+                $column = $tableMap->getColumnByPhpName($field);
+            } catch(\Exception $e) {
+                Logger::log($e->getMessage(), LOG_ERR);
+                $column = null;
+            }
+            return $column;
         }
 
         /**
@@ -175,12 +180,12 @@
         {
             $orderAdded = FALSE;
             foreach ($this->order->getOrders() as $field => $direction) {
-                if ($this->checkFieldExists($field)) {
+                if ($column = $this->checkFieldExists($field)) {
                     $orderAdded = TRUE;
                     if ($direction === Order::ASC) {
-                        $query->addAscendingOrderByColumn($field);
+                        $query->addAscendingOrderByColumn($column->getPhpName());
                     } else {
-                        $query->addDescendingOrderByColumn($field);
+                        $query->addDescendingOrderByColumn($column->getPhpName());
                     }
                 }
             }
@@ -214,6 +219,17 @@
         }
 
         /**
+         * @return array
+         */
+        protected function parseExtraColumns() {
+            $columns = [];
+            foreach($this->extraColumns as $key => $columnName) {
+                $columns[$columnName] = strtolower($columnName);
+            }
+            return $columns;
+        }
+
+        /**
          * Add filters fields to query
          *
          * @param ModelCriteria $query
@@ -221,9 +237,10 @@
         private function addFilters(ModelCriteria &$query)
         {
             if (count($this->query) > 0) {
+                $extraColumns = $this->parseExtraColumns();
                 foreach ($this->query as $field => $value) {
-                    if ($this->checkFieldExists($field)) {
-                        $tableField = ucfirst($field);
+                    if ($column = $this->checkFieldExists($field)) {
+                        $tableField = $column->getPhpName();
                         if (preg_match('/^<=/', $value)) {
                             $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
                         } elseif (preg_match('/^<=/', $value)) {
@@ -239,6 +256,14 @@
                         } else {
                             $query->filterBy($tableField, $value, Criteria::EQUAL);
                         }
+                    } elseif(false !== ($index = array_search(strtolower($field), $extraColumns))) {
+                        $exp = array_search($index, $this->extraColumns);
+                        $query->where($exp . Criteria::LIKE . '"'.$value.'"');
+                    } else {
+                        $tableField = null;
+                    }
+                    if(null !== $tableField) {
+
                     }
                 }
             }
@@ -253,9 +278,9 @@
             try {
                 $query = $this->extractQuery();
                 $this->joinTables($query);
+                $this->addExtraColumns($query);
                 $this->addFilters($query);
                 $this->addOrders($query);
-                $this->addExtraColumns($query);
                 list($page, $limit) = $this->extractPagination();
                 if ($limit == -1) {
                     $this->list = $query->find($this->con);

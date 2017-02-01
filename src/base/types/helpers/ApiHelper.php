@@ -41,7 +41,8 @@ class ApiHelper
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
                 $fDto = self::generatePasswordField($field, $required);
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP])) {
-                //$fDto = self::generateDateField($field, $required);
+                $fDto = self::createField($field, Field::TEXT_TYPE, $required);
+                $fDto->readonly = true;
             } elseif(in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
                 $fDto = self::generateEnumField($field, $required);
                 foreach($mappedColumn->getValueSet() as $value) {
@@ -70,9 +71,12 @@ class ApiHelper
         $fDto = new Field($field, _($field));
         $fDto->type = Field::COMBO_TYPE;
         $fDto->required = $mappedColumn->isNotNull();
-        $relatedModel = strtolower($mappedColumn->getRelation()->getForeignTable()->getPhpName());
+        $foreignTable = $mappedColumn->getRelation()->getForeignTable();
+        $relatedModel = strtolower($foreignTable->getPhpName());
         $fDto->entity = $relatedModel;
-        $fDto->url = Router::getInstance()->getRoute('api-' . $relatedModel . '-pk');
+        $relatedField = $foreignTable->getColumn($mappedColumn->getRelatedColumnName());
+        $fDto->relatedField = $relatedField->getPhpName();
+        $fDto->url = Router::getInstance()->getRoute('api-' . $relatedModel);
         return $fDto;
     }
 

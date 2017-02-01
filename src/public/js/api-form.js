@@ -6,6 +6,11 @@
             $scope.method = 'POST';
             $scope.loading = false;
             $scope.combos = {};
+            try {
+                $scope.limit = __limit;
+            } catch(err) {
+                $scope.limit = 25;
+            }
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
@@ -97,7 +102,7 @@
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
-                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=10&name=' + encodeURIComponent("'" + search + "'"))
+                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=' + $scope.limit + '&Name=' + encodeURIComponent("%" + search + "%"))
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {
@@ -113,9 +118,7 @@
                     if(field.data.length) {
                         $scope.model[field.name] = item[field.name];
                     } else {
-                        getEntityFields($scope.url.replace($scope.entity, 'form/' + field.entity), function (response) {
-                            $scope.model[field.name] = $apiSrv.getId(item, response.data.data.fields);
-                        });
+                        $scope.model[field.name] = item[field.relatedField];
                     }
                 }
             }
@@ -132,9 +135,9 @@
                             } catch(err) {}
                         }
                     } else {
-                        $http.get(field.url.replace(/\{pk\}$/ig, $scope.model[field.name]))
+                        $http.get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1')
                             .then(function (response) {
-                                $scope.combos[field.name].item = response.data.data;
+                                $scope.combos[field.name].item = response.data.data[0];
                             });
                     }
                 }

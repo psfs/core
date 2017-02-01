@@ -54,9 +54,17 @@
          */
         public $entity;
         /**
+         * @var bool readonly
+         */
+        public $readonly = false;
+        /**
          * @var bool pk
          */
         public $pk = false;
+        /**
+         * @var string
+         */
+        public $relatedField;
 
         public function __construct($name, $label, $type = Field::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)
         {
