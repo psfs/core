@@ -21,6 +21,8 @@
      */
     abstract class Api extends Controller
     {
+        const API_COMBO_FILTER = '__combo';
+
         /**
          * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
          */
@@ -152,6 +154,14 @@
         }
 
         /**
+         * @return TableMap
+         */
+        private function getTableMap() {
+            $tableMapClass = $this->getModelTableMap();
+            return $tableMapClass::getTableMap();
+        }
+
+        /**
          * Check if parametrized field exists in api model
          *
          * @param string $field
@@ -160,8 +170,7 @@
          */
         private function checkFieldExists($field)
         {
-            $tableMapClass = $this->getModelTableMap();
-            $tableMap = $tableMapClass::getTableMap();
+            $tableMap = $this->getTableMap();
             try {
                 $column = $tableMap->getColumnByPhpName($field);
             } catch(\Exception $e) {
@@ -237,7 +246,6 @@
         private function addFilters(ModelCriteria &$query)
         {
             if (count($this->query) > 0) {
-                $extraColumns = $this->parseExtraColumns();
                 foreach ($this->query as $field => $value) {
                     if ($column = $this->checkFieldExists($field)) {
                         $tableField = $column->getPhpName();
@@ -256,14 +264,20 @@
                         } else {
                             $query->filterBy($tableField, $value, Criteria::EQUAL);
                         }
-                    } elseif(false !== ($index = array_search(strtolower($field), $extraColumns))) {
-                        $exp = array_search($index, $this->extraColumns);
+                    } elseif(self::API_COMBO_FILTER === $field) {
+                        $exp = 'CONCAT(';
+                        $sep = '';
+                        $tablemap = $this->getTableMap();
+                        foreach($tablemap->getColumns() as $column) {
+                            if($column->isText()) {
+                                $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
+                                $sep = ', " ", ';
+                            }
+                        }
+                        $exp .= ")";
                         $query->where($exp . Criteria::LIKE . '"'.$value.'"');
                     } else {
                         $tableField = null;
-                    }
-                    if(null !== $tableField) {
-
                     }
                 }
             }

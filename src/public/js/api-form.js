@@ -6,11 +6,6 @@
             $scope.method = 'POST';
             $scope.loading = false;
             $scope.combos = {};
-            try {
-                $scope.limit = __limit;
-            } catch(err) {
-                $scope.limit = 25;
-            }
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
@@ -102,7 +97,7 @@
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
-                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=' + $scope.limit + '&Name=' + encodeURIComponent("%" + search + "%"))
+                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit=10&__combo=' + encodeURIComponent("%" + search + "%"))
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {
