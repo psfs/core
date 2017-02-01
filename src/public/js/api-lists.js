@@ -78,21 +78,16 @@
                             }
                             loadData();
                         }, 250);
-                    }, function(err){
+                    }, function(err, statu){
                         $mdDialog.show(
                             $mdDialog.alert()
                                 .clickOutsideToClose(true)
-                                .title($scope.entity + ' Delete Error ' + err.status)
-                                .content(err.data.data)
+                                .title($scope.entity + ' Error ' + status)
+                                .content(err)
                                 .ariaLabel('Delete error')
                                 .ok('Close')
                         );
-                        $timeout(function() {
-                            if(checkItem(item)) {
-                                addNewItem();
-                            }
-                            loadData();
-                        }, 250);
+
                     });
             }, function() {
                 $scope.loading = false;

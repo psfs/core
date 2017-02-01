@@ -19,6 +19,7 @@
 
         function getLabelField(item) {
             if (item) {
+                if('__name__' in item) return '__name__';
                 if('label' in item) return 'label';
                 if('Label' in item) return 'Label';
                 if('name' in item) return 'name';

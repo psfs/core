@@ -21,7 +21,8 @@
      */
     abstract class Api extends Controller
     {
-        const API_COMBO_FILTER = '__combo';
+        const API_COMBO_FIELD = '__combo';
+        const API_LIST_NAME_FIELD = '__name__';
 
         /**
          * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
@@ -204,12 +205,35 @@
         }
 
         /**
+         * Method that add a new field with the Label of the row
+         */
+        private function addDefaultListField() {
+            if(!in_array(self::API_LIST_NAME_FIELD, $this->extraColumns)) {
+                $tableMap = $this->getTableMap();
+                $column = null;
+                if($tableMap->hasColumn('NAME')) {
+                    $column = $tableMap->getColumn('NAME');
+                } elseif($tableMap->hasColumn('TITLE')) {
+                    $column = $tableMap->getColumn('TITLE');
+                } elseif($tableMap->hasColumn('LABEL')) {
+                    $column = $tableMap->getColumn('LABEL');
+                }
+                if(null !== $column) {
+                    $this->extraColumns[$column->getFullyQualifiedName()] = self::API_LIST_NAME_FIELD;
+                } else {
+                    $this->addClassListName($tableMap);
+                }
+            }
+        }
+
+        /**
          * Add extra columns to pagination query
          *
          * @param ModelCriteria $query
          */
         private function addExtraColumns(ModelCriteria &$query)
         {
+            $this->addDefaultListField();
             if (!empty($this->extraColumns)) {
                 foreach ($this->extraColumns as $expression => $columnName) {
                     $query->withColumn($expression, $columnName);
@@ -264,7 +288,7 @@
                         } else {
                             $query->filterBy($tableField, $value, Criteria::EQUAL);
                         }
-                    } elseif(self::API_COMBO_FILTER === $field) {
+                    } elseif(self::API_COMBO_FIELD === $field) {
                         $exp = 'CONCAT(';
                         $sep = '';
                         $tablemap = $this->getTableMap();
@@ -644,5 +668,19 @@
             }
 
             return array($code, $return);
+        }
+
+        /**
+         * @param TableMap $tableMap
+         */
+        private function addClassListName(TableMap $tableMap)
+        {
+            $pks = '';
+            $sep = '';
+            foreach ($tableMap->getPrimaryKeys() as $pk) {
+                $pks .= $sep . $pk->getFullyQualifiedName();
+                $sep = ', "|", ';
+            }
+            $this->extraColumns['CONCAT("' . $tableMap->getPhpName() . ' #", ' . $pks . ')'] = self::API_LIST_NAME_FIELD;
         }
     }
