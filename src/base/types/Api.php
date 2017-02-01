@@ -274,6 +274,10 @@
                                 $sep = ', " ", ';
                             }
                         }
+                        foreach($this->extraColumns as $extra => $name) {
+                            $exp .= $sep . $extra;
+                            $sep = ', " ", ';
+                        }
                         $exp .= ")";
                         $query->where($exp . Criteria::LIKE . '"'.$value.'"');
                     } else {
