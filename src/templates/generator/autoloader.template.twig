@@ -9,6 +9,7 @@ if(!defined("BASE_DIR"))
 define("BASE_DIR", dirname( dirname(__DIR__) ) );
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 if(!function_exists("{{ autoloader }}_Autoloader")) {
     // autoloader
@@ -20,7 +21,7 @@ if(!function_exists("{{ autoloader }}_Autoloader")) {
             // transform the namespace in path
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
             // filepath
-            $abs_path = CORE_DIR . DIRECTORY_SEPARATOR . $path . ".php";
+            $abs_path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $path . ".php";
 
             // require the file
             if(file_exists($abs_path)) {
