@@ -42,7 +42,6 @@ class ApiHelper
                 $fDto = self::generatePasswordField($field, $required);
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP])) {
                 $fDto = self::createField($field, Field::TEXT_TYPE, $required);
-                $fDto->readonly = true;
             } elseif(in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
                 $fDto = self::generateEnumField($field, $required);
                 foreach($mappedColumn->getValueSet() as $value) {
