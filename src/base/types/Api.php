@@ -303,7 +303,9 @@
                             $sep = ', " ", ';
                         }
                         $exp .= ")";
-                        $query->where($exp . Criteria::LIKE . '"'.$value.'"');
+                        $text = preg_replace('/(\'|\")/', '', $value);
+                        $text = preg_replace('/\ /', '%', $text);
+                        $query->where($exp . Criteria::LIKE . '"%' . $text . '%"');
                     } else {
                         $tableField = null;
                     }
