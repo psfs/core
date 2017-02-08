@@ -2,10 +2,13 @@
 namespace PSFS\base\types\helpers;
 
 use Propel\Generator\Model\PropelTypes;
+use Propel\Runtime\ActiveQuery\Criteria;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\dto\Field;
 use PSFS\base\dto\Form;
+use PSFS\base\Logger;
 use PSFS\base\Router;
 
 /**
@@ -169,5 +172,83 @@ class ApiHelper
      */
     public static function generateEnumField($field, $required = false) {
         return self::createField($field, Field::COMBO_TYPE, $required);
+    }
+
+    /**
+     * Check if parametrized field exists in api model
+     * @param TableMap $tableMap
+     * @param $field
+     * @return \Propel\Runtime\Map\ColumnMap|null
+     */
+    public static function checkFieldExists(TableMap $tableMap, $field) {
+        try {
+            $column = $tableMap->getColumnByPhpName($field);
+        } catch(\Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR);
+            $column = null;
+        }
+        return $column;
+    }
+
+    /**
+     * @param ColumnMap $column
+     * @param ModelCriteria $quwuery
+     * @param mixed $value
+     */
+    private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null) {
+        $tableField = $column->getPhpName();
+        if (preg_match('/^<=/', $value)) {
+            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
+        } elseif (preg_match('/^<=/', $value)) {
+            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::LESS_EQUAL);
+        } elseif (preg_match('/^>=/', $value)) {
+            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::GREATER_EQUAL);
+        } elseif (preg_match('/^>/', $value)) {
+            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
+        } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
+            $text = preg_replace('/(\'|\")/', '', $value);
+            $text = preg_replace('/\ /', '%', $text);
+            $query->filterBy($tableField, '%'.$text.'%', Criteria::LIKE);
+        } else {
+            $query->filterBy($tableField, $value, Criteria::EQUAL);
+        }
+    }
+
+    /**
+     * @param TableMap $tableMap
+     * @param ModelCriteria $query
+     * @param array $extraColumns
+     * @param mixed $value
+     */
+    public static function composerComboField(TableMap $tableMap, ModelCriteria &$query, array $extraColumns = [], $value = null) {
+        $exp = 'CONCAT(';
+        $sep = '';
+        foreach($tableMap->getColumns() as $column) {
+            if($column->isText()) {
+                $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
+                $sep = ', " ", ';
+            }
+        }
+        foreach($extraColumns as $extra => $name) {
+            $exp .= $sep . $extra;
+            $sep = ', " ", ';
+        }
+        $exp .= ")";
+        $text = preg_replace('/(\'|\")/', '', $value);
+        $text = preg_replace('/\ /', '%', $text);
+        $query->where($exp . Criteria::LIKE . '"%' . $text . '%"');
+    }
+
+    /**
+     * Method that adds the fields for the model into the API Query
+     * @param TableMap $tableMap
+     * @param ModelCriteria $query
+     * @param string $field
+     * @param mixed $value
+     */
+    public static function addModelField(TableMap $tableMap, ModelCriteria &$query, $field, $value = null) {
+        if ($column = self::checkFieldExists($tableMap, $field)) {
+            self::addQueryFilter($column, $query, $value);
+        }
     }
 }

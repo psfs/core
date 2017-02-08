@@ -238,19 +238,22 @@ class RouterHelper {
     /**
      * @param \ReflectionMethod $method
      * @param string $api
+     * @param string $module
      * @return array
      */
-    public static function extractRouteInfo(\ReflectionMethod $method, $api = '')
+    public static function extractRouteInfo(\ReflectionMethod $method, $api = '', $module = '')
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
         preg_match('/@route\ (.*)\n/i', $docComments, $sr);
         if (count($sr)) {
             list($regex, $default, $params) = RouterHelper::extractReflectionParams($sr, $method);
-            if (strlen($api)) {
+            if (strlen($api) && false !== strpos($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
             }
+            $regex = str_replace('{__DOMAIN__}', $module, $regex);
+            $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
             $label = RouterHelper::extractReflectionLabel($docComments);
             if(self::checkCanAddRoute($regex, $api)) {

@@ -78,6 +78,10 @@ class Router
     public function httpNotFound(\Exception $e = NULL)
     {
         Logger::log('Throw not found exception');
+        if (NULL === $e) {
+            Logger::log('Not found page throwed without previous exception', LOG_WARNING);
+            $e = new \Exception(_('Page not found'), 404);
+        }
         $template = Template::getInstance()->setStatus($e->getCode());
         if (preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE'))) {
             return $template->output(json_encode(array(
@@ -85,11 +89,6 @@ class Router
                 "error" => $e->getMessage(),
             )), 'application/json');
         } else {
-            if (NULL === $e) {
-                Logger::log('Not found page throwed without previous exception', LOG_WARNING);
-                $e = new \Exception(_('Page not found'), 404);
-            }
-
             return $template->render('error.html.twig', array(
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
@@ -143,10 +142,7 @@ class Router
             Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
             return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
-            if(null === RouterHelper::checkDefaultRoute($route)) {
-                Logger::log($r->getMessage(), LOG_WARNING);
-                throw $r;
-            }
+            Logger::log($r->getMessage(), LOG_WARNING);
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
@@ -202,15 +198,19 @@ class Router
     private function generateRouting()
     {
         $base = SOURCE_DIR;
-        $modules = realpath(CORE_DIR);
+        $modulesPath = realpath(CORE_DIR);
         $this->routing = $this->inspectDir($base, "PSFS", array());
-        if (file_exists($modules)) {
+        if (file_exists($modulesPath)) {
             $module = "";
-            if(file_exists($modules . DIRECTORY_SEPARATOR . 'module.json')) {
-                $mod_cfg = json_decode(file_get_contents($modules . DIRECTORY_SEPARATOR . 'module.json'), true);
+            if(file_exists($modulesPath . DIRECTORY_SEPARATOR . 'module.json')) {
+                $mod_cfg = json_decode(file_get_contents($modulesPath . DIRECTORY_SEPARATOR . 'module.json'), true);
                 $module = $mod_cfg['module'];
             }
-            $this->routing = $this->inspectDir($modules, $module, $this->routing);
+            $modules = $this->finder->directories()->in($modulesPath)->depth(0);
+            foreach($modules as $modulePath) {
+                $module = $modulePath->getBasename();
+                $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
+            }
         }
         $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, TRUE);
     }
@@ -247,12 +247,12 @@ class Router
      * @return array
      * @throws ConfigException
      */
-    private function inspectDir($origen, $namespace = 'PSFS', $routing)
+    private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
-        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->name("*.php");
+        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth(1)->name("*.php");
         foreach ($files as $file) {
             $filename = str_replace("/", '\\', str_replace($origen, '', $file->getPathname()));
-            $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing);
+            $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
         }
         $this->finder = new Finder();
 
@@ -273,11 +273,12 @@ class Router
      *
      * @param string $namespace
      * @param array $routing
+     * @param string $module
      *
      * @return array
      * @throws ConfigException
      */
-    private function addRouting($namespace, &$routing)
+    private function addRouting($namespace, &$routing, $module = 'PSFS')
     {
         if (self::exists($namespace)) {
             $reflection = new \ReflectionClass($namespace);
@@ -290,7 +291,7 @@ class Router
                     $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
                 }
                 foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    list($route, $info) = RouterHelper::extractRouteInfo($method, $api);
+                    list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
                     if(null !== $route && null !== $info) {
                         $info['class'] = $namespace;
                         $routing[$route] = $info;

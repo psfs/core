@@ -22,17 +22,11 @@ if (!function_exists('pre')) {
         $html = '<pre style="padding:10px;margin:0;display:block;background: #EEE; box-shadow: inset 0 0 3px 3px #DDD; color: #666; text-shadow: 1px 1px 1px #CCC;border-radius: 5px;">';
         $html .= (is_null($var)) ? '<b>NULL</b>' : print_r($var, TRUE);
         $html .= '</pre>';
-        if(class_exists('\\PSFS\\Dispatcher')) {
-            $html .= '<pre>['.round(\PSFS\Dispatcher::getInstance()->getMem('MBytes'), 3).'Mb - '.round(\PSFS\Dispatcher::getInstance()->getTs(), 3).'s]</pre>';
-        }
         ob_start();
         echo $html;
         ob_flush();
         ob_end_clean();
         if ($die) {
-            if(class_exists('\\PSFS\\base\\Logger')) {
-                \PSFS\base\Logger::log('Execution finished via pre', LOG_WARNING);
-            }
             die;
         }
     }

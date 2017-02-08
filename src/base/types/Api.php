@@ -23,6 +23,7 @@
     {
         const API_COMBO_FIELD = '__combo';
         const API_LIST_NAME_FIELD = '__name__';
+        const API_FIELDS_RESULT_FIELD = '__fields';
 
         /**
          * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
@@ -163,25 +164,6 @@
         }
 
         /**
-         * Check if parametrized field exists in api model
-         *
-         * @param string $field
-         *
-         * @return \Propel\Runtime\Map\ColumnMap|null
-         */
-        private function checkFieldExists($field)
-        {
-            $tableMap = $this->getTableMap();
-            try {
-                $column = $tableMap->getColumnByPhpName($field);
-            } catch(\Exception $e) {
-                Logger::log($e->getMessage(), LOG_ERR);
-                $column = null;
-            }
-            return $column;
-        }
-
-        /**
          * Add order fields to query
          *
          * @param ModelCriteria $query
@@ -189,8 +171,9 @@
         private function addOrders(ModelCriteria &$query)
         {
             $orderAdded = FALSE;
+            $tableMap = $this->getTableMap();
             foreach ($this->order->getOrders() as $field => $direction) {
-                if ($column = $this->checkFieldExists($field)) {
+                if ($column = ApiHelper::checkFieldExists($tableMap, $field)) {
                     $orderAdded = TRUE;
                     if ($direction === Order::ASC) {
                         $query->addAscendingOrderByColumn($column->getPhpName());
@@ -270,44 +253,12 @@
         private function addFilters(ModelCriteria &$query)
         {
             if (count($this->query) > 0) {
+                $tableMap = $this->getTableMap();
                 foreach ($this->query as $field => $value) {
-                    if ($column = $this->checkFieldExists($field)) {
-                        $tableField = $column->getPhpName();
-                        if (preg_match('/^<=/', $value)) {
-                            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
-                        } elseif (preg_match('/^<=/', $value)) {
-                            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::LESS_EQUAL);
-                        } elseif (preg_match('/^>=/', $value)) {
-                            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::GREATER_EQUAL);
-                        } elseif (preg_match('/^>/', $value)) {
-                            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
-                        } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
-                            $text = preg_replace('/(\'|\")/', '', $value);
-                            $text = preg_replace('/\ /', '%', $text);
-                            $query->filterBy($tableField, '%'.$text.'%', Criteria::LIKE);
-                        } else {
-                            $query->filterBy($tableField, $value, Criteria::EQUAL);
-                        }
-                    } elseif(self::API_COMBO_FIELD === $field) {
-                        $exp = 'CONCAT(';
-                        $sep = '';
-                        $tablemap = $this->getTableMap();
-                        foreach($tablemap->getColumns() as $column) {
-                            if($column->isText()) {
-                                $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
-                                $sep = ', " ", ';
-                            }
-                        }
-                        foreach($this->extraColumns as $extra => $name) {
-                            $exp .= $sep . $extra;
-                            $sep = ', " ", ';
-                        }
-                        $exp .= ")";
-                        $text = preg_replace('/(\'|\")/', '', $value);
-                        $text = preg_replace('/\ /', '%', $text);
-                        $query->where($exp . Criteria::LIKE . '"%' . $text . '%"');
+                    if(self::API_COMBO_FIELD === $field) {
+                        ApiHelper::composerComboField($tableMap, $query, $this->extraColumns, $value);
                     } else {
-                        $tableField = null;
+                        ApiHelper::addModelField($tableMap, $query, $field, $value);
                     }
                 }
             }
@@ -381,7 +332,7 @@
          * Get list of {__API__} elements filtered
          * @GET
          * @CACHE 600
-         * @ROUTE /api/{__API__}
+         * @ROUTE /{__DOMAIN__}/api/{__API__}
          *
          * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
          */
@@ -398,7 +349,7 @@
          *
          * @GET
          * @CACHE 600
-         * @ROUTE /api/{__API__}/{pk}
+         * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
          *
          * @param int $pk
          *
@@ -419,7 +370,7 @@
          *
          * @POST
          * @PAYLOAD {__API__}
-         * @ROUTE /api/{__API__}
+         * @ROUTE /{__DOMAIN__}/api/{__API__}
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
          */
@@ -448,7 +399,7 @@
          * Delete a {__API__}
          *
          * @DELETE
-         * @ROUTE /api/{__API__}/{pk}
+         * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
          *
          * @param string $pk
          *
@@ -480,7 +431,7 @@
          *
          * @PUT
          * @PAYLOAD {__API__}
-         * @ROUTE /api/{__API__}/{pk}
+         * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
          *
          * @param string $pk
          *
@@ -684,5 +635,81 @@
                 $sep = ', "|", ';
             }
             $this->extraColumns['CONCAT("' . $tableMap->getPhpName() . ' #", ' . $pks . ')'] = self::API_LIST_NAME_FIELD;
+        }
+
+        /**
+         * BACK COMPATIBILITY METHODS
+         */
+
+        /**
+         * Modify {__API__} model
+         *
+         * @GET
+         * @ROUTE /api/{__API__}
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         *
+         */
+        public function _modelList() {
+            return $this->modelList();
+        }
+
+        /**
+         * Modify {__API__} model
+         *
+         * @GET
+         * @ROUTE /api/{__API__}/{pk}
+         *
+         * @param string $pk
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         *
+         */
+        public function _oldGet($pk) {
+            return $this->get($pk);
+        }
+
+        /**
+         * Modify {__API__} model
+         *
+         * @POST
+         * @PAYLOAD {__API__}
+         * @ROUTE /api/{__API__}
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         *
+         */
+        public function _post() {
+            return $this->post($pk);
+        }
+
+        /**
+         * Modify {__API__} model
+         *
+         * @PUT
+         * @PAYLOAD {__API__}
+         * @ROUTE /api/{__API__}/{pk}
+         *
+         * @param string $pk
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         *
+         */
+        public function _put($pk) {
+            return $this->put($pk);
+        }
+
+        /**
+         * Modify {__API__} model
+         *
+         * @DELETE
+         * @PAYLOAD {__API__}
+         * @ROUTE /api/{__API__}/{pk}
+         *
+         * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         *
+         */
+        public function _delete($pk) {
+            return $this->delete($pk);
         }
     }
