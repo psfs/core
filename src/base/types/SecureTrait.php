@@ -30,7 +30,7 @@ trait SecureTrait {
      * @return boolean
      */
     public function isLogged() {
-        return (null !== $this->security->getUser());
+        return (null !== $this->security->getUser() || $this->isAdmin());
     }
 
     /**
