@@ -10,6 +10,7 @@
     use PSFS\base\config\Config;
     use PSFS\base\dto\JsonResponse;
     use PSFS\base\dto\Order;
+    use PSFS\base\exception\ApiException;
     use PSFS\base\Logger;
     use PSFS\base\Request;
     use PSFS\base\Router;
@@ -24,6 +25,13 @@
         const API_COMBO_FIELD = '__combo';
         const API_LIST_NAME_FIELD = '__name__';
         const API_FIELDS_RESULT_FIELD = '__fields';
+        const API_MODEL_KEY_FIELD = '__pk';
+
+        const API_ACTION_LIST = 'list';
+        const API_ACTION_GET = 'read';
+        const API_ACTION_POST = 'create';
+        const API_ACTION_PUT = 'update';
+        const API_ACTION_DELETE = 'delete';
 
         /**
          * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
@@ -70,6 +78,10 @@
          * @var array extraColumns
          */
         protected $extraColumns = array();
+        /**
+         * @var string
+         */
+        protected $action;
 
         /**
          * Initialize api
@@ -188,6 +200,20 @@
         }
 
         /**
+         * @throws ApiException
+         */
+        private function addPkToList() {
+            $tableMap = $this->getTableMap();
+            $pks = $tableMap->getPrimaryKeys();
+            if(count($pks) == 1) {
+                $pks = array_keys($pks);
+                $this->extraColumns[$pks[0]] = self::API_MODEL_KEY_FIELD;
+            } else {
+                throw new ApiException(_('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
+            }
+        }
+
+        /**
          * Method that add a new field with the Label of the row
          */
         private function addDefaultListField() {
@@ -207,6 +233,7 @@
                     $this->addClassListName($tableMap);
                 }
             }
+
         }
 
         /**
@@ -216,7 +243,10 @@
          */
         private function addExtraColumns(ModelCriteria &$query)
         {
-            $this->addDefaultListField();
+            if(self::API_ACTION_LIST === $this->action) {
+                $this->addDefaultListField();
+                $this->addPkToList();
+            }
             if (!empty($this->extraColumns)) {
                 foreach ($this->extraColumns as $expression => $columnName) {
                     $query->withColumn($expression, $columnName);
@@ -329,7 +359,7 @@
         }
 
         /**
-         * Get list of {__API__} elements filtered
+         * @label Get list of {__API__} elements filtered
          * @GET
          * @CACHE 600
          * @ROUTE /{__DOMAIN__}/api/{__API__}
@@ -338,6 +368,7 @@
          */
         public function modelList()
         {
+            $this->action = self::API_ACTION_LIST;
             $code = 200;
             list($return, $total, $pages) = $this->getList();
 
@@ -345,7 +376,7 @@
         }
 
         /**
-         * Get unique element for {__API__}
+         * @label Get unique element for {__API__}
          *
          * @GET
          * @CACHE 600
@@ -357,6 +388,7 @@
          */
         public function get($pk)
         {
+            $this->action = self::API_ACTION_GET;
             $return = NULL;
             $total = NULL;
             $pages = 1;
@@ -366,7 +398,7 @@
         }
 
         /**
-         * Create new {__API__}
+         * @label Create new {__API__}
          *
          * @POST
          * @PAYLOAD {__API__}
@@ -376,6 +408,7 @@
          */
         public function post()
         {
+            $this->action = self::API_ACTION_POST;
             $saved = FALSE;
             $status = 400;
             $model = NULL;
@@ -396,7 +429,7 @@
         }
 
         /**
-         * Delete a {__API__}
+         * @label Delete a {__API__}
          *
          * @DELETE
          * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
@@ -407,6 +440,7 @@
          */
         public function delete($pk = NULL)
         {
+            $this->action = self::API_ACTION_DELETE;
             $deleted = FALSE;
             $message = null;
             if (NULL !== $pk) {
@@ -427,7 +461,7 @@
         }
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @PUT
          * @PAYLOAD {__API__}
@@ -440,6 +474,7 @@
          */
         public function put($pk)
         {
+            $this->action = self::API_ACTION_PUT;
             $this->hydrateModel($pk);
             $status = 400;
             $updated = FALSE;
@@ -488,7 +523,7 @@
         }
 
         /**
-         * Wrapper for json parent method with close transactions and close connectios tasks
+         * Wrapper for json parent method with close transactions and close connections tasks
          *
          * @param \PSFS\base\dto\JsonResponse $response
          * @param int $status
@@ -547,18 +582,27 @@
             return $model[count($model) - 1];
         }
 
+        public function getDomain()
+        {
+            $model = explode("\\", $this->getModelNamespace());
+            return (strlen($model[0])) ? $model[0] : $model[1];
+        }
+
         /**
+         * @label {__API__} Manager
          * @GET
-         * @visible false
-         * @route /admin/{__API__}
+         * @route /admin/{__DOMAIN__}/{__API__}
          * @return string HTML
          */
         public function admin()
         {
             return $this->render('api.admin.html.twig', array(
                 "api"    => $this->getApi(),
-                "domain" => $this->domain,
-                "url"    => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower('api-' . $this->getApi() . "-pk"), TRUE)),
+                "domain" => $this->getDomain(),
+                "listLabel" => self::API_LIST_NAME_FIELD,
+                'modelId' => self::API_MODEL_KEY_FIELD,
+                'formUrl' => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower('admin-api-form-' . $this->getDomain() . '-' . $this->getApi()), TRUE)),
+                "url"    => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower($this->getDomain() . '-' . 'api-' . $this->getApi() . "-pk"), TRUE)),
             ), [], '');
         }
 
@@ -568,10 +612,10 @@
         }
 
         /**
-         * Returns form data for any entity
+         * @label Returns form data for any entity
          * @GET
          * @visible false
-         * @route /api/form/{__API__}
+         * @route /admin/api/form/{__DOMAIN__}/{__API__}
          * @return string JSON
          */
         public function getForm()
@@ -642,7 +686,7 @@
          */
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @GET
          * @ROUTE /api/{__API__}
@@ -655,7 +699,7 @@
         }
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @GET
          * @ROUTE /api/{__API__}/{pk}
@@ -670,7 +714,7 @@
         }
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @POST
          * @PAYLOAD {__API__}
@@ -680,11 +724,11 @@
          *
          */
         public function _post() {
-            return $this->post($pk);
+            return $this->post();
         }
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @PUT
          * @PAYLOAD {__API__}
@@ -700,7 +744,7 @@
         }
 
         /**
-         * Modify {__API__} model
+         * @label Modify {__API__} model
          *
          * @DELETE
          * @PAYLOAD {__API__}

@@ -4,7 +4,7 @@
           onsubmit="return false;"
           action="{{ url }}"
           method="{{ method }}"
-          data-ng-hide="loading"
+          data-ng-hide="itemLoading"
           layout="column"
           flex="100"
           novalidate>
@@ -38,5 +38,7 @@
         </md-input-container>
         <md-button class="md-raised md-primary" ng-click="submitForm()">Save</md-button>
     </form>
-    <md-progress-circular md-mode="indeterminate" data-ng-show="loading" flex="100"></md-progress-circular>
+    <div class="text-center" data-ng-show="itemLoading" style="margin-top: 25%;">
+        <md-progress-circular md-mode="indeterminate" flex="100"></md-progress-circular>
+    </div>
 </md-content>

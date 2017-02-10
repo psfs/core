@@ -4,7 +4,7 @@
     var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout',
         function ($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout) {
             $scope.method = 'POST';
-            $scope.loading = false;
+            $scope.itemLoading = false;
             $scope.combos = {};
             $scope.limit = globalLimit || 25;
             $apiSrv.setEntity($scope.entity);
@@ -18,12 +18,12 @@
             }
 
             function loadFormFields() {
-                $scope.loading = true;
+                $scope.itemLoading = true;
                 $log.debug('Loading entity form info');
-                getEntityFields($scope.url.replace($scope.entity, 'form/' + $scope.entity), function (response) {
+                getEntityFields($scope.formUrl, function (response) {
                     $log.debug('Entity form loaded');
                     $scope.form = response.data.data || {};
-                    $scope.loading = false;
+                    $scope.itemLoading = false;
                 });
             }
 
@@ -50,10 +50,10 @@
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title($scope.entity + ' Error ' + err.status)
+                        .title($scope.entity + '<br> Error ' + err.status)
                         .content(err.data.data)
                         .ariaLabel('Save error')
-                        .ok('Close')
+                        .ok($scope.i18N['close'])
                 );
                 $log.error(err);
                 $scope.loading = false;
@@ -62,12 +62,12 @@
             function submitForm() {
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
-                    $scope.loading = true;
+                    $scope.itemLoading = true;
                     var model = $scope.model;
                     try {
                         $http.put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
                             .then(function (response) {
-                                $scope.loading = false;
+                                $scope.itemLoading = false;
                                 $scope.model = {};
                                 $scope.entity_form.$setPristine(true);
                                 $scope.entity_form.$setDirty(false);
@@ -76,7 +76,7 @@
                         $log.debug('Create new entity');
                         $http.post($scope.url, model)
                             .then(function (response) {
-                                $scope.loading = false;
+                                $scope.itemLoading = false;
                                 $scope.model = {};
                                 $scope.entity_form.$setPristine(true);
                                 $scope.entity_form.$setDirty(false);

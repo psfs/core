@@ -9,6 +9,8 @@
             $scope.selected = null;
             $scope.form = {};
             $scope.entity_form = null;
+            $scope.itemLoading = true;
+            $scope.i18N = i18N || {};
         }];
     app.controller('apiCtrl', apiCtrl);
 })();

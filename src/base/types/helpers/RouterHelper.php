@@ -185,7 +185,7 @@ class RouterHelper {
      */
     public static function extractReflectionLabel($docComments)
     {
-        preg_match('/@label\ \n/i', $docComments, $label);
+        preg_match('/@label\ (.*)/i', $docComments, $label);
         return (count($label) > 0) ? $label[1] : null;
     }
 
@@ -255,7 +255,7 @@ class RouterHelper {
             $regex = str_replace('{__DOMAIN__}', $module, $regex);
             $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
-            $label = RouterHelper::extractReflectionLabel($docComments);
+            $label = RouterHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
             if(self::checkCanAddRoute($regex, $api)) {
                 $route = $httpMethod . "#|#" . $regex;
                 $info = [

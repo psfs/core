@@ -7,16 +7,17 @@
         $scope.limit = globalLimit || 25;
         $scope.actualPage = 1;
         $scope.count = 0;
+        $scope.listSearch = '';
 
         function catchError(response)
         {
             $mdDialog.show(
                 $mdDialog.alert()
                     .clickOutsideToClose(true)
-                    .title('An error ocurred')
+                    .title($scope.i18N['generic_error_label'])
                     .content(response)
                     .ariaLabel('Alert Error Dialog')
-                    .ok('Close')
+                    .ok($scope.i18N['close'])
             );
             $scope.loading = false;
         }
@@ -44,15 +45,21 @@
             if(clean) addNewItem();
             var queryParams = {
                 '__limit': $scope.limit,
-                '__page': $scope.actualPage
+                '__page': $scope.actualPage,
+                '__fields': $scope.listLabel
             };
+            if($scope.listSearch.replace(/\ /ig, '').length > 0) {
+                queryParams['__combo'] = $scope.listSearch;
+            }
             $scope.loading = true;
             try {
                 $http.get($scope.url, {params: queryParams})
                     .then(function(result) {
                         $log.info(result);
                         $scope.list = result.data.data;
-                        $scope.loading = false;
+                        $timeout(function(){
+                            $scope.loading = false;
+                        }, 500);
                         $scope.count = result.data.total;
                     }, catchError);
             } catch(err) {
@@ -64,13 +71,13 @@
         {
             $scope.loading = true;
             var confirm = $mdDialog.confirm()
-                .title('Would you like to delete ' + $apiSrv.getLabel(item) + '?')
-                .content('If you delete this element, maybe lost some related data')
+                .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
+                .content($scope.i18N['confirm_delete_message'])
                 .ariaLabel('Delete Element')
-                .ok('Delete')
-                .cancel('Cancel');
+                .ok($scope.i18N['delete'])
+                .cancel($scope.i18N['cancel']);
             $mdDialog.show(confirm).then(function() {
-                $http.delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
+                $http.delete($scope.url + "/" + item[$scope.modelId])
                     .then(function() {
                         $timeout(function() {
                             if(checkItem(item)) {
@@ -82,12 +89,11 @@
                         $mdDialog.show(
                             $mdDialog.alert()
                                 .clickOutsideToClose(true)
-                                .title($scope.entity + ' Error ' + status)
+                                .title($scope.entity + '<br> Error ' + status)
                                 .content(err)
                                 .ariaLabel('Delete error')
-                                .ok('Close')
+                                .ok($scope.i18N['close'])
                         );
-
                     });
             }, function() {
                 $scope.loading = false;
@@ -96,8 +102,24 @@
 
         function loadItem(item)
         {
-            $scope.model = angular.copy(item);
-            $msgSrv.send('populate_combos');
+            $scope.itemLoading = true;
+            $http.get($scope.url + "/" + item[$scope.modelId])
+                .then(function(response) {
+                    $scope.model = response.data.data;
+                    $msgSrv.send('populate_combos');
+                    $timeout(function(){
+                        $scope.itemLoading = false;
+                    }, 500);
+                }, function(err, status) {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title($scope.entity + '<br> Error ' + status)
+                            .content(err)
+                            .ariaLabel('Delete error')
+                            .ok($scope.i18N['close'])
+                    );
+                });
         }
 
         function isModelSelected() {
@@ -120,6 +142,17 @@
             }
             $msgSrv.send('populate_combos');
         }
+
+        var searcher = null;
+        function search() {
+            $timeout.cancel(searcher);
+            searcher = $timeout(loadData, 250);
+        }
+
+        $scope.$watch('listSearch', function(_new, _old) {
+            if(_old === _new) return;
+            search();
+        });
 
         $scope.getLabel = $apiSrv.getLabel;
         $scope.loadData = loadData;

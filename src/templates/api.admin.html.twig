@@ -4,13 +4,30 @@
     <br><h2 class="md-flex">{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
     <div class="col-md-12" layout="row" layout-fill ng-controller="apiCtrl">
         <input type="hidden" ng-model="entity" ng-init="entity = '{{ api }}'"/>
+        <input type="hidden" ng-model="api" ng-init="api = '{{ api }}'"/>
         <input type="hidden" ng-model="url" ng-init="url = '{{ url }}'"/>
+        <input type="hidden" ng-model="formUrl" ng-init="formUrl = '{{ formUrl }}'"/>
+        <input type="hidden" ng-model="domain" ng-init="domain = '{{ domain }}'"/>
+        <input type="hidden" ng-model="listLabel" ng-init="listLabel = '{{ listLabel }}'"/>
+        <input type="hidden" ng-model="modelId" ng-init="modelId = '{{ modelId }}'"/>
         <api-lists></api-lists>
         <api-form></api-form>
     </div>
 {% endblock body_content %}
 {% block scripts %}
-    <script>var module = module || '{{ app_name|default('psfs') }}';</script>
+    <script type="text/javascript">
+        var module = module || '{{ app_name|default('psfs') }}';
+        var i18N = {
+            'generic_error_label': '{{ "Algo ha ido mal"|trans }}',
+            'confirm_delete_label': '{{ "Vas a eliminar: %entity%"|trans }}',
+            'confirm_delete_message': '{{ "Si eliminas este elemento puede que borres más datos relacionados, ¿estás seguro?"|trans }}',
+            'delete': '{{ "Eliminar"|trans }}',
+            'cancel': '{{ "Cancelar"|trans }}',
+            'close': '{{ "Cerrar"|trans }}',
+            'elements': '{{ "elementos"|trans }}',
+            'search': '{{ "Buscar"|trans }}'
+        };
+    </script>
     {% scripts
     '@ROOT/js/api-srv.js'
     '@ROOT/js/api-ctrl.js'

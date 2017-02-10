@@ -51,7 +51,8 @@ class Config
         'log.level', // Max log level(default INFO)
         'admin_action', // Default admin url when access to /admin
         'cache.var', // Static cache var
-        'twig.auto_reload' // Enable or disable auto reload templates for twig
+        'twig.auto_reload', // Enable or disable auto reload templates for twig
+        'modules.extend', // Variable for extending the current functionality
     ];
     protected $debug = false;
 

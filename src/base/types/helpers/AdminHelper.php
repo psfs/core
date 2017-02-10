@@ -8,6 +8,20 @@ namespace PSFS\base\types\helpers;
 class AdminHelper {
 
     /**
+     * @param array $elementA
+     * @param array $elementB
+     * @return int
+     */
+    public static function sortByLabel(array $elementA, array $elementB) {
+        $labelA = array_key_exists('label', $elementA) ? $elementA['label'] : '';
+        $labelB = array_key_exists('label', $elementB) ? $elementB['label'] : '';
+        if($labelA == $labelB) {
+            return 0;
+        }
+        return $labelA < $labelB ? -1 : 1;
+    }
+
+    /**
      * @param array $systemRoutes
      * @return array
      */
@@ -27,18 +41,21 @@ class AdminHelper {
                     if (!array_key_exists($_profile, $routes)) {
                         $routes[$_profile] = array();
                     }
-                    $routes[$_profile][] = $params["slug"];
+                    $routes[$_profile][] = [
+                        'slug' => $params["slug"],
+                        'label' => $params["label"] ?: $params["slug"]
+                    ];
                 }
             }
         }
         if (array_key_exists("superadmin", $routes)) {
-            asort($routes["superadmin"]);
+            uasort($routes["superadmin"], 'AdminHelper::sortByLabel');
         }
         if (array_key_exists("adminhidden", $routes)) {
-            asort($routes["adminhidden"]);
+            asort($routes["adminhidden"], 'AdminHelper::sortByLabel');
         }
         if (array_key_exists('admin', $routes)) {
-            asort($routes["admin"]);
+            asort($routes["admin"], 'AdminHelper::sortByLabel');
         }
         return $routes;
     }
