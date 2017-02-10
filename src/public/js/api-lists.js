@@ -63,6 +63,7 @@
                         $scope.count = result.data.total;
                     }, catchError);
             } catch(err) {
+                $scope.loading = false;
                 $log.error(err.message);
             }
         }
@@ -85,15 +86,16 @@
                             }
                             loadData();
                         }, 250);
-                    }, function(err, statu){
+                    }, function(err, status){
                         $mdDialog.show(
                             $mdDialog.alert()
                                 .clickOutsideToClose(true)
-                                .title($scope.entity + '<br> Error ' + status)
-                                .content(err)
+                                .title($scope.entity + ' Error ' + status)
+                                .content(err.data.data)
                                 .ariaLabel('Delete error')
                                 .ok($scope.i18N['close'])
                         );
+                        $scope.loading = false;
                     });
             }, function() {
                 $scope.loading = false;
@@ -114,11 +116,12 @@
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
-                            .title($scope.entity + '<br> Error ' + status)
+                            .title($scope.entity + ' Error ' + status)
                             .content(err)
                             .ariaLabel('Delete error')
                             .ok($scope.i18N['close'])
                     );
+                    $scope.loading = false;
                 });
         }
 
