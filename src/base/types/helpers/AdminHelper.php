@@ -49,13 +49,13 @@ class AdminHelper {
             }
         }
         if (array_key_exists("superadmin", $routes)) {
-            uasort($routes["superadmin"], 'AdminHelper::sortByLabel');
+            uasort($routes["superadmin"], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
         }
         if (array_key_exists("adminhidden", $routes)) {
-            asort($routes["adminhidden"], 'AdminHelper::sortByLabel');
+            uasort($routes["adminhidden"], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
         }
         if (array_key_exists('admin', $routes)) {
-            asort($routes["admin"], 'AdminHelper::sortByLabel');
+            uasort($routes["admin"], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
         }
         return $routes;
     }

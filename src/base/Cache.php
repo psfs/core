@@ -159,7 +159,7 @@ class Cache
     /**
      * @return bool
      */
-    private function checkAdminSite() {
+    private static function checkAdminSite() {
         $isAdminRequest = false;
         $lastRequest = Security::getInstance()->getSessionKey("lastRequest");
         if(null !== $lastRequest) {
