@@ -3,6 +3,7 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\SingletonTrait;
 
 /**
@@ -156,15 +157,30 @@ class Cache
     }
 
     /**
+     * @return bool
+     */
+    private function checkAdminSite() {
+        $isAdminRequest = false;
+        $lastRequest = Security::getInstance()->getSessionKey("lastRequest");
+        if(null !== $lastRequest) {
+            $url = str_replace(Request::getInstance()->getRootUrl(true), '', $lastRequest['url']);
+            $isAdminRequest = preg_match('/^\/admin\//i', $url);
+        }
+        return $isAdminRequest;
+    }
+
+    /**
      * Método estático que revisa si se necesita cachear la respuesta de un servicio o no
      * @return integer|boolean
      */
     public static function needCache()
     {
-        $action = Security::getInstance()->getSessionKey("__CACHE__");
         $needCache = false;
-        if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
-            $needCache = $action["cache"];
+        if(!self::checkAdminSite()) {
+            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
+                $needCache = $action["cache"];
+            }
         }
         return $needCache;
     }

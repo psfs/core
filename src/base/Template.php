@@ -190,6 +190,7 @@ class Template
         for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
             header($headers[$i]);
         }
+        header('X-PSFS-CACHED: true');
         echo $data;
         ob_flush();
         ob_end_clean();
