@@ -295,6 +295,28 @@
         }
 
         /**
+         * @param ModelCriteria $query
+         */
+        private function checkReturnFields(ModelCriteria &$query) {
+            $returnFields = $this->getRequest()->getQuery('__fields');
+            if(null !== $returnFields) {
+                $fields = explode(',', $returnFields);
+                $select = [];
+                $tablemap = $this->getTableMap();
+                foreach ($fields as $field) {
+                    if(in_array($field, $this->extraColumns)) {
+                        $select[] = $field;
+                    } elseif($tablemap->hasColumnByPhpName($field)) {
+                        $select[] = $field;
+                    }
+                }
+                if(count($select) > 0) {
+                    $query->select($select);
+                }
+            }
+        }
+
+        /**
          * Generate list page for model
          */
         private function paginate()
@@ -305,6 +327,7 @@
                 $this->joinTables($query);
                 $this->addExtraColumns($query);
                 $this->addFilters($query);
+                $this->checkReturnFields($query);
                 $this->addOrders($query);
                 list($page, $limit) = $this->extractPagination();
                 if ($limit == -1) {

@@ -151,6 +151,9 @@
 
         $scope.$watch('listSearch', function(_new, _old) {
             if(_old === _new) return;
+            if(_new.replace(/\ /g, '').length == 0) {
+                $scope.actualPage = 1;
+            }
             search();
         });
 
