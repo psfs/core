@@ -105,7 +105,7 @@
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
-                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit='+$scope.limit+'&__combo=' + encodeURIComponent("%" + search + "%"))
+                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit='+$scope.limit+'&__combo=' + encodeURIComponent("%" + search + "%") + '&__fields=__name__,' + field.relatedField)
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {
@@ -138,7 +138,7 @@
                             } catch(err) {}
                         }
                     } else {
-                        $http.get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1')
+                        $http.get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1' + '&__fields=__name__,' + field.relatedField)
                             .then(function (response) {
                                 $scope.combos[field.name].item = response.data.data[0];
                             });
