@@ -5,6 +5,7 @@
     use PSFS\base\Logger;
     use PSFS\base\Service;
     use PSFS\base\types\helpers\InjectorHelper;
+    use PSFS\base\types\helpers\RouterHelper;
     use Symfony\Component\Finder\Finder;
 
     /**
@@ -30,10 +31,14 @@
             $modules = [];
             $domains = $this->route->getDomains();
             if (count($domains)) {
-                foreach (array_keys($domains) as $domain) {
+                foreach ($domains as $module => $info) {
                     try {
-                        if (!preg_match('/^\@ROOT/i', $domain)) {
-                            $modules[] = str_replace('/', '', str_replace('@', '', $domain));
+                        $module = str_replace('/', '', str_replace('@', '', $module));
+                        if (!preg_match('/^ROOT/i', $module)) {
+                            $modules[] = [
+                                'name' => $module,
+                                'path' => realpath($info['template'] . DIRECTORY_SEPARATOR . '..'),
+                            ];
                         }
                     } catch (\Exception $e) {
                         $modules[] = $e->getMessage();
@@ -47,26 +52,26 @@
         /**
          * Method that extract all endpoints for each module
          *
-         * @param string $module
+         * @param array $module
          *
          * @return array
          */
-        public function extractApiEndpoints($module)
+        public function extractApiEndpoints(array $module)
         {
-            $module_path = CORE_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . "Api";
+            $module_path = $module['path'] . DIRECTORY_SEPARATOR . 'Api';
+            $module_name = $module['name'];
             $endpoints = [];
             if (file_exists($module_path)) {
                 $finder = new Finder();
-                $finder->files()->depth('== 0')->in($module_path)->name('*.php');
+                $finder->files()->in($module_path)->depth(0)->name('*.php');
                 if (count($finder)) {
                     /** @var \SplFileInfo $file */
                     foreach ($finder as $file) {
-                        $namespace = "\\{$module}\\Api\\" . str_replace('.php', '', $file->getFilename());
-                        $endpoints[$namespace] = $this->extractApiInfo($namespace);
+                        $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
+                        $endpoints[$namespace] = $this->extractApiInfo($namespace, $module_name);
                     }
                 }
             }
-
             return $endpoints;
         }
 
@@ -77,22 +82,18 @@
          *
          * @return array
          */
-        public function extractApiInfo($namespace)
+        public function extractApiInfo($namespace, $module)
         {
             $info = [];
             $reflection = new \ReflectionClass($namespace);
-            $publicMethods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-            if (count($publicMethods)) {
-                /** @var \ReflectionMethod $method */
-                foreach ($publicMethods as $method) {
-                    try {
-                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection);
-                        if (NULL !== $mInfo) {
-                            $info[] = $mInfo;
-                        }
-                    } catch (\Exception $e) {
-                        Logger::getInstance()->errorLog($e->getMessage());
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                try {
+                    $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
+                    if (NULL !== $mInfo) {
+                        $info[] = $mInfo;
                     }
+                } catch (\Exception $e) {
+                    Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
             return $info;
@@ -114,18 +115,30 @@
         }
 
         /**
-         * Extract method from doc comments
+         * Extract api from doc comments
          *
          * @param string $comments
          *
          * @return string
          */
-        protected function extractMethod($comments = '')
+        protected function extractApi($comments = '')
         {
-            $method = 'GET';
-            preg_match('/@(get|post|put|delete)\n/i', $comments, $method);
+            $api = '';
+            preg_match('/@api\ (.*)\n/i', $comments, $api);
 
-            return strtoupper($method[1]);
+            return $api[1];
+        }
+
+        /**
+         * Extract api from doc comments
+         *
+         * @param string $comments
+         *
+         * @return boolean
+         */
+        protected function checkDeprecated($comments = '')
+        {
+            return false != preg_match('/@deprecated\n/i', $comments);
         }
 
         /**
@@ -302,24 +315,25 @@
          * @param string $namespace
          * @param \ReflectionMethod $method
          * @param \ReflectionClass $reflection
+         * @param string $module
          *
          * @return array
          */
-        protected function extractMethodInfo($namespace, \ReflectionMethod $method, \ReflectionClass $reflection)
+        protected function extractMethodInfo($namespace, \ReflectionMethod $method, \ReflectionClass $reflection, $module)
         {
             $methodInfo = NULL;
             $docComments = $method->getDocComment();
-            $shortName = $reflection->getShortName();
-            $modelNamespace = str_replace('Api', 'Models', $namespace);
             if (FALSE !== $docComments && preg_match('/\@route\ /i', $docComments)) {
-                $visibility = $this->extractVisibility($docComments);
-                $route = str_replace('{__API__}', $shortName, $this->extractRoute($docComments));
-                if ($visibility && preg_match('/^\/api\//i', $route)) {
+                $api = self::extractApi($reflection->getDocComment());
+                list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
+                $route = explode('#|#', $route);
+                $modelNamespace = str_replace('Api', 'Models', $namespace);
+                if ($info['visible'] && !self::checkDeprecated($docComments)) {
                     try {
                         $methodInfo = [
-                            'url'         => $route,
-                            'method'      => $this->extractMethod($docComments),
-                            'description' => str_replace('{__API__}', $shortName, $this->extractDescription($docComments)),
+                            'url'         => array_pop($route),
+                            'method'      => $info['http'],
+                            'description' => $info['label'],
                             'return'      => $this->extractReturn($modelNamespace, $docComments),
                         ];
                         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {

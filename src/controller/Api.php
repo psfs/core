@@ -25,13 +25,14 @@ class Api extends Controller
     /**
      * @GET
      * @CACHE 600
-     * @route /api/__doc/{type}
+     * @label Generador de documentación API
+     * @route /admin/api/__doc/{type}
      *
      * @param string $type
      *
      * @return string JSON
      */
-    public function createApiDocs($type = Api::PSFS_DOC)
+    public function createApiDocs($type = '')
     {
         ini_set('memory_limit', -1);
         ini_set('max_execution_time', -1);

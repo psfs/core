@@ -421,7 +421,7 @@
         }
 
         /**
-         * @label Create new {__API__}
+         * @label Create a new {__API__}
          *
          * @POST
          * @PAYLOAD {__API__}
@@ -452,7 +452,7 @@
         }
 
         /**
-         * @label Delete a {__API__}
+         * @label Delete {__API__} model
          *
          * @DELETE
          * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
@@ -715,6 +715,7 @@
          * @ROUTE /api/{__API__}
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         * @deprecated
          *
          */
         public function _modelList() {
@@ -730,6 +731,7 @@
          * @param string $pk
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         * @deprecated
          *
          */
         public function _oldGet($pk) {
@@ -744,6 +746,7 @@
          * @ROUTE /api/{__API__}
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         * @deprecated
          *
          */
         public function _post() {
@@ -760,6 +763,7 @@
          * @param string $pk
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         * @deprecated
          *
          */
         public function _put($pk) {
@@ -774,6 +778,7 @@
          * @ROUTE /api/{__API__}/{pk}
          *
          * @return \PSFS\base\dto\JsonResponse(data={__API__})
+         * @deprecated
          *
          */
         public function _delete($pk) {

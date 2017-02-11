@@ -145,7 +145,7 @@ class RouterHelper {
      *
      * @return array
      */
-    public static  function extractReflectionParams($sr, \ReflectionMethod$method)
+    public static  function extractReflectionParams($sr, \ReflectionMethod $method)
     {
         $regex = $sr[1] ?: $sr[0];
         $default = '';
