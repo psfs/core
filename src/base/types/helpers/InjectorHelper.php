@@ -10,6 +10,21 @@ use PSFS\base\Logger;
 class InjectorHelper {
 
     /**
+     * @param \ReflectionClass $reflector
+     * @return array
+     */
+    public static function extractVariables(\ReflectionClass $reflector) {
+        $variables = [];
+        foreach($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $instanceType = self::extractVarType($property->getDocComment());
+            if (null !== $instanceType) {
+                $variables[$property->getName()] = $instanceType;
+            }
+        }
+        return $variables;
+    }
+
+    /**
      * Method that extract the properties of a Class
      * @param \ReflectionClass $reflector
      * @param integer $type

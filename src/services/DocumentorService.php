@@ -238,7 +238,7 @@
             $properties = [];
             $reflector = new \ReflectionClass($class);
             if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
-	            $properties = array_merge($properties, InjectorHelper::extractProperties($reflector, \ReflectionMethod::IS_PUBLIC));
+                $properties = array_merge($properties, InjectorHelper::extractVariables($reflector, \ReflectionMethod::IS_PUBLIC));
             }
 
             return $properties;
