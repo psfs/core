@@ -68,7 +68,10 @@
                     /** @var \SplFileInfo $file */
                     foreach ($finder as $file) {
                         $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
-                        $endpoints[$namespace] = $this->extractApiInfo($namespace, $module_name);
+                        $info = $this->extractApiInfo($namespace, $module_name);
+                        if(!empty($info)) {
+                            $endpoints[$namespace] = $info;
+                        }
                     }
                 }
             }
@@ -85,15 +88,17 @@
         public function extractApiInfo($namespace, $module)
         {
             $info = [];
-            $reflection = new \ReflectionClass($namespace);
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                try {
-                    $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
-                    if (NULL !== $mInfo) {
-                        $info[] = $mInfo;
+            if(class_exists($namespace)) {
+                $reflection = new \ReflectionClass($namespace);
+                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    try {
+                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
+                        if (NULL !== $mInfo) {
+                            $info[] = $mInfo;
+                        }
+                    } catch (\Exception $e) {
+                        Logger::getInstance()->errorLog($e->getMessage());
                     }
-                } catch (\Exception $e) {
-                    Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
             return $info;
