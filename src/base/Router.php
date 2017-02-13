@@ -311,10 +311,12 @@ class Router
                     $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
                 }
                 foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
-                    if(null !== $route && null !== $info) {
-                        $info['class'] = $namespace;
-                        $routing[$route] = $info;
+                    if(preg_match('/@route\ /i', $method->getDocComment())) {
+                        list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
+                        if(null !== $route && null !== $info) {
+                            $info['class'] = $namespace;
+                            $routing[$route] = $info;
+                        }
                     }
                 }
             }
@@ -418,6 +420,23 @@ class Router
     }
 
     /**
+     * @param $class
+     * @param $method
+     * @param array $params
+     * @return \ReflectionMethod
+     */
+    private function checkAction($class, $method, array $params) {
+        $action = new \ReflectionMethod($class, $method);
+
+        foreach($action->getParameters() as $parameter) {
+            if(!$parameter->isOptional() && !array_key_exists($parameter->getName(), $params)) {
+                throw new RouterException('Required parameters not sent');
+            }
+        }
+        return $action;
+    }
+
+    /**
      * Método que ejecuta una acción del framework y revisa si lo tenemos cacheado ya o no
      *
      * @param string $route
@@ -445,9 +464,8 @@ class Router
         }
         if ($execute) {
             Logger::log(_('Start executing action'), LOG_DEBUG);
-            if(false === call_user_func_array(array($class, $action['method']), $params)) {
-                Logger::log(_('An error ocurred trying to execute the action'), LOG_ERR, [error_get_last()]);
-            }
+            $method = $this->checkAction($class, $action['method'], $params);
+            $method->invoke($class, $params);
         }
     }
 

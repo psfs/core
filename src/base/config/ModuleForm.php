@@ -31,18 +31,6 @@
             $this->add('module', array(
                 'label' => _('Nombre del Módulo'),
             ))
-            ->add('force', array(
-                'label' => _('Sobreescribir ficheros'),
-                'type' => 'select',
-                'data' => array(_('No'), _('Sí')),
-                'required' => false
-            ))
-            ->add('is_module', array(
-                'label' => _('Es un módulo de PSFS'),
-                'type' => 'select',
-                'data' => array(_('No'), _('Sí')),
-                'required' => false
-            ))
             ->add('controllerType', array(
                 'label' => _('Tipo de controlador'),
                 'type' => 'select',

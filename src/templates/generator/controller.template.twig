@@ -20,7 +20,7 @@ use {{ namespace }}\Controller\base\{{ controllerType }}Controller;
     const DOMAIN = '{{ domain }}';
 
     /**
-    * @Inyectable
+    * @Autoload
     * @var \{{ namespace }}\Services\{{ service }}Service
     */
     protected $srv;
@@ -38,6 +38,7 @@ use {{ namespace }}\Controller\base\{{ controllerType }}Controller;
     /**
     * Index
     * @GET
+    * @label {{ domain }} test
     * @route /{{ url }}
     * @return string HTML
     */

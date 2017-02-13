@@ -217,25 +217,6 @@ class RouterHelper {
     }
 
     /**
-     * @param string $route
-     * @param string $api
-     * @return bool
-     */
-    private static function checkCanAddRoute($route, $api)
-    {
-        $is_enabled = true;
-        // For non api routes
-        if(strlen($api) > 0 && preg_match('/admin/i', $route)) {
-            // If route is for api, check if admin is enabled in config
-            $admin_enabled = Config::getInstance()->get('api.admin');
-            if(empty($admin_enabled)) {
-                $is_enabled = false;
-            }
-        }
-        return $is_enabled;
-    }
-
-    /**
      * @param \ReflectionMethod $method
      * @param string $api
      * @param string $module
@@ -256,18 +237,16 @@ class RouterHelper {
             $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
             $label = RouterHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
-            if(self::checkCanAddRoute($regex, $api)) {
-                $route = $httpMethod . "#|#" . $regex;
-                $info = [
-                    "method" => $method->getName(),
-                    "params" => $params,
-                    "default" => $default,
-                    "label" => $label,
-                    "visible" => RouterHelper::extractReflectionVisibility($docComments),
-                    "http" => $httpMethod,
-                    "cache" => RouterHelper::extractReflectionCacheability($docComments),
-                ];
-            }
+            $route = $httpMethod . "#|#" . $regex;
+            $info = [
+                "method" => $method->getName(),
+                "params" => $params,
+                "default" => $default,
+                "label" => $label,
+                "visible" => RouterHelper::extractReflectionVisibility($docComments),
+                "http" => $httpMethod,
+                "cache" => RouterHelper::extractReflectionCacheability($docComments),
+            ];
         }
         return [$route, $info];
     }
