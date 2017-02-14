@@ -171,7 +171,7 @@ class RouterHelper {
      */
     public static function extractReflectionHttpMethod($docComments)
     {
-        preg_match('/@(GET|POST|PUT|DELETE)\n/i', $docComments, $routeMethod);
+        preg_match('/@(GET|POST|PUT|DELETE)(\n|\r)/i', $docComments, $routeMethod);
 
         return (count($routeMethod) > 0) ? $routeMethod[1] : "ALL";
     }
@@ -185,7 +185,7 @@ class RouterHelper {
      */
     public static function extractReflectionLabel($docComments)
     {
-        preg_match('/@label\ (.*)/i', $docComments, $label);
+        preg_match('/@label\ (.*)(\n|\r)/i', $docComments, $label);
         return (count($label) > 0) ? $label[1] : null;
     }
 
@@ -198,7 +198,7 @@ class RouterHelper {
      */
     public static function extractReflectionVisibility($docComments)
     {
-        preg_match('/@visible\ (.*)\n/i', $docComments, $visible);
+        preg_match('/@visible\ (.*)(\n|\r)/i', $docComments, $visible);
         return !(array_key_exists(1, $visible) && preg_match('/false/i', $visible[1]));
     }
 
@@ -211,7 +211,7 @@ class RouterHelper {
      */
     public static function extractReflectionCacheability($docComments)
     {
-        preg_match('/@cache\ (.*)\n/i', $docComments, $cache);
+        preg_match('/@cache\ (.*)(\n|\r)/i', $docComments, $cache);
 
         return (count($cache) > 0) ? $cache[1] : "0";
     }
@@ -226,7 +226,7 @@ class RouterHelper {
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
-        preg_match('/@route\ (.*)\n/i', $docComments, $sr);
+        preg_match('/@route\ (.*)(\n|\r)/i', $docComments, $sr);
         if (count($sr)) {
             list($regex, $default, $params) = RouterHelper::extractReflectionParams($sr, $method);
             if (strlen($api) && false !== strpos($regex, '__API__')) {
