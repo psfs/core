@@ -464,8 +464,9 @@ class Router
         }
         if ($execute) {
             Logger::log(_('Start executing action'), LOG_DEBUG);
-            $method = $this->checkAction($class, $action['method'], $params);
-            $method->invoke($class, $params);
+            if(false === call_user_func_array(array($class, $action['method']), $params)) {
+                Logger::log(_('An error ocurred trying to execute the action'), LOG_ERR, [error_get_last()]);
+            }
         }
     }
 
