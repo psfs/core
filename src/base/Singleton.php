@@ -108,7 +108,8 @@ class Singleton
     public function init()
     {
         if (!$this->isLoaded()) {
-            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . sha1(get_class($this)) . ".json";
+            $filename = sha1(get_class($this));
+            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . ".json";
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */

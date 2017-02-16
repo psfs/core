@@ -6,6 +6,7 @@ namespace PSFS\base;
 use PSFS\base\config\Config;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\extension\TemplateFunctions;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\helpers\TemplateHelper;
@@ -451,9 +452,9 @@ class Template
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
         $this->cache = Cache::getInstance();
-        $loader = new \Twig_Loader_Filesystem(Config::getInstance()->getTemplatePath());
+        $loader = new \Twig_Loader_Filesystem(GeneratorHelper::getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
-            'cache' => Config::getInstance()->getCachePath() . DIRECTORY_SEPARATOR . 'twig',
+            'cache' => CACHE_DIR . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
             'auto_reload' => Config::getParam('twig.auto_reload', TRUE),
         ));

@@ -8,6 +8,7 @@
     use PSFS\base\Security;
     use PSFS\base\Template;
     use PSFS\base\types\Form;
+    use PSFS\base\types\helpers\GeneratorHelper;
     use PSFS\Services\GeneratorService;
     use Symfony\Component\Translation\Tests\StringClass;
 
@@ -198,7 +199,7 @@
             if (file_exists($filename_path)) {
                 list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $filename_path);
                 //Creamos el directorio si no existe
-                Config::createDir($base.$html_base);
+                GeneratorHelper::createDir($base.$html_base);
                 //Si se ha modificado
                 if (!file_exists($base.$file_path) || filemtime($base.$file_path) < filemtime($filename_path)) {
                     if ($html_base == 'css') {

@@ -2,9 +2,9 @@
 namespace PSFS\Services;
 
 use PSFS\base\Cache;
-use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\GeneratorHelper;
 
 class GeneratorService extends Service
 {
@@ -39,7 +39,7 @@ class GeneratorService extends Service
         if (file_exists($path)) {
             $d = dir($path);
             while (false !== ($dir = $d->read())) {
-                Config::createDir($locale_path);
+                GeneratorHelper::createDir($locale_path);
                 if (!file_exists($locale_path . 'translations.po')) {
                     file_put_contents($locale_path . 'translations.po', '');
                 }
@@ -90,10 +90,10 @@ class GeneratorService extends Service
     private function createModulePath($module, $mod_path, $isModule = false)
     {
         // Creates the src folder
-        Config::createDir($mod_path);
+        GeneratorHelper::createDir($mod_path);
         // Create module path
         if (false === $isModule) {
-            Config::createDir($mod_path . $module);
+            GeneratorHelper::createDir($mod_path . $module);
         }
     }
 
@@ -113,12 +113,12 @@ class GeneratorService extends Service
         ];
         $module_path = $isModule ? $mod_path : $mod_path . $module;
         foreach ($paths as $path) {
-            Config::createDir($module_path . DIRECTORY_SEPARATOR . $path);
+            GeneratorHelper::createDir($module_path . DIRECTORY_SEPARATOR . $path);
         }
         //Creamos las carpetas de los assets
         $htmlPaths = array("css", "js", "img", "media", "font");
         foreach ($htmlPaths as $path) {
-            Config::createDir($module_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $path);
+            GeneratorHelper::createDir($module_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $path);
         }
 
         if ($isModule) {
@@ -502,7 +502,7 @@ class GeneratorService extends Service
     public static function copyr($src, $dst)
     {
         $dir = opendir($src);
-        Config::createDir($dst);
+        GeneratorHelper::createDir($dst);
         while (false !== ($file = readdir($dir))) {
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src . '/' . $file)) {

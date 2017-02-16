@@ -14,6 +14,7 @@ class RouteController extends Admin {
     /**
      * Método que pinta por pantalla todas las rutas del sistema
      * @GET
+     * @label Visor de rutas del sistema
      * @route /admin/routes
      */
     public function printRoutes()
@@ -27,6 +28,7 @@ class RouteController extends Admin {
      * Servicio que devuelve los parámetros disponibles
      * @GET
      * @route /admin/routes/show
+     * @label Servicio de rutas del sistema
      * @visible false
      * @return mixed
      */
@@ -40,6 +42,7 @@ class RouteController extends Admin {
      * Service to regenerate routes
      * @GET
      * @route /admin/routes/gen
+     * @label Regenerar rutas
      * @visible false
      * @return string HTML
      */

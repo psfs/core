@@ -43,6 +43,7 @@ class GeneratorController extends Admin
     /**
      * @POST
      * @route /admin/module
+     * @label Generador de módulos
      * @return string
      */
     public function doGenerateModule()
@@ -62,11 +63,10 @@ class GeneratorController extends Admin
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (\Exception $e) {
                 Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
-                throw new ConfigException('Error al generar el módulo, prueba a cambiar los permisos', 403);
+                throw new ConfigException(_('Error al generar el módulo, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render("modules.html.twig", array(
-            'properties' => $this->config->getPropelParams(),
             'form' => $form,
         ));
     }

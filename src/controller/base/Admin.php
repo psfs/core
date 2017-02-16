@@ -15,7 +15,8 @@ use PSFS\services\AdminServices;
  * @package PSFS\controller
  * @domain ROOT
  */
-abstract class Admin extends AuthAdminController{
+abstract class Admin extends AuthAdminController
+{
 
     const DOMAIN = 'ROOT';
 
@@ -34,7 +35,8 @@ abstract class Admin extends AuthAdminController{
      * Wrapper de asignación de los menus
      * @return array
      */
-    protected function getMenu() {
+    protected function getMenu()
+    {
         return Router::getInstance()->getAdminRoutes();
     }
 
@@ -44,9 +46,10 @@ abstract class Admin extends AuthAdminController{
      * @return string HTML
      * @throws \PSFS\base\exception\FormException
      */
-    public static function staticAdminLogon($route = null) {
-        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-            if('login' !== Config::getInstance()->get('admin_login')) {
+    public static function staticAdminLogon($route = null)
+    {
+        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+            if ('login' !== Config::getInstance()->get('admin_login')) {
                 return AdminServices::getInstance()->setAdminHeaders();
             } else {
                 $form = new LoginForm();
@@ -70,7 +73,8 @@ abstract class Admin extends AuthAdminController{
      * @visible false
      * @return string|null
      */
-    public function index() {
+    public function index()
+    {
         return $this->render("index.html.twig");
     }
 

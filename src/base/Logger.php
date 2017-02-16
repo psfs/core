@@ -9,11 +9,12 @@ use Monolog\Logger as Monolog;
 use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SingletonTrait;
 
 
 if (!defined("LOG_DIR")) {
-    Config::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
+    GeneratorHelper::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
     define("LOG_DIR", BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
 }
 
@@ -202,7 +203,7 @@ class Logger
     {
         $logger = $this->setLoggerName($config);
         $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
-        Config::createDir($path);
+        GeneratorHelper::createDir($path);
 
         return $path;
     }

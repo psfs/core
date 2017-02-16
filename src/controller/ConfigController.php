@@ -6,6 +6,7 @@ use PSFS\base\config\ConfigForm;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
 
 /**
@@ -19,13 +20,15 @@ class ConfigController extends Admin
      * Servicio que devuelve los parámetros disponibles
      * @GET
      * @route /admin/config/params
+     * @label Parámetros de configuración de PSGS
      * @visible false
      * @return mixed
      */
-    public function getConfigParams() {
+    public function getConfigParams()
+    {
         $response = array_merge(Config::$required, Config::$optional);
         $domains = Router::getInstance()->getDomains();
-        foreach($domains as $domain => $routes) {
+        foreach ($domains as $domain => $routes) {
             $pDomain = str_replace('@', '', $domain);
             $pDomain = str_replace('/', '', $pDomain);
             $response[] = strtolower($pDomain) . '.api.secret';
@@ -75,7 +78,7 @@ class ConfigController extends Admin
                 Logger::log(_('Configuración guardada correctamente'));
                 //Verificamos si tenemos que limpiar la cache del DocumentRoot
                 if (boolval($debug) !== boolval($newDebug)) {
-                    Config::clearDocumentRoot();
+                    GeneratorHelper::clearDocumentRoot();
                 }
                 Security::getInstance()->setFlash("callback_message", _("Configuración actualizada correctamente"));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-config", true));

@@ -15,11 +15,12 @@ class I18nController extends Admin
     /**
      * @GET
      * @route /admin/translations
+     * @label Generador de locales
      * @return string
      */
     public function defaultTranslations()
     {
-        return $this->getTranslations(Config::getInstance()->get('default_language'));
+        return $this->getTranslations(Config::getParam('default_language', 'es_ES'));
     }
 
     /**
@@ -27,6 +28,7 @@ class I18nController extends Admin
      * @GET
      * @param $locale string
      * @route /admin/translations/{locale}
+     * @label Generador de locales
      * @visible false
      * @return string HTML
      */

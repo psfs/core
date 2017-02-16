@@ -78,7 +78,7 @@ class Service extends Singleton
     }
 
     /**
-     * @return Array
+     * @return array
      */
     public function getParams()
     {
@@ -101,7 +101,7 @@ class Service extends Singleton
     }
 
     /**
-     * @param Array $params
+     * @param array $params
      */
     public function setParams($params)
     {
@@ -109,7 +109,7 @@ class Service extends Singleton
     }
 
     /**
-     * @return Array
+     * @return array
      */
     public function getHeaders()
     {
@@ -117,7 +117,7 @@ class Service extends Singleton
     }
 
     /**
-     * @param Array $headers
+     * @param array $headers
      */
     public function setHeaders($headers)
     {
@@ -181,11 +181,11 @@ class Service extends Singleton
     }
 
     /**
-     * Constructor por defecto
+     *
      */
-    public function __construct()
+    public function init()
     {
-        parent::__construct();
+        parent::init();
         $this->clearContext();
     }
 

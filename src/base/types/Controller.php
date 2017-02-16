@@ -7,6 +7,7 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\interfaces\ControllerInterface;
 
 /**
@@ -52,7 +53,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     {
         parent::init();
         $this->setDomain($this->domain)
-            ->setTemplatePath(Config::getInstance()->getTemplatePath());
+            ->setTemplatePath(GeneratorHelper::getTemplatePath());
     }
 
     /**

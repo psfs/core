@@ -13,6 +13,7 @@ class LogController extends Admin
      * Servicio que muestra los logs del sistema
      * @GET
      * @route /admin/logs
+     * @label VIsor de logs del sistema
      * @visible false
      * @return string|null
      */

@@ -21,8 +21,9 @@ class UserController extends Admin
     /**
      * @return string
      */
-    public static function showAdminManager() {
-        if(Request::getInstance()->getMethod() != 'GET') {
+    public static function showAdminManager()
+    {
+        if (Request::getInstance()->getMethod() != 'GET') {
             return self::updateAdminUsers();
         }
         $admins = AdminServices::getInstance()->getAdmins();
@@ -39,6 +40,7 @@ class UserController extends Admin
      * Método que gestiona los usuarios administradores de la plataforma
      * @GET
      * @route /admin/setup
+     * @label Gestor de usuarios PSFS
      * @return string|null
      * @throws \HttpException
      */
@@ -50,7 +52,8 @@ class UserController extends Admin
     /**
      * @return string
      */
-    public static function updateAdminUsers() {
+    public static function updateAdminUsers()
+    {
         $admins = AdminServices::getInstance()->getAdmins();
         $form = new AdminForm();
         $form->build();
@@ -94,7 +97,7 @@ class UserController extends Admin
      */
     public function adminLogin($route = null)
     {
-        if($this->isAdmin()) {
+        if ($this->isAdmin()) {
             return $this->redirect('admin');
         } else {
             return Admin::staticAdminLogon($route);

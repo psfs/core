@@ -1,6 +1,7 @@
 <?php
     namespace PSFS\test\base;
     use PSFS\base\config\Config;
+    use PSFS\base\types\helpers\GeneratorHelper;
 
     /**
      * Class DispatcherTest
@@ -43,7 +44,7 @@
 
             // Check if config can create the config dir
             $dirtmp = uniqid('test');
-            Config::createDir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
+            GeneratorHelper::createDir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
             $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp, 'Can\'t create test dir');
             @rmdir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
 
@@ -51,8 +52,7 @@
             $this->assertTrue(is_bool($config->getDebugMode()));
 
             // Check path getters
-            $this->assertFileExists($config->getTemplatePath());
-            $this->assertFileExists($config->getCachePath());
+            $this->assertFileExists(GeneratorHelper::getTemplatePath());
 
             Config::save([], [
                 'label' => ['test'],
@@ -63,10 +63,6 @@
             $this->assertNotEmpty($configData, 'Empty configuration');
             $this->assertTrue(is_array($configData), 'Configuration is not an array');
 
-            $propelParams = $config->getPropelParams();
-            $this->assertNotEmpty($propelParams, 'Empty configuration');
-            $this->assertTrue(is_array($propelParams), 'Configuration is not an array');
-
             $configured = $config->isConfigured();
             $this->assertTrue(is_bool($configured) && false === $configured);
             $this->assertTrue(is_bool($config->checkTryToSaveConfig()));
@@ -76,34 +72,6 @@
             $this->assertTrue(is_bool($configured) && true === $configured);
 
             return $previusConfigData;
-        }
-
-        /**
-         * Test that checks structure function in config
-         */
-        public function testStructureFunctions()
-        {
-            $config = $this->getInstance();
-
-            // try to create html folders
-            $config->createDir(WEB_DIR);
-            $config->createDir(WEB_DIR . DIRECTORY_SEPARATOR . 'css');
-            $config->createDir(WEB_DIR . DIRECTORY_SEPARATOR . 'js');
-            $config->createDir(WEB_DIR . DIRECTORY_SEPARATOR . 'media');
-            $config->createDir(WEB_DIR . DIRECTORY_SEPARATOR . 'font');
-
-            // Checks if exists all the folders
-            $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'css', 'css folder not exists');
-            $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'js', 'js folder not exists');
-            $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'media', 'media folder not exists');
-            $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'font', 'font folder not exists');
-
-            $config->clearDocumentRoot();
-            // Checks if not exists all the folders
-            $this->assertFileNotExists(WEB_DIR . DIRECTORY_SEPARATOR . 'css', 'css folder still exists');
-            $this->assertFileNotExists(WEB_DIR . DIRECTORY_SEPARATOR . 'js', 'js folder still exists');
-            $this->assertFileNotExists(WEB_DIR . DIRECTORY_SEPARATOR . 'media', 'media folder still exists');
-            $this->assertFileNotExists(WEB_DIR . DIRECTORY_SEPARATOR . 'font', 'font folder still exists');
         }
 
         public function testConfigFileFunctions()

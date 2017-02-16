@@ -6,7 +6,6 @@
 
 namespace PSFS;
 
-use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
@@ -14,6 +13,7 @@ use PSFS\base\exception\UserAuthException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\ConfigController;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . "bootstrap.php";
@@ -84,7 +84,7 @@ class Dispatcher extends Singleton
         // Load the locale path
         $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
         Logger::log('Set locale dir ' . $locale_path);
-        Config::createDir($locale_path);
+        GeneratorHelper::createDir($locale_path);
         bindtextdomain('translations', $locale_path);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');

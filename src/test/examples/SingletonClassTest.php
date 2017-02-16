@@ -19,6 +19,18 @@ class SingletonClassTest extends Singleton {
      * @var string fieldTest
      */
     protected $fieldTest;
+    /**
+     * @var integer
+     */
+    public $publicVariable;
+    /**
+     * @var integer
+     */
+    private $privateVariable;
+    /**
+     * @var string
+     */
+    public static $staticVariable;
 
     public function init() {
         parent::init();

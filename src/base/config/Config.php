@@ -22,6 +22,8 @@ class Config
     const DEFAULT_CTYPE = "text/html";
     const DEFAULT_DATETIMEZONE = "Europe/Madrid";
 
+    const CONFIG_FILE = 'config.json';
+
     protected $config = array();
     static public $defaults = array(
         "db_host" => "localhost",
@@ -70,7 +72,7 @@ class Config
      */
     protected function init()
     {
-        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json")) {
+        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE)) {
             $this->loadConfigData();
         }
         return $this;
@@ -126,25 +128,6 @@ class Config
     }
 
     /**
-     * Method that returns the cache path
-     * @return string
-     */
-    public function getCachePath()
-    {
-        return CACHE_DIR;
-    }
-
-    /**
-     * Method that returns the templates path
-     * @return string
-     */
-    public function getTemplatePath()
-    {
-        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
-        return realpath($path);
-    }
-
-    /**
      * Method that checks if the platform is proper configured
      * @return boolean
      */
@@ -187,7 +170,7 @@ class Config
         $final_data = self::saveExtraParams($data);
         $saved = false;
         try {
-            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json", $final_data, Cache::JSON, true);
+            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, $final_data, Cache::JSON, true);
             Config::getInstance()->loadConfigData();
             $saved = true;
         } catch (ConfigException $e) {
@@ -218,56 +201,11 @@ class Config
     }
 
     /**
-     * Method that returns the Propel ORM parameters to setup the models
-     * @return array|null
-     */
-    public function getPropelParams()
-    {
-        return Cache::getInstance()->getDataFromFile(__DIR__ . DIRECTORY_SEPARATOR . 'properties.json', Cache::JSON, true);
-    }
-
-    /**
-     * Method that creates any parametrized path
-     * @param string $dir
-     * throws ConfigException
-     */
-    public static function createDir($dir)
-    {
-        try {
-            if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
-                throw new \Exception(_('Can\'t create directory ') . $dir);
-            }
-        } catch (\Exception $e) {
-            Logger::log($e->getMessage(), LOG_WARNING);
-            if (!file_exists(dirname($dir))) {
-                throw new ConfigException($e->getMessage() . $dir);
-            }
-        }
-    }
-
-    /**
-     * Method that remove all data in the document root path
-     */
-    public static function clearDocumentRoot()
-    {
-        $rootDirs = array("css", "js", "media", "font");
-        foreach ($rootDirs as $dir) {
-            if (file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
-                try {
-                    @shell_exec("rm -rf " . WEB_DIR . DIRECTORY_SEPARATOR . $dir);
-                } catch (\Exception $e) {
-                    Logger::log($e->getMessage());
-                }
-            }
-        }
-    }
-
-    /**
      * Method that reloads config file
      */
     public function loadConfigData()
     {
-        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "config.json",
+        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE,
             Cache::JSON,
             TRUE) ?: [];
         $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;

@@ -131,6 +131,7 @@ class RouterHelper {
             $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
         }
         return [
+            "base" => $path,
             "template" => $path . $tpl_path,
             "model" => $path . $model_path,
             "public" => $path . $public_path,

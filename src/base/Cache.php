@@ -3,6 +3,7 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\SingletonTrait;
 
@@ -32,7 +33,7 @@ class Cache
     {
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $filename = basename($absolutePath);
-        Config::createDir(str_replace($filename, "", $absolutePath));
+        GeneratorHelper::createDir(str_replace($filename, "", $absolutePath));
         if (false === file_put_contents($absolutePath, $data)) {
             throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')
                 . $absolutePath);

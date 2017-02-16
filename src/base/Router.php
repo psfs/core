@@ -7,6 +7,7 @@ use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\helpers\AdminHelper;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\helpers\RouterHelper;
@@ -110,10 +111,11 @@ class Router
      * Method that extract all routes in the platform
      * @return array
      */
-    public function getAllRoutes() {
+    public function getAllRoutes()
+    {
         $routes = [];
-        foreach($this->routing as $path => $route) {
-            if(array_key_exists('slug', $route)) {
+        foreach ($this->routing as $path => $route) {
+            if (array_key_exists('slug', $route)) {
                 $routes[$route['slug']] = $path;
             }
         }
@@ -192,20 +194,21 @@ class Router
         return AdminServices::getInstance()->setAdminHeaders();
     }
 
-    private function checkExternalModules() {
+    private function checkExternalModules()
+    {
         $externalModules = Config::getParam('modules.extend');
-        if(null !== $externalModules) {
+        if (null !== $externalModules) {
             $externalModules = explode(',', $externalModules);
-            foreach($externalModules as &$module) {
+            foreach ($externalModules as &$module) {
                 $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
                 $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-                if(file_exists($externalModulePath)) {
+                if (file_exists($externalModulePath)) {
                     $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-                    if(!empty($externalModule)) {
-                        foreach($externalModule as $modulePath) {
+                    if (!empty($externalModule)) {
+                        foreach ($externalModule as $modulePath) {
                             $extModule = $modulePath->getBasename();
                             $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-                            if(file_exists($moduleAutoloader)) {
+                            if (file_exists($moduleAutoloader)) {
                                 @include $moduleAutoloader;
                                 $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, $extModule, $this->routing);
                             }
@@ -226,7 +229,7 @@ class Router
         $this->routing = $this->inspectDir($base, "PSFS", array());
         if (file_exists($modulesPath)) {
             $modules = $this->finder->directories()->in($modulesPath)->depth(0);
-            foreach($modules as $modulePath) {
+            foreach ($modules as $modulePath) {
                 $module = $modulePath->getBasename();
                 $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
             }
@@ -284,7 +287,8 @@ class Router
      * @param string $namespace
      * @return bool
      */
-    public static function exists($namespace) {
+    public static function exists($namespace)
+    {
         return (class_exists($namespace) || interface_exists($namespace) || trait_exists($namespace));
     }
 
@@ -311,9 +315,9 @@ class Router
                     $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
                 }
                 foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if(preg_match('/@route\ /i', $method->getDocComment())) {
+                    if (preg_match('/@route\ /i', $method->getDocComment())) {
                         list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
-                        if(null !== $route && null !== $info) {
+                        if (null !== $route && null !== $info) {
                             $info['class'] = $namespace;
                             $routing[$route] = $info;
                         }
@@ -337,11 +341,11 @@ class Router
     {
         //Calculamos los dominios para las plantillas
         if ($class->hasConstant("DOMAIN") && !$class->isAbstract()) {
-            if(!$this->domains) {
+            if (!$this->domains) {
                 $this->domains = [];
             }
             $domain = "@" . $class->getConstant("DOMAIN") . "/";
-            if(!array_key_exists($domain, $this->domains)) {
+            if (!array_key_exists($domain, $this->domains)) {
                 $this->domains[$domain] = RouterHelper::extractDomainInfo($class, $domain);
             }
         }
@@ -358,7 +362,7 @@ class Router
         $translationFileName = "translations" . DIRECTORY_SEPARATOR . "routes_translations.php";
         $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
         $this->generateSlugs($absoluteTranslationFileName);
-        Config::createDir(CONFIG_DIR);
+        GeneratorHelper::createDir(CONFIG_DIR);
         Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", array($this->routing, $this->slugs), Cache::JSON, TRUE);
 
         return $this;
@@ -425,11 +429,12 @@ class Router
      * @param array $params
      * @return \ReflectionMethod
      */
-    private function checkAction($class, $method, array $params) {
+    private function checkAction($class, $method, array $params)
+    {
         $action = new \ReflectionMethod($class, $method);
 
-        foreach($action->getParameters() as $parameter) {
-            if(!$parameter->isOptional() && !array_key_exists($parameter->getName(), $params)) {
+        foreach ($action->getParameters() as $parameter) {
+            if (!$parameter->isOptional() && !array_key_exists($parameter->getName(), $params)) {
                 throw new RouterException('Required parameters not sent');
             }
         }
@@ -454,17 +459,19 @@ class Router
             $cacheDataName = $this->cache->getRequestCacheHash();
             $tmpDir = substr($cacheDataName, 0, 2) . DIRECTORY_SEPARATOR . substr($cacheDataName, 2, 2) . DIRECTORY_SEPARATOR;
             $cachedData = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheDataName,
-                $cache, function () {});
+                $cache, function () {
+                });
             if (NULL !== $cachedData) {
                 $headers = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheDataName . ".headers",
-                    $cache, function () {}, Cache::JSON);
+                    $cache, function () {
+                    }, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);
                 $execute = FALSE;
             }
         }
         if ($execute) {
             Logger::log(_('Start executing action'), LOG_DEBUG);
-            if(false === call_user_func_array(array($class, $action['method']), $params)) {
+            if (false === call_user_func_array(array($class, $action['method']), $params)) {
                 Logger::log(_('An error ocurred trying to execute the action'), LOG_ERR, [error_get_last()]);
             }
         }

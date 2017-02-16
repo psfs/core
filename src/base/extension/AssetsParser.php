@@ -7,6 +7,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
  * Class AssetsParser
@@ -170,7 +171,7 @@ class AssetsParser {
      * @throws ConfigException
      */
     private function storeContents($path, $content = "") {
-        Config::createDir(dirname($path));
+        GeneratorHelper::createDir(dirname($path));
         if ("" !== $content && false === file_put_contents($path, $content)) {
             throw new ConfigException(_('No se tienen permisos para escribir en '.$path));
         }
@@ -228,7 +229,7 @@ class AssetsParser {
         try {
             if (count($source) > 1 && array_key_exists(1, $orig_part)) {
                 $dest = $this->path.$orig_part[1];
-                Config::createDir(dirname($dest));
+                GeneratorHelper::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
                     if (@copy($orig, $dest) === FALSE) {
                         throw new \RuntimeException('Can\' copy '.$dest.'');
@@ -409,7 +410,7 @@ class AssetsParser {
                 $orig = self::calculateResourcePathname($filename_path, $source);
                 $orig_part = explode("Public", $orig);
                 $dest = WEB_DIR.$orig_part[1];
-                Config::createDir(dirname($dest));
+                GeneratorHelper::createDir(dirname($dest));
                 if (@copy($orig, $dest) === false) {
                     throw new ConfigException("Can't copy ".$orig." to ".$dest);
                 }
