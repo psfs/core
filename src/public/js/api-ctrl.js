@@ -11,6 +11,14 @@
             $scope.entity_form = null;
             $scope.itemLoading = true;
             $scope.i18N = i18N || {};
+
+            $scope.cleanFormStatus = function(element) {
+                if(typeof element === 'object' && '$setDirty' in element) {
+                    element.$setDirty(false);
+                    element.$setPristine(true);
+                    element.$setTouched(false);
+                }
+            };
         }];
     app.controller('apiCtrl', apiCtrl);
 })();

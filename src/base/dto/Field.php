@@ -19,7 +19,7 @@
         const NUMBER_TYPE = 'number';
         const SWITCH_TYPE = 'switch';
         const PASSWORD_FIELD = 'password';
-        const DATE = 'datepicker';
+        const DATE = 'date';
 
         /**
          * @var string label
@@ -65,6 +65,10 @@
          * @var string
          */
         public $relatedField;
+        /**
+         * @var integer
+         */
+        public $size;
 
         public function __construct($name, $label, $type = Field::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)
         {

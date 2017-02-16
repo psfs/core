@@ -636,7 +636,7 @@
 
         /**
          * @label Returns form data for any entity
-         * @GET
+         * @POST
          * @visible false
          * @route /admin/api/form/{__DOMAIN__}/{__API__}
          * @return string JSON

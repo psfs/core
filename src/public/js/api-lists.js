@@ -129,19 +129,18 @@
             return !angular.equals({}, $scope.model);
         }
 
-        function cleanFormStatus(element) {
-            if(typeof element === 'object' && '$setDirty' in element) {
-                element.$setDirty(false);
-                element.$setPristine(false);
-            }
-        }
-
         function addNewItem() {
             $scope.model = {};
-            cleanFormStatus($scope.entity_form);
+            for(var i in $scope.combos) {
+                var combo = $scope.combos[i];
+                combo.item = null;
+                combo.search = null;
+            }
             for(var i in $scope.entity_form) {
-                var _field = $scope.entity_form[i];
-                cleanFormStatus(_field);
+                if(i.match(/^\$/)) {
+                    debugger;
+                    $scope.cleanFormStatus($scope.entity_form[i]);
+                }
             }
             $msgSrv.send('populate_combos');
         }

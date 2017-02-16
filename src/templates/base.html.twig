@@ -14,8 +14,7 @@
             '@ROOT/css/normalize.css'
             '@ROOT/css/angular-materials.css'
             '@ROOT/css/bootstrap.min.css'
-            '@ROOT/css/bootstrap-theme.min.css'
-            '@ROOT/css/font-awesome.min.css'
+            '@ROOT/css/font-awesome.css'
             '@ROOT/css/typeahead.css'
             '@ROOT/css/styles.css'
         %}{% endstyles %}
@@ -32,7 +31,7 @@
         {% include 'top.menu.html.twig' %}
         {% endblock menu %}
         <header role="banner">{% block header %}{% endblock header %}</header>
-        <section>
+        <section class="container-fluid">
         {% block body %}
             <article class="container">
                 {% block body_header %}

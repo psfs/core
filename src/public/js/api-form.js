@@ -6,11 +6,12 @@
             $scope.method = 'POST';
             $scope.itemLoading = false;
             $scope.combos = {};
+            $scope.dates = {};
             $scope.limit = globalLimit || 25;
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
-                $http.get(url)
+                $http.post(url)
                     .then(callback, function (err, status) {
                         $log.error(err);
                         $scope.loading = false;
@@ -32,9 +33,24 @@
                 return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD');
             }
 
+            function isTextField(field) {
+                var type = (field.type || 'text').toUpperCase();
+                return (type === 'TEXTAREA');
+            }
+
+            function isDateField(field) {
+                var type = (field.type || 'text').toUpperCase();
+                return  (type === 'DATE' || type === 'DATETIME');
+            }
+
+            function isRelatedield(field) {
+                var type = (field.type || 'text').toUpperCase();
+                return (type === 'SELECT' || type === 'MULTIPLE') && null !== field.relatedField;
+            }
+
             function isComboField(field) {
                 var type = (field.type || 'text').toUpperCase();
-                return (type === 'SELECT' || type === 'MULTIPLE');
+                return (type === 'SELECT' || type === 'MULTIPLE') && null === field.relatedField && field.data.length;
             }
 
             function loadSelect(field) {
@@ -59,6 +75,24 @@
                 $scope.loading = false;
             }
 
+
+            function clearForm() {
+                $scope.itemLoading = false;
+                $scope.model = {};
+                for(var i in $scope.combos) {
+                    var combo = $scope.combos[i];
+                    combo.item = null;
+                    combo.search = null;
+                }
+                $scope.entity_form.$setPristine(true);
+                $scope.entity_form.$setDirty(false);
+                for(var i in $scope.entity_form) {
+                    if(!i.match(/^\$/)) {
+                        $scope.cleanFormStatus($scope.entity_form[i]);
+                    }
+                }
+            }
+
             function submitForm() {
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
@@ -66,21 +100,11 @@
                     var model = $scope.model;
                     try {
                         $http.put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
-                            .then(function (response) {
-                                $scope.itemLoading = false;
-                                $scope.model = {};
-                                $scope.entity_form.$setPristine(true);
-                                $scope.entity_form.$setDirty(false);
-                            }, showError);
+                            .then(clearForm, showError);
                     } catch (err) {
                         $log.debug('Create new entity');
                         $http.post($scope.url, model)
-                            .then(function (response) {
-                                $scope.itemLoading = false;
-                                $scope.model = {};
-                                $scope.entity_form.$setPristine(true);
-                                $scope.entity_form.$setDirty(false);
-                            }, showError);
+                            .then(clearForm, showError);
                     } finally {
                         $timeout(function () {
                             $msgSrv.send('psfs.list.reload');
@@ -173,9 +197,16 @@
                 return pk.length !== 0;
             }
 
+            function watchDates(newValue, oldValue) {
+                $log.debug(newValue);
+            }
+
             $scope.isInputField = isInputField;
             $scope.loadSelect = loadSelect;
+            $scope.isTextField = isTextField;
             $scope.isComboField = isComboField;
+            $scope.isRelatedield = isRelatedield;
+            $scope.isDateField = isDateField;
             $scope.getId = $apiSrv.getId;
             $scope.getLabel = $apiSrv.getLabel;
             $scope.submitForm = submitForm;
@@ -184,6 +215,8 @@
             $scope.populateCombo = populateCombo;
             $scope.getPk = getPk;
             $scope.isSaved = isSaved;
+
+            $scope.$watch('dates', watchDates, true);
 
             loadFormFields();
         }];

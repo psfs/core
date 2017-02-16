@@ -2,7 +2,9 @@
     namespace PSFS\services;
 
     use Propel\Runtime\Map\TableMap;
+    use PSFS\base\config\Config;
     use PSFS\base\Logger;
+    use PSFS\base\Router;
     use PSFS\base\Service;
     use PSFS\base\types\helpers\InjectorHelper;
     use PSFS\base\types\helpers\RouterHelper;
@@ -454,16 +456,18 @@
         public static function swaggerFormatter(array $modules = [])
         {
             $endpoints = [];
-            pre($modules, true);
             $dtos = [];
             $formatted = [
                 "swagger" => "2.0",
-                "host" => Router::getInstance()->getRoute(''),
-                "basePath" => "/api",
+                "host" => Router::getInstance()->getRoute('', true),
                 "schemes" => ["http", "https"],
-                "externalDocs" => [
-                    "description" => "Principal Url",
-                    "url" => Router::getInstance()->getRoute(''),
+                "info" => [
+                    "title" => Config::getParam('platform_name', 'PSFS'),
+                    "version" => Config::getParam('api.version', '1.0'),
+                    "contact" => [
+                        "name" => Config::getParam("author", "Fran López"),
+                        "email" => Config::getParam("author_email", "fran.lopez84@hotmail.es"),
+                    ]
                 ]
             ];
             foreach($endpoints as $model) {
