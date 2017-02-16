@@ -16,7 +16,6 @@
                 if(typeof element === 'object' && '$setDirty' in element) {
                     element.$setDirty(false);
                     element.$setPristine(true);
-                    element.$setTouched(false);
                 }
             };
         }];

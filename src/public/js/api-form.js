@@ -170,11 +170,20 @@
                 }
                 return null;
             }
+
+            function initDates(fieldName) {
+                if($scope.model[fieldName]) {
+                    $scope.dates[fieldName] = new Date($scope.model[fieldName]);
+                }
+            }
+
             $scope.$on('populate_combos', function() {
                 for(var f in $scope.form.fields) {
                     var field = $scope.form.fields[f];
                     if(field.type == 'select') {
                         populateCombo(field);
+                    } else if(field.type == 'date') {
+                        initDates(field.name);
                     }
                 }
             });
@@ -198,7 +207,10 @@
             }
 
             function watchDates(newValue, oldValue) {
-                $log.debug(newValue);
+                for(var d in newValue) {
+                    var _date = newValue[d];
+                    $scope.model[d] = _date.toISOString().slice(0, 10);
+                }
             }
 
             $scope.isInputField = isInputField;
@@ -215,6 +227,7 @@
             $scope.populateCombo = populateCombo;
             $scope.getPk = getPk;
             $scope.isSaved = isSaved;
+            $scope.initDates = initDates;
 
             $scope.$watch('dates', watchDates, true);
 

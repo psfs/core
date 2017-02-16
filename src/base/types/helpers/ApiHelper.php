@@ -48,7 +48,7 @@ class ApiHelper
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
                 $fDto = self::generatePasswordField($field, $required);
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
-                $fDto = self::createField($field, Field::TEXT_TYPE, $required);
+                $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
             } elseif(in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
                 $fDto = self::generateEnumField($field, $required);
                 foreach($mappedColumn->getValueSet() as $value) {

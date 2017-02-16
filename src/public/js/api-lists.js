@@ -70,36 +70,38 @@
 
         function deleteItem(item)
         {
-            $scope.loading = true;
-            var confirm = $mdDialog.confirm()
-                .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
-                .content($scope.i18N['confirm_delete_message'])
-                .ariaLabel('Delete Element')
-                .ok($scope.i18N['delete'])
-                .cancel($scope.i18N['cancel']);
-            $mdDialog.show(confirm).then(function() {
-                $http.delete($scope.url + "/" + item[$scope.modelId])
-                    .then(function() {
-                        $timeout(function() {
-                            if(checkItem(item)) {
-                                addNewItem();
-                            }
-                            loadData();
-                        }, 250);
-                    }, function(err, status){
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title($scope.entity + ' Error ' + status)
-                                .content(err.data.data)
-                                .ariaLabel('Delete error')
-                                .ok($scope.i18N['close'])
-                        );
-                        $scope.loading = false;
-                    });
-            }, function() {
-                $scope.loading = false;
-            });
+            if(item) {
+                $scope.loading = true;
+                var confirm = $mdDialog.confirm()
+                    .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
+                    .content($scope.i18N['confirm_delete_message'])
+                    .ariaLabel('Delete Element')
+                    .ok($scope.i18N['delete'])
+                    .cancel($scope.i18N['cancel']);
+                $mdDialog.show(confirm).then(function() {
+                    $http.delete($scope.url + "/" + item[$scope.modelId])
+                        .then(function() {
+                            $timeout(function() {
+                                if(checkItem(item)) {
+                                    addNewItem();
+                                }
+                                loadData();
+                            }, 250);
+                        }, function(err, status){
+                            $mdDialog.show(
+                                $mdDialog.alert()
+                                    .clickOutsideToClose(true)
+                                    .title($scope.entity + ' Error ' + status)
+                                    .content(err.data.data)
+                                    .ariaLabel('Delete error')
+                                    .ok($scope.i18N['close'])
+                            );
+                            $scope.loading = false;
+                        });
+                }, function() {
+                    $scope.loading = false;
+                });
+            }
         }
 
         function loadItem(item)
@@ -131,14 +133,14 @@
 
         function addNewItem() {
             $scope.model = {};
+            $scope.dates = {};
             for(var i in $scope.combos) {
                 var combo = $scope.combos[i];
                 combo.item = null;
                 combo.search = null;
             }
             for(var i in $scope.entity_form) {
-                if(i.match(/^\$/)) {
-                    debugger;
+                if(!i.match(/^\$/)) {
                     $scope.cleanFormStatus($scope.entity_form[i]);
                 }
             }
