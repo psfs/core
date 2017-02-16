@@ -37,9 +37,14 @@
                     <!-- INPUT TYPE TEXT, URL OR PHONE -->
                     <input type="{{ field.type }}" name="{{ entity + '_' + field.name }}" ng-model="model[field.name]" ng-if="isInputField(field)" ng-required="field.required" ng-readonly="field.readonly">
                     <!-- DATE -->
-                    <md-datepicker ng-if="isDateField(field)" name="{{ entity + '_' + field.name }}" ng-model="model[field.name]" ng-required="field.required" ng-readonly="field.readonly"></md-datepicker>
+                    <md-datepicker ng-if="isDateField(field)" name="{{ entity + '_' + field.name }}" ng-model="dates[field.name]" ng-required="field.required" ng-readonly="field.readonly"></md-datepicker>
                     <!-- SWITCH -->
-                    <md-switch ng-model="dates[field.name]" aria-label="field-label" ng-if="field.type == 'switch'" name="{{ entity + '_' + field.name }}">{{ field.label }}</md-switch>
+                    <md-switch ng-model="model[field.name]" aria-label="field-label"
+                               ng-if="field.type == 'switch'"
+                               ng-required="field.required"
+                               ng-disabled="field.readonly"
+                               class="md-primary"
+                               name="{{ entity + '_' + field.name }}">{{ field.label }}</md-switch>
                     <!-- COMBO -->
                     <md-autocomplete
                             ng-if="isRelatedield(field)"
