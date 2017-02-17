@@ -87,8 +87,8 @@ class Cache
                 break;
             case Cache::GZIP:
                 // TODO implementar
-                if (function_exists('gzuncompress')) {
-                    $data = gzuncompress($data ?: '');
+                if (function_exists('gzuncompress') && !empty($data)) {
+                    $data = @gzuncompress($data ?: '');
                 }
                 break;
         }
