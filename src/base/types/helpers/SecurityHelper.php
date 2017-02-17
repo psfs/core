@@ -10,7 +10,7 @@ use PSFS\base\Security;
 
 class SecurityHelper
 {
-    const RAND_SEP = '?!.:,(){}#|_-=';
+    const RAND_SEP = '?!.:,()[]+{}#|_-=';
     const RAND_ODD = 0;
     const RAND_EVEN = 1;
 
@@ -172,7 +172,7 @@ class SecurityHelper
      */
     private static function extractTokenParts($token) {
         for($i = 0, $ct = strlen(self::RAND_SEP); $i < $ct; $i++) {
-            $token = str_replace(self::RAND_SEP[$i], "|", $token);
+            $token = str_replace(substr(self::RAND_SEP,$i,1), "|", $token);
         }
         return array_unique(explode('||', $token));
     }
