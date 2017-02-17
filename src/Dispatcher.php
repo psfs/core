@@ -6,6 +6,7 @@
 
 namespace PSFS;
 
+use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
@@ -15,6 +16,7 @@ use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\ConfigController;
+use PSFS\controller\UserController;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . "bootstrap.php";
 
@@ -107,6 +109,8 @@ class Dispatcher extends Singleton
             } else {
                 return ConfigController::getInstance()->config();
             }
+        } catch (AdminCredentialsException $a) {
+            return UserController::showAdminManager();
         } catch (ConfigException $c) {
             return $this->dumpException($c);
         } catch (SecurityException $s) {

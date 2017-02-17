@@ -2,6 +2,7 @@
 
 namespace PSFS\base;
 
+use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\SingletonTrait;
 
 
@@ -119,14 +120,18 @@ class Security
      */
     public static function save($user)
     {
-        $admins = array();
-        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-            $admins = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'), TRUE);
-        }
-        $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
-        $admins[$user['username']]['profile'] = $user['profile'];
+        $saved = true;
+        try {
+            $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
+            $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
+            $admins[$user['username']]['profile'] = $user['profile'];
 
-        return (FALSE !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', json_encode($admins, JSON_PRETTY_PRINT)));
+            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
+        } catch(\Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR);
+            $saved = false;
+        }
+        return $saved;
     }
 
     /**
@@ -155,16 +160,11 @@ class Security
 
     /**
      * Método que devuelve los administradores de una plataforma
-     * @return array|mixed
+     * @return array|null
      */
     public function getAdmins()
     {
-        $admins = array();
-        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-            $admins = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json'), TRUE);
-        }
-
-        return $admins;
+        return Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true);
     }
 
     /**
@@ -180,9 +180,9 @@ class Security
     {
         Logger::log('Checking admin session');
         if (!$this->authorized && !$this->checked) {
-            if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+            $admins = $this->getAdmins();
+            if (null !== $admins) {
                 $request = Request::getInstance();
-                $admins = $this->getAdmins();
                 //Sacamos las credenciales de la petición
                 $user = $user ?: $request->getServer('PHP_AUTH_USER');
                 $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
@@ -280,11 +280,10 @@ class Security
     {
         $users = $this->getAdmins();
         $logged = $this->getAdminFromCookie();
-        $profiles = Security::getCleanProfiles();
         if ($users[$logged[0]]) {
             $security = $users[$logged[0]]['profile'];
 
-            return $profiles['__SUPER_ADMIN__'] === $security;
+            return self::ADMIN_ID_TOKEN === $security;
         }
 
         return FALSE;
@@ -407,89 +406,15 @@ class Security
     }
 
     /**
-     * Extract parts from token
-     * @param string $token
-     *
-     * @return array
-     */
-    private static function extractTokenParts($token)
-    {
-        $axis = 0;
-        $parts = array();
-        try {
-            $partLength = floor(strlen($token) / 10);
-            for ($i = 0, $ct = ceil(strlen($token) / $partLength); $i < $ct; $i++) {
-                $parts[] = substr($token, $axis, $partLength);
-                $axis += $partLength;
-            }
-        } catch (\Exception $e) {
-            $partLength = 0;
-        }
-
-        return array($partLength, $parts);
-    }
-
-    /**
-     * Extract Ts and Module from token
-     * @param array $parts
-     * @param int $partLength
-     *
-     * @return array
-     */
-    private static function extractTsAndMod(array &$parts, $partLength)
-    {
-        $ts = '';
-        $mod = '';
-        foreach ($parts as &$part) {
-            if (strlen($part) == $partLength) {
-                $ts .= substr($part, 0, 1);
-                $mod .= substr($part, $partLength - 2, 2);
-                $part = substr($part, 1, $partLength - 3);
-            }
-        }
-        return array($ts, $mod);
-    }
-
-    /**
-     * Decode token to check authorized request
-     * @param string $token
-     * @param string $module
-     *
-     * @return null|string
-     */
-    private static function decodeToken($token, $module = 'PSFS')
-    {
-        $decoded = NULL;
-        list($partLength, $parts) = self::extractTokenParts($token);
-        list($ts, $mod) = self::extractTsAndMod($parts, $partLength);
-        $hashMod = substr(strtoupper(sha1($module)), strlen($ts) / 2, strlen($ts) * 2);
-        if (time() - (integer)$ts < 300 && $hashMod === $mod) {
-            $decoded = implode('', $parts);
-        }
-        return $decoded;
-    }
-
-    /**
      * Generate a authorized token
      * @param string $secret
      * @param string $module
-     *
+     * @deprecated
      * @return string
      */
     public static function generateToken($secret, $module = 'PSFS')
     {
-        $ts = time();
-        $hashModule = substr(strtoupper(sha1($module)), strlen($ts) / 2, strlen($ts) * 2);
-        $hash = hash('sha256', $secret);
-        $insert = floor(strlen($hash) / strlen($ts));
-        $j = 0;
-        $token = '';
-        for ($i = 0, $ct = strlen($ts); $i < $ct; $i++) {
-            $token .= substr($ts, $i, 1) . substr($hash, $j, $insert) . substr($hashModule, $i, 2);
-            $j += $insert;
-        }
-        $token .= substr($hash, ($insert * strlen($ts)), strlen($hash) - ($insert * strlen($ts)));
-        return $token;
+        return SecurityHelper::generateToken($secret, $module);
     }
 
     /**
@@ -497,19 +422,12 @@ class Security
      * @param string $token
      * @param string $secret
      * @param string $module
-     *
+     * @deprecated
      * @return bool
      */
     public static function checkToken($token, $secret, $module = 'PSFS')
     {
-        if (0 === strlen($token) || 0 === strlen($secret)) {
-            return false;
-        }
-        $module = strtolower($module);
-        $decodedToken = self::decodeToken($token, $module);
-        $expectedToken = self::decodeToken(self::generateToken($secret, $module), $module);
-
-        return $decodedToken === $expectedToken;
+        return SecurityHelper::checkToken($token, $secret, $module);
     }
 
 }
