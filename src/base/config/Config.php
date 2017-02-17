@@ -8,7 +8,6 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\SingletonTrait;
-use PSFS\controller\UserController;
 
 /**
  * Class Config
@@ -225,7 +224,8 @@ class Config
      * @param mixed|null $defaultValue
      * @return mixed|null
      */
-    public static function getParam($key, $defaultValue = null) {
+    public static function getParam($key, $defaultValue = null)
+    {
         $param = Config::getInstance()->get($key);
         return (null !== $param) ? $param : $defaultValue;
     }

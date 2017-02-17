@@ -35,7 +35,6 @@ class GeneratorController extends Admin
         $form = new ModuleForm();
         $form->build();
         return $this->render("modules.html.twig", array(
-            'properties' => $this->config->getPropelParams(),
             'form' => $form,
         ));
     }

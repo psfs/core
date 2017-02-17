@@ -1,7 +1,8 @@
 <?php
 namespace PSFS\base\types\interfaces;
 
-interface AnnotationInterface {
+interface AnnotationInterface
+{
     /**
      * @return array
      */

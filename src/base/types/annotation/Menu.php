@@ -3,7 +3,8 @@ namespace PSFS\base\types\annotation;
 
 use PSFS\base\types\interfaces\AnnotationInterface;
 
-class Menu implements AnnotationInterface {
+class Menu implements AnnotationInterface
+{
     /**
      * @inheritDoc
      */

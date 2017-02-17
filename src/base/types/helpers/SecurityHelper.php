@@ -7,7 +7,8 @@ use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\controller\UserController;
 
-class SecurityHelper {
+class SecurityHelper
+{
     /**
      * Method that checks the access to the restricted zone
      *
@@ -22,7 +23,7 @@ class SecurityHelper {
         if (!Config::getInstance()->checkTryToSaveConfig()
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || NULL !== Config::getInstance()->get('restricted'))
         ) {
-            if(!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
+            if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
                 //Si no hay fichero de usuarios redirigimos directamente al gestor
                 return UserController::showAdminManager();
             }

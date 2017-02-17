@@ -6,15 +6,15 @@
             </md-card-title-text>
         </md-card-title>
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-raised md-primary" ng-click="submitForm()">
+            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save">
                 <i class="fa fa-save"></i>
                 <span ng-bind="i18N['save']"></span>
             </md-button>
-            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()">
+            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()" aria-label="Delete">
                 <i class="fa fa-trash-o"></i>
                 <span ng-bind="i18N['delete']"></span>
             </md-button>
-            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()">
+            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()" aria-label="New">
                 <i class="fa fa-plus-circle"></i>
                 <span ng-bind="i18N['new']"></span>
             </md-button>
@@ -81,15 +81,15 @@
             </form>
         </md-card-content>
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-raised md-primary" ng-click="submitForm()">
+            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save">
                 <i class="fa fa-save"></i>
                 <span ng-bind="i18N['save']"></span>
             </md-button>
-            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()">
+            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()" aria-label="Delete">
                 <i class="fa fa-trash-o"></i>
                 <span ng-bind="i18N['delete']"></span>
             </md-button>
-            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()">
+            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()" aria-label="New">
                 <i class="fa fa-plus-circle"></i>
                 <span ng-bind="i18N['new']"></span>
             </md-button>

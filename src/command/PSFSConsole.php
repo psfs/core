@@ -34,8 +34,8 @@ foreach ($commands as $com) include_once($com->getRealPath());
 
 //Hidratamos con los comandos de los módulos
 $domains = Router::getInstance()->getDomains();
-foreach($domains as $domain => $paths) {
-    if(!preg_match('/ROOT/i', $domain)) {
+foreach ($domains as $domain => $paths) {
+    if (!preg_match('/ROOT/i', $domain)) {
         $commands = new Finder();
         $commands->in($paths['base'])->path("Command")->name("*.php");
         foreach ($commands as $com) include_once($com->getRealPath());

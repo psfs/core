@@ -5,17 +5,19 @@ namespace PSFS\base\types\helpers;
  * Class AdminHelper
  * @package PSFS\base\types\helpers
  */
-class AdminHelper {
+class AdminHelper
+{
 
     /**
      * @param array $elementA
      * @param array $elementB
      * @return int
      */
-    public static function sortByLabel(array $elementA, array $elementB) {
+    public static function sortByLabel(array $elementA, array $elementB)
+    {
         $labelA = array_key_exists('label', $elementA) ? $elementA['label'] : '';
         $labelB = array_key_exists('label', $elementB) ? $elementB['label'] : '';
-        if($labelA == $labelB) {
+        if ($labelA == $labelB) {
             return 0;
         }
         return $labelA < $labelB ? -1 : 1;

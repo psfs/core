@@ -10,12 +10,14 @@ use PSFS\base\types\Form;
  * Class AdminForm
  * @package PSFS\base\config
  */
-class AdminForm extends Form {
+class AdminForm extends Form
+{
 
     /**
      * @throws \PSFS\base\exception\RouterException
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->setAction(Router::getInstance()->getRoute('admin-setup'));
         $this->add('username', array(
             'label' => _('User Alias'),

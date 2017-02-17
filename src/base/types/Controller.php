@@ -2,7 +2,6 @@
 
 namespace PSFS\base\types;
 
-use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -36,7 +35,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
-        $domain = (null ===$domain) ? $this->getDomain() : $domain;
+        $domain = (null === $domain) ? $this->getDomain() : $domain;
         return $this->tpl->render($domain . $template, $vars, $cookies);
     }
 

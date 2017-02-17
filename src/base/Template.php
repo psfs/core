@@ -8,10 +8,8 @@ use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\ResponseHelper;
-use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\helpers\TemplateHelper;
 use PSFS\base\types\SingletonTrait;
-use PSFS\Dispatcher;
 
 
 class Template
@@ -438,8 +436,8 @@ class Template
     private function loadDomains()
     {
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
-        if(null !== $domains) {
-            foreach($domains as $domain => $paths) {
+        if (null !== $domains) {
+            foreach ($domains as $domain => $paths) {
                 $this->addPath($paths['template'], preg_replace('/(@|\/)/', '', $domain));
             }
         }

@@ -1,10 +1,8 @@
 <?php
 namespace PSFS\base;
 
-use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\SingletonTrait;
 
 /**
@@ -89,7 +87,7 @@ class Cache
                 break;
             case Cache::GZIP:
                 // TODO implementar
-                if(function_exists('gzuncompress')) {
+                if (function_exists('gzuncompress')) {
                     $data = gzuncompress($data ?: '');
                 }
                 break;
@@ -114,7 +112,7 @@ class Cache
                 $data = Cache::transformData($data, Cache::GZIP);
                 break;
             case Cache::GZIP:
-                if(function_exists('gzcompress')) {
+                if (function_exists('gzcompress')) {
                     $data = gzcompress($data ?: '');
                 }
                 break;
@@ -160,10 +158,11 @@ class Cache
     /**
      * @return bool
      */
-    private static function checkAdminSite() {
+    private static function checkAdminSite()
+    {
         $isAdminRequest = false;
         $lastRequest = Security::getInstance()->getSessionKey("lastRequest");
-        if(null !== $lastRequest) {
+        if (null !== $lastRequest) {
             $url = str_replace(Request::getInstance()->getRootUrl(true), '', $lastRequest['url']);
             $isAdminRequest = preg_match('/^\/admin\//i', $url);
         }
@@ -177,7 +176,7 @@ class Cache
     public static function needCache()
     {
         $needCache = false;
-        if(!self::checkAdminSite()) {
+        if (!self::checkAdminSite()) {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
                 $needCache = $action["cache"];

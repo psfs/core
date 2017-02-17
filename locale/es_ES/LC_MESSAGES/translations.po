@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-28 17:05+0100\n"
+"POT-Creation-Date: 2017-02-17 00:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,6 +71,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Template.php:312
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:341
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:342
+#: /Users/c15k0/Development/psfs/core/src/base/Template.php:346
 msgid "Plantillas regeneradas correctamente"
 msgstr ""
 
@@ -88,6 +89,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:364
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:365
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:366
+#: /Users/c15k0/Development/psfs/core/src/base/Template.php:369
 #, possible-php-format
 msgid "Generando plantillas en path '%s' para el dominio '%d'"
 msgstr ""
@@ -105,6 +107,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:26
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:25
 #: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:27
+#: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:29
 msgid "Contraseña"
 msgstr ""
 
@@ -130,6 +133,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:75
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:75
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:78
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:77
 msgid "Guardar configuración"
 msgstr ""
 
@@ -141,6 +145,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:78
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:78
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:81
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:80
 msgid "Añadir nuevo parámetro"
 msgstr ""
 
@@ -150,16 +155,21 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:21
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:65
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:78
+#: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:23
 msgid "Usuario"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:36
 #: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:36
+#: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:38
 msgid "Acceder como {{username}}"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/LoginForm.php:37
 #: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:37
+#: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:39
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:102
 msgid "Cancelar"
 msgstr ""
 
@@ -169,6 +179,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:33
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:32
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:32
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:31
 msgid "Nombre del Módulo"
 msgstr ""
 
@@ -178,12 +189,14 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:58
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:67
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:73
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:60
 msgid "Gestión de Módulos"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/exception/ConfigException.php:17
 #: /Users/flopez/Development/PSFS/src/base/exception/ConfigException.php:16
 #: /Users/c15k0/Development/psfs/core/src/base/exception/ConfigException.php:16
+#: /Users/c15k0/Development/psfs/core/src/base/exception/ConfigException.php:17
 msgid "Error en la configuración de la plataforma"
 msgstr ""
 
@@ -193,6 +206,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Router.php:73
 #: /Users/flopez/Development/PSFS/src/base/Router.php:89
 #: /Users/c15k0/Development/psfs/core/src/base/exception/RouterException.php:14
+#: /Users/c15k0/Development/psfs/core/src/base/exception/RouterException.php:15
 msgid "Página no encontrada"
 msgstr ""
 
@@ -202,6 +216,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/exception/SecurityException.php:14
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthApi.php:17
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthApi.php:16
+#: /Users/c15k0/Development/psfs/core/src/base/exception/SecurityException.php:15
 msgid "Not authorized"
 msgstr ""
 
@@ -219,6 +234,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:169
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:152
 #: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:152
+#: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:208
 msgid "Formulario no válido"
 msgstr ""
 
@@ -229,6 +245,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:343
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:341
 #: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:341
+#: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:433
 #, possible-php-format
 msgid "El campo %s es oligatorio"
 msgstr ""
@@ -241,6 +258,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:353
 #: /Users/flopez/Development/PSFS/src/base/types/Form.php:351
 #: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:351
+#: /Users/c15k0/Development/psfs/core/src/base/types/Form.php:444
 #, possible-php-format
 msgid "El campo %s no tiene un formato válido"
 msgstr ""
@@ -255,6 +273,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:106
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:115
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:119
+#: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:142
 msgid "Acceso permitido... redirigiendo!!"
 msgstr ""
 
@@ -308,6 +327,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:121
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:50
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:87
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:53
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:90
 msgid "Bienvenido a PSFS"
 msgstr ""
 
@@ -323,6 +344,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:368
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:242
 #: /Users/c15k0/Development/psfs/core/src/controller/LogController.php:21
+#: /Users/c15k0/Development/psfs/core/src/controller/LogController.php:22
 msgid "Selecciona un fichero de log"
 msgstr ""
 
@@ -334,6 +356,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/f7/f794dd5936f5cb3cfa6cc1721023000613e8964ee84c4d984076ff9bed25c453.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/90/90279d5d51aca57c5bd29af070eb4b7efc183a83c3bcd937b6df666bcdd5bb2b.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d1b6d718cd454037bd8a8bec8dcf29192889d3db7ccb69db9e2f1a40932269c.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f29cb00e7b2a3df031690e5b4a3a47a2e3494b6c4bab420476715e9362db4d1.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/f4/f4051d9e0dfcb6ce534409743d818ba5ca8e1e2be199b23f22bcdf198634b063.php:36
 msgid "Opps, esto no era lo que me esperaba..."
 msgstr ""
 
@@ -344,6 +368,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/c7/c7092f2d62acc77b346c60a84794d8b216f9f4fa2506e7c6813cb310b7ce4a05.php:35
 #: /Users/c15k0/Development/psfs/core/cache/e9/e9b33daf80d787efd3b653db8713a0794aabe99e9870020da8c858f8f302cf9b.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/72/72375b0b0c409207e354a354d42c9a34e5e921a4608b299643eb0036a19a1e8e.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/b4/b49a945b8185879be932888e205b0699c76ea7e506c6343f602e02d38142539b.php:35
 msgid "Acceso Web"
 msgstr ""
 
@@ -355,6 +380,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/59/595058bde2d51a111980763fe2f7bf652f55561bc3e7c8d12db69289fabce938.php:35
 #: /Users/c15k0/Development/psfs/core/cache/33/3343397643ade1d616dcb212408b53a7d36cc04e5670bc6c403175c76344f299.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/ec/ec873e8dba1cc5e4381b46142d96e6335419339b0a9ac5501e5606419154a768.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/89/89820c5c746b53952e40e0e84768d5dd99eb3509ffd1e75b905d493be6424160.php:35
 msgid "Rutas definidas en el sistema"
 msgstr ""
 
@@ -367,6 +393,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/b1/b1bff9cdc2b0c0bf58a279e659b42aff00dbf0b2789c8817d98fb6684149e3dc.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/08/0823408580fdc645ee544a7703bf043fea567bb225cacd4bd00a7645abece720.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/a1/a1a174dc82371ca0ba56153d53cd3f46d6f5afa9a742edd2806154686ff77421.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/71/71664842e733c9855181fbd7347ed5ab702a6d38b094ea7f9711979f05f3085a.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/98/983392636570c712f932499d284ee5aea56f72d881c91d1487359d3fbd2990d3.php:36
 msgid "Herramienta de Gestión de Módulos"
 msgstr ""
 
@@ -379,6 +407,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/35/3586452fad228d3268c28d02738a1178275f7f6f6ea32dfb401b5011da35dbf6.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/61/611838ba3c71dfed47687b407a386e0a2c0ea2cd8895a53f40a11710d26cbb71.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/f4/f44bea3f783e0e7fcb228f4da81d73da343ff45f8e214bc91048de27c80a2822.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/35/3586452fad228d3268c28d02738a1178275f7f6f6ea32dfb401b5011da35dbf6.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/3f/3f01e7469006612f14e574a3b599f57eb231c3b9fefb990b2d0a3e1b9366aa71.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/41/41d9d65f7742ee84f88dae452d4226ca03251112eb08deabc8470026501a82be.php:36
 msgid "Herramienta de Gestión de Administradores PSFS"
 msgstr ""
 
@@ -389,6 +420,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/25/25648d088f1f01b5e33b82bb68dca0320bae80457f6964c45d175ad19705ddfe.php:35
 #: /Users/c15k0/Development/psfs/core/cache/97/97e5ed503afa0badba78aed974c1b2c1565ecf383c86832ea3ccf126715bd207.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/d1/d10245fd533bf5e51f871d0d1d7a5da7a6adf0180ede2c265557b171463687c9.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f866521cfdf0355a4ead051ef3874a62fe279f5929140ed7f3328ac88519b15.php:35
 msgid "Logs de la plataforma"
 msgstr ""
 
@@ -401,6 +433,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/52/52521720176e4e0fba05f0ac6b770effca116648b69f4e679e14ac1134ae3aa6.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/75/75548d4caa0b37c086ae3d17193a275b0b13d979e94a0665fb3237b80e6a11c2.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc064fc148728f644427f720c9bc1fc800aaa5acbcb88f42a55db42e26cc729b.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/11/11fcbafe067eaab4cbe4963c8454bd0d214c4e968c06ab9acefbdfc12d997d0d.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/99/9943307ec0b357aea769f574f839ea57cb37cf4fd98fac03c4b8ced5a01d5577.php:36
 msgid "Herramienta de Administración"
 msgstr ""
 
@@ -416,6 +450,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/79/7973023b6a5cd3b60c38d4dc8c8310a65a3c0fcd0c48df1b6f0f5b36e549d8a0.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/25/2508614565ef2e3377ec320181867924e544b5b3dcc7599cff15414046d20795.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/f4/f46ed5091b93e8a48ae8a5759410bd1268b3d19741c372b9afc1443c571dd3df.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/53/53d05b4409bb0581d639b03f630af134546103f314495a9b35aa63dbed0a42ea.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/6f/6f852fb729881b943d8062586a0f38f88d70f5a1067f239293cf7dfbb4ce89a3.php:36
 msgid "Herramienta de configuración"
 msgstr ""
 
@@ -426,6 +462,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/22/225924c2f5050fa6a3484d5d56ae6ed5e96b186cd2b3dcb255d1d439d8011401.php:36
 #: /Users/c15k0/Development/psfs/core/cache/96/96f5509cf53d00ce0771ae250ea2ff4edae5f610445eabd636de046262ef1582.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/76/76a4d04ceb67463f9e908074f26e3db766271461f9953473fc1f45547c51503a.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e8c683623fee952f1da820ddee68ea7bb3951d84250a155c72aaec1f8deb6d0.php:36
 msgid "No tienes privilegios para acceder"
 msgstr ""
 
@@ -436,22 +473,26 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/22/225924c2f5050fa6a3484d5d56ae6ed5e96b186cd2b3dcb255d1d439d8011401.php:51
 #: /Users/c15k0/Development/psfs/core/cache/96/96f5509cf53d00ce0771ae250ea2ff4edae5f610445eabd636de046262ef1582.php:51
 #: /Users/c15k0/Development/psfs/core/cache/twig/76/76a4d04ceb67463f9e908074f26e3db766271461f9953473fc1f45547c51503a.php:51
+#: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e8c683623fee952f1da820ddee68ea7bb3951d84250a155c72aaec1f8deb6d0.php:51
 #, possible-php-format
 msgid "La ruta a la que accedes %s es de acceso restringido"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:2
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:2
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:13
 msgid "admin-setup"
 msgstr "Administración usuarios administración"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:3
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:3
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:14
 msgid "admin-login"
 msgstr "Login"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:4
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:4
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:8
 msgid "admin-translations-locale"
 msgstr "Generar traducciones"
 
@@ -462,31 +503,37 @@ msgstr "Configuración general"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:6
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:6
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:3
 msgid "admin"
 msgstr "Home admin"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:7
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:7
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:6
 msgid "admin-module"
 msgstr "Generación de Módulos"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:8
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:8
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:4
 msgid "admin-config-params"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:9
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:9
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:10
 msgid "admin-routes"
 msgstr "Visor de rutas del sistema"
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:10
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:10
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:11
 msgid "admin-routes-show"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:11
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:11
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:9
 msgid "admin-logs"
 msgstr "Gestor de logs del sistema"
 
@@ -544,6 +591,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:54
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:55
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:14
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:15
 msgid "n-a"
 msgstr "No definida"
 
@@ -579,6 +627,12 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:208
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:206
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:208
 msgid "Nuevo "
 msgstr ""
 
@@ -594,6 +648,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d74948a397fc746580f5156643e117fab62511713d6d8647f3fcb3cfb414ea4f.php:297
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:297
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:297
 msgid "Deseleccionar todo"
 msgstr ""
 
@@ -609,6 +666,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d74948a397fc746580f5156643e117fab62511713d6d8647f3fcb3cfb414ea4f.php:307
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:307
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:307
 msgid "Deseleccionar"
 msgstr ""
 
@@ -624,6 +684,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d74948a397fc746580f5156643e117fab62511713d6d8647f3fcb3cfb414ea4f.php:317
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:317
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:317
 msgid "Info"
 msgstr ""
 
@@ -639,6 +702,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d74948a397fc746580f5156643e117fab62511713d6d8647f3fcb3cfb414ea4f.php:325
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:325
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:325
 msgid "Seleccionar"
 msgstr ""
 
@@ -654,6 +720,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d74948a397fc746580f5156643e117fab62511713d6d8647f3fcb3cfb414ea4f.php:335
 #: /Users/c15k0/Development/psfs/core/cache/twig/74/74e47ed0752e171ddaa19ea5f515caad7a56ebaa87f20faf85ac75f25249b7c1.php:335
 #: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc170d474025d905d242864b585f245f8bf54746ce1cb70d6b7198463eb229f1.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/2b/2ba86b22bef5423a88765f595c391ca636cde51d7461ea6c3e4bb68cb2697d35.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/be/be5c3740071d6476f9b7e498106b37e5e12299d664a9616b73fdb0f8be513572.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/c6/c6b67645d054517e0a82ecc4ccdf79a54b9f7c6ed7563d184b715615f85e45dd.php:335
 msgid "Seleccionar todo"
 msgstr ""
 
@@ -670,12 +739,14 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/ConfigForm.php:99
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:99
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:102
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:101
 msgid "Parámetros necesarios para la ejecución de PSFS"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:56
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:12
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:17
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:16
 msgid "test"
 msgstr ""
 
@@ -717,6 +788,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/c0/c0778b3c6fe1490ab6cc044ea88601ba0ede71d073234ba90d96a718af595bd2.php:36
 #: /Users/c15k0/Development/psfs/core/cache/e8/e8dd59cff89c0598b2dda922d6332b3215ba694d1a6b1bb3df200da2a284483e.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/f3/f396fbda918a55143844b69e99db6b7e5b10a55ae70a2d756970517068bde32a.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/27/278e99c18c625603fc0ebf994ec4c5c1ca959b03785d7c6b9894c30eec78283d.php:36
 msgid "Generación de traducciones"
 msgstr ""
 
@@ -752,6 +824,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:138
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:141
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:143
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:144
 msgid "Solicitamos credenciales de acceso a zona restringida"
 msgstr ""
 
@@ -780,26 +853,31 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/config/Config.php:197
 #: /Users/c15k0/Development/psfs/core/src/base/config/Config.php:213
 #: /Users/c15k0/Development/psfs/core/src/base/config/Config.php:214
+#: /Users/c15k0/Development/psfs/core/src/base/types/helpers/GeneratorHelper.php:60
 msgid "Can't create directory "
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:41
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:47
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:34
 msgid "Tipo de controlador"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:44
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:50
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:37
 msgid "Normal"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:45
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:51
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:38
 msgid "Requiere autenticación de usuario"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/ModuleForm.php:46
 #: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:52
+#: /Users/c15k0/Development/psfs/core/src/base/config/ModuleForm.php:39
 msgid "Requiere autenticación de administrador"
 msgstr ""
 
@@ -808,12 +886,14 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/extension/AssetsParser.php:174
 #: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:168
 #: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:174
+#: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:183
 msgid "No se tienen permisos para escribir en "
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/types/AuthController.php:28
 #: /Users/flopez/Development/PSFS/src/base/types/AuthController.php:23
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthController.php:23
+#: /Users/c15k0/Development/psfs/core/src/base/types/AuthController.php:27
 msgid "User not logged in"
 msgstr ""
 
@@ -824,6 +904,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:237
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:109
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:75
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:78
 msgid "Configuración guardada correctamente"
 msgstr ""
 
@@ -834,6 +915,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:245
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:117
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:83
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:86
 msgid "Error al guardar la configuración, prueba a cambiar los permisos"
 msgstr ""
 
@@ -843,6 +925,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/services/GeneratorService.php:327
 #: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:339
 #: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:405
+#: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:422
 msgid " not exists or cant write"
 msgstr ""
 
@@ -860,6 +943,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:393
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:386
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:355
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:387
 msgid "No existe la ruta especificada"
 msgstr ""
 
@@ -867,6 +951,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:85
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:47
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:54
+#: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:64
 msgid "Usuario agregado correctamente"
 msgstr ""
 
@@ -876,6 +961,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:242
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:114
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:80
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:83
 msgid "Configuración actualizada correctamente"
 msgstr ""
 
@@ -903,6 +989,9 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/f4/f497f688553042e7233e19943c293de2dfe6d2d1a2f69d745fc9e931e1fe0cfe.php:137
 #: /Users/c15k0/Development/psfs/core/cache/twig/01/01c335621b41ab06072ff2f1459583fcc2a1a35cbab5d7681438b28dc7f06467.php:137
 #: /Users/c15k0/Development/psfs/core/cache/twig/68/6847e83c54580cbe8b3b098b1b0f15fb4c7b0f64c9a69ceb56aabfae78f1fb67.php:137
+#: /Users/c15k0/Development/psfs/core/cache/twig/0c/0c688e9ad082cd821d9ace2ae5c006ed18641378de9c9b1ae2b9128f0048f01d.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/57/57e9d0af68fd8da84ae2fdae9b3d9eb4f9433aa7d001bdb3b34b78d10bcfa64b.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/73/73f1d0ed36c071fdbae2e2ea66a5bbed336d35487e5cb9250beb6f6c8a73282e.php:136
 msgid "Aceptar"
 msgstr ""
 
@@ -911,6 +1000,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:228
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:100
 #: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:66
+#: /Users/c15k0/Development/psfs/core/src/controller/ConfigController.php:69
 msgid "Guardando configuración"
 msgstr ""
 
@@ -924,6 +1014,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:110
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:119
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:123
+#: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:146
 msgid "El usuario no tiene acceso a la web"
 msgstr ""
 
@@ -941,6 +1032,8 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/e6/e62d6cb084a30225ba9cc757173f7124df73f38eed97f2b4ad773744f12a96d5.php:37
 #: /Users/c15k0/Development/psfs/core/cache/twig/1f/1f6d75c42887322bba71b1483008cef0846ff0e8daa6931653fdc717af2f358b.php:37
 #: /Users/c15k0/Development/psfs/core/cache/twig/a0/a0e595fe7a6df20f8d6dc87fc20563549cc4f3245f9f7ec40a5a4010e7220e63.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:37
 #, possible-php-format
 msgid "Admin %s% site"
 msgstr ""
@@ -953,6 +1046,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:19
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:20
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:21
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:28
 msgid "admin-test-data"
 msgstr ""
 
@@ -1001,6 +1095,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:48
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:49
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:22
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:23
 msgid "api-test-pk"
 msgstr ""
 
@@ -1051,21 +1146,25 @@ msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:21
 #: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:21
+#: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:23
 msgid "User Alias"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:25
 #: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:25
+#: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:27
 msgid "Password"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:29
 #: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:29
+#: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:31
 msgid "Role"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/base/config/AdminForm.php:49
 #: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:49
+#: /Users/c15k0/Development/psfs/core/src/base/config/AdminForm.php:51
 msgid "Admin user control panel"
 msgstr ""
 
@@ -1078,6 +1177,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:399
 #: /Users/c15k0/Development/psfs/core/src/controller/baspsfse/Admin.php:285
 #: /Users/c15k0/Development/psfs/core/src/controller/RouteController.php:52
+#: /Users/c15k0/Development/psfs/core/src/controller/RouteController.php:55
 msgid "Rutas generadas correctamente"
 msgstr ""
 
@@ -1100,18 +1200,21 @@ msgstr "Generador de fichero de rutas"
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:85
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:88
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:90
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:84
 msgid "Page not found"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:88
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:50
 #: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:57
+#: /Users/c15k0/Development/psfs/core/src/controller/UserController.php:67
 msgid "Error al guardar los administradores, prueba a cambiar los permisos"
 msgstr ""
 
 #: /Users/flopez/Development/PSFS/src/controller/Admin.php:403
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:289
 #: /Users/c15k0/Development/psfs/core/src/controller/RouteController.php:56
+#: /Users/c15k0/Development/psfs/core/src/controller/RouteController.php:59
 msgid "Algo no ha salido bien, revisa los logs"
 msgstr ""
 
@@ -1120,6 +1223,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:91
 #: /Users/flopez/Development/PSFS/cache/translations/routes_translations.php:92
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:13
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:2
 msgid "api-doc-type"
 msgstr "Documentación API"
 
@@ -1131,10 +1235,12 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/59/595058bde2d51a111980763fe2f7bf652f55561bc3e7c8d12db69289fabce938.php:56
 #: /Users/c15k0/Development/psfs/core/cache/33/3343397643ade1d616dcb212408b53a7d36cc04e5670bc6c403175c76344f299.php:56
 #: /Users/c15k0/Development/psfs/core/cache/twig/ec/ec873e8dba1cc5e4381b46142d96e6335419339b0a9ac5501e5606419154a768.php:56
+#: /Users/c15k0/Development/psfs/core/cache/twig/89/89820c5c746b53952e40e0e84768d5dd99eb3509ffd1e75b905d493be6424160.php:56
 msgid "Generar rutas"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:16
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:7
 msgid "admin-translations"
 msgstr "Generar traducciones"
 
@@ -1151,6 +1257,7 @@ msgid "caca"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:21
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:22
 msgid "api-test"
 msgstr ""
 
@@ -1232,4 +1339,160 @@ msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:43
 msgid "api-api-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:473
+msgid "Start executing action"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:475
+msgid "An error ocurred trying to execute the action"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:213
+msgid ""
+"El modelo de la API no está debidamente mapeado, no hay Primary Key o es "
+"compuesta"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:451
+msgid "Ha ocurrido un error intentando guardar el elemento: "
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:482
+msgid ""
+"Ha ocurrido un error intentando eliminar el elemento, por favor verifica que "
+"no tenga otros elementos relacionados"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:517
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:524
+msgid ""
+"Ha ocurrido un error intentando actualizar el elemento, por favor revisa los "
+"logs"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/controller/GeneratorController.php:66
+msgid "Error al generar el módulo, prueba a cambiar los permisos"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:17
+msgid "domain-api-doc-type"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:18
+msgid "admin-domain-api-doc-type"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:19
+msgid "admin-api-doc-type"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:20
+msgid "test-api-test"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:21
+msgid "test-api-test-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:24
+msgid "admin-test-test"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:25
+msgid "admin-api-form-test-test"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:26
+msgid "test-api-data"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:27
+msgid "test-api-data-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:29
+msgid "admin-api-form-test-data"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:30
+msgid "api-data"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:31
+msgid "api-data-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:32
+msgid "test-api-related"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:33
+msgid "test-api-related-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:34
+msgid "admin-test-related"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:35
+msgid "admin-api-form-test-related"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:36
+msgid "api-related"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:37
+msgid "api-related-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:86
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:86
+msgid "Algo ha ido mal"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:90
+msgid "Vas a eliminar: %entity%"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:94
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:94
+msgid ""
+"Si eliminas este elemento puede que borres más datos relacionados, ¿estás "
+"seguro?"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:98
+msgid "Eliminar"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:106
+msgid "Cerrar"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:110
+msgid "elementos"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:114
+msgid "Buscar"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:118
+msgid "Guardar"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:122
+msgid "Nuevo"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:126
+msgid "Selecciona un valor"
 msgstr ""

@@ -7,15 +7,17 @@ use PSFS\base\Logger;
  * Class InjectorHelper
  * @package PSFS\base\types\helpers
  */
-class InjectorHelper {
+class InjectorHelper
+{
 
     /**
      * @param \ReflectionClass $reflector
      * @return array
      */
-    public static function extractVariables(\ReflectionClass $reflector) {
+    public static function extractVariables(\ReflectionClass $reflector)
+    {
         $variables = [];
-        foreach($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
             if (null !== $instanceType) {
                 $variables[$property->getName()] = $instanceType;

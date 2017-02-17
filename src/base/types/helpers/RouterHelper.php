@@ -1,5 +1,6 @@
 <?php
 namespace PSFS\base\types\helpers;
+
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Router;
@@ -8,7 +9,8 @@ use PSFS\base\Router;
  * Class RouterHelper
  * @package PSFS\base\types\helpers
  */
-class RouterHelper {
+class RouterHelper
+{
 
     /**
      * Método que extrae el controller a invocar
@@ -146,7 +148,7 @@ class RouterHelper {
      *
      * @return array
      */
-    public static  function extractReflectionParams($sr, \ReflectionMethod $method)
+    public static function extractReflectionParams($sr, \ReflectionMethod $method)
     {
         $regex = $sr[1] ?: $sr[0];
         $default = '';
@@ -265,12 +267,11 @@ class RouterHelper {
             $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
 
         }
-        if(null !== $default) {
+        if (null !== $default) {
             return Router::getInstance()->execute(Router::getInstance()->getRoute($default));
         }
         return null;
     }
-
 
 
     /**

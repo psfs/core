@@ -8,7 +8,8 @@ use PSFS\base\types\SingletonTrait;
  * Class Cache
  * @package PSFS\base\types\annotation
  */
-class Cache implements AnnotationInterface {
+class Cache implements AnnotationInterface
+{
     use SingletonTrait;
 
     /**

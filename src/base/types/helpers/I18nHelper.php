@@ -7,7 +7,8 @@ use PSFS\base\Cache;
  * Class I18nHelper
  * @package PSFS\base\types\helpers
  */
-class I18nHelper {
+class I18nHelper
+{
 
     /**
      * Create translation file if not exists

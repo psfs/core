@@ -5,7 +5,8 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 
-class RequestHelper {
+class RequestHelper
+{
     /**
      * Check CROS requests
      */

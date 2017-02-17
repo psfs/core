@@ -2,7 +2,6 @@
 
 namespace PSFS\base\config;
 
-use PSFS\base\Router;
 use PSFS\base\types\Form;
 
 /**
@@ -79,7 +78,7 @@ class ConfigForm extends Form
             "class" => "btn-success col-md-offset-2"
         ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
-                "onclick" => "javascript:addNewField(document.getElementById('".$this->getName()."'));",
+                "onclick" => "javascript:addNewField(document.getElementById('" . $this->getName() . "'));",
                 "class" => "btn-warning",
             ));
     }

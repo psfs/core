@@ -1,7 +1,7 @@
 <?php
-    namespace PSFS\baes\exception;
+namespace PSFS\baes\exception;
 
-    class DtoException extends \Exception
-    {
+class DtoException extends \Exception
+{
 
-    }
+}

@@ -6,7 +6,8 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\Dispatcher;
 
-class ResponseHelper {
+class ResponseHelper
+{
 
     /**
      * Method that sets the cookie headers

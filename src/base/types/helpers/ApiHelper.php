@@ -38,7 +38,7 @@ class ApiHelper
             } elseif ($mappedColumn->isNumeric()) {
                 $fDto = self::generateNumericField($field, $required);
             } elseif ($mappedColumn->isText()) {
-                if($mappedColumn->getSize() > 100) {
+                if ($mappedColumn->getSize() > 100) {
                     $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
                 } else {
                     $fDto = self::generateStringField($field, $required);
@@ -49,9 +49,9 @@ class ApiHelper
                 $fDto = self::generatePasswordField($field, $required);
             } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
                 $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
-            } elseif(in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
+            } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
                 $fDto = self::generateEnumField($field, $required);
-                foreach($mappedColumn->getValueSet() as $value) {
+                foreach ($mappedColumn->getValueSet() as $value) {
                     $fDto->data[] = [
                         $field => $value,
                         "Label" => _($value),
@@ -59,7 +59,7 @@ class ApiHelper
                 }
             }
 
-            if(null !== $fDto) {
+            if (null !== $fDto) {
                 $fDto->size = $mappedColumn->getSize();
                 $form->addField($fDto);
             }
@@ -175,7 +175,8 @@ class ApiHelper
      * @param bool $required
      * @return Field
      */
-    public static function generateEnumField($field, $required = false) {
+    public static function generateEnumField($field, $required = false)
+    {
         return self::createField($field, Field::COMBO_TYPE, $required);
     }
 
@@ -185,10 +186,11 @@ class ApiHelper
      * @param $field
      * @return \Propel\Runtime\Map\ColumnMap|null
      */
-    public static function checkFieldExists(TableMap $tableMap, $field) {
+    public static function checkFieldExists(TableMap $tableMap, $field)
+    {
         try {
             $column = $tableMap->getColumnByPhpName($field);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             $column = null;
         }
@@ -200,7 +202,8 @@ class ApiHelper
      * @param ModelCriteria $quwuery
      * @param mixed $value
      */
-    private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null) {
+    private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
+    {
         $tableField = $column->getPhpName();
         if (preg_match('/^<=/', $value)) {
             $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
@@ -213,7 +216,7 @@ class ApiHelper
         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);
-            $query->filterBy($tableField, '%'.$text.'%', Criteria::LIKE);
+            $query->filterBy($tableField, '%' . $text . '%', Criteria::LIKE);
         } else {
             $query->filterBy($tableField, $value, Criteria::EQUAL);
         }
@@ -225,16 +228,17 @@ class ApiHelper
      * @param array $extraColumns
      * @param mixed $value
      */
-    public static function composerComboField(TableMap $tableMap, ModelCriteria &$query, array $extraColumns = [], $value = null) {
+    public static function composerComboField(TableMap $tableMap, ModelCriteria &$query, array $extraColumns = [], $value = null)
+    {
         $exp = 'CONCAT(';
         $sep = '';
-        foreach($tableMap->getColumns() as $column) {
-            if($column->isText()) {
+        foreach ($tableMap->getColumns() as $column) {
+            if ($column->isText()) {
                 $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
                 $sep = ', " ", ';
             }
         }
-        foreach($extraColumns as $extra => $name) {
+        foreach ($extraColumns as $extra => $name) {
             $exp .= $sep . $extra;
             $sep = ', " ", ';
         }
@@ -251,7 +255,8 @@ class ApiHelper
      * @param string $field
      * @param mixed $value
      */
-    public static function addModelField(TableMap $tableMap, ModelCriteria &$query, $field, $value = null) {
+    public static function addModelField(TableMap $tableMap, ModelCriteria &$query, $field, $value = null)
+    {
         if ($column = self::checkFieldExists($tableMap, $field)) {
             self::addQueryFilter($column, $query, $value);
         }

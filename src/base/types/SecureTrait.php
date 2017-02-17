@@ -9,7 +9,8 @@ use PSFS\base\Security;
  * Class AuthController
  * @package PSFS\base\types
  */
-trait SecureTrait {
+trait SecureTrait
+{
 
     /**
      * @Inyectable
@@ -29,7 +30,8 @@ trait SecureTrait {
      * Método que verifica si está autenticado el usuario
      * @return boolean
      */
-    public function isLogged() {
+    public function isLogged()
+    {
         return (null !== $this->security->getUser() || $this->isAdmin());
     }
 
@@ -37,7 +39,8 @@ trait SecureTrait {
      * Método que devuelve si un usuario es administrador de la plataforma
      * @return boolean
      */
-    public function isAdmin() {
+    public function isAdmin()
+    {
         return $this->security->canAccessRestrictedAdmin();
     }
 
@@ -47,7 +50,8 @@ trait SecureTrait {
      * TODO
      * @return bool
      */
-    public function canDo($action) {
+    public function canDo($action)
+    {
         return true;
     }
 

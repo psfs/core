@@ -6,7 +6,8 @@ namespace PSFS\base\extension;
  * Class AssetsTokenParser
  * @package PSFS\base\extension
  */
-class AssetsTokenParser extends \Twig_TokenParser {
+class AssetsTokenParser extends \Twig_TokenParser
+{
 
     protected $type;
     private $values = array();
@@ -15,7 +16,8 @@ class AssetsTokenParser extends \Twig_TokenParser {
     /**
      * @param string $type
      */
-    public function __construct($type = 'js') {
+    public function __construct($type = 'js')
+    {
         $this->type = $type;
     }
 
@@ -26,7 +28,8 @@ class AssetsTokenParser extends \Twig_TokenParser {
      * @throws \Twig_Error_Syntax
      * @throws \Twig_Error_Loader
      */
-    public function parse(\Twig_Token $token) {
+    public function parse(\Twig_Token $token)
+    {
         $hash = substr(md5($this->parser->getStream()->getSourceContext()->getPath()), 0, 8);
         $name = $token->getValue();
         $this->extractTemplateNodes();
@@ -40,11 +43,14 @@ class AssetsTokenParser extends \Twig_TokenParser {
      */
     public function getTag()
     {
-        switch ($this->type)
-        {
+        switch ($this->type) {
             default:
-            case 'js': $return = 'scripts'; break;
-            case 'css': $return = 'styles'; break;
+            case 'js':
+                $return = 'scripts';
+                break;
+            case 'css':
+                $return = 'styles';
+                break;
         }
         return $return;
     }
@@ -133,7 +139,7 @@ class AssetsTokenParser extends \Twig_TokenParser {
         $tmp = array();
         if (NULL === $node) {
             $node = $value;
-        }else {
+        } else {
             $tmp = $this->getTmpAttribute($node);
         }
         $tmp[] = $value->getAttribute("value");
