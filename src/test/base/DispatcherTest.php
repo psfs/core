@@ -37,7 +37,7 @@
          * @return \PHPUnit_Framework_MockObject_MockObject
          */
         private function mockConfiguredDebugConfig($configured = true, $debug = true) {
-            $config = $this->getMock("\\PSFS\\base\\config\\Config");
+            $config = $this->createMock("\\PSFS\\base\\config\\Config");
             $config->expects($this->any())->method("isConfigured")->will($this->returnValue($configured));
             $config->expects($this->any())->method("getDebugMode")->will($this->returnValue($debug));
             return $config;
@@ -48,7 +48,7 @@
          * @return \PHPUnit_Framework_MockObject_MockObject
          */
         private function mockDebugRouter() {
-            return $this->getMock("\\PSFS\\base\\Router");
+            return $this->createMock("\\PSFS\\base\\Router");
         }
 
         /**
@@ -56,7 +56,7 @@
          * @return \PHPUnit_Framework_MockObject_MockObject
          */
         private function mockDebugSecurity() {
-            return $this->getMock("\\PSFS\\base\\Security");
+            return $this->createMock("\\PSFS\\base\\Security");
         }
 
         public function testConstructor() {
