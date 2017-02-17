@@ -10,7 +10,7 @@ use PSFS\base\Security;
 
 class SecurityHelper
 {
-    const RAND_SEP = '?!.:,()[]{}#|_-=';
+    const RAND_SEP = '?!.:,(){}#|_-=';
     const RAND_ODD = 0;
     const RAND_EVEN = 1;
 

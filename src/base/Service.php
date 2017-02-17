@@ -1,6 +1,7 @@
 <?php
 
 namespace PSFS\base;
+use PSFS\base\types\helpers\SecurityHelper;
 
 /**
  * Class Service
@@ -16,6 +17,10 @@ class Service extends Singleton
      * @var array Parámetros de la llamada
      */
     private $params;
+    /**
+     * @var array Opciones llamada
+     */
+    private $options;
     /**
      * @var array Cabeceras de la llamada
      */
@@ -96,6 +101,29 @@ class Service extends Singleton
     public function addParam($key, $value = NULL)
     {
         $this->params[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Add request param
+     *
+     * @param $key
+     * @param null $value
+     *
+     * @return \PSFS\base\Service
+     */
+    public function addOption($key, $value = NULL)
+    {
+        $this->options[$key] = $value;
 
         return $this;
     }
@@ -200,44 +228,59 @@ class Service extends Singleton
     /**
      * Generate auth header
      * @param string $secret
+     * @param string $module
      */
-    protected function addRequestToken($secret)
+    protected function addRequestToken($secret, $module = 'PSFS')
     {
-        $this->addHeader('X-PSFS-SEC-TOKEN', Security::generateToken($secret));
+        $this->addHeader('X-PSFS-SEC-TOKEN', SecurityHelper::generateToken($secret, $module));
     }
 
-    protected function setOpts()
+    /**
+     * @param $user
+     * @param $pass
+     */
+    protected function addAuthHeader($user, $pass) {
+        $this->addOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        $this->addOption(CURLOPT_USERPWD, "$user:$pass");
+    }
+
+    protected function applyOptions() {
+        curl_setopt_array($this->con, $this->options);
+    }
+
+    protected function setDefaults()
     {
         switch (strtoupper($this->type)) {
             case 'GET':
             default:
-                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "GET");
+                $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
                 break;
             case 'POST':
-                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "POST");
-                curl_setopt($this->con, CURLOPT_POSTFIELDS, json_encode($this->params));
+                $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
+                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
                 break;
             case 'DELETE':
-                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "DELETE");
+                $this->addOption(CURLOPT_CUSTOMREQUEST, "DELETE");
                 break;
             case 'PUT':
-                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "PUT");
-                curl_setopt($this->con, CURLOPT_POSTFIELDS, json_encode($this->params));
+                $this->addOption(CURLOPT_CUSTOMREQUEST, "PUT");
+                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
                 break;
             case 'PATCH':
-                curl_setopt($this->con, CURLOPT_CUSTOMREQUEST, "PATCH");
-                curl_setopt($this->con, CURLOPT_POSTFIELDS, json_encode($this->params));
+                $this->addOption(CURLOPT_CUSTOMREQUEST, "PATCH");
+                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
                 break;
         }
 
-        curl_setopt($this->con, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($this->con, CURLOPT_FOLLOWLOCATION, true);
+        $this->addOption(CURLOPT_RETURNTRANSFER, true);
+        $this->addOption(CURLOPT_FOLLOWLOCATION, true);
     }
 
     public function callSrv()
     {
-        $this->setOpts();
+        $this->setDefaults();
+        $this->applyOptions();
         $result = curl_exec($this->con);
-        $this->result = json_decode($result);
+        $this->result = json_decode($result, true);
     }
 }

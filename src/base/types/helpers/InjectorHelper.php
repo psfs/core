@@ -37,7 +37,7 @@ class InjectorHelper
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
             $doc = $property->getDocComment();
-            if (preg_match('/@Inyectable/im', $doc)) {
+            if (preg_match('/@(Inyectable|Injectable|autoload|autowired)/im', $doc)) {
                 $instanceType = self::extractVarType($property->getDocComment());
                 if (null !== $instanceType) {
                     $properties[$property->getName()] = $instanceType;
