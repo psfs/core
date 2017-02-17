@@ -255,7 +255,7 @@ class Security
      */
     public function canAccessRestrictedAdmin()
     {
-        return null !== $this->admin || false != preg_match('/^\/admin\/login/i', Request::requestUri());
+        return null !== $this->admin || !preg_match('/^\/admin\/login/i', Request::requestUri());
     }
 
     /**

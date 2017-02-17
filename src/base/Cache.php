@@ -166,7 +166,7 @@ class Cache
             $url = str_replace(Request::getInstance()->getRootUrl(true), '', $lastRequest['url']);
             $isAdminRequest = preg_match('/^\/admin\//i', $url);
         }
-        return $isAdminRequest;
+        return (bool)$isAdminRequest;
     }
 
     /**

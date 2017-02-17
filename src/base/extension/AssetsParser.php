@@ -82,13 +82,13 @@ class AssetsParser
 
     /**
      * Método que establece el hash con el que compilar los assets
-     * @param $hash
+     * @param string $hash
      *
      * @return AssetsParser
      */
     public function setHash($hash)
     {
-        $cache = Config::getInstance()->get('cache.var') ?: '';
+        $cache = Config::getParam('cache.var', '');
         $this->hash = $hash . (strlen($cache) ? '.' : '') . $cache;
         return $this;
     }
