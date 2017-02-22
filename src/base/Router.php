@@ -66,6 +66,7 @@ class Router
         } else {
             list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", Cache::JSON, TRUE);
             $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, TRUE);
+            $this->checkExternalModules(false);
         }
     }
 
@@ -194,7 +195,11 @@ class Router
         return AdminServices::getInstance()->setAdminHeaders();
     }
 
-    private function checkExternalModules()
+    /**
+     * Method that check if the proyect has sub project to include
+     * @param boolean $hydrateRoute
+     */
+    private function checkExternalModules($hydrateRoute = true)
     {
         $externalModules = Config::getParam('modules.extend');
         if (null !== $externalModules) {
@@ -210,7 +215,9 @@ class Router
                             $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
                             if (file_exists($moduleAutoloader)) {
                                 @include $moduleAutoloader;
-                                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, $extModule, $this->routing);
+                                if($hydrateRoute) {
+                                    $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
+                                }
                             }
                         }
                     }
