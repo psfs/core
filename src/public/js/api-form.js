@@ -66,13 +66,15 @@
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title($scope.entity + '<br> Error ' + err.status)
+                        .title($scope.entity + ' Error ' + err.status)
                         .content(err.data.data)
                         .ariaLabel('Save error')
                         .ok($scope.i18N['close'])
-                );
+                ).finally(function() {
+                    $scope.itemLoading = false;
+                    $scope.loading = false;
+                });
                 $log.error(err);
-                $scope.loading = false;
             }
 
 

@@ -18,8 +18,6 @@ use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . "bootstrap.php";
-
 /**
  * Class Dispatcher
  * @package PSFS
