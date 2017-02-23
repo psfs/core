@@ -366,6 +366,9 @@ class AssetsParser
         $debug = Config::getInstance()->getDebugMode();
         $cache = Config::getInstance()->get('cache.var');
         $cache = $cache ? '.' . $cache : '';
+        $finfo = finfo_open(FILEINFO_MIME_TYPE); // devuelve el tipo mime de su extensión
+        $mime = finfo_file($finfo, $filename_path);
+        finfo_close($finfo);
         if (preg_match('/\.css$/i', $string)) {
             $file = "/" . substr(md5($string), 0, 8) . "$cache.css";
             $html_base = "css";
@@ -378,21 +381,21 @@ class AssetsParser
             if ($debug) {
                 $file = str_replace(".js", "_" . $original_filename, $file);
             }
-        } elseif (preg_match("/image/i", mime_content_type($filename_path))) {
+        } elseif (preg_match("/image/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
             $html_base = "img";
             if ($debug) {
                 $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
             }
-        } elseif (preg_match("/(doc|pdf)/i", mime_content_type($filename_path))) {
+        } elseif (preg_match("/(doc|pdf)/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
             $html_base = "docs";
             if ($debug) {
                 $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
             }
-        } elseif (preg_match("/(video|audio|ogg)/i", mime_content_type($filename_path))) {
+        } elseif (preg_match("/(video|audio|ogg)/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
             $html_base = "media";
