@@ -9,7 +9,26 @@
 >
     <testsuites>
         <testsuite name="{{ module }} Suite Test">
-            <directory>/src/{{ module }}/Test/</directory>
+            <directory>./Test/</directory>
         </testsuite>
     </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./Api</directory>
+            <directory suffix=".php">./Controller</directory>
+            <directory suffix=".php">./Services</directory>
+            <directory suffix=".php">./Models</directory>
+            <exclude>
+                <directory>./Config</directory>
+                <directory>./Command</directory>
+                <directory>./Test</directory>
+                <directory>./Public</directory>
+                <directory>./Templates</directory>
+                <directory>./Api/Base</directory>
+                <directory>./Controller/Base</directory>
+                <directory>./Models/Base</directory>
+                <directory>./Models/Map</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>

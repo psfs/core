@@ -12,4 +12,17 @@
             <directory>./src/test/</directory>
         </testsuite>
     </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./src/base</directory>
+            <directory suffix=".php">./src/controller</directory>
+            <directory suffix=".php">./src/services</directory>
+            <exclude>
+                <directory>./src/bin</directory>
+                <directory>./src/public</directory>
+                <directory>./src/test</directory>
+                <directory>./src/templates</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>
