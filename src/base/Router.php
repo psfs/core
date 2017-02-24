@@ -323,7 +323,8 @@ class Router
                 }
                 foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (preg_match('/@route\ /i', $method->getDocComment())) {
-                        list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
+                        list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
+
                         if (null !== $route && null !== $info) {
                             $info['class'] = $namespace;
                             $routing[$route] = $info;
