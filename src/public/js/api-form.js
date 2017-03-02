@@ -75,6 +75,8 @@
                     $scope.loading = false;
                 });
                 $log.error(err);
+                $scope.loading = false;
+                $scope.itemLoading = false;
             }
 
 
