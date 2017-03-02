@@ -24,3 +24,7 @@ md-dialog {
     max-height: 300px;
     overflow: auto;
 }
+html body .api-list,
+html body .api-form {
+    background: white;
+}

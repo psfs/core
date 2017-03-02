@@ -1,4 +1,4 @@
-<md-content flex="35" flex-sm="100" layout-padding layout="column">
+<md-content flex="35" flex-sm="100" layout-padding layout="column" class="api-list">
     <md-card>
         <md-card-title>
             <md-card-title-text layout="column">
@@ -32,6 +32,9 @@
                     <md-button aria-label="Delete" data-ng-click="deleteItem(item, $event)" class="md-fab md-warn md-mini">
                         <i class="fa fa-trash-o"></i>
                     </md-button>
+                </md-list-item>
+                <md-list-item ng-show="list.length == 0">
+                    <p ng-bind="i18N['no_records']"></p>
                 </md-list-item>
             </md-list>
         </md-card-content>

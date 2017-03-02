@@ -5,7 +5,7 @@
  * @version 0.1
  */
 defined("BASE_DIR") or define("BASE_DIR", dirname(dirname(__DIR__)));
-
+\PSFS\bootstrap::load();
 if (!function_exists("PSFSAutoloader")) {
     // autoloader
     function PSFSAutoloader($class)

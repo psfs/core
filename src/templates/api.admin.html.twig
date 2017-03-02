@@ -2,7 +2,7 @@
 {% block body_content %}
     {{ resource('@ROOT/js/templates', '/js') }}
     <br><h2 class="md-flex">{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
-    <div class="col-md-12" layout="row" layout-fill ng-controller="apiCtrl">
+    <div class="row" layout="row" layout-fill layout-wrap ng-controller="apiCtrl">
         <input type="hidden" ng-model="entity" ng-init="entity = '{{ api }}'"/>
         <input type="hidden" ng-model="api" ng-init="api = '{{ api }}'"/>
         <input type="hidden" ng-model="url" ng-init="url = '{{ url }}'"/>
@@ -28,7 +28,8 @@
             'search': '{{ "Buscar"|trans }}',
             'save': '{{ "Guardar"|trans }}',
             'new': '{{ "Nuevo"|trans }}',
-            'choose_one': '{{ "Selecciona un valor"|trans }}'
+            'choose_one': '{{ "Selecciona un valor"|trans }}',
+            'no_records': '{{ "No existen registros"|trans }}'
         };
     </script>
     {% scripts

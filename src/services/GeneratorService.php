@@ -173,9 +173,13 @@ class GeneratorService extends Service
         $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR .
             $module_path . DIRECTORY_SEPARATOR . "Config" . $schemaOpt);
         $this->log->infoLog("[GENERATOR] Generamos sql invocando a propel:\n $ret");
-        $ret = shell_exec($exec . "config:convert" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR .
-            $module_path . DIRECTORY_SEPARATOR . "Config");
-        $this->log->infoLog("[GENERATOR] Generamos configuración invocando a propel:\n $ret");
+
+        $configTemplate = $this->tpl->dump("generator/config.propel.template.twig", array(
+            "module" => $module,
+        ));
+        $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config" .
+            DIRECTORY_SEPARATOR . "config.php", true);
+        $this->log->infoLog("Generado config genérico para propel:\n $ret");
     }
 
     /**
