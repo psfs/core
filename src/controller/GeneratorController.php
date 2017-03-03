@@ -2,9 +2,9 @@
 namespace PSFS\controller;
 
 use PSFS\base\config\ModuleForm;
-use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
 
 /**
@@ -57,9 +57,7 @@ class GeneratorController extends Admin
             try {
                 $module = preg_replace('/(\\\|\/)/', '/', $module);
                 $module = preg_replace('/^\//', '', $module);
-                if(!empty($apiClass) && !class_exists($apiClass)) {
-                    throw new ConfigException(_('La clase definida para la API no existe'), 501);
-                }
+                GeneratorHelper::checkCustomNamespaceApi($apiClass);
                 $this->gen->createStructureModule($module, false, $type, $apiClass);
                 Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, _("Módulo %s generado correctamente")));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));

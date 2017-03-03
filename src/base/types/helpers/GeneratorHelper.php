@@ -85,4 +85,23 @@ class GeneratorHelper
         $parts = preg_split('/(\\\|\\/)/', $namespace);
         return array_pop($parts);
     }
+
+    /**
+     * @param $namespace
+     * @throws GeneratorException
+     */
+    public static function checkCustomNamespaceApi($namespace) {
+        if(!empty($namespace)) {
+            if(class_exists($namespace)) {
+                $reflector = new \ReflectionClass($namespace);
+                if(!$reflector->isSubclassOf(\PSFS\base\types\Api::class)) {
+                    throw new GeneratorException(_('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
+                } elseif(!$reflector->isAbstract()) {
+                    throw new GeneratorException(_('La clase definida debe ser abstracta'), 501);
+                }
+            } else {
+                throw new GeneratorException(_('La clase definida para extender la API no existe'), 501);
+            }
+        }
+    }
 }
