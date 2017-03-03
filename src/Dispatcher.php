@@ -113,8 +113,6 @@ class Dispatcher extends Singleton
             return $this->dumpException($c);
         } catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
-        } catch (UserAuthException $u) {
-            $this->redirectToHome();
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
         } catch (\Exception $e) {

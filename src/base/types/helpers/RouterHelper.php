@@ -246,6 +246,8 @@ class RouterHelper
                 "params" => $params,
                 "default" => $default,
                 "label" => $label,
+                "icon" => strlen($api) > 0 ? 'fa-database' : '',
+                "module" => preg_replace('/(\\\|\\/)/', '', $module),
                 "visible" => RouterHelper::extractReflectionVisibility($docComments),
                 "http" => $httpMethod,
                 "cache" => RouterHelper::extractReflectionCacheability($docComments),

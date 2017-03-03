@@ -406,6 +406,7 @@ class Router
 
     /**
      * Método que devuelve las rutas de administración
+     * @deprecated
      * @return array
      */
     public function getAdminRoutes()
@@ -415,6 +416,7 @@ class Router
 
     /**
      * Método que devuelve le controlador del admin
+     * @deprecated
      * @return Admin
      */
     public function getAdmin()
