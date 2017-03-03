@@ -53,16 +53,19 @@ class GeneratorController extends Admin
         if ($form->isValid()) {
             $module = $form->getFieldValue("module");
             $type = $form->getFieldValue("controllerType");
-            $is_module = false;
+            $apiClass = $form->getFieldValue("api");
             try {
                 $module = preg_replace('/(\\\|\/)/', '/', $module);
                 $module = preg_replace('/^\//', '', $module);
-                $this->gen->createStructureModule($module, false, $type, (bool)$is_module);
+                if(!empty($apiClass) && !class_exists($apiClass)) {
+                    throw new ConfigException(_('La clase definida para la API no existe'), 501);
+                }
+                $this->gen->createStructureModule($module, false, $type, $apiClass);
                 Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, _("Módulo %s generado correctamente")));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (\Exception $e) {
                 Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
-                throw new ConfigException(_('Error al generar el módulo, prueba a cambiar los permisos'), 403);
+                Security::getInstance()->setFlash("callback_message", $e->getMessage());
             }
         }
         return $this->render("modules.html.twig", array(

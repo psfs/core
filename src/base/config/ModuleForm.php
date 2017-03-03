@@ -24,31 +24,36 @@ class ModuleForm extends Form
      */
     public function __construct()
     {
+        parent::__construct();
         $this->init();
         $this->setAction($this->router->getRoute('admin-module'))
             ->setAttrs(array());
+
+        $controllerTypes = array(
+            "" => _("Normal"),
+            "Auth" => _("Requiere autenticación de usuario"),
+            "AuthAdmin" => _("Requiere autenticación de administrador"),
+        );
+        if(Config::getParam('psfs.auth')) {
+            $controllerTypes['SessionAuthApi'] = _('Requiere autenticación usando PSFS AUTH');
+        }
         $this->add('module', array(
             'label' => _('Nombre del Módulo'),
-        ))
-            ->add('controllerType', array(
-                'label' => _('Tipo de controlador'),
-                'type' => 'select',
-                'data' => array(
-                    "" => _("Normal"),
-                    "Auth" => _("Requiere autenticación de usuario"),
-                    "AuthAdmin" => _("Requiere autenticación de administrador"),
-                ),
-                'required' => false
-            ));
-        $data = Security::getInstance()->getAdmins();
+        ))->add('controllerType', array(
+            'label' => _('Tipo de controlador'),
+            'type' => 'select',
+            'data' => $controllerTypes,
+            'required' => false
+        ))->add('api', array(
+            'label' => _('Clase personalizada para API'),
+            'required' => false,
+            'placeholder' => _('Namespace de la clase completo'),
+        ));
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
             'class' => 'col-md-6',
         ));
-        //Hidratamos el formulario
-        $this->setData($data);
-        //Añadimos las acciones del formulario
-        $this->addButton('submit', 'Generar');
+        $this->addButton('submit', 'Generar módulo');
     }
 
     /**

@@ -31,7 +31,7 @@ class AdminHelper
     {
         $routes = [];
         foreach ($systemRoutes as $route => $params) {
-            if('GET' === $params['http'] && preg_match('/^\/admin(\/|$)/', $params['default'])) {
+            if(isset($params['http']) && 'GET' === $params['http'] && preg_match('/^\/admin(\/|$)/', $params['default'])) {
                 $module = strtoupper($params['module']);
                 $mode = $params["visible"] ? 'visible' : 'hidden';
                 $routes[$module][$mode][] = [

@@ -65,18 +65,18 @@ class GeneratorService extends Service
      * @param string $module
      * @param boolean $force
      * @param string $type
-     * @param boolean $isModule
+     * @param string $apiClass
      * @return mixed
      */
-    public function createStructureModule($module, $force = false, $type = "", $isModule = false)
+    public function createStructureModule($module, $force = false, $type = "", $apiClass = "")
     {
         $mod_path = CORE_DIR . DIRECTORY_SEPARATOR;
         $module = ucfirst($module);
-        $this->createModulePath($module, $mod_path, $isModule);
-        $this->createModulePathTree($module, $mod_path, $isModule);
-        $this->createModuleBaseFiles($module, $mod_path, $force, $type, $isModule);
-        $this->createModuleModels($module, $mod_path, $isModule);
-        $this->generateBaseApiTemplate($module, $mod_path, $force, $isModule);
+        $this->createModulePath($module, $mod_path);
+        $this->createModulePathTree($module, $mod_path);
+        $this->createModuleBaseFiles($module, $mod_path, $force, $type);
+        $this->createModuleModels($module, $mod_path);
+        $this->generateBaseApiTemplate($module, $mod_path, $force, $apiClass);
         //Redireccionamos al home definido
         $this->log->infoLog("Módulo generado correctamente");
     }
@@ -87,31 +87,28 @@ class GeneratorService extends Service
      * @param string $mod_path
      * @param boolean $isModule
      */
-    private function createModulePath($module, $mod_path, $isModule = false)
+    private function createModulePath($module, $mod_path)
     {
         // Creates the src folder
         GeneratorHelper::createDir($mod_path);
         // Create module path
-        if (false === $isModule) {
-            GeneratorHelper::createDir($mod_path . $module);
-        }
+        GeneratorHelper::createDir($mod_path . $module);
     }
 
     /**
      * Servicio que genera la estructura base
      * @param string $module
      * @param boolean $mod_path
-     * @param boolean $isModule
      * @return boolean
      */
-    private function createModulePathTree($module, $mod_path, $isModule = false)
+    private function createModulePathTree($module, $mod_path)
     {
         //Creamos las carpetas CORE del módulo
         $this->log->infoLog("Generamos la estructura");
         $paths = [
             "Api", "Api/base", "Config", "Controller", "Form", "Models", "Public", "Templates", "Services", "Test"
         ];
-        $module_path = $isModule ? $mod_path : $mod_path . $module;
+        $module_path = $mod_path . $module;
         foreach ($paths as $path) {
             GeneratorHelper::createDir($module_path . DIRECTORY_SEPARATOR . $path);
         }
@@ -119,12 +116,6 @@ class GeneratorService extends Service
         $htmlPaths = array("css", "js", "img", "media", "font");
         foreach ($htmlPaths as $path) {
             GeneratorHelper::createDir($module_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . $path);
-        }
-
-        if ($isModule) {
-            return $this->writeTemplateToFile(json_encode([
-                "module" => "\\" . preg_replace('/(\\\|\/)/', '\\\\', $module),
-            ], JSON_PRETTY_PRINT), $mod_path . DIRECTORY_SEPARATOR . "module.json", true);
         }
     }
 
@@ -134,14 +125,13 @@ class GeneratorService extends Service
      * @param string $mod_path
      * @param boolean $force
      * @param string $controllerType
-     * @param boolean $isModule
      */
-    private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '', $isModule = false)
+    private function createModuleBaseFiles($module, $mod_path, $force = false, $controllerType = '')
     {
-        $module_path = $isModule ? $mod_path : $mod_path . $module;
+        $module_path = $mod_path . $module;
         $this->generateControllerTemplate($module, $module_path, $force, $controllerType);
         $this->generateServiceTemplate($module, $module_path, $force);
-        $this->genereateAutoloaderTemplate($module, $module_path, $force, $isModule);
+        $this->genereateAutoloaderTemplate($module, $module_path, $force);
         $this->generateSchemaTemplate($module, $module_path, $force);
         $this->generatePropertiesTemplate($module, $module_path, $force);
         $this->generateConfigTemplate($module_path, $force);
@@ -153,11 +143,10 @@ class GeneratorService extends Service
      * Servicio que ejecuta Propel y genera el modelo de datos
      * @param string $module
      * @param string $path
-     * @param boolean $isModule
      */
-    private function createModuleModels($module, $path, $isModule = false)
+    private function createModuleModels($module, $path)
     {
-        $module_path = $isModule ? $path : $path . $module;
+        $module_path = $path . $module;
         $module_path = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $module_path);
         //Generamos las clases de propel y la configuración
         $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR .
@@ -232,18 +221,14 @@ class GeneratorService extends Service
      * @param string $module
      * @param string $mod_path
      * @param boolean $force
-     * @param boolean $isModule
+     * @param string $apiClass
      * @return boolean
      */
-    private function generateBaseApiTemplate($module, $mod_path, $force = false, $isModule = false)
+    private function generateBaseApiTemplate($module, $mod_path, $force = false, $apiClass = "")
     {
         $created = true;
-        $modelPath = $isModule ?
-            $mod_path . DIRECTORY_SEPARATOR . 'Models' :
-            $mod_path . $module . DIRECTORY_SEPARATOR . 'Models';
-        $api_path = $isModule ?
-            $mod_path . DIRECTORY_SEPARATOR . 'Api' :
-            $mod_path . $module . DIRECTORY_SEPARATOR . 'Api';
+        $modelPath = $mod_path . $module . DIRECTORY_SEPARATOR . 'Models';
+        $api_path = $mod_path . $module . DIRECTORY_SEPARATOR . 'Api';
         if (file_exists($modelPath)) {
             $dir = dir($modelPath);
             while ($file = $dir->read()) {
@@ -253,7 +238,7 @@ class GeneratorService extends Service
                 ) {
                     $filename = str_replace(".php", "", $file);
                     $this->log->infoLog("Generamos Api BASES para {$filename}");
-                    $this->createApiBaseFile($module, $api_path, $filename);
+                    $this->createApiBaseFile($module, $api_path, $filename, $apiClass);
                     $this->createApi($module, $api_path, $force, $filename);
                 }
             }
@@ -319,10 +304,9 @@ class GeneratorService extends Service
      * @param string $module
      * @param string $mod_path
      * @param boolean $force
-     * @param boolean $isModule
      * @return boolean
      */
-    private function genereateAutoloaderTemplate($module, $mod_path, $force = false, $isModule = false)
+    private function genereateAutoloaderTemplate($module, $mod_path, $force = false)
     {
         //Generamos el autoloader del módulo
         $this->log->infoLog("Generamos el autoloader");
@@ -330,14 +314,12 @@ class GeneratorService extends Service
             "module" => $module,
             "autoloader" => preg_replace('/(\\\|\/)/', '_', $module),
             "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\\\\\\\', $module),
-            "is_module" => $isModule,
         ));
         $autoload = $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
 
         $this->log->infoLog("Generamos el phpunit");
         $phpUnitTemplate = $this->tpl->dump("generator/phpunit.template.twig", array(
             "module" => $module,
-            "is_module" => $isModule,
         ));
         $phpunit = $this->writeTemplateToFile($phpUnitTemplate, $mod_path . DIRECTORY_SEPARATOR . "phpunit.xml.dist", $force);
         return $autoload && $phpunit;
@@ -433,18 +415,22 @@ class GeneratorService extends Service
      * @param string $module
      * @param string $mod_path
      * @param string $api
+     * @param string $apiClass
      *
      * @return bool
      */
-    private function createApiBaseFile($module, $mod_path, $api)
+    private function createApiBaseFile($module, $mod_path, $api, $apiClass = '')
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
+        $customClass = GeneratorHelper::extractClassFromNamespace($apiClass);
         $controller = $this->tpl->dump("generator/api.base.template.twig", array(
             "module" => $module,
             "api" => $api,
             "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
             "url" => preg_replace('/(\\\|\/)/', '/', $module),
             "class" => $class,
+            'customClass' => $customClass,
+            'customNamespace' => $apiClass,
         ));
 
         return $this->writeTemplateToFile($controller,

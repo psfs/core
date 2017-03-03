@@ -76,4 +76,13 @@ class GeneratorHelper
         $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
         return realpath($path);
     }
+
+    /**
+     * @param $namespace
+     * @return string
+     */
+    public static function extractClassFromNamespace($namespace) {
+        $parts = preg_split('/(\\\|\\/)/', $namespace);
+        return array_pop($parts);
+    }
 }

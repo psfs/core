@@ -54,6 +54,7 @@ class Config
         'cache.var', // Static cache var
         'twig.auto_reload', // Enable or disable auto reload templates for twig
         'modules.extend', // Variable for extending the current functionality
+        'psfs.auth', // Variable for extending PSFS with the AUTH module
     ];
     protected $debug = false;
 
@@ -169,6 +170,9 @@ class Config
         $final_data = self::saveExtraParams($data);
         $saved = false;
         try {
+            $final_data = array_filter($final_data, function($value) {
+                return !empty($value);
+            });
             Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, $final_data, Cache::JSON, true);
             Config::getInstance()->loadConfigData();
             $saved = true;

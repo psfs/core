@@ -6,6 +6,8 @@ use PSFS\base\config\Config;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\AdminHelper;
+use PSFS\base\types\helpers\RouterHelper;
 use PSFS\Dispatcher;
 
 class PSFSTest extends \PHPUnit_Framework_TestCase{
@@ -59,9 +61,9 @@ class PSFSTest extends \PHPUnit_Framework_TestCase{
         $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
 
         // CHecks if we have admin routes as minimal routes
-        $adminRoutes = $router->getAdminRoutes();
+        $adminRoutes = AdminHelper::getAdminRoutes($router->getRoutes());
         $this->assertNotEmpty($adminRoutes);
-        $this->assertArrayHasKey("superadmin", $adminRoutes);
+        $this->assertArrayHasKey("PSFS", $adminRoutes);
     }
 
     /**

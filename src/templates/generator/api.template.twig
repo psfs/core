@@ -2,6 +2,8 @@
 namespace {{ namespace }}\Api;
 
 use {{ namespace }}\Api\base\{{ api }}BaseApi;
+use {{ namespace }}\Models\{{ api }}Query;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 
 /**
 * Class {{ class }}
@@ -13,4 +15,14 @@ use {{ namespace }}\Api\base\{{ api }}BaseApi;
 */
 class {{ api }} extends {{ api }}BaseApi
 {
+    public function init() {
+        parent::init();
+        //$this->extraColumns = [];
+    }
+
+    public function joinTables(ModelCriteria &$query)
+    {
+        /** @var {{ api }}Query $query */
+        //$query;
+    }
 }

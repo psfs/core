@@ -109,13 +109,20 @@ class Router
     }
 
     /**
+     * @return mixed
+     */
+    public function getRoutes() {
+        return $this->routing;
+    }
+
+    /**
      * Method that extract all routes in the platform
      * @return array
      */
     public function getAllRoutes()
     {
         $routes = [];
-        foreach ($this->routing as $path => $route) {
+        foreach ($this->getRoutes() as $path => $route) {
             if (array_key_exists('slug', $route)) {
                 $routes[$route['slug']] = $path;
             }
@@ -215,7 +222,7 @@ class Router
                             $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
                             if (file_exists($moduleAutoloader)) {
                                 @include $moduleAutoloader;
-                                if($hydrateRoute) {
+                                if ($hydrateRoute) {
                                     $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
                                 }
                             }
@@ -431,24 +438,6 @@ class Router
     public function getDomains()
     {
         return $this->domains ?: [];
-    }
-
-    /**
-     * @param $class
-     * @param $method
-     * @param array $params
-     * @return \ReflectionMethod
-     */
-    private function checkAction($class, $method, array $params)
-    {
-        $action = new \ReflectionMethod($class, $method);
-
-        foreach ($action->getParameters() as $parameter) {
-            if (!$parameter->isOptional() && !array_key_exists($parameter->getName(), $params)) {
-                throw new RouterException('Required parameters not sent');
-            }
-        }
-        return $action;
     }
 
     /**
