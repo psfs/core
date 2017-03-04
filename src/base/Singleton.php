@@ -114,10 +114,11 @@ class Singleton
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
             $configService = Config::getInstance();
-            $properties = $cacheService->getDataFromFile($cacheFilename, Cache::JSON);
-            if (true === $configService->getDebugMode() || null === $properties) {
+            $cache = Cache::canUseMemcache() ? Cache::MEMCACHE : Cache::JSON;
+            $properties = $cacheService->getDataFromFile($cacheFilename, $cache);
+            if (true === $configService->getDebugMode() || !$properties) {
                 $properties = InjectorHelper::getClassProperties(get_class($this));
-                $cacheService->storeData($cacheFilename, $properties, Cache::JSON);
+                $cacheService->storeData($cacheFilename, $properties, $cache);
             }
             /** @var \ReflectionProperty $property */
             if (!empty($properties) && is_array($properties)) foreach ($properties as $property => $class) {

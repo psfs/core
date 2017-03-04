@@ -9,6 +9,8 @@ class RouterException extends \RuntimeException
 {
     /**
      * @param null $message
+     * @param integer $code
+     * @param \Exception $e
      */
     public function __construct($message = null, $code = 404, \Exception $e = null)
     {

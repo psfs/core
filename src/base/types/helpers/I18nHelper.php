@@ -2,6 +2,8 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\Cache;
+use PSFS\base\config\Config;
+use PSFS\base\Logger;
 
 /**
  * Class I18nHelper
@@ -27,5 +29,23 @@ class I18nHelper
         }
 
         return $translations;
+    }
+
+    /**
+     * Method to set the locale
+     */
+    public static function setLocale() {
+        $locale = Config::getParam("default_language", 'es_ES');
+        Logger::log('Set locale to project [' . $locale . ']');
+        // Load translations
+        putenv("LC_ALL=" . $locale);
+        setlocale(LC_ALL, $locale);
+        // Load the locale path
+        $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
+        Logger::log('Set locale dir ' . $locale_path);
+        GeneratorHelper::createDir($locale_path);
+        bindtextdomain('translations', $locale_path);
+        textdomain('translations');
+        bind_textdomain_codeset('translations', 'UTF-8');
     }
 }

@@ -50,7 +50,7 @@ class Logger
         list($logger, $debug, $path) = $this->setup($config, $args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date("Ymd") . ".log", "a+");
         $this->addPushLogger($logger, $debug, $config);
-        $this->log_level = Config::getInstance()->get('log.level') ?: 'info';
+        $this->log_level = Config::getParam('log.level', 'info');
     }
 
     /**

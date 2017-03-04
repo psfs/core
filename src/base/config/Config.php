@@ -55,6 +55,8 @@ class Config
         'twig.auto_reload', // Enable or disable auto reload templates for twig
         'modules.extend', // Variable for extending the current functionality
         'psfs.auth', // Variable for extending PSFS with the AUTH module
+        'errors.strict', // Variable to trace all strict errors
+        'psfs.memcache', // Add Memcache to prod cache process, ONLY for PROD environments
     ];
     protected $debug = false;
 
@@ -76,6 +78,13 @@ class Config
             $this->loadConfigData();
         }
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLoaded() {
+        return !empty($this->config);
     }
 
     /**
@@ -173,7 +182,7 @@ class Config
             $final_data = array_filter($final_data, function($value) {
                 return !empty($value);
             });
-            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, $final_data, Cache::JSON, true);
+            $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($final_data, JSON_PRETTY_PRINT)));
             Config::getInstance()->loadConfigData();
             $saved = true;
         } catch (ConfigException $e) {
@@ -208,9 +217,7 @@ class Config
      */
     public function loadConfigData()
     {
-        $this->config = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE,
-            Cache::JSON,
-            TRUE) ?: [];
+        $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
         $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;
     }
 

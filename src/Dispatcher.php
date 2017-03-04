@@ -7,14 +7,11 @@
 namespace PSFS;
 
 use PSFS\base\exception\AdminCredentialsException;
-use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
-use PSFS\base\exception\UserAuthException;
 use PSFS\base\Logger;
-use PSFS\base\Request;
 use PSFS\base\Singleton;
-use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
 
@@ -52,7 +49,6 @@ class Dispatcher extends Singleton
 
     protected $ts;
     protected $mem;
-    protected $locale = "es_ES";
 
     private $actualUri;
 
@@ -64,32 +60,10 @@ class Dispatcher extends Singleton
         Logger::log('Dispatcher init');
         parent::init();
         $this->initiateStats();
-        $this->setLocale();
+        I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
         $this->actualUri = $this->parser->getServer("REQUEST_URI");
         Logger::log('End dispatcher init');
-    }
-
-    /**
-     * Method that assign the locale to the request
-     * @return $this
-     */
-    private function setLocale()
-    {
-        $this->locale = $this->config->get("default_language");
-        Logger::log('Set locale to project [' . $this->locale . ']');
-        // Load translations
-        putenv("LC_ALL=" . $this->locale);
-        setlocale(LC_ALL, $this->locale);
-        // Load the locale path
-        $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
-        Logger::log('Set locale dir ' . $locale_path);
-        GeneratorHelper::createDir($locale_path);
-        bindtextdomain('translations', $locale_path);
-        textdomain('translations');
-        bind_textdomain_codeset('translations', 'UTF-8');
-
-        return $this;
     }
 
     /**
@@ -109,8 +83,6 @@ class Dispatcher extends Singleton
             }
         } catch (AdminCredentialsException $a) {
             return UserController::showAdminManager();
-        } catch (ConfigException $c) {
-            return $this->dumpException($c);
         } catch (SecurityException $s) {
             return $this->security->notAuthorized($this->actualUri);
         } catch (RouterException $r) {
@@ -118,11 +90,6 @@ class Dispatcher extends Singleton
         } catch (\Exception $e) {
             return $this->dumpException($e);
         }
-    }
-
-    private function redirectToHome()
-    {
-        Request::getInstance()->redirect($this->router->getRoute($this->config->get('home_action')));
     }
 
     /**
@@ -185,14 +152,12 @@ class Dispatcher extends Singleton
      */
     protected function bindWarningAsExceptions()
     {
-        if ($this->config->getDebugMode() && $this->config->get('errors.strict', false)) {
-            Logger::log('Added handlers for errors');
-            //Warning & Notice handler
-            set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-                Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline]);
-                throw new \Exception($errstr, 500);
-            });
-        }
+        Logger::log('Added handlers for errors');
+        //Warning & Notice handler
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
+            return true;
+        }, E_ALL | E_STRICT);
     }
 
     /**

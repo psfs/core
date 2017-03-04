@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base;
 
+use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SingletonTrait;
@@ -12,29 +13,46 @@ use PSFS\base\types\SingletonTrait;
  */
 class Cache
 {
+    /**
+     * @var \Memcache
+     */
+    protected $memcache = null;
 
     const JSON = 1;
     const TEXT = 2;
     const GZIP = 3;
     const JSONGZ = 4;
+    const MEMCACHE = 5;
 
     use SingletonTrait;
+
+    public function init() {
+        if(Cache::canUseMemcache()) {
+            $this->memcache = new \Memcached();
+            $this->memcache->connect(Config::getParam('memcache.host', '127.0.0.1'), Config::getParam('memcache.port', 11211));
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public static function canUseMemcache()
+    {
+        return Config::getParam('psfs.memcache', false) && !Config::getParam('debug') && class_exists('Memcached');
+    }
 
     /**
      * Método que guarda un text en un fichero
      * @param string $data
      * @param string $path
-     * @param boolean $absolute
      * @throws ConfigException
      */
-    private function saveTextToFile($data, $path, $absolute = false)
+    private function saveTextToFile($data, $path)
     {
-        $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
-        $filename = basename($absolutePath);
-        GeneratorHelper::createDir(str_replace($filename, "", $absolutePath));
-        if (false === file_put_contents($absolutePath, $data)) {
+        GeneratorHelper::createDir(dirname($path));
+        if (false === file_put_contents($path, $data)) {
             throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')
-                . $absolutePath);
+                . $path);
         }
     }
 
@@ -49,7 +67,9 @@ class Cache
     {
         $data = null;
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
-        if (file_exists($absolutePath)) {
+        if(Cache::MEMCACHE && Cache::canUseMemcache()) {
+            $data = $this->memcache->get(sha1($absolutePath));
+        } elseif (file_exists($absolutePath)) {
             $data = file_get_contents($absolutePath);
         }
         return Cache::extractDataWithFormat($data, $transform);
@@ -86,11 +106,12 @@ class Cache
                 $data = Cache::extractDataWithFormat($data, Cache::JSON);
                 break;
             case Cache::GZIP:
-                // TODO implementar
                 if (function_exists('gzuncompress') && !empty($data)) {
                     $data = @gzuncompress($data ?: '');
                 }
                 break;
+            case Cache::MEMCACHE:
+                $data = unserialize($data);
         }
         return $data;
     }
@@ -116,6 +137,9 @@ class Cache
                     $data = gzcompress($data ?: '');
                 }
                 break;
+            case Cache::MEMCACHE:
+                $data = serialize($data);
+                break;
         }
         return $data;
     }
@@ -125,12 +149,18 @@ class Cache
      * @param $path
      * @param $data
      * @param int $transform
-     * @param boolean $absolutePath
+     * @param boolean $absolute
+     * @param integer $expires
      */
-    public function storeData($path, $data, $transform = Cache::TEXT, $absolutePath = false)
+    public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false, $expires = 600)
     {
         $data = Cache::transformData($data, $transform);
-        $this->saveTextToFile($data, $path, $absolutePath);
+        $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+        if(Cache::MEMCACHE == $transform) {
+            $this->memcache->set(sha1($absolutePath), $data, $expires);
+        } else {
+            $this->saveTextToFile($data, $absolutePath);
+        }
     }
 
     /**
@@ -147,7 +177,7 @@ class Cache
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
             if (null !== $function && $this->hasExpiredCache($path, $expires)) {
                 $data = call_user_func($function);
-                $this->storeData($path, $data, $transform);
+                $this->storeData($path, $data, $transform, false, $expires);
             } else {
                 $data = $this->getDataFromFile($path, $transform);
             }

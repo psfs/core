@@ -42,6 +42,10 @@ class Router
      * @var bool headersSent
      */
     protected $headersSent = false;
+    /**
+     * @var int
+     */
+    protected $cacheType = Cache::JSON;
 
     /**
      * Constructor Router
@@ -60,14 +64,25 @@ class Router
      */
     public function init()
     {
-        if (!file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json") || Config::getInstance()->getDebugMode()) {
-            $this->hydrateRouting();
-            $this->simpatize();
-        } else {
-            list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", Cache::JSON, TRUE);
-            $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, TRUE);
-            $this->checkExternalModules(false);
+        if(Cache::canUseMemcache()) {
+            $this->cacheType = Cache::MEMCACHE;
         }
+        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", $this->cacheType, TRUE);
+        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->cacheType, TRUE);
+        if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
+            $this->debugLoad();
+        }
+    }
+
+    /**
+     * Load routes and domains and store them
+     */
+    private function debugLoad() {
+        Logger::log('Begin routes load', LOG_DEBUG);
+        $this->hydrateRouting();
+        $this->simpatize();
+        $this->checkExternalModules(false);
+        Logger::log('End routes load', LOG_DEBUG);
     }
 
     /**
@@ -158,7 +173,7 @@ class Router
             throw $e;
         }
 
-        return $this->httpNotFound();
+        throw new RouterException(_("Página no encontrada"), 404);
     }
 
     /**
@@ -398,7 +413,7 @@ class Router
         if (strlen($slug) === 0) {
             return ($absolute) ? Request::getInstance()->getRootUrl() . '/' : '/';
         }
-        if (NULL === $slug || !array_key_exists($slug, $this->slugs)) {
+        if (!is_array($this->slugs) || !array_key_exists($slug, $this->slugs)) {
             throw new RouterException(_("No existe la ruta especificada"));
         }
         $url = ($absolute) ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
