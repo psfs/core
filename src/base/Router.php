@@ -72,6 +72,7 @@ class Router
         if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
             $this->debugLoad();
         }
+        $this->checkExternalModules(false);
     }
 
     /**
@@ -81,7 +82,6 @@ class Router
         Logger::log('Begin routes load', LOG_DEBUG);
         $this->hydrateRouting();
         $this->simpatize();
-        $this->checkExternalModules(false);
         Logger::log('End routes load', LOG_DEBUG);
     }
 
