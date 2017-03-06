@@ -181,7 +181,7 @@ class Config
         try {
             $final_data = array_filter($final_data, function($key, $value) {
                 return in_array($key, Config::$required) || !empty($value);
-            }, 2);
+            }, 1);
             $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($final_data, JSON_PRETTY_PRINT)));
             Config::getInstance()->loadConfigData();
             $saved = true;
