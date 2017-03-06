@@ -37,6 +37,10 @@ class Service extends Singleton
      * @var string $result
      */
     private $result;
+    /**
+     * @var mixed
+     */
+    private $info;
 
     /**
      * @Inyectable
@@ -48,6 +52,17 @@ class Service extends Singleton
      * @var \PSFS\base\Cache $cache
      */
     protected $cache;
+
+    private function closeConnection() {
+        if(null !== $this->con) {
+            curl_close($this->con);
+        }
+    }
+
+    public function __destruct()
+    {
+        $this->closeConnection();
+    }
 
     /**
      * @return String
@@ -206,6 +221,7 @@ class Service extends Singleton
         $this->params = array();
         $this->headers = array();
         Logger::log("Context service for " . get_called_class() . " cleared!");
+        $this->closeConnection();
     }
 
     /**
@@ -222,6 +238,7 @@ class Service extends Singleton
      */
     private function initialize()
     {
+        $this->closeConnection();
         $this->con = curl_init($this->url);
     }
 
@@ -282,5 +299,13 @@ class Service extends Singleton
         $this->applyOptions();
         $result = curl_exec($this->con);
         $this->result = json_decode($result, true);
+        $this->info = curl_getinfo($this->con);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCallInfo() {
+        return $this->info;
     }
 }
