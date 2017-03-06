@@ -5,9 +5,9 @@ php:
   - '7.0'
   - '7.1'
 
-before_script:
-  - phpenv config-rm xdebug.ini
-  - composer install
+install:
+  - composer self-update
+  - composer install -o
 
-script:
-  - phpdbg -qrr phpunit
+after_deploy:
+  - phpunit
