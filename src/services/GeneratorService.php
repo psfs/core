@@ -207,13 +207,16 @@ class GeneratorService extends Service
         $controllerBase = $this->writeTemplateToFile($controllerBody, $mod_path . DIRECTORY_SEPARATOR . "Controller" .
             DIRECTORY_SEPARATOR . "base" . DIRECTORY_SEPARATOR . "{$class}BaseController.php", true);
 
-        $testTemplate = $this->tpl->dump("generator/testCase.template.twig", array(
-            "module" => $module,
-            "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
-            "class" => $class,
-        ));
-        $test = $this->writeTemplateToFile($testTemplate, $mod_path . DIRECTORY_SEPARATOR . "Test" .
-            DIRECTORY_SEPARATOR . "{$class}Test.php", true);
+        $filename = $mod_path . DIRECTORY_SEPARATOR . "Test" . DIRECTORY_SEPARATOR . "{$class}Test.php";
+        $test = true;
+        if(!file_exists($filename)) {
+            $testTemplate = $this->tpl->dump("generator/testCase.template.twig", array(
+                "module" => $module,
+                "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
+                "class" => $class,
+            ));
+            $test = $this->writeTemplateToFile($testTemplate, $filename, true);
+        }
         return ($controller && $controllerBase && $test);
     }
 
