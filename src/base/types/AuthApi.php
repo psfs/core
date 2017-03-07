@@ -4,7 +4,7 @@ namespace PSFS\base\types;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\Request;
-use PSFS\base\Security;
+use PSFS\base\types\helpers\SecurityHelper;
 
 abstract class AuthApi extends Api
 {
@@ -37,7 +37,7 @@ abstract class AuthApi extends Api
             if (array_key_exists('API_TOKEN', $this->query)) {
                 $token = $this->query['API_TOKEN'];
             }
-            $auth = Security::checkToken($token ?: '', $secret, $module);
+            $auth = SecurityHelper::checkToken($token ?: '', $secret, $module);
         }
 
         return $auth || $this->isAdmin();
