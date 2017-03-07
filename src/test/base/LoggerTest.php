@@ -62,7 +62,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
         // Add memory logger to test this functionality
         $config = Config::getInstance();
         $defaultConfig = $config->dumpConfig();
-        Config::save(array_merge($defaultConfig, ['logger.memory'=>true]), []);
+        Config::save(array_merge($defaultConfig, ['logger.memory'=>true, 'logger.phpFire'=>true]), []);
 
         // Create a new logger instance
         $logger = new Logger(['test', true]);
@@ -72,4 +72,5 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
         Config::save($defaultConfig, []);
 
     }
+
 }

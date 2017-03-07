@@ -172,14 +172,15 @@ class Security
      *
      * @param null $user
      * @param null $pass
+     * @param boolean $force
      *
      * @return bool
      * @throws \HttpException
      */
-    public function checkAdmin($user = NULL, $pass = NULL)
+    public function checkAdmin($user = NULL, $pass = NULL, $force = false)
     {
         Logger::log('Checking admin session');
-        if (!$this->authorized && !$this->checked) {
+        if ((!$this->authorized && !$this->checked) || $force) {
             $admins = $this->getAdmins();
             if (null !== $admins) {
                 $request = Request::getInstance();
@@ -200,8 +201,8 @@ class Security
                         $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
                     }
                 }
+                $this->checked = true;
             }
-            $this->checked = true;
         }
 
         return $this->authorized;
@@ -403,31 +404,6 @@ class Security
         session_destroy();
         session_regenerate_id(TRUE);
         session_start();
-    }
-
-    /**
-     * Generate a authorized token
-     * @param string $secret
-     * @param string $module
-     * @deprecated
-     * @return string
-     */
-    public static function generateToken($secret, $module = 'PSFS')
-    {
-        return SecurityHelper::generateToken($secret, $module);
-    }
-
-    /**
-     * Checks if auth token is correct
-     * @param string $token
-     * @param string $secret
-     * @param string $module
-     * @deprecated
-     * @return bool
-     */
-    public static function checkToken($token, $secret, $module = 'PSFS')
-    {
-        return SecurityHelper::checkToken($token, $secret, $module);
     }
 
 }

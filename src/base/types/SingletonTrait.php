@@ -43,4 +43,5 @@ Trait SingletonTrait
             $instance->init();
         }
     }
+
 }

@@ -3,7 +3,10 @@
     "description": "Php Simple Fast & Secure",
     "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "require": {
-        "php" : "^5.5 || ^7.0",
+        "php" : "^5.6 || ^7.0",
+        "ext-gettext": "*",
+        "ext-json": "*",
+        "ext-curl": "*",
         "propel/propel": "^2.0",
         "symfony/console": "3.0.x-dev",
         "symfony/finder": "3.0.x-dev",
@@ -14,7 +17,7 @@
         "natxet/CssMin": "^3.0@dev"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.8.x-dev"
+        "phpunit/phpunit": "5.7.x"
     },
     "license": "MIT",
     "authors": [

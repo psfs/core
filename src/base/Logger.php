@@ -56,7 +56,7 @@ class Logger
     /**
      * Destruye el recurso
      */
-    public function __destroy()
+    public function __destruct()
     {
         fclose($this->stream);
     }

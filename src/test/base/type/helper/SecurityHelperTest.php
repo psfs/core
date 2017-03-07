@@ -1,9 +1,7 @@
 <?php
 namespace PSFS\test\base\type\helper;
 
-use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\SecurityHelper;
-use PSFS\test\examples\SingletonClassTest;
 
 class SecurityHelperTest extends \PHPUnit_Framework_TestCase
 {
@@ -23,6 +21,8 @@ class SecurityHelperTest extends \PHPUnit_Framework_TestCase
         $token = SecurityHelper::generateToken($secretOK, $moduleOK);
         $this->assertNotNull($token, 'Something happens trying to generate a new token');
         $this->assertNotEmpty($token, 'The token is empty');
+
+
 
         $this->assertTrue(SecurityHelper::checkToken($token, $secretOK, $moduleOK), 'Verification OK failed');
         $this->assertFalse(SecurityHelper::checkToken($token, $secretOK, $moduleKO), 'Verification KO with different module failed');
