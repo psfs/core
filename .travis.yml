@@ -10,3 +10,7 @@ install:
 
 after_deploy:
   - phpunit
+
+addons:
+  code_climate:
+    repo_token: ada8a3a044a98d6a8ec603521ac59efc9f2f57ad

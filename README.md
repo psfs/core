@@ -1,8 +1,8 @@
 # PSFS
 ====
-[![Build Status](https://travis-ci.org/psfs/core.svg?branch=master)](https://travis-ci.org/c15k0/psfs)
-[![Latest Stable Version](https://poser.pugx.org/psfs/core/v/stable)](https://packagist.org/packages/c15k0/psfs) 
-[![Total Downloads](https://poser.pugx.org/psfs/core/downloads)](https://packagist.org/packages/c15k0/psfs) 
+[![Build Status](https://travis-ci.org/psfs/core.svg?branch=master)](https://travis-ci.org/psfs/core)
+[![Latest Stable Version](https://poser.pugx.org/psfs/core/v/stable)](https://packagist.org/packages/psfs/core) 
+[![Total Downloads](https://poser.pugx.org/psfs/core/downloads)](https://packagist.org/packages/psfs/core) 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 
