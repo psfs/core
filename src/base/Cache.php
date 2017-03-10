@@ -26,13 +26,6 @@ class Cache
 
     use SingletonTrait;
 
-    public function init() {
-        if(Cache::canUseMemcache()) {
-            $this->memcache = new \Memcached();
-            $this->memcache->connect(Config::getParam('memcache.host', '127.0.0.1'), Config::getParam('memcache.port', 11211));
-        }
-    }
-
     /**
      * @return bool
      */
@@ -51,8 +44,7 @@ class Cache
     {
         GeneratorHelper::createDir(dirname($path));
         if (false === file_put_contents($path, $data)) {
-            throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ')
-                . $path);
+            throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ') . $path);
         }
     }
 
@@ -67,9 +59,7 @@ class Cache
     {
         $data = null;
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
-        if(Cache::MEMCACHE && Cache::canUseMemcache()) {
-            $data = $this->memcache->get(sha1($absolutePath));
-        } elseif (file_exists($absolutePath)) {
+        if (file_exists($absolutePath)) {
             $data = file_get_contents($absolutePath);
         }
         return Cache::extractDataWithFormat($data, $transform);
@@ -110,8 +100,6 @@ class Cache
                     $data = @gzuncompress($data ?: '');
                 }
                 break;
-            case Cache::MEMCACHE:
-                $data = unserialize($data);
         }
         return $data;
     }
@@ -137,9 +125,6 @@ class Cache
                     $data = gzcompress($data ?: '');
                 }
                 break;
-            case Cache::MEMCACHE:
-                $data = serialize($data);
-                break;
         }
         return $data;
     }
@@ -156,11 +141,7 @@ class Cache
     {
         $data = Cache::transformData($data, $transform);
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
-        if(Cache::MEMCACHE == $transform) {
-            $this->memcache->set(sha1($absolutePath), $data, $expires);
-        } else {
-            $this->saveTextToFile($data, $absolutePath);
-        }
+        $this->saveTextToFile($data, $absolutePath);
     }
 
     /**

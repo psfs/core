@@ -18,6 +18,10 @@
             <directory suffix=".php">./src/controller</directory>
             <directory suffix=".php">./src/services</directory>
             <directory suffix=".php">./src/exception</directory>
+            <file>./src/Dispatcher.php</file>
+            <file>./src/autoload.php</file>
+            <file>./src/bootstrap.php</file>
+            <file>./src/functions.php</file>
             <exclude>
                 <directory>./src/bin</directory>
                 <directory>./src/public</directory>

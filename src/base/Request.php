@@ -28,10 +28,9 @@ class Request
     protected $header;
     protected $data;
     protected $query;
+    private $isLoaded = false;
 
-    /**
-     */
-    public function __construct()
+    public function init()
     {
         $this->server = $_SERVER or [];
         $this->cookies = $_COOKIE or [];
@@ -43,6 +42,14 @@ class Request
         if (preg_match('/application\/json/i', $contentType)) {
             $this->data += json_decode(file_get_contents("php://input"), true) ?: array();
         }
+        $this->isLoaded = true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLoaded() {
+        return $this->isLoaded;
     }
 
     /**

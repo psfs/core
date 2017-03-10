@@ -229,7 +229,7 @@ class Security
      */
     public function getHash()
     {
-        return substr(md5('admin'), 0, 8);
+        return substr(self::MANAGER_ID_TOKEN, 0, 8);
     }
 
     /**
@@ -389,8 +389,8 @@ class Security
         $_SESSION[self::ADMIN_ID_TOKEN] = serialize($this->admin);
         if ($closeSession) {
             Logger::log('Close session');
-            session_write_close();
-            session_start();
+            @session_write_close();
+            @session_start();
         }
         Logger::log('Session updated');
         return $this;
@@ -401,9 +401,9 @@ class Security
      */
     public function closeSession()
     {
-        session_destroy();
-        session_regenerate_id(TRUE);
-        session_start();
+        @session_destroy();
+        @session_regenerate_id(TRUE);
+        @session_start();
     }
 
 }

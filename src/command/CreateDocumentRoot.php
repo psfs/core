@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-if (!isset($console)) $console = new Application();
+if (!isset($console)) $console = new \Symfony\Component\Console\Application();
 $console
     ->register('psfs:create:root')
     ->setDefinition(array(

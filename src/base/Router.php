@@ -64,9 +64,6 @@ class Router
      */
     public function init()
     {
-        if(Cache::canUseMemcache()) {
-            $this->cacheType = Cache::MEMCACHE;
-        }
         list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", $this->cacheType, TRUE);
         $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->cacheType, TRUE);
         if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
