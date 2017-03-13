@@ -38,7 +38,10 @@ class Request
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST or [];
         $this->query = $_GET or [];
-        $contentType = (array_key_exists('Content-Type', $this->header)) ? $this->header['Content-Type'] : "text/html";
+        $contentType = $this->getHeader('Content-Type');
+        if(null === $contentType) {
+            $contentType = $this->getServer('CONTENT_TYPE') ?: 'text/html';
+        }
         if (preg_match('/application\/json/i', $contentType)) {
             $this->data += json_decode(file_get_contents("php://input"), true) ?: array();
         }
