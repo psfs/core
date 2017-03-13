@@ -253,6 +253,7 @@ class Router
         $base = SOURCE_DIR;
         $modulesPath = realpath(CORE_DIR);
         $this->routing = $this->inspectDir($base, "PSFS", array());
+        $this->checkExternalModules();
         if (file_exists($modulesPath)) {
             $modules = $this->finder->directories()->in($modulesPath)->depth(0);
             foreach ($modules as $modulePath) {
@@ -260,7 +261,6 @@ class Router
                 $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
             }
         }
-        $this->checkExternalModules();
         $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->domains, Cache::JSON, TRUE);
     }
 
