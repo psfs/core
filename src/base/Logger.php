@@ -259,8 +259,11 @@ class Logger
      * @param array $context
      * @return array
      */
-    private function addMinimalContext(array $context = [])
+    private function addMinimalContext($context = [])
     {
+        if(!is_array($context)) {
+            $context = [];
+        }
         $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
         $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
         return $context;
