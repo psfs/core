@@ -1,13 +1,14 @@
 (function () {
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout',
-        function ($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout) {
+    var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout', '$mdMenu',
+        function ($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout, $mdMenu) {
             $scope.method = 'POST';
             $scope.itemLoading = false;
             $scope.combos = {};
             $scope.dates = {};
             $scope.limit = globalLimit || 25;
+            $scope.extraActionExecution = false;
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
@@ -217,6 +218,110 @@
                 }
             }
 
+            function executeAction(action) {
+                if(action && action.url) {
+                    var url = action.url;
+                    for(var i in $scope.form.fields) {
+                        var field = $scope.form.fields[i];
+                        url = url.replace('{' + field.name + '}', $scope.model[field.name]);
+                    }
+                    doAction(action.method, url, action.label);
+                }
+            }
+
+            function extraActionOkFeedback(response, label) {
+                $scope.extraActionExecution = false;
+                $log.info('[EXECUTION] ' + label);
+                $log.debug(response);
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title(label)
+                        .content('Función ejecutada correctamente. Revisa el log del navegador para más detalle de la respuesta')
+                        .ariaLabel('Execution ok')
+                        .ok('Close')
+                );
+            }
+
+            function extraActionKOFeedback(response, label) {
+                $scope.extraActionExecution = false;
+                $log.info('[EXECUTION] ' + label);
+                $log.debug(response);
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title(label)
+                        .content('Ha ocurrido un error ejecutando la acción, por favor revisa el log')
+                        .ariaLabel('Execution ko')
+                        .ok('Close')
+                );
+            }
+
+            function doAction(method, url, label) {
+                $scope.extraActionExecution = true;
+                switch(method) {
+                    case 'GET':
+                        $http.get(url).then(function(response) {
+                            if(response.data.success) {
+                                extraActionOkFeedback(response.data, label);
+                            } else {
+                                extraActionKOFeedback(response, label);
+                            }
+                        }, function() {
+
+                        });
+                        break;
+                    case 'POST':
+                        $http.post(url, {}).then(function() {
+                            if(response.data.success) {
+                                extraActionOkFeedback(response.data, label);
+                            } else {
+                                extraActionKOFeedback(response, label);
+                            }
+                        }, function (response) {
+                            extraActionKOFeedback(response, label);
+                        });
+                        break;
+                    case 'DELETE':
+                        $scope.loading = true;
+                        var confirm = $mdDialog.confirm()
+                            .title(label)
+                            .content('La acción implica un borrado, ¿estás seguro?')
+                            .ariaLabel('Delete Element')
+                            .ok($scope.i18N['delete'])
+                            .cancel($scope.i18N['cancel']);
+                        $mdDialog.show(confirm).then(function() {
+                            $http.delete(url)
+                                .then(function(response) {
+                                    if(response.data.success) {
+                                        extraActionOkFeedback(response.data, label);
+                                    } else {
+                                        extraActionKOFeedback(response, label);
+                                    }
+                                }, function(err, status){
+                                    extraActionKOFeedback(err, label);
+                                });
+                        }, function() {
+                            $scope.loading = false;
+                        });
+                        break;
+                    default:
+                        $scope.extraActionExecution = false;
+                        break;
+                }
+            }
+
+            function formActions() {
+                var actions = [];
+                for(var i in $scope.form.actions) {
+                    var action = $scope.form.actions[i];
+                    if((!action.url.match(/(\{|\})/) || this.isSaved()) && action.method.match(/(GET|POST|DELETE)/i)) {
+                        actions.push(action);
+                    }
+                }
+                return actions;
+            }
+
             $scope.isInputField = isInputField;
             $scope.loadSelect = loadSelect;
             $scope.isTextField = isTextField;
@@ -232,6 +337,8 @@
             $scope.getPk = getPk;
             $scope.isSaved = isSaved;
             $scope.initDates = initDates;
+            $scope.formActions = formActions;
+            $scope.executeAction = executeAction;
 
             $scope.$watch('dates', watchDates, true);
 

@@ -199,7 +199,7 @@ class ApiHelper
 
     /**
      * @param ColumnMap $column
-     * @param ModelCriteria $quwuery
+     * @param ModelCriteria $query
      * @param mixed $value
      */
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)

@@ -1,23 +1,43 @@
-<md-content layout="column" flex="65" flex-sm="100" layout-padding class="api-form">
+<md-content layout="column" flex="65" flex-sm="100" layout-padding class="api-form" ng-cloak>
     <md-card>
         <md-card-title>
             <md-card-title-text>
-                <h2 ng-show="isSaved()">{{ entity }} #{{ getPk() }}</h2>
+                <h2 flex ng-show="isSaved()">{{ entity }} #{{ getPk() }}</h2>
+                <h2 flex ng-hide="isSaved()" ng-bind="i18N['new'] + ' ' + entity"></h2>
             </md-card-title-text>
         </md-card-title>
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save">
-                <i class="fa fa-save"></i>
+            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save" ng-disabled="extraActionExecution">
+                <i class="fa fa-save"></i>&nbsp;
                 <span ng-bind="i18N['save']"></span>
             </md-button>
-            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()" aria-label="Delete">
-                <i class="fa fa-trash-o"></i>
-                <span ng-bind="i18N['delete']"></span>
-            </md-button>
-            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()" aria-label="New">
-                <i class="fa fa-plus-circle"></i>
-                <span ng-bind="i18N['new']"></span>
-            </md-button>
+            <md-menu ng-show="formActions().length || isSaved()" md-offset="0 45">
+                <md-button aria-label="Open phone interactions menu" class="md-raised" ng-click="$mdMenu.open()" ng-disabled="extraActionExecution">
+                    <span md-menu-align-target class="fa fa-caret-down" ng-hide="extraActionExecution"></span>
+                    <span md-menu-align-target class="fa fa-refresh fa-spin" ng-show="extraActionExecution"></span>
+                </md-button>
+                <md-menu-content width="4">
+                    <md-menu-item ng-show="isSaved()">
+                        <md-button class="md-warn" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
+                            <i class="fa fa-trash-o"></i>&nbsp;
+                            <span ng-bind="i18N['delete']"></span>
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-item ng-show="isSaved()">
+                        <md-button ng-click="addNewItem()" aria-label="New">
+                            <i class="fa fa-plus-circle"></i>&nbsp;
+                            <span ng-bind="i18N['new'] + ' ' + entity"></span>
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-divider ng-show="isSaved()"></md-menu-divider>
+                    <md-menu-item ng-repeat="action in formActions()">
+                        <md-button ng-click="executeAction(action)" aria-label="New">
+                            <i class="fa fa-cog"></i>&nbsp;
+                            <span ng-bind="action.label"></span>
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
         </md-card-actions>
         <md-card-content layout="column" layout-align="space-between">
             <div class="text-center" data-ng-show="itemLoading" style="margin-top: 25%;">
@@ -83,18 +103,37 @@
             </div>
         </md-card-content>
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save">
-                <i class="fa fa-save"></i>
+            <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save" ng-disabled="extraActionExecution">
+                <i class="fa fa-save"></i>&nbsp;
                 <span ng-bind="i18N['save']"></span>
             </md-button>
-            <md-button class="md-raised md-warn" ng-click="deleteItem(item, $event)" ng-show="isSaved()" aria-label="Delete">
-                <i class="fa fa-trash-o"></i>
-                <span ng-bind="i18N['delete']"></span>
-            </md-button>
-            <md-button class="md-raised" ng-click="addNewItem()" ng-show="isSaved()" aria-label="New">
-                <i class="fa fa-plus-circle"></i>
-                <span ng-bind="i18N['new']"></span>
-            </md-button>
+            <md-menu ng-show="formActions().length || isSaved()" md-offset="0 45">
+                <md-button aria-label="Open phone interactions menu" class="md-raised" ng-click="$mdMenu.open()" ng-disabled="extraActionExecution">
+                    <span md-menu-align-target class="fa fa-caret-down" ng-hide="extraActionExecution"></span>
+                    <span md-menu-align-target class="fa fa-refresh fa-spin" ng-show="extraActionExecution"></span>
+                </md-button>
+                <md-menu-content width="4">
+                    <md-menu-item ng-show="isSaved()">
+                        <md-button class="md-warn" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
+                            <i class="fa fa-trash-o"></i>&nbsp;
+                            <span ng-bind="i18N['delete']"></span>
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-item ng-show="isSaved()">
+                        <md-button ng-click="addNewItem()" aria-label="New">
+                            <i class="fa fa-plus-circle"></i>&nbsp;
+                            <span ng-bind="i18N['new'] + ' ' + entity"></span>
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-divider ng-show="isSaved()"></md-menu-divider>
+                    <md-menu-item ng-repeat="action in formActions()">
+                        <md-button ng-click="executeAction(action)" aria-label="New">
+                            <i class="fa fa-cog"></i>&nbsp;
+                            <span ng-bind="action.label"></span>
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
         </md-card-actions>
     </md-card>
 </md-content>

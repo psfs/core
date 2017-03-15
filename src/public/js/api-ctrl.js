@@ -1,8 +1,8 @@
 (function() {
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var apiCtrl = ['$scope',
-        function ($scope) {
+    var apiCtrl = ['$scope', '$mdDialog', '$apiSrv', '$http', '$timeout', '$log', '$msgSrv',
+        function ($scope, $mdDialog, $apiSrv, $http, $timeout, $log, $msgSrv) {
             $scope.model = {};
             $scope.filters = {};
             $scope.list = [];
@@ -18,6 +18,116 @@
                     element.$setPristine(true);
                 }
             };
+
+            function checkItem(item)
+            {
+                var isModel = false;
+                for(var i in $scope.form.fields) {
+                    var field = $scope.form.fields[i];
+                    if(field.pk) {
+                        isModel = (item[field.name] === $scope.model[field.name]);
+                    }
+                }
+                return isModel;
+            }
+
+            function addNewItem() {
+                $scope.model = {};
+                $scope.dates = {};
+                for(var i in $scope.combos) {
+                    var combo = $scope.combos[i];
+                    combo.item = null;
+                    combo.search = null;
+                }
+                for(var i in $scope.entity_form) {
+                    if(!i.match(/^\$/)) {
+                        $scope.cleanFormStatus($scope.entity_form[i]);
+                    }
+                }
+                $msgSrv.send('populate_combos');
+            }
+
+            function loadData(clean)
+            {
+                if(clean) addNewItem();
+                var queryParams = {
+                    '__limit': $scope.limit,
+                    '__page': $scope.actualPage,
+                    '__fields': $scope.listLabel
+                };
+                if($scope.listSearch.replace(/\ /ig, '').length > 0) {
+                    queryParams['__combo'] = $scope.listSearch;
+                }
+                $scope.loading = true;
+                try {
+                    $http.get($scope.url, {params: queryParams})
+                        .then(function(result) {
+                            $log.info(result);
+                            $scope.list = result.data.data;
+                            $timeout(function(){
+                                $scope.loading = false;
+                            }, 500);
+                            $scope.count = result.data.total;
+                        }, catchError);
+                } catch(err) {
+                    $scope.loading = false;
+                    $log.error(err.message);
+                }
+            }
+
+            function catchError(response)
+            {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title($scope.i18N['generic_error_label'])
+                        .content(response)
+                        .ariaLabel('Alert Error Dialog')
+                        .ok($scope.i18N['close'])
+                );
+                $scope.loading = false;
+            }
+
+            function deleteItem(item)
+            {
+                if(item) {
+                    $scope.loading = true;
+                    var confirm = $mdDialog.confirm()
+                        .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
+                        .content($scope.i18N['confirm_delete_message'])
+                        .ariaLabel('Delete Element')
+                        .ok($scope.i18N['delete'])
+                        .cancel($scope.i18N['cancel']);
+                    $mdDialog.show(confirm).then(function() {
+                        $http.delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
+                            .then(function() {
+                                $timeout(function() {
+                                    if(checkItem(item)) {
+                                        addNewItem();
+                                    }
+                                    loadData();
+                                }, 250);
+                            }, function(err, status){
+                                $mdDialog.show(
+                                    $mdDialog.alert()
+                                        .clickOutsideToClose(true)
+                                        .title($scope.entity + ' Error ' + status)
+                                        .content(err.data.data)
+                                        .ariaLabel('Delete error')
+                                        .ok($scope.i18N['close'])
+                                );
+                                $scope.loading = false;
+                            });
+                    }, function() {
+                        $scope.loading = false;
+                    });
+                }
+            }
+
+            $scope.deleteItem = deleteItem;
+            $scope.loadData = loadData;
+            $scope.addNewItem = addNewItem;
+
         }];
     app.controller('apiCtrl', apiCtrl);
 })();

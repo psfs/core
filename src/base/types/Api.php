@@ -13,6 +13,7 @@ use PSFS\base\exception\ApiException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
+use PSFS\base\types\helpers\ApiFormHelper;
 use PSFS\base\types\helpers\ApiHelper;
 
 /**
@@ -649,6 +650,7 @@ abstract class Api extends Controller
     {
         $map = $this->getModelTableMap();
         $form = ApiHelper::generateFormFields($map);
+        $form->actions = ApiFormHelper::checkApiActions(get_class($this), $this->getDomain(), $this->getApi());
 
         return $this->json(new JsonResponse($form->toArray(), TRUE), 200);
     }

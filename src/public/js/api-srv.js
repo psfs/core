@@ -59,9 +59,13 @@
             if (null !== pk) {
                 if (item[pk]) {
                     return item[pk];
+                } else if('__pk' in item){
+                    return item['__pk'];
                 } else {
                     throw new Error('Unidentified element');
                 }
+            } else if('__pk' in item){
+                return item['__pk'];
             } else {
                 throw new Error('Null object!!!');
             }

@@ -10,7 +10,8 @@ class Form extends Dto
     /**
      * @var array fields
      */
-    private $fields = array();
+    private $fields = [];
+    public $actions = [];
 
     public function addField(Field $field)
     {
@@ -23,6 +24,10 @@ class Form extends Dto
         $array['fields'] = array();
         foreach ($this->fields as $field) {
             $array['fields'][] = $field->__toArray();
+        }
+        $array['actions'] = [];
+        foreach($this->actions as $action) {
+            $array['actions'][] = $action->__toArray();
         }
         return $array;
     }
