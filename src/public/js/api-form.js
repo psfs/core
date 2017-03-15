@@ -230,6 +230,7 @@
             }
 
             function extraActionOkFeedback(response, label) {
+                $scope.loadData();
                 $scope.extraActionExecution = false;
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
