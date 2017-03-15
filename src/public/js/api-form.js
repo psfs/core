@@ -273,7 +273,7 @@
                         });
                         break;
                     case 'POST':
-                        $http.post(url, {}).then(function() {
+                        $http.post(url, {}).then(function(response) {
                             if(response.data.success) {
                                 extraActionOkFeedback(response.data, label);
                             } else {
