@@ -465,13 +465,12 @@ class Router
         $cache = Cache::needCache();
         $execute = TRUE;
         if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE) {
-            $cacheDataName = $this->cache->getRequestCacheHash();
-            $tmpDir = substr($cacheDataName, 0, 2) . DIRECTORY_SEPARATOR . substr($cacheDataName, 2, 2) . DIRECTORY_SEPARATOR;
-            $cachedData = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheDataName,
+            list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
+            $cachedData = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName,
                 $cache, function () {
                 });
             if (NULL !== $cachedData) {
-                $headers = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheDataName . ".headers",
+                $headers = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName . ".headers",
                     $cache, function () {
                     }, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);

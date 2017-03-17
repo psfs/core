@@ -181,7 +181,7 @@ class Cache
     public static function needCache()
     {
         $needCache = false;
-        if (!self::checkAdminSite()) {
+        if (!self::checkAdminSite() && !Config::getParam('debug')) {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
                 $needCache = $action["cache"];
@@ -192,15 +192,19 @@ class Cache
 
     /**
      * Método que construye un hash para almacenar la cache
-     * @return string
+     * @return array
      */
     public function getRequestCacheHash()
     {
-        $hash = "";
+        $hashPath = null;
+        $filename = null;
         $action = Security::getInstance()->getSessionKey("__CACHE__");
         if (null !== $action && $action["cache"] > 0) {
-            $hash = $action["http"] . " " . $action["slug"];
+            $class = array_pop(explode('\\', $action['class']));
+            $filename = sha1($action["http"] . " " . $action["slug"]);
+            $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
+            $hashPath = $action['module'] . DIRECTORY_SEPARATOR . $class . DIRECTORY_SEPARATOR . $action['method'] . DIRECTORY_SEPARATOR . $subPath . DIRECTORY_SEPARATOR;
         }
-        return sha1($hash);
+        return [$hashPath, $filename];
     }
 }

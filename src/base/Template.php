@@ -125,93 +125,6 @@ class Template
     }
 
     /**
-     * Funcion Twig para los assets en las plantillas
-     * @return Template
-     */
-    private function addAssetFunction()
-    {
-        return $this->addTemplateFunction("asset", TemplateFunctions::ASSETS_FUNCTION);
-    }
-
-    /**
-     * Función que pinta un formulario
-     * @return Template
-     */
-    private function addFormsFunction()
-    {
-        return $this->addTemplateFunction("form", TemplateFunctions::FORM_FUNCTION);
-    }
-
-    /**
-     * Función que pinta un campo de un formulario
-     * @return Template
-     */
-    private function addFormWidgetFunction()
-    {
-        return $this->addTemplateFunction("form_widget", TemplateFunctions::WIDGET_FUNCTION);
-    }
-
-    /**
-     * Función que pinta un botón de un formulario
-     * @return Template
-     */
-    private function addFormButtonFunction()
-    {
-        return $this->addTemplateFunction("form_button", TemplateFunctions::BUTTON_FUNCTION);
-    }
-
-    /**
-     * Método que devuelve un parámetro de configuración en la plantilla
-     * @return Template
-     */
-    private function addConfigFunction()
-    {
-        return $this->addTemplateFunction("get_config", TemplateFunctions::CONFIG_FUNCTION);
-    }
-
-    /**
-     * Método que añade la función path a Twig
-     * @return Template
-     */
-    private function addRouteFunction()
-    {
-        return $this->addTemplateFunction("path", TemplateFunctions::ROUTE_FUNCTION);
-    }
-
-    /**
-     * Método que copia directamente el recurso solicitado a la carpeta pública
-     * @return Template
-     */
-    private function addResourceFunction()
-    {
-        return $this->addTemplateFunction("resource", TemplateFunctions::RESOURCE_FUNCTION);
-    }
-
-    /**
-     * @return Template
-     */
-    private function addSessionFunction()
-    {
-        return $this->addTemplateFunction("session", TemplateFunctions::SESSION_FUNCTION);
-    }
-
-    /**
-     * @return Template
-     */
-    private function addExistsFlashFunction()
-    {
-        return $this->addTemplateFunction("existsFlash", TemplateFunctions::EXISTS_FLASH_FUNCTION);
-    }
-
-    /**
-     * @return Template
-     */
-    private function addGetFlashFunction()
-    {
-        return $this->addTemplateFunction("getFlash", TemplateFunctions::GET_FLASH_FUNCTION);
-    }
-
-    /**
      * Servicio que regenera todas las plantillas
      * @return array
      */
@@ -289,16 +202,21 @@ class Template
     private function addTemplateFunctions()
     {
         //Asignamos las funciones especiales
-        $this->addAssetFunction()
-            ->addFormsFunction()
-            ->addFormWidgetFunction()
-            ->addFormButtonFunction()
-            ->addConfigFunction()
-            ->addRouteFunction()
-            ->addSessionFunction()
-            ->addExistsFlashFunction()
-            ->addGetFlashFunction()
-            ->addResourceFunction();
+        $functions = [
+            'asset' => TemplateFunctions::ASSETS_FUNCTION,
+            'form' => TemplateFunctions::FORM_FUNCTION,
+            'form_widget' => TemplateFunctions::WIDGET_FUNCTION,
+            'form_button' => TemplateFunctions::BUTTON_FUNCTION,
+            'get_config' => TemplateFunctions::CONFIG_FUNCTION,
+            'path' => TemplateFunctions::ROUTE_FUNCTION,
+            'resource' => TemplateFunctions::RESOURCE_FUNCTION,
+            'session' => TemplateFunctions::SESSION_FUNCTION,
+            'existsFlash' => TemplateFunctions::EXISTS_FLASH_FUNCTION,
+            'getFlash' => TemplateFunctions::GET_FLASH_FUNCTION,
+        ];
+        foreach($functions as $name => $function) {
+            $this->addTemplateFunction($name, $function);
+        }
     }
 
     /**

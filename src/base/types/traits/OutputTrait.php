@@ -73,11 +73,7 @@ trait OutputTrait {
      */
     private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
     {
-        $config = Config::getInstance();
-        $powered = $config->get("poweredBy");
-        if (empty($powered)) {
-            $powered = "@c15k0";
-        }
+        $powered = Config::getParam('poweredBy', 'PSFS');
         header("X-Powered-By: $powered");
         ResponseHelper::setStatusHeader($this->status_code);
         ResponseHelper::setAuthHeaders($this->public_zone);
@@ -101,13 +97,12 @@ trait OutputTrait {
         header('Content-length: ' . strlen($output));
 
         $needCache = Cache::needCache();
-        if (false !== $needCache && $this->status_code === Template::STATUS_OK && $this->debug === false) {
+        if (false !== $needCache && $this->status_code === Template::STATUS_OK) {
             $cache = Cache::getInstance();
             Logger::log('Saving output response into cache');
-            $cacheName = $cache->getRequestCacheHash();
-            $tmpDir = substr($cacheName, 0, 2) . DIRECTORY_SEPARATOR . substr($cacheName, 2, 2) . DIRECTORY_SEPARATOR;
-            $cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName, $output);
-            $cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName . ".headers", headers_list(), Cache::JSON);
+            list($path, $cacheDataName) = $cache->getRequestCacheHash();
+            $cache->storeData("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName, $output);
+            $cache->storeData("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName . ".headers", headers_list(), Cache::JSON);
         }
         echo $output;
 
