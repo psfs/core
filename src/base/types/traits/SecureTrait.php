@@ -10,18 +10,6 @@ use PSFS\base\Security;
 trait SecureTrait
 {
     use BoostrapTrait;
-    /**
-     * @var \PSFS\base\Security $security
-     */
-    protected $security;
-
-    /**
-     * Constructor por defecto
-     */
-    public function __construct()
-    {
-        $this->security = Security::getInstance();
-    }
 
     /**
      * Método que verifica si está autenticado el usuario
@@ -29,7 +17,7 @@ trait SecureTrait
      */
     public function isLogged()
     {
-        return (null !== $this->security->getUser() || $this->isAdmin());
+        return (null !== Security::getInstance()->getUser() || $this->isAdmin());
     }
 
     /**
@@ -38,7 +26,7 @@ trait SecureTrait
      */
     public function isAdmin()
     {
-        return $this->security->canAccessRestrictedAdmin();
+        return Security::getInstance()->canAccessRestrictedAdmin();
     }
 
     /**
