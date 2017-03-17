@@ -443,7 +443,7 @@ abstract class Api extends Controller
         try {
             $this->con->beginTransaction();
             $this->hydrateFromRequest();
-            if ($this->model->save($this->con)) {
+            if (false !== $this->model->save($this->con)) {
                 $status = 200;
                 $saved = TRUE;
                 $model = $this->model->toArray();

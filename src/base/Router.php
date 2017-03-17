@@ -198,7 +198,7 @@ class Router
                     $this->executeCachedRoute($route, $action, $class, $get);
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
-                    throw new RouterException($e->getMessage(), 404, $e);
+                    throw new \RuntimeException($e->getMessage(), 404, $e);
                 }
             }
         }
