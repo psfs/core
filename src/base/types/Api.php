@@ -13,15 +13,25 @@ use PSFS\base\exception\ApiException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
+use PSFS\base\Singleton;
+use PSFS\base\Template;
 use PSFS\base\types\helpers\ApiFormHelper;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\traits\JsonTrait;
+use PSFS\base\types\traits\RouteTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Api
  * @package PSFS\base
  */
-abstract class Api extends Controller
+abstract class Api extends Singleton
 {
+    use JsonTrait {
+        json as _json;
+    }
+    use RouteTrait;
+
     const API_COMBO_FIELD = '__combo';
     const API_LIST_NAME_FIELD = '__name__';
     const API_FIELDS_RESULT_FIELD = '__fields';
@@ -68,11 +78,6 @@ abstract class Api extends Controller
      * @var ConnectionInterface con
      */
     protected $con = null;
-
-    /**
-     * @var bool debug
-     */
-    protected $debug = FALSE;
 
     /**
      * @var array extraColumns
@@ -563,7 +568,7 @@ abstract class Api extends Controller
         $this->closeTransaction($status);
         Propel::closeConnections();
 
-        return parent::json($response, $status);
+        return $this->_json($response, $status);
     }
 
     /**
@@ -624,7 +629,7 @@ abstract class Api extends Controller
      */
     public function admin()
     {
-        return $this->render('api.admin.html.twig', array(
+        return AuthAdminController::getInstance()->render('api.admin.html.twig', array(
             "api" => $this->getApi(),
             "domain" => $this->getDomain(),
             "listLabel" => self::API_LIST_NAME_FIELD,

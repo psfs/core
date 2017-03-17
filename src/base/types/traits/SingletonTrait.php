@@ -1,14 +1,13 @@
 <?php
+namespace PSFS\base\types\traits;
 
-namespace PSFS\base\types;
-
-require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 /**
  * Class SingletonTrait
  * @package PSFS\base\types
  */
 Trait SingletonTrait
 {
+    use BoostrapTrait;
     /**
      * @var array Singleton cached reference to singleton instance
      */
@@ -27,6 +26,17 @@ Trait SingletonTrait
             self::__init(self::$instance[$class]);
         }
         return self::$instance[$class];
+    }
+
+    /**
+     * drop the instance
+     * @return mixed
+     */
+    public static function dropInstance() {
+        $class = get_called_class();
+        if(isset(self::$instance[$class])) {
+            self::$instance[$class] = null;
+        }
     }
 
     /**

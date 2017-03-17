@@ -1,13 +1,10 @@
 <?php
-
 namespace PSFS\base\config;
 
-
-use PSFS\base\Cache;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Config
@@ -16,6 +13,7 @@ use PSFS\base\types\SingletonTrait;
 class Config
 {
     use SingletonTrait;
+
     const DEFAULT_LANGUAGE = "es";
     const DEFAULT_ENCODE = "UTF-8";
     const DEFAULT_CTYPE = "text/html";

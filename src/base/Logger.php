@@ -10,7 +10,7 @@ use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 
 if (!defined("LOG_DIR")) {

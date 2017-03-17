@@ -1,10 +1,9 @@
 <?php
-
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\InjectorHelper;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Singleton

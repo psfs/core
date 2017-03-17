@@ -1,6 +1,6 @@
 <?php
-
 namespace PSFS\base;
+
 use PSFS\base\types\helpers\SecurityHelper;
 
 /**

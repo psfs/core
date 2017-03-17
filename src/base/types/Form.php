@@ -1,5 +1,4 @@
 <?php
-
 namespace PSFS\base\types;
 
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
@@ -32,6 +31,7 @@ abstract class Form extends Singleton implements FormType
 
     public function __construct($model = null)
     {
+        parent::__construct();
         if (null !== $model) {
             $this->model = $model;
         }

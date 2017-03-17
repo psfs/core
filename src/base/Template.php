@@ -1,35 +1,30 @@
 <?php
-
 namespace PSFS\base;
-
 
 use PSFS\base\config\Config;
 use PSFS\base\extension\AssetsTokenParser;
 use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\ResponseHelper;
-use PSFS\base\types\helpers\TemplateHelper;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\OutputTrait;
+use PSFS\base\types\traits\RouteTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
-
+/**
+ * Class Template
+ * @package PSFS\base
+ */
 class Template
 {
     use SingletonTrait;
+    use OutputTrait;
+    use RouteTrait;
     const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
      * @var \Twig_Environment tpl
      */
     protected $tpl;
     protected $filters = array();
-
-    protected $debug = false;
-    protected $public_zone = true;
-    private $status_code = Template::STATUS_OK;
-
-    /**
-     * @var \PSFS\base\Cache $cache
-     */
-    protected $cache;
 
     /**
      * Constructor por defecto
@@ -64,38 +59,6 @@ class Template
     }
 
     /**
-     * Método que establece un header de http status code
-     * @param string $status
-     *
-     * @return Template
-     */
-    public function setStatus($status = null)
-    {
-        switch ($status) {
-            //TODO implement all status codes
-            case '500':
-                $this->status_code = "HTTP/1.0 500 Internal Server Error";
-                break;
-            case '404':
-                $this->status_code = "HTTP/1.0 404 Not Found";
-                break;
-            case '403':
-                $this->status_code = "HTTP/1.0 403 Forbidden";
-                break;
-            case '402':
-                $this->status_code = "HTTP/1.0 402 Payment Required";
-                break;
-            case '401':
-                $this->status_code = "HTTP/1.0 401 Unauthorized";
-                break;
-            case '400':
-                $this->status_code = "HTTP/1.0 400 Bad Request";
-                break;
-        }
-        return $this;
-    }
-
-    /**
      * Método que procesa la plantilla
      *
      * @param string $tpl
@@ -111,89 +74,6 @@ class Template
         $output = $this->dump($tpl, $vars);
 
         return $this->output($output, 'text/html', $cookies);
-    }
-
-    /**
-     * Servicio que establece las cabeceras de la respuesta
-     * @param string $contentType
-     * @param array $cookies
-     */
-    private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
-    {
-        $config = Config::getInstance();
-        $powered = $config->get("poweredBy");
-        if (empty($powered)) {
-            $powered = "@c15k0";
-        }
-        header("X-Powered-By: $powered");
-        ResponseHelper::setStatusHeader($this->status_code);
-        ResponseHelper::setAuthHeaders($this->public_zone);
-        ResponseHelper::setCookieHeaders($cookies);
-        header('Content-type: ' . $contentType);
-
-    }
-
-    /**
-     * Servicio que devuelve el output
-     * @param string $output
-     * @param string $contentType
-     * @param array $cookies
-     * @return string HTML
-     */
-    public function output($output = '', $contentType = 'text/html', array $cookies = array())
-    {
-        Logger::log('Start output response');
-        ob_start();
-        $this->setReponseHeaders($contentType, $cookies);
-        header('Content-length: ' . strlen($output));
-
-        $cache = Cache::needCache();
-        if (false !== $cache && $this->status_code === Template::STATUS_OK && $this->debug === false) {
-            Logger::log('Saving output response into cache');
-            $cacheName = $this->cache->getRequestCacheHash();
-            $tmpDir = substr($cacheName, 0, 2) . DIRECTORY_SEPARATOR . substr($cacheName, 2, 2) . DIRECTORY_SEPARATOR;
-            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName, $output);
-            $this->cache->storeData("json" . DIRECTORY_SEPARATOR . $tmpDir . $cacheName . ".headers", headers_list(), Cache::JSON);
-        }
-        echo $output;
-
-        ob_flush();
-        ob_end_clean();
-        Logger::log('End output response');
-        $this->closeRender();
-    }
-
-    /**
-     * Método que cierra y limpia los buffers de salida
-     */
-    public function closeRender()
-    {
-        Logger::log('Close template render');
-        Security::getInstance()->setSessionKey("lastRequest", array(
-            "url" => Request::getInstance()->getRootUrl() . Request::requestUri(),
-            "ts" => microtime(true),
-        ));
-        Security::getInstance()->updateSession();
-        Logger::log('End request: ' . Request::requestUri(), LOG_INFO);
-        exit;
-    }
-
-    /**
-     * Método que devuelve los datos cacheados con las cabeceras que tenía por entonces
-     * @param string $data
-     * @param array $headers
-     */
-    public function renderCache($data, $headers = array())
-    {
-        ob_start();
-        for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
-            header($headers[$i]);
-        }
-        header('X-PSFS-CACHED: true');
-        echo $data;
-        ob_flush();
-        ob_end_clean();
-        $this->closeRender();
     }
 
     /**
@@ -448,8 +328,6 @@ class Template
      */
     private function setup()
     {
-        $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
-        $this->cache = Cache::getInstance();
         $loader = new \Twig_Loader_Filesystem(GeneratorHelper::getTemplatePath());
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => CACHE_DIR . DIRECTORY_SEPARATOR . 'twig',

@@ -1,11 +1,10 @@
 <?php
-
 namespace PSFS\base\types;
-
 
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\UserAuthException;
 use PSFS\base\types\interfaces\AuthInterface;
+use PSFS\base\types\traits\SecureTrait;
 
 /**
  * Class AuthController

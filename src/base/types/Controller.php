@@ -1,5 +1,4 @@
 <?php
-
 namespace PSFS\base\types;
 
 use PSFS\base\exception\RouterException;
@@ -8,6 +7,9 @@ use PSFS\base\Router;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\interfaces\ControllerInterface;
+use PSFS\base\types\traits\JsonTrait;
+use PSFS\base\types\traits\OutputTrait;
+use PSFS\base\types\traits\RouteTrait;
 
 /**
  * Class Controller
@@ -15,9 +17,11 @@ use PSFS\base\types\interfaces\ControllerInterface;
  */
 abstract class Controller extends Singleton implements ControllerInterface
 {
+    use JsonTrait;
+    use RouteTrait;
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Template $tpl
      */
     protected $tpl;
@@ -71,80 +75,6 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método que devuelve una respuesta con formato
-     * @param string $response
-     * @param string $type
-     */
-    public function response($response, $type = 'text/html')
-    {
-        $this->tpl->output($response, $type);
-    }
-
-    /**
-     * Método que fuerza la descarga de un fichero
-     * @param $data
-     * @param string $content
-     * @param string $filename
-     * @return mixed
-     */
-    public function download($data, $content = "text/html", $filename = 'data.txt')
-    {
-        ob_start();
-        header('Pragma: public');
-        /////////////////////////////////////////////////////////////
-        // prevent caching....
-        /////////////////////////////////////////////////////////////
-        // Date in the past sets the value to already have been expired.
-        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
-        header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
-        header("Pragma: no-cache");
-        header("Expires: 0");
-        header('Content-Transfer-Encoding: none');
-        header("Content-type: " . $content);
-        header("Content-length: " . strlen($data));
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        echo $data;
-        ob_flush();
-        ob_end_clean();
-        exit;
-    }
-
-    /**
-     * Método que devuelve una salida en formato JSON
-     * @param mixed $response
-     * @param int $statusCode
-     *
-     * @return string JSON
-     */
-    public function json($response, $statusCode = 200)
-    {
-        $data = json_encode($response, JSON_UNESCAPED_UNICODE);
-        $this->tpl->setStatus($statusCode);
-        return $this->response($data, "application/json");
-    }
-
-    /**
-     * Método que devuelve una salida en formato JSON
-     * @param mixed $response
-     */
-    public function jsonp($response)
-    {
-        $data = json_encode($response, JSON_UNESCAPED_UNICODE);
-        $this->response($data, "application/javascript");
-    }
-
-    /**
-     * Método que devuelve el objeto de petición
-     * @return \PSFS\base\Request
-     */
-    protected function getRequest()
-    {
-        return Request::getInstance();
-    }
-
-    /**
      * Método que añade la ruta del controlador a los path de plantillas Twig
      * @param string $path
      * @return $this
@@ -174,32 +104,6 @@ abstract class Controller extends Singleton implements ControllerInterface
     public function getDomain()
     {
         return "@{$this->domain}/";
-    }
-
-    /**
-     * Wrapper para obtener la url de una ruta interna
-     * @param string $route
-     * @param bool $absolute
-     * @param array $params
-     * @return string|null
-     * @throws RouterException
-     */
-    public function getRoute($route = '', $absolute = false, array $params = array())
-    {
-        return Router::getInstance()->getRoute($route, $absolute, $params);
-    }
-
-    /**
-     * Wrapper que hace una redirección
-     * @param string $route
-     * @param array $params
-     *
-     * @return mixed
-     * @throws RouterException
-     */
-    public function redirect($route, array $params = array())
-    {
-        return $this->getRequest()->redirect($this->getRoute($route, true, $params));
     }
 
 }

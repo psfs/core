@@ -5,7 +5,12 @@ use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\Request;
 use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\base\types\traits\SecureTrait;
 
+/**
+ * Class AuthApi
+ * @package PSFS\base\types
+ */
 abstract class AuthApi extends Api
 {
     use SecureTrait;

@@ -1,10 +1,7 @@
 <?php
-
 namespace PSFS\base;
 
-use PSFS\base\types\helpers\SecurityHelper;
-use PSFS\base\types\SingletonTrait;
-
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Security

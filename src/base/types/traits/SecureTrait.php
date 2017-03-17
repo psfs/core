@@ -1,7 +1,5 @@
 <?php
-
-namespace PSFS\base\types;
-
+namespace PSFS\base\types\traits;
 
 use PSFS\base\Security;
 
@@ -11,9 +9,8 @@ use PSFS\base\Security;
  */
 trait SecureTrait
 {
-
+    use SecureTrait;
     /**
-     * @Inyectable
      * @var \PSFS\base\Security Seguridad del controlador
      */
     protected $security;

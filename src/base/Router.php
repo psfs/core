@@ -1,5 +1,4 @@
 <?php
-
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
@@ -12,7 +11,7 @@ use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 use Symfony\Component\Finder\Finder;
@@ -24,7 +23,6 @@ use Symfony\Component\Finder\Finder;
  */
 class Router
 {
-
     use SingletonTrait;
 
     protected $routing;

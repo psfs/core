@@ -1,19 +1,7 @@
 <?php
-
 namespace PSFS\base;
 
-use PSFS\base\types\SingletonTrait;
-
-if (!function_exists("getallheaders")) {
-    function getallheaders()
-    {
-        $headers = array();
-        foreach ($_SERVER as $h => $v)
-            if (preg_match('/HTTP_(.+)/', $h, $hp))
-                $headers[$hp[1]] = $v;
-        return $headers;
-    }
-}
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Request

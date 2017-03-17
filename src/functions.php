@@ -27,6 +27,17 @@ if (!function_exists('jpre')) {
     }
 }
 
+if (!function_exists("getallheaders")) {
+    function getallheaders()
+    {
+        $headers = array();
+        foreach ($_SERVER as $h => $v)
+            if (preg_match('/HTTP_(.+)/', $h, $hp))
+                $headers[$hp[1]] = $v;
+        return $headers;
+    }
+}
+
 if (file_exists(CORE_DIR)) {
     //Autoload de módulos
     $finder = new Finder();

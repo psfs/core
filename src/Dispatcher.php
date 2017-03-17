@@ -10,8 +10,11 @@ use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\traits\SystemTrait;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
 
@@ -21,6 +24,7 @@ use PSFS\controller\UserController;
  */
 class Dispatcher extends Singleton
 {
+    use SystemTrait;
     /**
      * @Inyectable
      * @var \PSFS\base\Security $security
@@ -33,22 +37,9 @@ class Dispatcher extends Singleton
     protected $router;
     /**
      * @Inyectable
-     * @var \PSFS\base\Request $parser
-     */
-    protected $parser;
-    /**
-     * @Inyectable
-     * @var \PSFS\base\Logger $log
-     */
-    protected $log;
-    /**
-     * @Inyectable
      * @var \PSFS\base\config\Config $config
      */
     protected $config;
-
-    protected $ts;
-    protected $mem;
 
     private $actualUri;
 
@@ -62,7 +53,7 @@ class Dispatcher extends Singleton
         $this->initiateStats();
         I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
-        $this->actualUri = $this->parser->getServer("REQUEST_URI");
+        $this->actualUri = Request::getInstance()->getServer("REQUEST_URI");
         Logger::log('End dispatcher init');
     }
 
@@ -75,7 +66,7 @@ class Dispatcher extends Singleton
         Logger::log('Begin runner');
         try {
             if ($this->config->isConfigured()) {
-                if (!$this->parser->isFile()) {
+                if (!Request::getInstance()->isFile()) {
                     return $this->router->execute($this->actualUri);
                 }
             } else {
@@ -84,7 +75,7 @@ class Dispatcher extends Singleton
         } catch (AdminCredentialsException $a) {
             return UserController::showAdminManager();
         } catch (SecurityException $s) {
-            return $this->security->notAuthorized($this->actualUri);
+            return Security::getInstance()->notAuthorized($this->actualUri);
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
         } catch (\Exception $e) {
@@ -112,66 +103,6 @@ class Dispatcher extends Singleton
         unset($error);
 
         return $this->router->httpNotFound($ex);
-    }
-
-    /**
-     * Method that returns the memory used at this specific moment
-     *
-     * @param $unit string
-     *
-     * @return int
-     */
-    public function getMem($unit = "Bytes")
-    {
-        $use = memory_get_usage() - $this->mem;
-        switch ($unit) {
-            case "KBytes":
-                $use /= 1024;
-                break;
-            case "MBytes":
-                $use /= (1024 * 1024);
-                break;
-            case "Bytes":
-            default:
-        }
-
-        return $use;
-    }
-
-    /**
-     * Method that returns the seconds spent with the script
-     * @return double
-     */
-    public function getTs()
-    {
-        return microtime(TRUE) - $this->ts;
-    }
-
-    /**
-     * Debug function to catch warnings as exceptions
-     */
-    protected function bindWarningAsExceptions()
-    {
-        Logger::log('Added handlers for errors');
-        //Warning & Notice handler
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-            Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
-            return true;
-        }, E_ALL | E_STRICT);
-    }
-
-    /**
-     * Stats initializer
-     */
-    private function initiateStats()
-    {
-        Logger::log('Initializing stats (mem + ts)');
-        if (null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
-            $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
-        } else {
-            $this->ts = $this->parser->getTs();
-        }
-        $this->mem = memory_get_usage();
     }
 
 }

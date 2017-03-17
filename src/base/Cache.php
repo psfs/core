@@ -4,7 +4,7 @@ namespace PSFS\base;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Cache
@@ -171,13 +171,7 @@ class Cache
      */
     private static function checkAdminSite()
     {
-        $isAdminRequest = false;
-        $lastRequest = Security::getInstance()->getSessionKey("lastRequest");
-        if (null !== $lastRequest) {
-            $url = str_replace(Request::getInstance()->getRootUrl(true), '', $lastRequest['url']);
-            $isAdminRequest = preg_match('/^\/admin\//i', $url);
-        }
-        return (bool)$isAdminRequest;
+        return Security::getInstance()->canAccessRestrictedAdmin();
     }
 
     /**
