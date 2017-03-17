@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\test\base;
 
+use PSFS\base\Security;
 use PSFS\Dispatcher;
 
 /**
@@ -158,6 +159,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $config = $this->mockConfiguredDebugConfig();
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method("execute")->willThrowException(new \PSFS\base\exception\SecurityException("NOT AUTHORIZED"));
+        Security::dropInstance();
         $security = $this->mockDebugSecurity();
         $security->expects($this->any())->method("notAuthorized")->willThrowException(new \PSFS\base\exception\SecurityException("NOT AUTHORIZED"));
         $dispatcher = $this->getInstance($config, $router, $security);

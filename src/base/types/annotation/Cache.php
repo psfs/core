@@ -2,7 +2,7 @@
 namespace PSFS\base\types\annotation;
 
 use PSFS\base\types\interfaces\AnnotationInterface;
-use PSFS\base\types\SingletonTrait;
+use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Cache

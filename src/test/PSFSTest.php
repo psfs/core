@@ -7,7 +7,6 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AdminHelper;
-use PSFS\base\types\helpers\RouterHelper;
 use PSFS\Dispatcher;
 
 class PSFSTest extends \PHPUnit_Framework_TestCase{

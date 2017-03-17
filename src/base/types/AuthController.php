@@ -12,7 +12,6 @@ use PSFS\base\types\traits\SecureTrait;
  */
 abstract class AuthController extends Controller implements AuthInterface
 {
-
     use SecureTrait;
 
     /**

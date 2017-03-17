@@ -32,15 +32,6 @@ abstract class Admin extends AuthAdminController
     protected $srv;
 
     /**
-     * Wrapper de asignación de los menus
-     * @return array
-     */
-    protected function getMenu()
-    {
-        return Router::getInstance()->getAdminRoutes();
-    }
-
-    /**
      * Método estático de login de administrador
      * @param string $route
      * @return string HTML

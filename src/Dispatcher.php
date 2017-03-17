@@ -75,7 +75,7 @@ class Dispatcher extends Singleton
         } catch (AdminCredentialsException $a) {
             return UserController::showAdminManager();
         } catch (SecurityException $s) {
-            return Security::getInstance()->notAuthorized($this->actualUri);
+            return $this->security->notAuthorized($this->actualUri);
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
         } catch (\Exception $e) {

@@ -9,9 +9,9 @@ use PSFS\base\Security;
  */
 trait SecureTrait
 {
-    use SecureTrait;
+    use BoostrapTrait;
     /**
-     * @var \PSFS\base\Security Seguridad del controlador
+     * @var \PSFS\base\Security $security
      */
     protected $security;
 
