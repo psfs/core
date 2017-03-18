@@ -4,6 +4,7 @@ namespace PSFS\services;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
 use PSFS\base\types\helpers\GeneratorHelper;
@@ -526,7 +527,7 @@ class DocumentorService extends Service
             "swagger" => "2.0",
             "host" => preg_replace('/^(http|https)\:\/\/(.*)\/$/i', '$2', Router::getInstance()->getRoute('', true)),
             "basePath" => '/' . $module['name'] . '/api',
-            "schemes" => ["http","https"],
+            "schemes" => [Request::getInstance()->getServer('https') == 'on' ? "https" : "http"],
             "info" => [
                 "title" => _('Documentación API módulo ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0'),
