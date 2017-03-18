@@ -84,10 +84,11 @@ class Router
      * Método que deriva un error HTTP de página no encontrada
      *
      * @param \Exception $e
+     * @param boolean $isJson
      *
      * @return string HTML
      */
-    public function httpNotFound(\Exception $e = NULL)
+    public function httpNotFound(\Exception $e = NULL, $isJson = false)
     {
         Logger::log('Throw not found exception');
         if (NULL === $e) {
@@ -95,7 +96,7 @@ class Router
             $e = new \Exception(_('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($e->getCode());
-        if (preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE'))) {
+        if (preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE')) || $isJson) {
             return $template->output(json_encode(array(
                 "success" => FALSE,
                 "error" => $e->getMessage(),

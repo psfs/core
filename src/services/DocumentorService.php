@@ -26,17 +26,18 @@ class DocumentorService extends Service
 
     /**
      * Method that extract all modules
+     * @param string $requestModule
      * @return array
      */
-    public function getModules()
+    public function getModules($requestModule)
     {
         $modules = [];
         $domains = $this->route->getDomains();
         if (count($domains)) {
             foreach ($domains as $module => $info) {
                 try {
-                    $module = str_replace('/', '', str_replace('@', '', $module));
-                    if (!preg_match('/^ROOT/i', $module)) {
+                    $module = preg_replace('/(@|\/)/', '', $module);
+                    if (!preg_match('/^ROOT/i', $module) && $module == $requestModule) {
                         $modules[] = [
                             'name' => $module,
                             'path' => realpath($info['template'] . DIRECTORY_SEPARATOR . '..'),

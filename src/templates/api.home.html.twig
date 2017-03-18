@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+{% block body_header %}
+    <md-toolbar class="md-info">
+        <div class="md-toolbar-tools">
+            <h2 class="md-flex">{{ "Visor de documentación de API"|trans }}</h2>
+        </div>
+    </md-toolbar>
+{% endblock body_header %}
+{% block body_content %}
+    <md-content>
+        <md-list ng-cloak>
+            <md-subheader class="md-sticky">{{ "Selecciona un módulo"|trans }}</md-subheader>
+        {% for domain,info in domains %}
+            {% set _domain = domain|replace({'@':'', '/':''}) %}
+            {% if _domain != 'ROOT' %}
+            <md-list-item class="noright">
+                <p>{{ _domain }}</p>
+                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=html" target="_blank">
+                    <md-icon class="fa fa-html5"></md-icon>
+                </a>
+                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=psfs" target="_blank">
+                    <md-icon class="fa fa-cog"></md-icon>                </a>
+                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=swagger" target="_blank">
+                    <md-icon class="fa fa-file-code-o"></md-icon>
+                </a>
+                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" target="_blank">
+                    <md-icon class="fa fa-mobile"></md-icon>
+                </a>
+            </md-list-item>
+            {% endif %}
+        {% endfor %}
+        </md-list>
+    </md-content>
+{% endblock body_content %}
+{% block scripts %}
+{% endblock scripts %}

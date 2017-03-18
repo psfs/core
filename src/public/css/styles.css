@@ -17,6 +17,9 @@
 html *, html body * {
     font-family: "Source Sans Pro", Verdana;
 }
+html body {
+    padding-top: 50px;
+}
 md-dialog {
     padding: 20px;
 }
