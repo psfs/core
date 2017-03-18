@@ -3,6 +3,7 @@ namespace PSFS\Test\base;
 
 use PSFS\base\Cache;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\FileHelper;
 
 /**
  * Class CacheTest
@@ -16,6 +17,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
      */
     private function getInstance()
     {
+        Cache::dropInstance();
         $cache = Cache::getInstance();
 
         $this->assertNotNull($cache);
@@ -67,12 +69,15 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $session->setSessionKey('__CACHE__', [
             'cache' => 1,
             'http' => 'localhost/',
-            'slug' => 'test'
+            'slug' => 'test',
+            'class' => 'Test',
+            'method' => 'test',
+            'module' => 'TEST',
         ]);
 
-        $hash = Cache::getInstance()->getRequestCacheHash();
+        list($path, $hash) = Cache::getInstance()->getRequestCacheHash();
         $this->assertNotNull($hash, 'Invalid cache hash');
-        $this->assertEquals($hash, sha1('localhost/ test'), 'Different hash returned by cache');
+        $this->assertNotEmpty($path, 'Invalid path to save the cache');
 
         $this->assertTrue(false !== Cache::needCache(), 'Test url expired or error checking cache');
     }

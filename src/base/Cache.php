@@ -4,6 +4,7 @@ namespace PSFS\base;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\traits\SingletonTrait;
 
 /**
@@ -43,7 +44,7 @@ class Cache
     private function saveTextToFile($data, $path)
     {
         GeneratorHelper::createDir(dirname($path));
-        if (false === file_put_contents($path, $data)) {
+        if (false === FileHelper::writeFile($path, $data)) {
             throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ') . $path);
         }
     }
@@ -60,7 +61,7 @@ class Cache
         $data = null;
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         if (file_exists($absolutePath)) {
-            $data = file_get_contents($absolutePath);
+            $data = FileHelper::readFile($absolutePath);
         }
         return Cache::extractDataWithFormat($data, $transform);
     }
@@ -200,7 +201,7 @@ class Cache
         $filename = null;
         $action = Security::getInstance()->getSessionKey("__CACHE__");
         if (null !== $action && $action["cache"] > 0) {
-            $class = array_pop(explode('\\', $action['class']));
+            $class = GeneratorHelper::extractClassFromNamespace($action['class']);
             $filename = sha1($action["http"] . " " . $action["slug"]);
             $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
             $hashPath = $action['module'] . DIRECTORY_SEPARATOR . $class . DIRECTORY_SEPARATOR . $action['method'] . DIRECTORY_SEPARATOR . $subPath . DIRECTORY_SEPARATOR;

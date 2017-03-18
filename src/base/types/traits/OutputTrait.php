@@ -23,7 +23,7 @@ trait OutputTrait {
     /**
      * @var string
      */
-    private $status_code = Template::STATUS_OK;
+    protected $status_code = Template::STATUS_OK;
     /**
      * @var bool
      */
@@ -32,6 +32,60 @@ trait OutputTrait {
     public function __construct()
     {
         $this->debug = Config::getInstance()->getDebugMode() ?: FALSE;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPublicZone()
+    {
+        return $this->public_zone;
+    }
+
+    /**
+     * @param bool $public_zone
+     * @return OutputTrait
+     */
+    public function setPublicZone($public_zone)
+    {
+        $this->public_zone = $public_zone;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatusCode()
+    {
+        return $this->status_code;
+    }
+
+    /**
+     * @param string $status_code
+     * @return OutputTrait
+     */
+    public function setStatusCode($status_code)
+    {
+        $this->status_code = $status_code;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug()
+    {
+        return $this->debug;
+    }
+
+    /**
+     * @param bool $debug
+     * @return OutputTrait
+     */
+    public function setDebug($debug)
+    {
+        $this->debug = $debug;
+        return $this;
     }
 
     /**
@@ -45,22 +99,22 @@ trait OutputTrait {
         switch ($status) {
             //TODO implement all status codes
             case '500':
-                $this->status_code = "HTTP/1.0 500 Internal Server Error";
+                $this->setStatusCode("HTTP/1.0 500 Internal Server Error");
                 break;
             case '404':
-                $this->status_code = "HTTP/1.0 404 Not Found";
+                $this->setStatusCode("HTTP/1.0 404 Not Found");
                 break;
             case '403':
-                $this->status_code = "HTTP/1.0 403 Forbidden";
+                $this->setStatusCode("HTTP/1.0 403 Forbidden");
                 break;
             case '402':
-                $this->status_code = "HTTP/1.0 402 Payment Required";
+                $this->setStatusCode("HTTP/1.0 402 Payment Required");
                 break;
             case '401':
-                $this->status_code = "HTTP/1.0 401 Unauthorized";
+                $this->setStatusCode("HTTP/1.0 401 Unauthorized");
                 break;
             case '400':
-                $this->status_code = "HTTP/1.0 400 Bad Request";
+                $this->setStatusCode("HTTP/1.0 400 Bad Request");
                 break;
         }
         return $this;
@@ -75,8 +129,8 @@ trait OutputTrait {
     {
         $powered = Config::getParam('poweredBy', 'PSFS');
         header("X-Powered-By: $powered");
-        ResponseHelper::setStatusHeader($this->status_code);
-        ResponseHelper::setAuthHeaders($this->public_zone);
+        ResponseHelper::setStatusHeader($this->getStatusCode());
+        ResponseHelper::setAuthHeaders($this->isPublicZone());
         ResponseHelper::setCookieHeaders($cookies);
         header('Content-type: ' . $contentType);
 
@@ -97,7 +151,7 @@ trait OutputTrait {
         header('Content-length: ' . strlen($output));
 
         $needCache = Cache::needCache();
-        if (false !== $needCache && $this->status_code === Template::STATUS_OK) {
+        if (false !== $needCache && $this->getStatusCode() === Template::STATUS_OK) {
             $cache = Cache::getInstance();
             Logger::log('Saving output response into cache');
             list($path, $cacheDataName) = $cache->getRequestCacheHash();
