@@ -182,7 +182,7 @@ class Cache
     public static function needCache()
     {
         $needCache = false;
-        if (!self::checkAdminSite() && !Config::getParam('debug')) {
+        if (!self::checkAdminSite() && !Config::getInstance()->getDebugMode()) {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
                 $needCache = $action["cache"];

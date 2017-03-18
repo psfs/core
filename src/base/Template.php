@@ -59,6 +59,13 @@ class Template
     }
 
     /**
+     * @return bool
+     */
+    public function isPublicZone() {
+        return $this->public_zone;
+    }
+
+    /**
      * Método que procesa la plantilla
      *
      * @param string $tpl

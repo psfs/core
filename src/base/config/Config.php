@@ -135,6 +135,13 @@ class Config
     }
 
     /**
+     * @param bool $debug
+     */
+    public function setDebugMode($debug = true) {
+        $this->debug = $debug;
+    }
+
+    /**
      * Method that checks if the platform is proper configured
      * @return boolean
      */
