@@ -242,7 +242,7 @@ class DocumentorService extends Service
         $properties = [];
         $reflector = new \ReflectionClass($class);
         if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
-            $properties = array_merge($properties, InjectorHelper::extractVariables($reflector, \ReflectionMethod::IS_PUBLIC));
+            $properties = array_merge($properties, InjectorHelper::extractVariables($reflector));
         }
 
         return $properties;
@@ -524,8 +524,7 @@ class DocumentorService extends Service
     {
         $formatted = [
             "swagger" => "2.0",
-            "host" => preg_replace('/^(http|https)\:\/\//i', '', Router::getInstance()->getRoute('', true)) . $module['name'] . '/api',
-            "schemes" => ["http", "https"],
+            "host" => Router::getInstance()->getRoute('', true) . $module['name'] . '/api',
             "info" => [
                 "title" => _('Documentación API módulo ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0'),
