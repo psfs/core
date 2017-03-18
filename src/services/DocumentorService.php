@@ -541,7 +541,7 @@ class DocumentorService extends Service
         $endpoints = DocumentorService::getInstance()->extractApiEndpoints($module);
         foreach ($endpoints as $model) {
             foreach ($model as $endpoint) {
-                if(!preg_match('/^\/admin\//i', $endpoint['url']) && strlen($endpoint['url'])) {
+                if(!preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url'])) {
                     $url = preg_replace('/\/'.$module['name'].'\/api/i', '', $endpoint['url']);
                     $description = $endpoint['description'];
                     $method = strtolower($endpoint['method']);
