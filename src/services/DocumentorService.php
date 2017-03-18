@@ -6,6 +6,7 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use Symfony\Component\Finder\Finder;
@@ -38,7 +39,7 @@ class DocumentorService extends Service
                 try {
                     $module = preg_replace('/(@|\/)/', '', $module);
                     if (!preg_match('/^ROOT/i', $module) && $module == $requestModule) {
-                        $modules[] = [
+                        $modules = [
                             'name' => $module,
                             'path' => realpath($info['template'] . DIRECTORY_SEPARATOR . '..'),
                         ];
@@ -269,13 +270,14 @@ class DocumentorService extends Service
                 if (count($subDtos)) {
                     foreach ($subDtos as $subDto) {
                         $isArray = false;
-                        list($field, $dto) = explode('=', $subDto);
-                        if (false !== strpos($dto, '[') && false !== strpos($dto, ']')) {
-                            $dto = str_replace(']', '', str_replace('[', '', $dto));
+                        list($field, $dtoName) = explode('=', $subDto);
+                        if (false !== strpos($dtoName, '[') && false !== strpos($dtoName, ']')) {
+                            $dtoName = str_replace(']', '', str_replace('[', '', $dtoName));
                             $isArray = true;
                         }
-                        $dto = $this->extractModelFields($dto);
+                        $dto = $this->extractModelFields($dtoName);
                         $modelDto[$field] = ($isArray) ? [$dto] : $dto;
+                        $modelDto['objects'][$dtoName] = $dto;
                     }
                 }
             }
@@ -338,14 +340,27 @@ class DocumentorService extends Service
             $modelNamespace = str_replace('Api', 'Models', $namespace);
             if ($info['visible'] && !self::checkDeprecated($docComments)) {
                 try {
+                    $return = $this->extractReturn($modelNamespace, $docComments);
                     $methodInfo = [
                         'url' => array_pop($route),
                         'method' => $info['http'],
                         'description' => $info['label'],
-                        'return' => $this->extractReturn($modelNamespace, $docComments),
+                        'return' => $return,
+                        'objects' => $return['objects'],
                     ];
+                    unset($methodInfo['return']['objects']);
                     if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
                         $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
+                    } elseif($method->getNumberOfParameters() > 0) {
+                        $methodInfo['parameters'] = [];
+                        foreach($method->getParameters() as $parameter) {
+                            $parameterName = $parameter->getName();
+                            $types = [];
+                            preg_match_all('/\@param\ (.*)\ \$'.$parameterName.'$/im', $docComments, $types);
+                            if(count($types) > 1) {
+                                $methodInfo['parameters'][$parameterName] = $types[1][0];
+                            }
+                        }
                     }
                 } catch (\Exception $e) {
                     jpre($e->getMessage());
@@ -384,10 +399,13 @@ class DocumentorService extends Service
                 break;
             case 'int':
             case 'integer':
-            case 'float':
-            case 'double':
                 $swaggerType = 'integer';
                 $swaggerFormat = 'int32';
+                break;
+            case 'float':
+            case 'double':
+                $swaggerType = 'number';
+                $swaggerFormat = strtolower($format);
                 break;
             case 'date':
                 $swaggerType = 'string';
@@ -395,7 +413,7 @@ class DocumentorService extends Service
                 break;
             case 'datetime':
                 $swaggerType = 'string';
-                $swaggerFormat = 'date-time	';
+                $swaggerFormat = 'date-time';
                 break;
 
         }
@@ -404,66 +422,112 @@ class DocumentorService extends Service
 
     /**
      * Method that parse the definitions for the api's
-     * @param array $endpoint
+     * @param string $name
+     * @param array $fields
      *
      * @return array
      */
-    public static function extractSwaggerDefinition(array $endpoint)
+    public static function extractSwaggerDefinition($name, array $fields)
     {
-        $definitions = [];
-        if (array_key_exists('definitions', $endpoint)) {
-            foreach ($endpoint['definitions'] as $dtoName => $definition) {
-                $dto = [
-                    "type" => "object",
-                    "properties" => [],
-                ];
-                foreach ($definition as $field => $format) {
-                    if (is_array($format)) {
-                        $subDtoName = preg_replace('/Dto$/', '', $dtoName);
-                        $subDtoName = preg_replace('/DtoList$/', '', $subDtoName);
-                        $subDto = self::extractSwaggerDefinition(['definitions' => [
-                            $subDtoName => $format,
-                        ]]);
-                        if (array_key_exists($subDtoName, $subDto)) {
-                            $definitions = $subDto;
-                        } else {
-                            $definitions[$subDtoName] = $subDto;
-                        }
-                        $dto['properties'][$field] = [
-                            '$ref' => "#/definitions/" . $subDtoName,
-                        ];
-                    } else {
-                        list($type, $format) = self::translateSwaggerFormats($format);
-                        $dto['properties'][$field] = [
-                            "type" => $type,
-                        ];
-                        if (strlen($format)) {
-                            $dto['properties'][$field]['format'] = $format;
-                        }
-                    }
+        $definition = [
+            $name => [
+                "type" => "object",
+                "properties" => [],
+            ],
+        ];
+        foreach ($fields as $field => $format) {
+            if (is_array($format)) {
+                $subDtoName = preg_replace('/Dto$/', '', $field);
+                $subDtoName = preg_replace('/DtoList$/', '', $subDtoName);
+                $subDto = self::extractSwaggerDefinition($$subDtoName, ['definitions' => [
+                    $subDtoName => $format,
+                ]]);
+                if (array_key_exists($subDtoName, $subDto)) {
+                    $definitions = $subDto;
+                } else {
+                    $definitions[$subDtoName] = $subDto;
                 }
-                $definitions[$dtoName] = $dto;
+                $definition[$name]['properties'][$field] = [
+                    '$ref' => "#/definitions/" . $subDtoName,
+                ];
+            } else {
+                list($type, $format) = self::translateSwaggerFormats($format);
+                $dto['properties'][$field] = [
+                    "type" => $type,
+                ];
+                $definition[$name]['properties'][$field] = [
+                    "type" => $type,
+                ];
+                if (strlen($format)) {
+                    $definition[$name]['properties'][$field]['format'] = $format;
+                }
             }
         }
-        return $definitions;
+        return $definition;
+    }
+
+    /**
+     * @return array
+     */
+    private static function swaggerResponses() {
+        $codes = [200, 400, 404, 500];
+        $responses = [];
+        foreach($codes as $code) {
+            switch($code) {
+                default:
+                case 200:
+                    $message = _('Successful response');
+                    break;
+                case 400:
+                    $message = _('Client error in request');
+                    break;
+                case 404:
+                    $message = _('Service not found');
+                    break;
+                case 500:
+                    $message = _('Server error');
+                    break;
+            }
+            $responses[$code] = [
+                'description' => $message,
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'success' => [
+                            'type' => 'boolean'
+                        ],
+                        'data' => [
+                            'type' => 'boolean',
+                        ],
+                        'total' => [
+                            'type' => 'integer',
+                            'format' => 'int32',
+                        ],
+                        'pages' => [
+                            'type' => 'integer',
+                            'format' => 'int32',
+                        ]
+                    ]
+                ]
+            ];
+        }
+        return $responses;
     }
 
     /**
      * Method that export
-     * @param array $modules
+     * @param array $module
      *
      * @return array
      */
-    public static function swaggerFormatter(array $modules = [])
+    public static function swaggerFormatter(array $module)
     {
-        $endpoints = [];
-        $dtos = [];
         $formatted = [
             "swagger" => "2.0",
-            "host" => Router::getInstance()->getRoute('', true),
+            "host" => preg_replace('/^(http|https)\:\/\//i', '', Router::getInstance()->getRoute('', true)) . $module['name'] . '/api',
             "schemes" => ["http", "https"],
             "info" => [
-                "title" => Config::getParam('platform_name', 'PSFS'),
+                "title" => _('Documentación API módulo ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0'),
                 "contact" => [
                     "name" => Config::getParam("author", "Fran López"),
@@ -471,12 +535,61 @@ class DocumentorService extends Service
                 ]
             ]
         ];
+        $dtos = $paths = [];
+        $endpoints = DocumentorService::getInstance()->extractApiEndpoints($module);
         foreach ($endpoints as $model) {
             foreach ($model as $endpoint) {
-                $dtos += self::extractSwaggerDefinition($endpoint);
+                if(!preg_match('/^\/admin\//i', $endpoint['url']) && strlen($endpoint['url'])) {
+                    $url = preg_replace('/\/'.$module['name'].'\/api/i', '', $endpoint['url']);
+                    $description = $endpoint['description'];
+                    $method = strtolower($endpoint['method']);
+                    $paths[$url][$method] = [
+                        'summary' => $description,
+                        'produces' => ['application/json'],
+                        'consumes' => ['application/json'],
+                        'responses' => self::swaggerResponses(),
+                        'parameters' => [],
+                    ];
+                    if(array_key_exists('parameters', $endpoint)) {
+                        foreach($endpoint['parameters'] as $parameter => $type) {
+                            list($type, $format) = self::translateSwaggerFormats($type);
+                            $paths[$url][$method]['parameters'][] = [
+                                'in' => 'path',
+                                'required' => true,
+                                'name' => $parameter,
+                                'type' => $type,
+                                'format' => $format,
+                            ];
+                        }
+
+                    }
+                    foreach($endpoint['objects'] as $name => $object) {
+                        if(class_exists($name)) {
+                            $class = GeneratorHelper::extractClassFromNamespace($name);
+                            $classDefinition = [
+                                'type' => 'object',
+                                '$ref' => '#/definitions/' . $class,
+                            ];
+                            $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
+                            $dtos += self::extractSwaggerDefinition($class, $object);
+                            if(!isset($paths[$url][$method]['tags']) || !in_array($class, $paths[$url][$method]['tags'])) {
+                                $paths[$url][$method]['tags'][] = $class;
+                            }
+                            if(array_key_exists('payload', $endpoint)) {
+                                $paths[$url][$method]['parameters'][] = [
+                                    'in' => 'body',
+                                    'name' => $class,
+                                    'required' => true,
+                                    'schema' => $classDefinition
+                                ];
+                            }
+                        }
+                    }
+                }
             }
         }
         $formatted['definitions'] = $dtos;
+        $formatted['paths'] = $paths;
         return $formatted;
     }
 

@@ -30,8 +30,8 @@ class DocumentorController extends Controller {
         ini_set('max_execution_time', -1);
 
         $type = $this->getRequest()->get('type') ?: ApiController::PSFS_DOC;
+        $download = $this->getRequest()->get('download') ?: false;
 
-        $endpoints = [];
         $module = $this->srv->getModules($domain);
         if(empty($module)) {
             return Router::getInstance()->httpNotFound(null, true);
@@ -40,17 +40,25 @@ class DocumentorController extends Controller {
             case ApiController::SWAGGER_DOC:
                 $doc = DocumentorService::swaggerFormatter($module);
                 break;
+            case ApiController::POSTMAN_DOC:
+                $doc = ['Pending...'];
+                break;
             default:
             case ApiController::HTML_DOC:
             case ApiController::PSFS_DOC:
-                $endpoints = array_merge($endpoints, $this->srv->extractApiEndpoints($module));
-                $doc = $endpoints;
+                $doc = $this->srv->extractApiEndpoints($module);
                 break;
         }
 
         ini_restore('max_execution_time');
         ini_restore('memory_limit');
 
-        return ($type === ApiController::HTML_DOC) ? $this->render('documentation.html.twig', ["data" => json_encode($doc)]) : $this->json($doc, 200);
+        if($download && $type === ApiController::SWAGGER_DOC) {
+            return $this->download(\GuzzleHttp\json_encode($doc), 'application/json', 'swagger.json');
+        } elseif($type === ApiController::HTML_DOC) {
+            return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
+        } else {
+            return $this->json($doc, 200);
+        }
     }
 }

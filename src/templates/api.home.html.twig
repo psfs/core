@@ -16,14 +16,15 @@
             <md-list-item class="noright">
                 <p>{{ _domain }}</p>
                 <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=html" target="_blank">
+                    <md-tooltip md-direction="top">{{ "Ver documentación en html"|trans }}</md-tooltip>
                     <md-icon class="fa fa-html5"></md-icon>
                 </a>
-                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=psfs" target="_blank">
-                    <md-icon class="fa fa-cog"></md-icon>                </a>
                 <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=swagger" target="_blank">
+                    <md-tooltip md-direction="top">{{ "Ver documentación en formato Swagger"|trans }}</md-tooltip>
                     <md-icon class="fa fa-file-code-o"></md-icon>
                 </a>
                 <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" target="_blank">
+                    <md-tooltip md-direction="top">{{ "Ver documentación en formato Postman"|trans }}</md-tooltip>
                     <md-icon class="fa fa-mobile"></md-icon>
                 </a>
             </md-list-item>
