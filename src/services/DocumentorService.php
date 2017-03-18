@@ -524,7 +524,9 @@ class DocumentorService extends Service
     {
         $formatted = [
             "swagger" => "2.0",
-            "host" => Router::getInstance()->getRoute('', true) . $module['name'] . '/api',
+            "host" => preg_replace('/^(http|https)\:\/\/(.*)\/$/i', '$2', Router::getInstance()->getRoute('', true)),
+            "basePath" => '/' . $module['name'] . '/api',
+            "schemes" => ["http","https"],
             "info" => [
                 "title" => _('Documentación API módulo ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0'),
