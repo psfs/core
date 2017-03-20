@@ -10,7 +10,7 @@ use PSFS\controller\base\Admin;
  * Class AuthAdminController
  * @package PSFS\base\types
  */
-abstract class AuthAdminController extends Controller
+class AuthAdminController extends Controller
 {
     use SecureTrait;
 
