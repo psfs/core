@@ -5,13 +5,25 @@
      * @type {*[]}
      */
     var messageService = ['$rootScope', '$log', function($rootScope, $log) {
+        var config = {
+            debug: true
+        };
         return {
             'send': function(message, data) {
-                $log.debug('Event: ' + message);
-                if(!angular.isUndefined(data) && null !== data) {
-                    $log.debug(data);
+                if(config.debug) {
+                    $log.debug('Event: ' + message);
+                    if(!angular.isUndefined(data) && null !== data) {
+                        $log.debug(data);
+                    }
                 }
                 $rootScope.$broadcast(message, data);
+            },
+            $config: function($config) {
+                if(angular.isObject($config)) {
+                    angular.forEach($config, function(value, key) {
+                        config[key] = value;
+                    });
+                }
             }
         };
     }];
@@ -118,6 +130,9 @@
                     'X-API-SEC-TOKEN': srvConfig.psfsToken
                 }
             };
+            $msgSrv.$config({
+                debug: srvConfig.debug
+            });
             if(srvConfig.userToken) {
                 config.headers['Authorization'] = 'Bearer ' + srvConfig.userToken;
             }
