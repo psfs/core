@@ -1,8 +1,8 @@
 (function () {
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var formCtrl = ['$scope', '$http', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout', '$mdMenu',
-        function ($scope, $http, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout, $mdMenu) {
+    var formCtrl = ['$scope', '$httpSrv', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout',
+        function ($scope, $httpSrv, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout) {
             $scope.method = 'POST';
             $scope.itemLoading = false;
             $scope.combos = {};
@@ -12,7 +12,7 @@
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
-                $http.post(url)
+                $httpSrv.$post(url)
                     .then(callback, function (err, status) {
                         $log.error(err);
                         $scope.loading = false;
@@ -56,7 +56,7 @@
 
             function loadSelect(field) {
                 if (field.url) {
-                    $http.get(field.url + '?__limit=-1')
+                    $httpSrv.$get(field.url + '?__limit=-1')
                         .then(function (response) {
                             field.data = response.data.data || [];
                         });
@@ -104,11 +104,11 @@
                     $scope.itemLoading = true;
                     var model = $scope.model;
                     try {
-                        $http.put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
+                        $httpSrv.$put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
                             .then(clearForm, showError);
                     } catch (err) {
                         $log.debug('Create new entity');
-                        $http.post($scope.url, model)
+                        $httpSrv.$post($scope.url, model)
                             .then(clearForm, showError);
                     } finally {
                         $timeout(function () {
@@ -134,7 +134,7 @@
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
-                    $http.get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit='+$scope.limit+'&__combo=' + encodeURIComponent("%" + search + "%") + '&__fields=__name__,' + field.relatedField)
+                    $httpSrv.$get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit='+$scope.limit+'&__combo=' + encodeURIComponent("%" + search + "%") + '&__fields=__name__,' + field.relatedField)
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {
@@ -167,7 +167,7 @@
                             } catch(err) {}
                         }
                     } else {
-                        $http.get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1' + '&__fields=__name__,' + field.relatedField)
+                        $httpSrv.$get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1' + '&__fields=__name__,' + field.relatedField)
                             .then(function (response) {
                                 $scope.combos[field.name].item = response.data.data[0];
                             });
@@ -262,7 +262,7 @@
                 $scope.extraActionExecution = true;
                 switch(method) {
                     case 'GET':
-                        $http.get(url).then(function(response) {
+                        $httpSrv.$get(url).then(function(response) {
                             if(response.data.success) {
                                 extraActionOkFeedback(response.data, label);
                             } else {
@@ -273,7 +273,7 @@
                         });
                         break;
                     case 'POST':
-                        $http.post(url, {}).then(function(response) {
+                        $httpSrv.$post(url, {}).then(function(response) {
                             if(response.data.success) {
                                 extraActionOkFeedback(response.data, label);
                             } else {
@@ -292,7 +292,7 @@
                             .ok($scope.i18N['delete'])
                             .cancel($scope.i18N['cancel']);
                         $mdDialog.show(confirm).then(function() {
-                            $http.delete(url)
+                            $httpSrv.$delete(url)
                                 .then(function(response) {
                                     if(response.data.success) {
                                         extraActionOkFeedback(response.data, label);

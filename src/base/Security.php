@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base;
 
+use PSFS\base\types\traits\SecureTrait;
 use PSFS\base\types\traits\SingletonTrait;
 
 /**
@@ -18,6 +19,7 @@ class Security
     // sha1('FLASHES')
     const FLASH_MESSAGE_TOKEN = '4680c68435db1bfbf17c3fcc4f7b39d2c6122504';
 
+    use SecureTrait;
     use SingletonTrait;
     /**
      * @var array $user

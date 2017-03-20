@@ -8,9 +8,9 @@ $serviceContainer->checkVersion('2.0.0-dev');
 $serviceContainer->setAdapterClass('{{ module }}', 'mysql');
 $manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
-    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db_host') . ';port=' . \PSFS\base\config\Config::getParam('db_port') . ';dbname=' . \PSFS\base\config\Config::getParam('db_name') . '',
-    'user' => \PSFS\base\config\Config::getParam('db_user'),
-    'password' => \PSFS\base\config\Config::getParam('db_password'),
+    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host') . ';port=' . \PSFS\base\config\Config::getParam('db.port') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name') . '',
+    'user' => \PSFS\base\config\Config::getParam('db.user'),
+    'password' => \PSFS\base\config\Config::getParam('db.password'),
     'classname' => 'Propel\\Runtime\\Connection\\PropelPDO',
     'model_paths' => array(
         0 => 'src',
@@ -23,9 +23,9 @@ $serviceContainer->setConnectionManager('{{ module }}', $manager);
 $serviceContainer->setAdapterClass('debug{{ module }}', 'mysql');
 $manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
-    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db_host') . ';port=' . \PSFS\base\config\Config::getParam('db_port') . ';dbname=' . \PSFS\base\config\Config::getParam('db_name') . '',
-    'user' => \PSFS\base\config\Config::getParam('db_user'),
-    'password' => \PSFS\base\config\Config::getParam('db_password'),
+    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host') . ';port=' . \PSFS\base\config\Config::getParam('db.port') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name') . '',
+    'user' => \PSFS\base\config\Config::getParam('db.user'),
+    'password' => \PSFS\base\config\Config::getParam('db.password'),
     'classname' => 'Propel\\Runtime\\Connection\\DebugPDO',
     'model_paths' => array(
         0 => 'src',

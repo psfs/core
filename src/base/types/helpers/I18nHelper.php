@@ -35,7 +35,7 @@ class I18nHelper
      * Method to set the locale
      */
     public static function setLocale() {
-        $locale = Config::getParam("default_language", 'es_ES');
+        $locale = Config::getParam("default.language", 'es_ES');
         Logger::log('Set locale to project [' . $locale . ']');
         // Load translations
         putenv("LC_ALL=" . $locale);

@@ -62,6 +62,10 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', 'Error trying to save admins');
         $this->assertNull($security->getUser());
         $this->assertNull($security->getAdmin());
+        $this->assertTrue($security->canDo('something'));
+        $this->assertFalse($security->isLogged());
+        $this->assertFalse($security->isAdmin());
+
         $security->updateUser($user);
         $this->assertNotNull($security->getUser(), 'An error occurred when update user in session');
         $this->assertFalse($security->checkAdmin(uniqid('test'),uniqid('error'), true), 'Error checking admin user');
@@ -75,6 +79,9 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($admin['alias'], $user['username'], 'Wrong data gathered from admins.json');
         $this->assertEquals($admin['profile'], $user['profile'], 'Wrong profile gathered from admins.json');
         $this->assertTrue($security->isSuperAdmin(), 'Wrong checking for super admin profile');
+
+        $this->assertTrue($security->isLogged());
+        $this->assertTrue($security->isAdmin());
 
         $security->updateSession(true);
         $this->assertNotEmpty($security->getSessionKey(Security::ADMIN_ID_TOKEN), 'Error saving sessions');

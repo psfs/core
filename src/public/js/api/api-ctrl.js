@@ -1,8 +1,8 @@
 (function() {
     app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
 
-    var apiCtrl = ['$scope', '$mdDialog', '$apiSrv', '$http', '$timeout', '$log', '$msgSrv',
-        function ($scope, $mdDialog, $apiSrv, $http, $timeout, $log, $msgSrv) {
+    var apiCtrl = ['$scope', '$mdDialog', '$apiSrv', '$httpSrv', '$timeout', '$log', '$msgSrv',
+        function ($scope, $mdDialog, $apiSrv, $httpSrv, $timeout, $log, $msgSrv) {
             $scope.model = {};
             $scope.filters = {};
             $scope.list = [];
@@ -60,9 +60,8 @@
                 }
                 $scope.loading = true;
                 try {
-                    $http.get($scope.url, {params: queryParams})
+                    $httpSrv.$get($scope.url, {params: queryParams})
                         .then(function(result) {
-                            $log.info(result);
                             $scope.list = result.data.data;
                             $timeout(function(){
                                 $scope.loading = false;
@@ -99,7 +98,7 @@
                         .ok($scope.i18N['delete'])
                         .cancel($scope.i18N['cancel']);
                     $mdDialog.show(confirm).then(function() {
-                        $http.delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
+                        $httpSrv.$delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
                             .then(function() {
                                 $timeout(function() {
                                     if(checkItem(item)) {

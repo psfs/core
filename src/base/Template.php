@@ -257,7 +257,7 @@ class Template
         $this->tpl = new \Twig_Environment($loader, array(
             'cache' => CACHE_DIR . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
-            'auto_reload' => Config::getParam('twig.auto_reload', TRUE),
+            'auto_reload' => Config::getParam('twig.autoreload', TRUE),
         ));
         $this->loadDomains();
     }

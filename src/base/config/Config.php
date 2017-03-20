@@ -23,24 +23,24 @@ class Config
 
     protected $config = array();
     static public $defaults = array(
-        "db_host" => "localhost",
-        "db_port" => "3306",
-        "default_language" => "es_ES",
+        "db.host" => "localhost",
+        "db.port" => "3306",
+        "default.language" => "es_ES",
         "debug" => true,
         "front.version" => "v1",
         "version" => "v1",
     );
-    static public $required = array('db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'home_action', 'default_language', 'debug');
+    static public $required = array('db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug');
     static public $encrypted = array('db_password');
     static public $optional = [
-        'platform_name', // Platform name
+        'platform.name', // Platform name
         'restricted', // Restrict the web access
-        'admin_login', // Enable web login for admin
+        'admin.login', // Enable web login for admin
         'logger.phpFire', // Enable phpFire to trace the logs in the browser
         'logger.memory', // Enable log memory usage un traces
         'poweredBy', // Show PoweredBy header customized
         'author', // Author for auto generated files
-        'author_email', // Author email for auto generated files
+        'author.email', // Author email for auto generated files
         'version', // Platform version(for cache purposes)
         'front.version', // Static resources version
         'cors.enabled', // Enable CORS (regex with the domains, * for all)
@@ -50,21 +50,14 @@ class Config
         'log.level', // Max log level(default INFO)
         'admin_action', // Default admin url when access to /admin
         'cache.var', // Static cache var
-        'twig.auto_reload', // Enable or disable auto reload templates for twig
+        'twig.autoreload', // Enable or disable auto reload templates for twig
         'modules.extend', // Variable for extending the current functionality
         'psfs.auth', // Variable for extending PSFS with the AUTH module
         'errors.strict', // Variable to trace all strict errors
         'psfs.memcache', // Add Memcache to prod cache process, ONLY for PROD environments
+        'angular.protection', // Add an angular suggested prefix in order to avoid JSONP injections
     ];
     protected $debug = false;
-
-    /**
-     * Config Constructor
-     */
-    public function __construct()
-    {
-        $this->init();
-    }
 
     /**
      * Method that load the configuration data into the system

@@ -21,7 +21,7 @@
         {% block styles %}{% endblock styles %}
 {% block head %}
     {% block seo %}
-        <title>{% block doc_title %}{{ get_config('platform_name') }}{% endblock doc_title %} {{ session('test') }}</title>
+        <title>{% block doc_title %}{{ get_config('platform.name') }}{% endblock doc_title %}</title>
         <meta name="description" content="Php Simple Fast & Secure">
     {% endblock seo %}
 {% endblock head %}

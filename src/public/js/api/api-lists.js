@@ -18,7 +18,7 @@
         function loadItem(item)
         {
             $scope.itemLoading = true;
-            $http.get($scope.url + "/" + item[$scope.modelId])
+            $httpSrv.$get($scope.url + "/" + item[$scope.modelId])
                 .then(function(response) {
                     $scope.model = response.data.data;
                     $msgSrv.send('populate_combos');

@@ -39,11 +39,13 @@ class ConfigForm extends Form
         if (!empty($optional) && !empty($data)) {
             foreach ($optional as $field) {
                 if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
+                    $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($field, array(
                         "label" => _($field),
                         "class" => "col-md-6",
                         "required" => false,
                         "value" => $data[$field],
+                        "type" => $type,
                     ));
                 }
             }
@@ -57,11 +59,13 @@ class ConfigForm extends Form
         if (!empty($extra)) {
             foreach ($extra as $key => $field) {
                 if (strlen($data[$field]) > 0) {
+                    $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($extraKeys[$key], array(
                         "label" => $field,
                         "class" => "col-md-6",
                         "required" => false,
                         "value" => $data[$field],
+                        "type" => $type,
                     ));
                 }
             }
