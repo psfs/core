@@ -31,7 +31,7 @@ class Config
         "version" => "v1",
     );
     static public $required = array('db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug');
-    static public $encrypted = array('db_password');
+    static public $encrypted = array('db.password');
     static public $optional = [
         'platform.name', // Platform name
         'restricted', // Restrict the web access
