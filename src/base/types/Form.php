@@ -587,7 +587,7 @@ abstract class Form extends Singleton implements FormType
     protected function setModelLocale()
     {
         if (method_exists($this->model, "setLocale")) {
-            $this->model->setLocale(Config::getInstance()->get('default_language'));
+            $this->model->setLocale(Config::getParam('default.language', 'es_ES'));
         }
     }
 

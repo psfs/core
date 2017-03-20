@@ -20,7 +20,7 @@ class I18nController extends Admin
      */
     public function defaultTranslations()
     {
-        return $this->getTranslations(Config::getParam('default_language', 'es_ES'));
+        return $this->getTranslations(Config::getParam('default.language', 'es_ES'));
     }
 
     /**
@@ -35,7 +35,7 @@ class I18nController extends Admin
     public function getTranslations($locale)
     {
         //Default locale
-        if (null === $locale) $locale = $this->config->get("default_language");
+        if (null === $locale) $locale = $this->config->get("default.language", 'es_ES');
 
         //Generating the templates translations
         $translations = $this->tpl->regenerateTemplates();

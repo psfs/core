@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% set lang_html = get_config('default_language')|default('es_ES')|split("_") %}
+{% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
 <html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
     <head>
         <meta charset="utf-8">

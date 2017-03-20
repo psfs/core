@@ -264,7 +264,7 @@ class RouterHelper
     {
         $default = null;
         if (FALSE !== preg_match('/\/$/', $route)) {
-            $default = Config::getInstance()->get('home_action');
+            $default = Config::getInstance()->get('home.action');
         } elseif (false !== preg_match('/admin/', $route)) {
             $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
 
