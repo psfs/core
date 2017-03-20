@@ -1,5 +1,5 @@
 (function(){
-    app = app || angular.module(module || 'psfs', ['ngMaterial', 'ngSanitize', 'bw.paging']);
+    app = app || angular.module(module || 'psfs', []);
     /**
      * Message Service
      * @type {*[]}
