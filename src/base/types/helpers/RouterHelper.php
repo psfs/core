@@ -241,6 +241,7 @@ class RouterHelper
             $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
             $label = RouterHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
             $route = $httpMethod . "#|#" . $regex;
+            $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
                 "method" => $method->getName(),
                 "params" => $params,
