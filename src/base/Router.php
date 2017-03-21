@@ -214,13 +214,24 @@ class Router
     }
 
     /**
+     * @return string|null
+     */
+    private function getExternalModules() {
+        $externalModules = Config::getParam('modules.extend', '');
+        if(Config::getParam('psfs.auth', false)) {
+            $externalModules .= ',psfs/auth';
+        }
+        return $externalModules;
+    }
+
+    /**
      * Method that check if the proyect has sub project to include
      * @param boolean $hydrateRoute
      */
     private function checkExternalModules($hydrateRoute = true)
     {
-        $externalModules = Config::getParam('modules.extend');
-        if (null !== $externalModules) {
+        $externalModules = $this->getExternalModules();
+        if (strlen($externalModules)) {
             $externalModules = explode(',', $externalModules);
             foreach ($externalModules as &$module) {
                 $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);

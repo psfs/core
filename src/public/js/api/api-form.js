@@ -56,7 +56,10 @@
 
             function loadSelect(field) {
                 if (field.url) {
-                    $httpSrv.$get(field.url + '?__limit=-1')
+                    var query = {
+                        '__limit': -1
+                    };
+                    $httpSrv.$get(field.url, query)
                         .then(function (response) {
                             field.data = response.data.data || [];
                         });
@@ -134,7 +137,12 @@
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
-                    $httpSrv.$get(field.url.replace(/\/\{pk\}$/ig, '') + '?__limit='+$scope.limit+'&__combo=' + encodeURIComponent("%" + search + "%") + '&__fields=__name__,' + field.relatedField)
+                    var query = {
+                        '__limit': $scope.limit,
+                        '__combo': "%" + search + "%",
+                        '__fields': '__name__,' +  field.relatedField
+                    };
+                    $httpSrv.$get(field.url.replace(/\/\{pk\}$/ig, ''), query)
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {

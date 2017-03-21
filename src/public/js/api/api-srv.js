@@ -137,7 +137,11 @@
                 config.headers['Authorization'] = 'Bearer ' + srvConfig.userToken;
             }
             if(!angular.isUndefined($data) && angular.isObject($data)) {
-                config.data = $data;
+                if($method == 'GET') {
+                    config.params = $data;
+                } else {
+                    config.data = $data;
+                }
             }
             if(srvConfig.debug) {
                 $log.debug($url + ' request started');
@@ -154,8 +158,8 @@
             });
         }
         return {
-            $get: function(url) {
-                return __call('GET', url, null);
+            $get: function(url, query) {
+                return __call('GET', url, query);
             },
             $post: function(url, data) {
                 return __call('POST', url, data);

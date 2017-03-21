@@ -60,7 +60,7 @@
                 }
                 $scope.loading = true;
                 try {
-                    $httpSrv.$get($scope.url, {params: queryParams})
+                    $httpSrv.$get($scope.url, queryParams)
                         .then(function(result) {
                             $scope.list = result.data.data;
                             $timeout(function(){
