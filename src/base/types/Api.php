@@ -654,7 +654,7 @@ abstract class Api extends Singleton
     public function getForm()
     {
         $map = $this->getModelTableMap();
-        $form = ApiHelper::generateFormFields($map);
+        $form = ApiHelper::generateFormFields($map, $this->getDomain());
         $form->actions = ApiFormHelper::checkApiActions(get_class($this), $this->getDomain(), $this->getApi());
 
         return $this->json(new JsonResponse($form->toArray(), TRUE), 200);

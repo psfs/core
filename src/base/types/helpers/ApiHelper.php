@@ -19,9 +19,10 @@ class ApiHelper
 {
     /**
      * @param string $map
+     * @param string $domain
      * @return Form
      */
-    public static function generateFormFields($map)
+    public static function generateFormFields($map, $domain)
     {
         $form = new Form();
         /** @var TableMap $fields */
@@ -32,7 +33,7 @@ class ApiHelper
             $mappedColumn = $fields->getColumnByPhpName($field);
             $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
             if ($mappedColumn->isForeignKey()) {
-                $fDto = self::extractForeignModelsField($mappedColumn, $field);
+                $fDto = self::extractForeignModelsField($mappedColumn, $field, $domain);
             } elseif ($mappedColumn->isPrimaryKey()) {
                 $fDto = self::generatePrimaryKeyField($field, $required);
             } elseif ($mappedColumn->isNumeric()) {
@@ -70,10 +71,11 @@ class ApiHelper
     /**
      * Extract the foreign relation field
      * @param ColumnMap $mappedColumn
-     * @param $field
+     * @param string $field
+     * @param string $domain
      * @return Field
      */
-    public static function extractForeignModelsField(ColumnMap $mappedColumn, $field)
+    public static function extractForeignModelsField(ColumnMap $mappedColumn, $field, $domain)
     {
         $fDto = new Field($field, _($field));
         $fDto->type = Field::COMBO_TYPE;
@@ -83,7 +85,7 @@ class ApiHelper
         $fDto->entity = $relatedModel;
         $relatedField = $foreignTable->getColumn($mappedColumn->getRelatedColumnName());
         $fDto->relatedField = $relatedField->getPhpName();
-        $fDto->url = Router::getInstance()->getRoute('api-' . $relatedModel);
+        $fDto->url = Router::getInstance()->getRoute(strtolower($domain) . '-api-' . $relatedModel);
         return $fDto;
     }
 

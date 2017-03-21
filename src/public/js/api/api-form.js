@@ -175,7 +175,12 @@
                             } catch(err) {}
                         }
                     } else {
-                        $httpSrv.$get(field.url + '?' + field.relatedField + '=' + $scope.model[field.name] + '&__limit=1' + '&__fields=__name__,' + field.relatedField)
+                        var query = {
+                            '__limit': 1,
+                            '__fields': '__name__,' + field.relatedField
+                        };
+                        query[field.relatedField] = $scope.model[field.name];
+                        $httpSrv.$get(field.url, query)
                             .then(function (response) {
                                 $scope.combos[field.name].item = response.data.data[0];
                             });
