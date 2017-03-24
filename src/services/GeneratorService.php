@@ -360,11 +360,6 @@ class GeneratorService extends Service
         $this->log->infoLog("Generamos la configuración de Propel");
         $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
             "module" => $module,
-            "host" => $this->config->get("db_host"),
-            "port" => $this->config->get("db_port"),
-            "user" => $this->config->get("db_user"),
-            "pass" => $this->config->get("db_password"),
-            "db" => $this->config->get("db_name"),
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
         ));
         return $this->writeTemplateToFile($build_properties,

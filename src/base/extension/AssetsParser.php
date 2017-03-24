@@ -424,7 +424,7 @@ class AssetsParser
         if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
             foreach ($urls as $source) {
                 $orig = self::calculateResourcePathname($filename_path, $source);
-                $orig_part = explode("Public", $orig);
+                $orig_part = preg_split("/Public/i", $orig);
                 $dest = WEB_DIR . $orig_part[1];
                 GeneratorHelper::createDir(dirname($dest));
                 if (@copy($orig, $dest) === false) {

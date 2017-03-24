@@ -9,7 +9,6 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\Services\GeneratorService;
 use Symfony\Component\Translation\Tests\StringClass;
 
 class TemplateFunctions
@@ -135,7 +134,7 @@ class TemplateFunctions
         $debug = Config::getInstance()->getDebugMode();
         $domains = Template::getDomains(true);
         $filename_path = self::extractPathname($path, $domains);
-        GeneratorService::copyResources($dest, $force, $filename_path, $debug);
+        \PSFS\Services\GeneratorService::copyResources($dest, $force, $filename_path, $debug);
         return '';
     }
 
