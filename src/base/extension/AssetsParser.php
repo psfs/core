@@ -402,6 +402,13 @@ class AssetsParser
             if ($debug) {
                 $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
             }
+        } elseif (preg_match("/(text|html)/i", $mime)) {
+            $ext = explode(".", $string);
+            $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
+            $html_base = "templates";
+            if ($debug) {
+                $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+            }
         } elseif (!$return && !is_null($name)) {
             $html_base = '';
             $file = $name;
