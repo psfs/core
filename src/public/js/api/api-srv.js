@@ -211,6 +211,9 @@
             var config = __prepare($method, $url, $data);
             config.headers['Content-Type'] = 'blob';
             config.headers['Accept'] = 'blob';
+            config.responseType = "blob";
+            config.transformRequest = angular.identity;
+            config.transformResponse = angular.identity;
 
             $msgSrv.$config({
                 debug: srvConfig.debug
@@ -226,21 +229,23 @@
                 .then(function(response) {
                     var headers = response.headers(),
                         fileName = headers['fileName'] || 'noname';
+                    if('noname' === fileName && 'content-disposition' in headers) {
+                        fileName = headers['content-disposition'].split(/filename\=/ig).slice(-1).pop().replace(/(\"|\')/ig, '');
+                    }
                     if('noname' === fileName) {
                         var cType = headers['content-type'].split('/').slice(-1).pop();
                         fileName += '.' + cType;
                     }
-                    var data = response.data;
-                    if(headers['content-type'].match(/json/i)) {
-                        data = JSON.stringify(data);
-                    }
-                    var blob = new Blob([data]);
-                    blob.type = headers['content-type'];
-                    var link=document.createElement('a');
-                    link.href=window.URL.createObjectURL(blob);
-                    link.download=fileName;
-                    link.click();
-                }), 'download', $url);
+                    var anchor = angular.element('<a/>');
+                    var blob = new Blob([response.data], { type: headers['content-type'] });                    anchor.attr({
+                        href: window.URL.createObjectURL(blob),
+                        target: '_blank',
+                        download: fileName
+                    })[0].click();
+                }), 'download', $url)
+                .catch(function(error) {
+                    $log.error(error);
+                });
         }
 
         return {

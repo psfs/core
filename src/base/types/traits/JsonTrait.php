@@ -18,7 +18,7 @@ Trait JsonTrait {
      */
     public function json($response, $statusCode = 200)
     {
-        $data = json_encode($response, JSON_UNESCAPED_UNICODE);
+        $data = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
         if(Config::getParam('angular.protection', false)) {
             $data = ")]}',\n" . $data;
         }
