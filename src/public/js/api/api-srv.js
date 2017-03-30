@@ -112,13 +112,14 @@
         };
 
         /**
+         *
          * @param $method string
          * @param $url string
          * @param $data object
-         * @returns promise
+         * @returns object
          * @private
          */
-        function __call($method, $url, $data) {
+        function __prepare($method, $url, $data) {
             var config = {
                 method: $method,
                 url: $url,
@@ -130,25 +131,28 @@
                     'X-API-SEC-TOKEN': srvConfig.psfsToken
                 }
             };
-            $msgSrv.$config({
-                debug: srvConfig.debug
-            });
             if(srvConfig.userToken) {
                 config.headers['Authorization'] = 'Bearer ' + srvConfig.userToken;
             }
             if(!angular.isUndefined($data) && angular.isObject($data)) {
-                if($method == 'GET') {
+                if($method === 'GET') {
                     config.params = $data;
                 } else {
                     config.data = $data;
                 }
             }
-            if(srvConfig.debug) {
-                $log.debug($url + ' request started');
-            }
-            $msgSrv.send('request.started');
-            $msgSrv.send('request.' + $method.toLowerCase() + '.started');
-            return $http(config).finally(function() {
+            return config;
+        }
+
+        /**
+         * @param $promise $http
+         * @param $method string
+         * @param $url string
+         * @returns {*}
+         * @private
+         */
+        function __return($promise, $method, $url) {
+            return $promise.finally(function() {
                 if(srvConfig.debug) {
                     $log.debug($url + ' request finished');
                 }
@@ -157,6 +161,88 @@
                 return true;
             });
         }
+
+        /**
+         * @param $method string
+         * @param $url string
+         * @param $data object
+         * @returns promise
+         * @private
+         */
+        function __call($method, $url, $data) {
+            var config = __prepare($method, $url, $data);
+
+            $msgSrv.$config({
+                debug: srvConfig.debug
+            });
+
+            if(srvConfig.debug) {
+                $log.debug($url + ' request started');
+            }
+            $msgSrv.send('request.started');
+            $msgSrv.send('request.' + $method.toLowerCase() + '.started');
+            return __return($http(config), $method, $url);
+        }
+
+        function __upload($method, $url, $data) {
+            var config = __prepare($method, $url, $data);
+            config.headers['Content-Type'] = undefined;
+
+            $msgSrv.$config({
+                debug: srvConfig.debug
+            });
+
+            if(srvConfig.debug) {
+                $log.debug($url + ' request started');
+            }
+            $msgSrv.send('request.started');
+            $msgSrv.send('request.upload.started');
+            return __return($http(config), 'upload', $url);
+        }
+
+        /**
+         * @param $method
+         * @param $url
+         * @param $data
+         * @returns {*}
+         * @private
+         */
+        function __download($method, $url, $data) {
+            var config = __prepare($method, $url, $data);
+            config.headers['Content-Type'] = 'blob';
+            config.headers['Accept'] = 'blob';
+
+            $msgSrv.$config({
+                debug: srvConfig.debug
+            });
+
+            if(srvConfig.debug) {
+                $log.debug($url + ' request started');
+            }
+            $msgSrv.send('request.started');
+            $msgSrv.send('request.download.started');
+
+            return __return($http(config)
+                .then(function(response) {
+                    var headers = response.headers(),
+                        fileName = headers['fileName'] || 'noname';
+                    if('noname' === fileName) {
+                        var cType = headers['content-type'].split('/').slice(-1).pop();
+                        fileName += '.' + cType;
+                    }
+                    var data = response.data;
+                    if(headers['content-type'].match(/json/i)) {
+                        data = JSON.stringify(data);
+                    }
+                    var blob = new Blob([data]);
+                    blob.type = headers['content-type'];
+                    var link=document.createElement('a');
+                    link.href=window.URL.createObjectURL(blob);
+                    link.download=fileName;
+                    link.click();
+                }), 'download', $url);
+        }
+
         return {
             $get: function(url, query) {
                 return __call('GET', url, query);
@@ -169,6 +255,20 @@
             },
             $delete: function(url) {
                 return __call('DELETE', url, null);
+            },
+            $download: function(method, url, queryData) {
+                method = method || 'GET';
+                var promise;
+                switch(method.toUpperCase()) {
+                    default:
+                    case 'GET':
+                        promise = __download('GET', url, queryData);
+                        break;
+                    case 'POST':
+                        promise = __download('POST', url, queryData);
+                        break;
+                }
+                return promise;
             },
             $config: function($config) {
                 if(angular.isObject($config)) {
