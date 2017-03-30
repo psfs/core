@@ -184,9 +184,10 @@
             return __return($http(config), $method, $url);
         }
 
-        function __upload($method, $url, $data) {
-            var config = __prepare($method, $url, $data);
+        function __upload($url, $data) {
+            var config = __prepare('POST', $url, $data);
             config.headers['Content-Type'] = undefined;
+            config.transformRequest = angular.identity;
 
             $msgSrv.$config({
                 debug: srvConfig.debug
@@ -260,6 +261,9 @@
             },
             $delete: function(url) {
                 return __call('DELETE', url, null);
+            },
+            $upload: function(url, data) {
+                return __upload(url, data);
             },
             $download: function(method, url, queryData) {
                 method = method || 'GET';
