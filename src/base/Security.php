@@ -279,10 +279,9 @@ class Security
     public function isSuperAdmin()
     {
         $users = $this->getAdmins();
-        $logged = $this->getAdminFromCookie();
-        if ($users[$logged[0]]) {
-            $security = $users[$logged[0]]['profile'];
-
+        $logged = $this->getAdmin();
+        if ($users[$logged['alias']]) {
+            $security = $users[$logged['alias']]['profile'];
             return self::ADMIN_ID_TOKEN === $security;
         }
 
