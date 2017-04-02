@@ -265,6 +265,14 @@ class Service extends Singleton
         curl_setopt_array($this->con, $this->options);
     }
 
+    protected function applyHeaders() {
+        $headers = [];
+        foreach($this->headers as $key => $value) {
+            $headers[] = $key . ': ' . $value;
+        }
+        curl_setopt($this->con, CURLOPT_HTTPHEADER, $headers);
+    }
+
     protected function setDefaults()
     {
         switch (strtoupper($this->type)) {
@@ -297,6 +305,7 @@ class Service extends Singleton
     {
         $this->setDefaults();
         $this->applyOptions();
+        $this->applyHeaders();
         $result = curl_exec($this->con);
         $this->result = json_decode($result, true);
         $this->info = curl_getinfo($this->con);
