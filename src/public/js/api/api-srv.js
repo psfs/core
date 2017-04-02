@@ -141,6 +141,9 @@
                     config.data = $data;
                 }
             }
+            if('headers' in srvConfig) {
+                angular.merge(config['headers'], srvConfig['headers']);
+            }
             return config;
         }
 
@@ -282,7 +285,11 @@
             $config: function($config) {
                 if(angular.isObject($config)) {
                     angular.forEach($config, function(value, key) {
-                        srvConfig[key] = value;
+                        if(key in srvConfig && (angular.isArray(srvConfig[key]) || angular.isObject(srvConfig[key]))) {
+                            angular.merge(srvConfig[key], value);
+                        } else {
+                            srvConfig[key] = value;
+                        }
                     });
                 }
             }

@@ -108,6 +108,8 @@ class Template
         $vars["__admin__"] = Security::getInstance()->getAdmin();
         $vars["__profiles__"] = Security::getCleanProfiles();
         $vars["__flash__"] = Security::getInstance()->getFlashes();
+        $vars["__get__"] = Request::getInstance()->getQueryParams();
+        $vars["__post__"] = Request::getInstance()->getData();
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
