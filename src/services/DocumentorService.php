@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\services;
 
+use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
@@ -302,13 +303,14 @@ class DocumentorService extends Service
             // Checks if reflector is a subclass of propel ActiveRecords
             if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                 $tableMap = $namespace::TABLE_MAP;
-                $fieldNames = $tableMap::getFieldNames(TableMap::TYPE_FIELDNAME);
-                if (count($fieldNames)) {
-                    foreach ($fieldNames as $field) {
-                        $variable = $reflector->getProperty(strtolower($field));
-                        $varDoc = $variable->getDocComment();
-                        $payload[$tableMap::translateFieldName($field, TableMap::TYPE_FIELDNAME, TableMap::TYPE_PHPNAME)] = $this->extractVarType($varDoc);
-                    }
+                $tableMap = $tableMap::getTableMap();
+                /** @var ColumnMap $field */
+                foreach ($tableMap->getColumns() as $field) {
+                    $info = [
+                        "type" => $field->getType(),
+                        "required" => $field->isNotNull(),
+                    ];
+                    $payload[$field->getPhpName()] = $info;
                 }
             } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
                 $payload = $this->extractDtoProperties($namespace);
@@ -436,32 +438,18 @@ class DocumentorService extends Service
                 "properties" => [],
             ],
         ];
-        foreach ($fields as $field => $format) {
-            if (is_array($format)) {
-                $subDtoName = preg_replace('/Dto$/', '', $field);
-                $subDtoName = preg_replace('/DtoList$/', '', $subDtoName);
-                $subDto = self::extractSwaggerDefinition($$subDtoName, ['definitions' => [
-                    $subDtoName => $format,
-                ]]);
-                if (array_key_exists($subDtoName, $subDto)) {
-                    $definitions = $subDto;
-                } else {
-                    $definitions[$subDtoName] = $subDto;
-                }
-                $definition[$name]['properties'][$field] = [
-                    '$ref' => "#/definitions/" . $subDtoName,
-                ];
-            } else {
-                list($type, $format) = self::translateSwaggerFormats($format);
-                $dto['properties'][$field] = [
-                    "type" => $type,
-                ];
-                $definition[$name]['properties'][$field] = [
-                    "type" => $type,
-                ];
-                if (strlen($format)) {
-                    $definition[$name]['properties'][$field]['format'] = $format;
-                }
+        foreach ($fields as $field => $info) {
+            list($type, $format) = self::translateSwaggerFormats($info['type']);
+            $dto['properties'][$field] = [
+                "type" => $type,
+                "required" => $info['required'],
+            ];
+            $definition[$name]['properties'][$field] = [
+                "type" => $type,
+                "required" => $info['required'],
+            ];
+            if (strlen($format)) {
+                $definition[$name]['properties'][$field]['format'] = $format;
             }
         }
         return $definition;

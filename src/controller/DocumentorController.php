@@ -61,4 +61,16 @@ class DocumentorController extends Controller {
             return $this->json($doc, 200);
         }
     }
+
+    /**
+     * @GET
+     * @route /admin/{domain}/swagger-ui
+     * @param string $domain
+     * @return string HTML
+     */
+    public function swaggerUi($domain) {
+        return $this->render('swagger.html.twig', [
+            'domain' => $domain,
+        ]);
+    }
 }
