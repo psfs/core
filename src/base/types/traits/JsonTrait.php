@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\types\traits;
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\I18nHelper;
 
 /**
  * Class JsonTrait
@@ -18,6 +19,7 @@ Trait JsonTrait {
      */
     public function json($response, $statusCode = 200)
     {
+        $response = I18nHelper::utf8Encode($response);
         $data = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
         if(Config::getParam('angular.protection', false)) {
             $data = ")]}',\n" . $data;

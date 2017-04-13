@@ -241,7 +241,6 @@ abstract class Api extends Singleton
                 $this->addClassListName($tableMap);
             }
         }
-
     }
 
     /**

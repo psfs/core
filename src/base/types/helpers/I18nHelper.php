@@ -48,4 +48,25 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
     }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public static function utf8Encode($data) {
+        if(is_array($data)) {
+            foreach($data as $key => &$field) {
+                $field = self::utf8Encode($field);
+            }
+        } elseif(is_object($data)) {
+            $properties = get_class_vars($data);
+            foreach($properties as $property => $value) {
+                $data->$property = self::utf8Encode($data->$property);
+            }
+
+        } elseif(is_string($data)) {
+            $data = utf8_encode($data);
+        }
+        return $data;
+    }
 }
