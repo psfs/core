@@ -57,6 +57,7 @@ class Config
         'psfs.memcache', // Add Memcache to prod cache process, ONLY for PROD environments
         'angular.protection', // Add an angular suggested prefix in order to avoid JSONP injections
         'cors.headers', // Add extra headers to the CORS check
+        'json.encodeUTF8', // Encode the json response
     ];
     protected $debug = false;
 
