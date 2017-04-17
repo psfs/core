@@ -201,7 +201,18 @@ abstract class Api extends Singleton
             }
         }
         if (!$orderAdded) {
-            $query->addAscendingOrderByColumn(1);
+            $query->addAscendingOrderByColumn($this->getPkDbName());
+        }
+    }
+
+    private function getPkDbName() {
+        $tableMap = $this->getTableMap();
+        $pks = $tableMap->getPrimaryKeys();
+        if (count($pks) == 1) {
+            $pks = array_keys($pks);
+            return $tableMap::TABLE_NAME . '.' . $pks[0];
+        } else {
+            throw new ApiException(_('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
         }
     }
 
@@ -210,14 +221,8 @@ abstract class Api extends Singleton
      */
     private function addPkToList()
     {
-        $tableMap = $this->getTableMap();
-        $pks = $tableMap->getPrimaryKeys();
-        if (count($pks) == 1) {
-            $pks = array_keys($pks);
-            $this->extraColumns[$pks[0]] = self::API_MODEL_KEY_FIELD;
-        } else {
-            throw new ApiException(_('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
-        }
+        $pkName = $this->getPkDbName();
+        $this->extraColumns[$pkName] = self::API_MODEL_KEY_FIELD;
     }
 
     /**
