@@ -215,6 +215,8 @@ class ApiHelper
             $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::GREATER_EQUAL);
         } elseif (preg_match('/^>/', $value)) {
             $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
+        } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
+            $query->filterBy($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);

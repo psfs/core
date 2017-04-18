@@ -14,12 +14,10 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
-use PSFS\base\Template;
 use PSFS\base\types\helpers\ApiFormHelper;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\traits\JsonTrait;
 use PSFS\base\types\traits\RouteTrait;
-use PSFS\base\types\traits\SingletonTrait;
 
 /**
  * Class Api
@@ -675,7 +673,7 @@ abstract class Api extends Singleton
         try {
             $this->paginate();
             if (null !== $this->list) {
-                $return = $this->list->toArray();
+                $return = $this->list->toArray(null, false, TableMap::TYPE_PHPNAME, false);
                 $total = $this->list->getNbResults();
                 $pages = $this->list->getLastPage();
             }
