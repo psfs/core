@@ -230,7 +230,7 @@ abstract class Api extends Singleton
      */
     private function addDefaultListField()
     {
-        if (!in_array(self::API_LIST_NAME_FIELD, $this->extraColumns)) {
+        if (!in_array(self::API_LIST_NAME_FIELD, array_values($this->extraColumns))) {
             $tableMap = $this->getTableMap();
             $column = null;
             if ($tableMap->hasColumn('NAME')) {
