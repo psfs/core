@@ -41,6 +41,8 @@ abstract class Api extends Singleton
     const API_ACTION_PUT = 'update';
     const API_ACTION_DELETE = 'delete';
 
+    const HEADER_API_TOKEN = 'X-API-SEC-TOKEN';
+
     /**
      * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
      */
@@ -694,7 +696,7 @@ abstract class Api extends Singleton
         $model = $this->_get($pk);
         $code = 200;
         $return = array();
-        if (NULL === $model && method_exists($model, 'toArray')) {
+        if (NULL === $model || !method_exists($model, 'toArray')) {
             $code = 404;
         } else {
             $return = $model->toArray();

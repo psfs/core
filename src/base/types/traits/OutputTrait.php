@@ -116,6 +116,9 @@ trait OutputTrait {
             case '400':
                 $this->setStatusCode("HTTP/1.0 400 Bad Request");
                 break;
+            default:
+                $this->setStatusCode('HTTP/1.0 ' . $status ?: 200);
+                break;
         }
         return $this;
     }
