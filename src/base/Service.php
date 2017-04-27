@@ -308,6 +308,7 @@ class Service extends Singleton
         $this->applyHeaders();
         $result = curl_exec($this->con);
         $this->result = json_decode($result, true);
+        Logger::log($this->url . ' response: ', LOG_DEBUG, $this->result);
         $this->info = curl_getinfo($this->con);
     }
 
