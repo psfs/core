@@ -2,7 +2,8 @@
 
 namespace PSFS\base\extension;
 
-use JShrink\Minifier;
+use MatthiasMullie\Minify\CSS;
+use MatthiasMullie\Minify\JS;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
@@ -127,12 +128,24 @@ class AssetsParser
         if ($this->debug || !file_exists($base . $this->hash . ".css")) {
             $data = '';
             if (0 < count($this->files)) {
+                $minifier = new CSS();
                 foreach ($this->files as $file) {
                     $data = $this->processCssLine($file, $base, $data);
                 }
             }
-            $this->storeContents($base . $this->hash . ".css", \CssMin::minify($data));
-            unset($cssMinifier);
+            if($this->debug) {
+                $this->storeContents($base . $this->hash . ".css", $data);
+            } else {
+                $minifier = new CSS();
+                $minifier->add($data);
+                ini_set('max_execution_time', -1);
+                ini_set('memory_limit', -1);
+                GeneratorHelper::createDir($base);
+                $minifier->minify($base . $this->hash . ".css");
+                unset($cssMinifier);
+                ini_restore('memory_limit');
+                ini_restore('max_execution_time');
+            }
         }
         return $this;
     }
@@ -148,24 +161,30 @@ class AssetsParser
         if ($this->debug || !file_exists($base . $this->hash . ".js")) {
             $data = '';
             if (0 < count($this->files)) {
+                $minifier = new JS();
                 foreach ($this->files as $file) {
                     $path_parts = explode("/", $file);
                     if (file_exists($file)) {
                         if ($this->debug) {
                             $data = $this->putDebugJs($path_parts, $base, $file);
                         } elseif (!file_exists($base . $this->hash . ".js")) {
-                            $data = $this->putProductionJs($base, $file, $data);
+                            $minifier->add($file);
+                            //$data = $this->putProductionJs($base, $file, $data);
                         }
                     }
                 }
+                if($this->debug) {
+                    $this->storeContents($base . $this->hash . ".js", $data);
+                } else {
+                    ini_set('max_execution_time', -1);
+                    ini_set('memory_limit', -1);
+                    GeneratorHelper::createDir($base);
+                    $minifier->minify($base . $this->hash . ".js");
+                    ini_restore('memory_limit');
+                    ini_restore('max_execution_time');
+                }
+                unset($minifier);
             }
-            try {
-                $minifiedJs = Minifier::minify($data);
-            } catch (\Exception $e) {
-                Logger::log($e->getMessage(), LOG_ERR);
-                $minifiedJs = false;
-            }
-            $this->storeContents($base . $this->hash . ".js", (false !== $minifiedJs) ? $minifiedJs : $data);
         }
         return $this;
     }
@@ -300,25 +319,6 @@ class AssetsParser
         if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
             $data = file_get_contents($file);
             $this->storeContents($base . $file_path, $data);
-        }
-        return $data;
-    }
-
-    /**
-     * @param string $base
-     * @param $file
-     * @param string $data
-     *
-     * @return string
-     * @throws ConfigException
-     */
-    protected function putProductionJs($base, $file, $data)
-    {
-        $js = file_get_contents($file);
-        try {
-            $data .= ";\n" . $js;
-        } catch (\Exception $e) {
-            throw new ConfigException($e->getMessage());
         }
         return $data;
     }
