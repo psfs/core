@@ -201,11 +201,20 @@ class Cache
         $filename = null;
         $action = Security::getInstance()->getSessionKey("__CACHE__");
         if (null !== $action && $action["cache"] > 0) {
-            $class = GeneratorHelper::extractClassFromNamespace($action['class']);
-            $filename = sha1($action["http"] . " " . $action["slug"]);
-            $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
-            $hashPath = $action['module'] . DIRECTORY_SEPARATOR . $class . DIRECTORY_SEPARATOR . $action['method'] . DIRECTORY_SEPARATOR . $subPath . DIRECTORY_SEPARATOR;
+            $query = Request::getInstance()->getQueryParams();
+            $filename = FileHelper::generateHashFilename($action["http"], $action["slug"], $query);
+            $hashPath = FileHelper::generateCachePath($action, $query);
         }
         return [$hashPath, $filename];
+    }
+
+    /**
+     * Flush cache when save a registry
+     */
+    public function flushCache() {
+        $action = Security::getInstance()->getSessionKey("__CACHE__");
+        $query = Request::getInstance()->getQueryParams();
+        $hashPath = FileHelper::generateCachePath($action, $query);
+
     }
 }

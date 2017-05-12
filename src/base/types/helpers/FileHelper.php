@@ -26,4 +26,26 @@ class FileHelper {
         }
         return $data;
     }
+
+    /**
+     * @param string $verb
+     * @param string $slug
+     * @param array $query
+     * @return string
+     */
+    public static function generateHashFilename($verb, $slug, array $query = []) {
+        return sha1($verb . " " . $slug . " " . http_build_query($query));
+    }
+
+    /**
+     * @param array $action
+     * @param array $query
+     * @return string
+     */
+    public static function generateCachePath(array $action, array $query = []) {
+        $class = GeneratorHelper::extractClassFromNamespace($action['class']);
+        $filename = self::generateHashFilename($action["http"], $action["slug"], $query);
+        $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
+        return $action['module'] . DIRECTORY_SEPARATOR . $class . DIRECTORY_SEPARATOR . $action['method'] . DIRECTORY_SEPARATOR . $subPath . DIRECTORY_SEPARATOR;
+    }
 }
