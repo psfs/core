@@ -52,6 +52,10 @@ class Service extends Singleton
      * @var \PSFS\base\Cache $cache
      */
     protected $cache;
+    /**
+     * @var bool
+     */
+    protected $isJson = true;
 
     private function closeConnection() {
         if(null !== $this->con) {
@@ -213,6 +217,20 @@ class Service extends Singleton
     }
 
     /**
+     * @param bool $isJson
+     */
+    public function setIsJson($isJson = true) {
+        $this->isJson = $isJson;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsJson() {
+        return $this->isJson;
+    }
+
+    /**
      * Método que limpia el contexto de la llamada
      */
     private function clearContext()
@@ -282,18 +300,31 @@ class Service extends Singleton
                 break;
             case 'POST':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
-                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                if($this->getIsJson()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } else {
+                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
+                }
                 break;
             case 'DELETE':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "DELETE");
                 break;
             case 'PUT':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "PUT");
-                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+
+                if($this->getIsJson()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } else {
+                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
+                }
                 break;
             case 'PATCH':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "PATCH");
-                $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                if($this->getIsJson()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } else {
+                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
+                }
                 break;
         }
 
