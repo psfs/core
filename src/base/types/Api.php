@@ -164,7 +164,7 @@ abstract class Api extends Singleton
      * Extract pagination values
      * @return array
      */
-    private function extractPagination()
+    protected function extractPagination()
     {
         $page = (array_key_exists('__page', $this->query)) ? $this->query['__page'] : 1;
         $limit = (array_key_exists('__limit', $this->query)) ? $this->query['__limit'] : 100;
