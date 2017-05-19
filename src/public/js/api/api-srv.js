@@ -215,6 +215,7 @@
             var config = __prepare($method, $url, $data);
             config.headers['Content-Type'] = 'blob';
             config.headers['Accept'] = 'blob';
+            config.headers['Access-Control-Expose-Headers'] = 'Filename';
             config.responseType = "blob";
             config.transformRequest = angular.identity;
             config.transformResponse = angular.identity;
@@ -230,9 +231,12 @@
             $msgSrv.send('request.download.started');
 
             return __return($http(config)
-                .then(function(response) {
+                .then(function(response, status, headersHttp, config) {
                     var headers = response.headers(),
                         fileName = headers['fileName'] || 'noname';
+                    if('noname' === fileName && 'filename' in headers) {
+                        fileName = headers['filename'];
+                    }
                     if('noname' === fileName && 'content-disposition' in headers) {
                         fileName = headers['content-disposition'].split(/filename\=/ig).slice(-1).pop().replace(/(\"|\')/ig, '');
                     }
