@@ -20,6 +20,7 @@ class RequestHelper
             "Authorization",
             "X-API-SEC-TOKEN",
             "X-API-USER-TOKEN",
+            "X-API-LANG",
             "api_key"
         ];
         $extra_headers = Config::getParam('cors.headers', '');
@@ -46,7 +47,7 @@ class RequestHelper
                     header("Access-Control-Allow-Headers: " . implode(', ', self::getCorsHeaders()));
                 }
                 if (Request::getInstance()->getMethod() == 'OPTIONS') {
-                    Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests');
+                    Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
                     header("HTTP/1.1 200 OK");
                     exit();
                 }

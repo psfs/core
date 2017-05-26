@@ -18,9 +18,10 @@
         function loadItem(item)
         {
             $scope.itemLoading = true;
-            $httpSrv.$get($scope.url + "/" + item[$scope.modelId])
+            $httpSrv.$get($scope.url.replace(/\/$/, '') + "/" + item[$scope.modelId])
                 .then(function(response) {
                     $scope.model = response.data.data;
+                    $scope.modelBackup = angular.copy($scope.model);
                     $msgSrv.send('populate_combos');
                     $timeout(function(){
                         $scope.itemLoading = false;

@@ -26,12 +26,12 @@ class Request
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST or [];
         $this->query = $_GET or [];
-        $contentType = $this->getHeader('Content-Type');
+        $contentType = $this->getHeader('Accept');
         if(null === $contentType) {
-            $contentType = $this->getServer('CONTENT_TYPE') ?: 'text/html';
+            $contentType = $this->getServer('Accept') ?: 'text/html';
         }
         if (preg_match('/application\/json/i', $contentType)) {
-            $this->data += json_decode(file_get_contents("php://input"), true) ?: array();
+            $this->data += json_decode(file_get_contents("php://input"), true) ?: [];
         }
         $this->isLoaded = true;
     }
@@ -110,22 +110,28 @@ class Request
 
     /**
      * Método que devuelve una cabecera de la petición si existe
-     * @param $name
+     * @param string $name
+     * @param string $default
      *
      * @return string|null
      */
-    public static function header($name)
+    public static function header($name, $default = null)
     {
-        return self::getInstance()->getHeader($name);
+        return self::getInstance()->getHeader($name,  $default);
     }
 
-    public function getHeader($name)
+    /**
+     * @param string $name
+     * @param string $default
+     * @return string|null
+     */
+    public function getHeader($name, $default = null)
     {
         $header = null;
         if ($this->hasHeader($name)) {
             $header = $this->header[$name];
         }
-        return $header;
+        return $header ?: $default;
     }
 
     /**

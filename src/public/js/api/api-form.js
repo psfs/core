@@ -12,7 +12,7 @@
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
-                $httpSrv.$post(url)
+                $httpSrv.$post(url.replace(/\/$/, ''))
                     .then(callback, function (err, status) {
                         $log.error(err);
                         $scope.loading = false;
@@ -22,7 +22,7 @@
             function loadFormFields() {
                 $scope.itemLoading = true;
                 $log.debug('Loading entity form info');
-                getEntityFields($scope.formUrl, function (response) {
+                getEntityFields($scope.formUrl.replace(/\/$/, ''), function (response) {
                     $log.debug('Entity form loaded');
                     $scope.form = response.data.data || {};
                     $scope.itemLoading = false;
@@ -31,7 +31,7 @@
 
             function isInputField(field) {
                 var type = (field.type || 'text').toUpperCase();
-                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD');
+                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD' || type === 'TIMESTAMP');
             }
 
             function isTextField(field) {
@@ -107,11 +107,11 @@
                     $scope.itemLoading = true;
                     var model = $scope.model;
                     try {
-                        $httpSrv.$put($scope.url + '/' + $apiSrv.getId(model, $scope.form.fields), model)
+                        $httpSrv.$put($scope.url.replace(/\/$/, '') + '/' + $apiSrv.getId($scope.modelBackup, $scope.form.fields), model)
                             .then(clearForm, showError);
                     } catch (err) {
                         $log.debug('Create new entity');
-                        $httpSrv.$post($scope.url, model)
+                        $httpSrv.$post($scope.url.replace(/\/$/, ''), model)
                             .then(clearForm, showError);
                     } finally {
                         $timeout(function () {
@@ -142,7 +142,7 @@
                         '__combo': "%" + search + "%",
                         '__fields': '__name__,' +  field.relatedField
                     };
-                    $httpSrv.$get(field.url.replace(/\/\{pk\}$/ig, ''), query)
+                    $httpSrv.$get(field.url.replace(/\/$/, '').replace(/\/\{pk\}$/ig, ''), query)
                         .then(function (response) {
                             deferred.resolve(response.data.data || []);
                         }, function () {
@@ -180,7 +180,7 @@
                             '__fields': '__name__,' + field.relatedField
                         };
                         query[field.relatedField] = $scope.model[field.name];
-                        $httpSrv.$get(field.url, query)
+                        $httpSrv.$get(field.url.replace(/\/$/, ''), query)
                             .then(function (response) {
                                 $scope.combos[field.name].item = response.data.data[0];
                             });
@@ -207,12 +207,13 @@
             });
 
             function getPk() {
-                var pk = '';
+                var pk = '', sep = '';
                 if(!angular.equals({}, $scope.model)) {
                     for(var i in $scope.form.fields) {
                         var field = $scope.form.fields[i];
                         if(field.pk && field.name in $scope.model) {
-                            pk = $scope.model[field.name];
+                            pk += sep + $scope.model[field.name];
+                            sep = '__|__';
                         }
                     }
                 }
@@ -233,7 +234,7 @@
 
             function executeAction(action) {
                 if(action && action.url) {
-                    var url = action.url;
+                    var url = action.url.replace(/\/$/, '');
                     for(var i in $scope.form.fields) {
                         var field = $scope.form.fields[i];
                         url = url.replace('{' + field.name + '}', $scope.model[field.name]);

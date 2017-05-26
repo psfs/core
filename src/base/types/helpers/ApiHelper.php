@@ -4,6 +4,7 @@ namespace PSFS\base\types\helpers;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\dto\Field;
@@ -25,46 +26,32 @@ class ApiHelper
     public static function generateFormFields($map, $domain)
     {
         $form = new Form();
-        /** @var TableMap $fields */
-        $fields = $map::getTableMap();
+        /** @var TableMap $tableMap */
+        $tableMap = $map::getTableMap();
+        $behaviors = $tableMap->getBehaviors();
         foreach ($map::getFieldNames() as $field) {
-            $fDto = null;
-            /** @var ColumnMap $mappedColumn */
-            $mappedColumn = $fields->getColumnByPhpName($field);
-            $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
-            if ($mappedColumn->isForeignKey()) {
-                $fDto = self::extractForeignModelsField($mappedColumn, $field, $domain);
-            } elseif ($mappedColumn->isPrimaryKey()) {
-                $fDto = self::generatePrimaryKeyField($field, $required);
-            } elseif ($mappedColumn->isNumeric()) {
-                $fDto = self::generateNumericField($field, $required);
-            } elseif ($mappedColumn->isText()) {
-                if ($mappedColumn->getSize() > 100) {
-                    $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
-                } else {
-                    $fDto = self::generateStringField($field, $required);
-                }
-            } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
-                $fDto = self::generateBooleanField($field, $required);
-            } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
-                $fDto = self::generatePasswordField($field, $required);
-            } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
-                $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
-            } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
-                $fDto = self::generateEnumField($field, $required);
-                foreach ($mappedColumn->getValueSet() as $value) {
-                    $fDto->data[] = [
-                        $field => $value,
-                        "Label" => _($value),
-                    ];
-                }
-            }
-
-            if (null !== $fDto) {
-                $fDto->size = $mappedColumn->getSize();
+            $fDto = self::parseFormField($domain, $tableMap, $field, $behaviors);
+            if(null !== $fDto) {
                 $form->addField($fDto);
             }
         }
+
+        if(array_key_exists('i18n', $behaviors)) {
+            $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
+            if(null !== $relateI18n) {
+                $i18NTableMap = $relateI18n->getLocalTable();
+                foreach($i18NTableMap->getColumns() as $columnMap) {
+                    if(!$form->fieldExists($columnMap->getPhpName())) {
+                        $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
+                        if(null !== $fDto) {
+                            $fDto->pk = false;
+                            $form->addField($fDto);
+                        }
+                    }
+                }
+            }
+        }
+
         return $form;
     }
 
@@ -190,11 +177,14 @@ class ApiHelper
      */
     public static function checkFieldExists(TableMap $tableMap, $field)
     {
+        $column = null;
         try {
             $column = $tableMap->getColumnByPhpName($field);
         } catch (\Exception $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
-            $column = null;
+            Logger::log($e->getMessage(), LOG_WARNING);
+            foreach($tableMap->getRelations() as $relation) {
+                $column = self::checkFieldExists($relation->getLocalTable(), $field);
+            }
         }
         return $column;
     }
@@ -206,23 +196,23 @@ class ApiHelper
      */
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
-        $tableField = $column->getPhpName();
+        $tableField = $column->getFullyQualifiedName();
         if (preg_match('/^<=/', $value)) {
-            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
+            $query->add($tableField, substr($value, 2, strlen($value)), Criteria::LESS_EQUAL);
         } elseif (preg_match('/^<=/', $value)) {
-            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::LESS_EQUAL);
+            $query->add($tableField, substr($value, 1, strlen($value)), Criteria::LESS_EQUAL);
         } elseif (preg_match('/^>=/', $value)) {
-            $query->filterBy($tableField, substr($value, 2, strlen($value)), Criteria::GREATER_EQUAL);
+            $query->add($tableField, substr($value, 2, strlen($value)), Criteria::GREATER_EQUAL);
         } elseif (preg_match('/^>/', $value)) {
-            $query->filterBy($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
+            $query->add($tableField, substr($value, 1, strlen($value)), Criteria::GREATER_THAN);
         } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
-            $query->filterBy($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
+            $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);
-            $query->filterBy($tableField, '%' . $text . '%', Criteria::LIKE);
+            $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
         } else {
-            $query->filterBy($tableField, $value, Criteria::EQUAL);
+            $query->add($tableField, $value, Criteria::EQUAL);
         }
     }
 
@@ -264,5 +254,73 @@ class ApiHelper
         if ($column = self::checkFieldExists($tableMap, $field)) {
             self::addQueryFilter($column, $query, $value);
         }
+    }
+
+    /**
+     * Method that extract
+     * @param string $modelNameNamespace
+     * @param ConnectionInterface $con
+     * @return \Propel\Runtime\ActiveQuery\ModelCriteria
+     */
+    public static function extractQuery($modelNameNamespace, ConnectionInterface $con = null)
+    {
+        $queryReflector = new \ReflectionClass($modelNameNamespace . "Query");
+        /** @var \Propel\Runtime\ActiveQuery\ModelCriteria $query */
+        $query = $queryReflector->getMethod('create')->invoke($con);
+
+        return $query;
+    }
+
+    /**
+     * @param string $domain
+     * @param TableMap $tableMap
+     * @param string $field
+     * @param array $behaviors
+     * @return null|Field
+     */
+    protected static function parseFormField($domain, $tableMap, $field, array $behaviors = [])
+    {
+        $fDto = null;
+        /** @var ColumnMap $mappedColumn */
+        $mappedColumn = $tableMap->getColumnByPhpName($field);
+        $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
+        if ($mappedColumn->isForeignKey()) {
+            $fDto = self::extractForeignModelsField($mappedColumn, $field, $domain);
+        } elseif ($mappedColumn->isPrimaryKey() && $required) {
+            $fDto = self::generatePrimaryKeyField($field, $required);
+        } elseif ($mappedColumn->isNumeric()) {
+            $fDto = self::generateNumericField($field, $required);
+        } elseif ($mappedColumn->isText()) {
+            if ($mappedColumn->getSize() > 100) {
+                $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
+            } else {
+                $fDto = self::generateStringField($field, $required);
+            }
+        } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
+            $fDto = self::generateBooleanField($field, $required);
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
+            $fDto = self::generatePasswordField($field, $required);
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
+            $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
+            if (array_key_exists('timestampable', $behaviors) && false !== array_search($mappedColumn->getName(), $behaviors['timestampable'])) {
+                $fDto->required = false;
+                $fDto->type = Field::TIMESTAMP;
+            }
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
+            $fDto = self::generateEnumField($field, $required);
+            foreach ($mappedColumn->getValueSet() as $value) {
+                $fDto->data[] = [
+                    $field => $value,
+                    "Label" => _($value),
+                ];
+            }
+        }
+        if (null !== $fDto) {
+            $fDto->size = $mappedColumn->getSize();
+            if ($mappedColumn->isPrimaryKey()) {
+                $fDto->pk = true;
+            }
+        }
+        return $fDto;
     }
 }

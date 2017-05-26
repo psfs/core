@@ -4,6 +4,7 @@
     var apiCtrl = ['$scope', '$mdDialog', '$apiSrv', '$httpSrv', '$timeout', '$log', '$msgSrv',
         function ($scope, $mdDialog, $apiSrv, $httpSrv, $timeout, $log, $msgSrv) {
             $scope.model = {};
+            $scope.modelBackup = {};
             $scope.filters = {};
             $scope.list = [];
             $scope.selected = null;

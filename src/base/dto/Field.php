@@ -20,6 +20,7 @@ class Field extends Dto
     const SWITCH_TYPE = 'switch';
     const PASSWORD_FIELD = 'password';
     const DATE = 'date';
+    const TIMESTAMP = 'timestamp';
 
     /**
      * @var string label

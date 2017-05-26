@@ -29,7 +29,7 @@
     }];
     app.service('$msgSrv', messageService);
     var entitySrv = ['$log', function($log) {
-        var entity;
+        var entity, id;
 
         function getLabelField(item) {
             if (item) {
@@ -56,12 +56,14 @@
         }
 
         function getPkField(fields) {
-            var pk = null;
+            var pk = null, sep = '';
             fields = fields || {};
             for(var i in fields) {
                 var field = fields[i];
                 if(field.pk) {
-                    pk = field.name;
+                    if(null === pk) pk = '';
+                    pk += sep + field.name;
+                    sep = '__|__';
                 }
             }
             return pk;
@@ -75,6 +77,18 @@
                     return item[pk];
                 } else if('__pk' in item){
                     return item['__pk'];
+                } else if(null !== pk.match(/__\|__/)){
+                    var pks = pk.split('__|__'), complexPk = '', sep = '';
+                    for(var i in pks) {
+                        var _pk = pks[i];
+                        if (item[_pk]) {
+                            complexPk += sep + item[_pk];
+                            sep = '__|__';
+                        } else {
+                            throw new Error('Unidentified element');
+                        }
+                    }
+                    return complexPk;
                 } else {
                     throw new Error('Unidentified element');
                 }
@@ -89,12 +103,17 @@
             this.entity = entity;
         }
 
+        function setId(id) {
+            this.id = id;
+        }
+
         return {
             getLabel: getLabel,
             getLabelField: getLabelField,
             getId: getId,
             setEntity: setEntity,
-            getPkField: getPkField
+            getPkField: getPkField,
+            setId: setId
         };
     }];
     app.service('$apiSrv', entitySrv);
@@ -108,7 +127,8 @@
             psfsToken: null,
             psfsTokenUrl: null,
             userToken: null,
-            debug: true
+            debug: true,
+            lang: angular.element('html').attr('lang') || 'es'
         };
 
         /**
@@ -128,7 +148,8 @@
                     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
                     'Access-Control-Allow-Headers': '*',
                     'Content-Type': 'application/json',
-                    'X-API-SEC-TOKEN': srvConfig.psfsToken
+                    'X-API-SEC-TOKEN': srvConfig.psfsToken,
+                    'X-API-LANG': srvConfig.lang
                 }
             };
             if(srvConfig.userToken) {
@@ -231,7 +252,7 @@
             $msgSrv.send('request.download.started');
 
             return __return($http(config)
-                .then(function(response, status, headersHttp, config) {
+                .then(function(response) {
                     var headers = response.headers(),
                         fileName = headers['fileName'] || 'noname';
                     if('noname' === fileName && 'filename' in headers) {

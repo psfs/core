@@ -227,10 +227,12 @@ trait OutputTrait {
         header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
         header("Pragma: no-cache");
         header("Expires: 0");
-        header('Content-Transfer-Encoding: none');
+        header('Content-Transfer-Encoding: binary');
         header("Content-type: " . $content);
         header("Content-length: " . strlen($data));
         header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header("Access-Control-Expose-Headers: Filename");
+        header("Filename: " . $filename);
         echo $data;
         ob_flush();
         ob_end_clean();
