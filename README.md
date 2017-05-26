@@ -1,5 +1,4 @@
 # PSFS
-====
 [![Build Status](https://travis-ci.org/psfs/core.svg?branch=master)](https://travis-ci.org/psfs/core)
 [![Latest Stable Version](https://poser.pugx.org/psfs/core/v/stable)](https://packagist.org/packages/psfs/core) 
 [![Total Downloads](https://poser.pugx.org/psfs/core/downloads)](https://packagist.org/packages/psfs/core) 
@@ -16,8 +15,7 @@ Needed components to execute PSFS:
     * "twig/twig": "1.x-dev",
     * "twig/extensions": "dev-master",
     * "monolog/monolog": "1.x-dev",
-    * "tedivm/jshrink": "~1.0",
-    * "natxet/CssMin": "^3.0@dev"
+    * "matthiasmullie/minify": "^1.3"
 
 How to install using composer:
 
@@ -32,7 +30,6 @@ RoadMap:
 
     * Session management
         - Session engines(mongodb, filesystem, mysql...)
-        - Security improvements
     * Improve cache(html, php, json)
         - Serialize business logics
         - Html buffer

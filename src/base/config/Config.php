@@ -134,6 +134,7 @@ class Config
      */
     public function setDebugMode($debug = true) {
         $this->debug = $debug;
+        $this->config['debug'] = $this->debug;
     }
 
     /**

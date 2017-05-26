@@ -202,6 +202,7 @@ class Cache
         $action = Security::getInstance()->getSessionKey("__CACHE__");
         if (null !== $action && $action["cache"] > 0) {
             $query = Request::getInstance()->getQueryParams();
+            $query['X-API-LANG'] = Request::header('X-API-LANG', '--');
             $filename = FileHelper::generateHashFilename($action["http"], $action["slug"], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
         }
