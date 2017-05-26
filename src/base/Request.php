@@ -15,6 +15,7 @@ class Request
     protected $upload;
     protected $header;
     protected $data;
+    protected $raw = [];
     protected $query;
     private $isLoaded = false;
 
@@ -26,13 +27,7 @@ class Request
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST or [];
         $this->query = $_GET or [];
-        $contentType = $this->getHeader('Content-Type');
-        if(null === $contentType) {
-            $contentType = $this->getServer('Content-Type') ?: 'text/html';
-        }
-        if (preg_match('/application\/json/i', $contentType)) {
-            $this->data += json_decode(file_get_contents("php://input"), true) ?: [];
-        }
+        $this->raw = json_decode(file_get_contents("php://input"), true) ?: [];
         $this->isLoaded = true;
     }
 
@@ -210,6 +205,13 @@ class Request
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRawData() {
+        return $this->raw;
     }
 
     /**

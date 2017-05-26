@@ -323,7 +323,7 @@ abstract class Api extends Singleton
     {
         $request = Request::getInstance();
         $this->query = array_merge($this->query, $request->getQueryParams());
-        $this->data = array_merge($this->data, $request->getData());
+        $this->data = array_merge($this->data, $request->getRawData());
     }
 
     /**
