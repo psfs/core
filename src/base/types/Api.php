@@ -75,7 +75,6 @@ abstract class Api extends Singleton
     {
         parent::init();
         $this->domain = $this->getDomain();
-        $this->debug = Config::getParam('debug') || Config::getParam('debugQueries');
         $this->hydrateRequestData();
         $this->hydrateOrders();
         $this->createConnection($this->getTableMap());

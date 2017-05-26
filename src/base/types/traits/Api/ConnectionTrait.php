@@ -4,7 +4,9 @@ namespace PSFS\base\types\traits\Api;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
+use PSFS\base\config\Config;
 use PSFS\base\Logger;
+use PSFS\base\types\traits\DebugTrait;
 
 /**
  * Trait ConnectionTrait
@@ -18,11 +20,6 @@ trait ConnectionTrait {
     protected $con = null;
 
     /**
-     * @var bool
-     */
-    protected $debug = true;
-
-    /**
      * Initialize db connection
      * @param TableMap $tableMap
      */
@@ -31,7 +28,7 @@ trait ConnectionTrait {
         $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
         if(method_exists($this->con, 'useDebug')) {
             Logger::log('Enabling debug queries mode', LOG_INFO);
-            $this->con->useDebug($this->debug);
+            $this->con->useDebug(Config::getParam('debug'));
         }
     }
 
@@ -58,7 +55,7 @@ trait ConnectionTrait {
      */
     protected function traceDebugQuery()
     {
-        if ($this->debug) {
+        if (Config::getParam('debug')) {
             Logger::getInstance(get_class($this))->debugLog($this->con->getLastExecutedQuery());
         }
     }
