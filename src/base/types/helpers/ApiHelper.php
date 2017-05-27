@@ -182,9 +182,9 @@ class ApiHelper
             $column = $tableMap->getColumnByPhpName($field);
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_WARNING);
-            foreach($tableMap->getRelations() as $relation) {
-                $column = self::checkFieldExists($relation->getLocalTable(), $field);
-            }
+            //foreach($tableMap->getRelations() as $relation) {
+            //    $column = self::checkFieldExists($relation->getLocalTable(), $field);
+            //}
         }
         return $column;
     }
