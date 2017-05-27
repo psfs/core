@@ -128,7 +128,7 @@
             psfsTokenUrl: null,
             userToken: null,
             debug: true,
-            lang: angular.element('html').attr('lang') || 'es'
+            lang: document.getElementsByTagName('HTML')[0].lang || 'es'
         };
 
         /**
