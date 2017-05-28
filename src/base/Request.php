@@ -204,7 +204,7 @@ class Request
      */
     public function getData()
     {
-        return $this->data;
+        return array_merge($this->data, $this->raw);
     }
 
     /**
