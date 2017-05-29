@@ -8,6 +8,7 @@ use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
+use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\Api;
 
@@ -186,17 +187,21 @@ trait MutationTrait
     protected function hydrateModelFromRequest(ActiveRecordInterface &$model, array $data = []) {
         $model->fromArray($data);
         $tableMap = $this->getTableMap();
-        $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
-        if(null !== $relateI18n) {
-            $i18NTableMap = $relateI18n->getLocalTable();
-            foreach($i18NTableMap->getColumns() as $columnMap) {
-                $method = 'set' . $columnMap->getPhpName();
-                if(!($columnMap->isPrimaryKey() && $columnMap->isForeignKey())
-                    &&array_key_exists($columnMap->getPhpName(), $data)
-                    && method_exists($model, $method)) {
-                    $model->$method($data[$columnMap->getPhpName()]);
+        try {
+            $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
+            if(null !== $relateI18n) {
+                $i18NTableMap = $relateI18n->getLocalTable();
+                foreach($i18NTableMap->getColumns() as $columnMap) {
+                    $method = 'set' . $columnMap->getPhpName();
+                    if(!($columnMap->isPrimaryKey() && $columnMap->isForeignKey())
+                        &&array_key_exists($columnMap->getPhpName(), $data)
+                        && method_exists($model, $method)) {
+                        $model->$method($data[$columnMap->getPhpName()]);
+                    }
                 }
             }
+        } catch(\Exception $e) {
+            Logger::log($e->getMessage(), LOG_WARNING);
         }
     }
 }
