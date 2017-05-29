@@ -6,7 +6,6 @@
          verbose="true"
          cacheTokens="false"
          bootstrap="vendor/autoload.php"
-         stderr="true"
          strict="true"
         >
     <testsuites>
