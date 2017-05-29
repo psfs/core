@@ -59,11 +59,6 @@ abstract class Api extends Singleton
     protected $query = array();
 
     /**
-     * @var array $data
-     */
-    protected $data = array();
-
-    /**
      * @var string
      */
     protected $domain;

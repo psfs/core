@@ -51,9 +51,7 @@ class Security
      */
     public function __construct()
     {
-        if (PHP_SESSION_NONE === session_status()) {
-            session_start();
-        }
+        $this->initSession();
         $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
         if (NULL === $this->getSessionKey('__FLASH_CLEAR__')) {
             $this->clearFlashes();
@@ -63,6 +61,19 @@ class Security
         $this->admin = (array_key_exists(self::ADMIN_ID_TOKEN, $this->session)) ? unserialize($this->session[self::ADMIN_ID_TOKEN]) : NULL;
         if (null === $this->admin) {
             $this->checkAdmin();
+        }
+    }
+
+    /**
+     * Initializator for SESSION
+     */
+    private function initSession() {
+        if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
+            session_start();
+        }
+        // Fix for phpunits
+        if(!isset($_SESSION)) {
+            $_SESSION = [];
         }
     }
 
@@ -399,6 +410,7 @@ class Security
      */
     public function closeSession()
     {
+        unset($_SESSION);
         @session_destroy();
         @session_regenerate_id(TRUE);
         @session_start();
