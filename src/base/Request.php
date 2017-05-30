@@ -125,6 +125,8 @@ class Request
         $header = null;
         if ($this->hasHeader($name)) {
             $header = $this->header[$name];
+        } else if(array_key_exists('h_' . strtolower($name), $this->query)) {
+            $header = $this->query['h_' . strtolower($name)];
         }
         return $header ?: $default;
     }

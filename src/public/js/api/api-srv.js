@@ -128,7 +128,8 @@
             psfsTokenUrl: null,
             userToken: null,
             debug: true,
-            lang: document.getElementsByTagName('HTML')[0].lang || 'es'
+            lang: document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es',
+            useQueryLang: document.getElementsByTagName('HTML')[0].getAttribute('data-query-header') || false
         };
 
         /**
@@ -194,6 +195,20 @@
          * @private
          */
         function __call($method, $url, $data) {
+            if(false !== srvConfig.useQueryLang) {
+                if($method === 'GET') {
+                    $data = $data || {};
+                    $data.h_x_api_lang = srvConfig.lang
+                } else {
+                    if($url.match(/\?/)) {
+                        $url += '&';
+                    } else {
+                        $url += '?';
+                    }
+                    $url += 'h_x_api_lang=' + srvConfig.lang;
+                }
+            }
+
             var config = __prepare($method, $url, $data);
 
             $msgSrv.$config({
@@ -205,6 +220,7 @@
             }
             $msgSrv.send('request.started');
             $msgSrv.send('request.' + $method.toLowerCase() + '.started');
+
             return __return($http(config), $method, $url);
         }
 
