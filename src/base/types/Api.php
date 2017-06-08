@@ -235,7 +235,7 @@ abstract class Api extends Singleton
         $message = null;
         try {
             $this->hydrateFromRequest();
-            if (!$this->model->save($this->con)) {
+            if (false !== $this->model->save($this->con)) {
                 $status = 200;
                 $saved = TRUE;
                 $model = $this->model->toArray();
