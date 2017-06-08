@@ -243,7 +243,7 @@ abstract class Api extends Singleton
                 $message = _('No se ha podido modificar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $message = _('Ha ocurrido un error intentando guardar el elemento: ') . $e->getMessage();
+            $message = _('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
             Logger::log($e->getMessage(), LOG_ERR);
         }
 
@@ -281,7 +281,7 @@ abstract class Api extends Singleton
                     $message = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
             } catch (\Exception $e) {
-                $model = $e->getMessage();
+                $message = $e->getMessage();
                 Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
             }
         } else {
