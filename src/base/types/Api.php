@@ -183,8 +183,12 @@ abstract class Api extends Singleton
         $this->action = self::API_ACTION_LIST;
         $code = 200;
         list($return, $total, $pages) = $this->getList();
+        $message = null;
+        if(!$total) {
+            $message = _('No se han encontrado elementos para la búsqueda');
+        }
 
-        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
     }
 
     /**
@@ -204,9 +208,13 @@ abstract class Api extends Singleton
         $return = NULL;
         $total = NULL;
         $pages = 1;
+        $message = null;
         list($code, $return) = $this->getSingleResult($pk);
+        if($code !== 200) {
+            $message = _('No se ha encontrado el elemento solicitado');
+        }
 
-        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages), $code);
+        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
     }
 
     /**
@@ -224,19 +232,22 @@ abstract class Api extends Singleton
         $saved = FALSE;
         $status = 400;
         $model = NULL;
+        $message = null;
         try {
             $this->hydrateFromRequest();
-            if (false !== $this->model->save($this->con)) {
+            if (!$this->model->save($this->con)) {
                 $status = 200;
                 $saved = TRUE;
                 $model = $this->model->toArray();
+            } else {
+                $message = _('No se ha podido modificar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $model = _('Ha ocurrido un error intentando guardar el elemento: ') . $e->getMessage();
+            $message = _('Ha ocurrido un error intentando guardar el elemento: ') . $e->getMessage();
             Logger::log($e->getMessage(), LOG_ERR);
         }
 
-        return $this->json(new JsonResponse($model, $saved), $status);
+        return $this->json(new JsonResponse($model, $saved, $saved, 0, $message), $status);
     }
 
     /**
@@ -258,6 +269,7 @@ abstract class Api extends Singleton
         $status = 400;
         $updated = FALSE;
         $model = NULL;
+        $message = null;
         if (NULL !== $this->model) {
             try {
                 $this->hydrateModelFromRequest($this->model, $this->data);
@@ -266,17 +278,17 @@ abstract class Api extends Singleton
                     $status = 200;
                     $model = $this->model->toArray();
                 } else {
-                    $model = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                    $message = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
             } catch (\Exception $e) {
                 $model = $e->getMessage();
                 Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
             }
         } else {
-            $model = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+            $message = _('No se ha encontrado el modelo al que se hace referencia para actualizar');
         }
 
-        return $this->json(new JsonResponse($model, $updated), $status);
+        return $this->json(new JsonResponse($model, $updated, $updated, 0, $message), $status);
     }
 
     /**
@@ -308,7 +320,7 @@ abstract class Api extends Singleton
             }
         }
 
-        return $this->json(new JsonResponse($message, $deleted), ($deleted) ? 200 : 400);
+        return $this->json(new JsonResponse(null, $deleted, $deleted, 0, $message), ($deleted) ? 200 : 400);
     }
 
     /**
@@ -337,7 +349,7 @@ abstract class Api extends Singleton
                 $pages = $this->list->getLastPage();
             }
         } catch (\Exception $e) {
-            Logger::getInstance(get_class($this))->errorLog($e->getMessage());
+            Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
         }
 
         return array($return, $total, $pages);

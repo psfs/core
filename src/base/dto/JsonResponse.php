@@ -4,6 +4,11 @@ namespace PSFS\base\dto;
 class JsonResponse extends Dto
 {
     /**
+     * Response message
+     * @var string $message
+     */
+    public $message = 'No message';
+    /**
      * Response result
      * @var bool $success
      */
@@ -29,12 +34,16 @@ class JsonResponse extends Dto
      * @param bool|FALSE $result
      * @param int $total
      * @param int $pages
+     * @param string $message
      */
-    public function __construct($data = array(), $result = false, $total = null, $pages = 1)
+    public function __construct($data = array(), $result = false, $total = null, $pages = 1, $message = null)
     {
         $this->data = $data;
         $this->success = $result;
         $this->total = $total ?: count($data);
         $this->pages = $pages;
+        if(null !== $message) {
+            $this->message = $message;
+        }
     }
 }

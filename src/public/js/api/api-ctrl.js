@@ -99,7 +99,7 @@
                         .ok($scope.i18N['delete'])
                         .cancel($scope.i18N['cancel']);
                     $mdDialog.show(confirm).then(function() {
-                        $httpSrv.$delete($scope.url + "/" + $apiSrv.getId(item, $scope.form.fields))
+                        $httpSrv.$delete($scope.url + $apiSrv.getId(item, $scope.form.fields))
                             .then(function() {
                                 $timeout(function() {
                                     if(checkItem(item)) {
