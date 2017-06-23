@@ -102,11 +102,16 @@ class Router
                 "error" => $e->getMessage(),
             )), 'application/json');
         } else {
-            return $template->render('error.html.twig', array(
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
-                'error_page' => TRUE,
-            ));
+            $not_found_rouote = Config::getParam('route.404');
+            if(null !== $not_found_rouote) {
+                Request::getInstance()->redirect($this->getRoute($not_found_rouote, true));
+            } else {
+                return $template->render('error.html.twig', array(
+                    'exception' => $e,
+                    'trace' => $e->getTraceAsString(),
+                    'error_page' => TRUE,
+                ));
+            }
         }
     }
 
