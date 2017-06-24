@@ -248,11 +248,15 @@
                 $scope.extraActionExecution = false;
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
+                var message = 'Función ejecutada correctamente. Revisa el log del navegador para más detalle de la respuesta';
+                if(response.message) {
+                    message += ': ' + response.message;
+                }
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title(label)
-                        .content('Función ejecutada correctamente. Revisa el log del navegador para más detalle de la respuesta')
+                        .content(message)
                         .ariaLabel('Execution ok')
                         .ok('Close')
                 );

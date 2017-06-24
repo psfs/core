@@ -232,6 +232,17 @@ class ApiHelper
                 $sep = ', " ", ';
             }
         }
+        foreach($tableMap->getRelations() as $relation) {
+            if(preg_match('/I18n$/i', $relation->getName())) {
+                $localeTableMap = $relation->getLocalTable();
+                foreach ($localeTableMap->getColumns() as $column) {
+                    if ($column->isText()) {
+                        $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
+                        $sep = ', " ", ';
+                    }
+                }
+            }
+        }
         foreach ($extraColumns as $extra => $name) {
             $exp .= $sep . $extra;
             $sep = ', " ", ';
