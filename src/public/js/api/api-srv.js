@@ -281,15 +281,17 @@
                         var cType = headers['content-type'].split('/').slice(-1).pop();
                         fileName += '.' + cType;
                     }
-                    var anchor = angular.element('<a/>');
-                    var blob = new Blob([response.data], { type: headers['content-type'] });                    anchor.attr({
-                        href: window.URL.createObjectURL(blob),
-                        target: '_blank',
-                        download: fileName
-                    })[0].click();
+                    var anchor = window.document.createElement("a");
+                    var blob = new Blob([response.data], { type: headers['content-type'] });
+                    anchor.href = window.URL.createObjectURL(blob);
+                    anchor.download = fileName;
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    return response;
                 }), 'download', $url)
                 .catch(function(error) {
                     $log.error(error);
+                    return error;
                 });
         }
 
