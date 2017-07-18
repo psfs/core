@@ -8,6 +8,12 @@ namespace PSFS\base\types\traits;
 Trait SingletonTrait
 {
     use BoostrapTrait;
+
+    /**
+     * @var boolean
+     */
+    protected $loaded = false;
+
     /**
      * @var array Singleton cached reference to singleton instance
      */
@@ -37,6 +43,22 @@ Trait SingletonTrait
         if(isset(self::$instance[$class])) {
             self::$instance[$class] = null;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLoaded(): bool
+    {
+        return $this->loaded;
+    }
+
+    /**
+     * @param bool $loaded
+     */
+    public function setLoaded(bool $loaded)
+    {
+        $this->loaded = $loaded;
     }
 
     /**

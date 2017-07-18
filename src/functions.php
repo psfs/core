@@ -39,12 +39,16 @@ if (!function_exists("getallheaders")) {
 }
 
 if (file_exists(CORE_DIR)) {
+    $loaded_files = [];
     //Autoload de módulos
     $finder = new Finder();
     $finder->files()->in(CORE_DIR)->name('autoload.php');
     /* @var $file SplFileInfo */
     foreach ($finder as $file) {
         $path = $file->getRealPath();
-        include_once($path);
+        if(!in_array($path, $loaded_files)) {
+            $loaded_files[] = $path;
+            require_once($path);
+        }
     }
 }

@@ -14,6 +14,7 @@ use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\traits\SystemTrait;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
@@ -66,6 +67,8 @@ class Dispatcher extends Singleton
         Logger::log('Begin runner');
         try {
             if ($this->config->isConfigured()) {
+                //Check CORS for requests
+                RequestHelper::checkCORS();
                 if (!Request::getInstance()->isFile()) {
                     return $this->router->execute($this->actualUri);
                 }

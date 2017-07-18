@@ -34,7 +34,7 @@ class FileHelper {
      * @return string
      */
     public static function generateHashFilename($verb, $slug, array $query = []) {
-        return sha1($verb . " " . $slug . " " . http_build_query($query));
+        return sha1(strtolower($verb) . " " . $slug . " " . strtolower(http_build_query($query)));
     }
 
     /**
@@ -47,5 +47,16 @@ class FileHelper {
         $filename = self::generateHashFilename($action["http"], $action["slug"], $query);
         $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
         return $action['module'] . DIRECTORY_SEPARATOR . $class . DIRECTORY_SEPARATOR . $action['method'] . DIRECTORY_SEPARATOR . $subPath . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public static function deleteDir($path) {
+        $class_func = array(__CLASS__, __FUNCTION__);
+        return is_file($path) ?
+            @unlink($path) :
+            array_map($class_func, glob($path.'/*')) == @rmdir($path);
     }
 }

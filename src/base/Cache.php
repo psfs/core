@@ -27,6 +27,11 @@ class Cache
 
     use SingletonTrait;
 
+    public function __construct()
+    {
+        $this->setLoaded(true);
+    }
+
     /**
      * @return bool
      */
@@ -58,6 +63,7 @@ class Cache
      */
     public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false)
     {
+        Logger::log('Gathering data from cache', LOG_DEBUG, ['path' => $path]);
         $data = null;
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         if (file_exists($absolutePath)) {
@@ -75,6 +81,7 @@ class Cache
      */
     private function hasExpiredCache($path, $expires = 300, $absolute = false)
     {
+        Logger::log('Checking expiration', LOG_DEBUG, ['path' => $path]);
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $lasModificationDate = filemtime($absolutePath);
         return ($lasModificationDate + $expires <= time());
@@ -88,6 +95,7 @@ class Cache
      */
     public static function extractDataWithFormat($data, $transform = Cache::TEXT)
     {
+        Logger::log('Extracting data from cache', LOG_DEBUG);
         switch ($transform) {
             case Cache::JSON:
                 $data = json_decode($data, true);
@@ -113,6 +121,7 @@ class Cache
      */
     public static function transformData($data, $transform = Cache::TEXT)
     {
+        Logger::log('Transform data in cache', LOG_DEBUG);
         switch ($transform) {
             case Cache::JSON:
                 $data = json_encode($data, JSON_PRETTY_PRINT);
@@ -140,6 +149,7 @@ class Cache
      */
     public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false, $expires = 600)
     {
+        Logger::log('Store data in cache', LOG_DEBUG, ['path' => $path]);
         $data = Cache::transformData($data, $transform);
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $this->saveTextToFile($data, $absolutePath);
@@ -153,11 +163,12 @@ class Cache
      * @param int $transform
      * @return mixed
      */
-    public function readFromCache($path, $expires = 300, callable $function, $transform = Cache::TEXT)
+    public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT)
     {
         $data = null;
+        Logger::log('Reading data from cache', LOG_DEBUG, ['path' => $path]);
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
-            if (null !== $function && $this->hasExpiredCache($path, $expires)) {
+            if (is_callable($function) && $this->hasExpiredCache($path, $expires)) {
                 $data = call_user_func($function);
                 $this->storeData($path, $data, $transform, false, $expires);
             } else {
@@ -181,9 +192,12 @@ class Cache
      */
     public static function needCache()
     {
+        return true;
         $needCache = false;
+        Logger::log('Checking cache requirements', LOG_DEBUG);
         if (!self::checkAdminSite() && !Config::getParam('debug')) {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
+            Logger::log('Gathering cache params from Session', LOG_DEBUG, $action);
             if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
                 $needCache = $action["cache"];
             }
@@ -200,11 +214,13 @@ class Cache
         $hashPath = null;
         $filename = null;
         $action = Security::getInstance()->getSessionKey("__CACHE__");
+        Logger::log('Gathering cache hash for request', LOG_DEBUG, $action);
         if (null !== $action && $action["cache"] > 0) {
-            $query = Request::getInstance()->getQueryParams();
-            $query['X-API-LANG'] = Request::header('X-API-LANG', '--');
+            $query = $action['params'];
+            $query['X-API-LANG'] = Request::header('X-API-LANG', 'es');
             $filename = FileHelper::generateHashFilename($action["http"], $action["slug"], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
+            Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath]);
         }
         return [$hashPath, $filename];
     }
@@ -213,9 +229,9 @@ class Cache
      * Flush cache when save a registry
      */
     public function flushCache() {
+        Logger::log('Flushing cache', LOG_DEBUG);
         $action = Security::getInstance()->getSessionKey("__CACHE__");
-        $query = Request::getInstance()->getQueryParams();
-        $hashPath = FileHelper::generateCachePath($action, $query);
-
+        $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+        FileHelper::deleteDir($hashPath);
     }
 }

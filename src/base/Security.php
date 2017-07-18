@@ -49,7 +49,7 @@ class Security
     /**
      * Constructor por defecto
      */
-    public function __construct()
+    public function init()
     {
         $this->initSession();
         $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
@@ -62,6 +62,7 @@ class Security
         if (null === $this->admin) {
             $this->checkAdmin();
         }
+        $this->setLoaded(true);
     }
 
     /**

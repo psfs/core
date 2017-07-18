@@ -10,6 +10,7 @@ use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 
 
@@ -216,6 +217,9 @@ class Logger
      */
     public static function log($msg, $type = LOG_DEBUG, $context = [])
     {
+        if(Config::getParam('profiling.enable')) {
+            Inspector::stats($msg);
+        }
         switch ($type) {
             case LOG_DEBUG:
                 Logger::getInstance()->debugLog($msg, $context);
