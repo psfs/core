@@ -1,5 +1,6 @@
 <?php
 namespace PSFS\base\types\helpers;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class FileHelper
@@ -54,9 +55,6 @@ class FileHelper {
      * @return bool
      */
     public static function deleteDir($path) {
-        $class_func = array(__CLASS__, __FUNCTION__);
-        return is_file($path) ?
-            @unlink($path) :
-            array_map($class_func, glob($path.'/*')) == @rmdir($path);
+        (new Filesystem())->remove($path);
     }
 }

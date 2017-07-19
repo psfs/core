@@ -192,7 +192,6 @@ class Cache
      */
     public static function needCache()
     {
-        return true;
         $needCache = false;
         Logger::log('Checking cache requirements', LOG_DEBUG);
         if (!self::checkAdminSite() && !Config::getParam('debug')) {

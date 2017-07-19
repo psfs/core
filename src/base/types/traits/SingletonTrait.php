@@ -48,7 +48,7 @@ Trait SingletonTrait
     /**
      * @return bool
      */
-    public function isLoaded(): bool
+    public function isLoaded()
     {
         return $this->loaded;
     }
