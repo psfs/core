@@ -269,23 +269,7 @@ class Router
         if (strlen($externalModules)) {
             $externalModules = explode(',', $externalModules);
             foreach ($externalModules as &$module) {
-                $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
-                $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-                if (file_exists($externalModulePath)) {
-                    $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-                    if (!empty($externalModule)) {
-                        foreach ($externalModule as $modulePath) {
-                            $extModule = $modulePath->getBasename();
-                            $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-                            if (file_exists($moduleAutoloader)) {
-                                @include $moduleAutoloader;
-                                if ($hydrateRoute) {
-                                    $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
-                                }
-                            }
-                        }
-                    }
-                }
+                $module = $this->loadExternalModule($hydrateRoute, $module);
             }
         }
     }
@@ -553,6 +537,43 @@ class Router
             $this->slugs[$slug] = $key;
             $info["slug"] = $slug;
         }
+    }
+
+    /**
+     * @param $hydrateRoute
+     * @param $modulePath
+     * @param $externalModulePath
+     */
+    private function loadExternalAutoloader(bool $hydrateRoute, \DirectoryIterator $modulePath, $externalModulePath)
+    {
+        $extModule = $modulePath->getBasename();
+        $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
+        if (file_exists($moduleAutoloader)) {
+            @include $moduleAutoloader;
+            if ($hydrateRoute) {
+                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
+            }
+        }
+    }
+
+    /**
+     * @param $hydrateRoute
+     * @param $module
+     * @return mixed
+     */
+    private function loadExternalModule(bool $hydrateRoute, $module)
+    {
+        $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
+        $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
+        if (file_exists($externalModulePath)) {
+            $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
+            if (!empty($externalModule)) {
+                foreach ($externalModule as $modulePath) {
+                    $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
+                }
+            }
+        }
+        return $module;
     }
 
 }

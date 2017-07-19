@@ -69,7 +69,8 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $session = Security::getInstance();
         $session->setSessionKey('__CACHE__', [
             'cache' => 600,
-            'http' => 'localhost/',
+            'params' => [],
+            'http' => 'GET',
             'slug' => 'test',
             'class' => 'Test',
             'method' => 'test',
