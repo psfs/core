@@ -16,6 +16,7 @@ use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 
 /**
@@ -544,7 +545,7 @@ class Router
      * @param $modulePath
      * @param $externalModulePath
      */
-    private function loadExternalAutoloader(bool $hydrateRoute, \DirectoryIterator $modulePath, $externalModulePath)
+    private function loadExternalAutoloader(bool $hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
     {
         $extModule = $modulePath->getBasename();
         $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
