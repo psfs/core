@@ -194,7 +194,7 @@ class Cache
     {
         $needCache = false;
         Logger::log('Checking cache requirements', LOG_DEBUG);
-        if (!self::checkAdminSite() && !Config::getParam('debug')) {
+        if (!self::checkAdminSite() && !Config::getParam('debug') && Config::getParam('cache.data.enable', false)) {
             $action = Security::getInstance()->getSessionKey("__CACHE__");
             Logger::log('Gathering cache params from Session', LOG_DEBUG, $action);
             if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
@@ -228,9 +228,11 @@ class Cache
      * Flush cache when save a registry
      */
     public function flushCache() {
-        Logger::log('Flushing cache', LOG_DEBUG);
-        $action = Security::getInstance()->getSessionKey("__CACHE__");
-        $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-        FileHelper::deleteDir($hashPath);
+        if(Config::getParam('cache.data.enable', false)) {
+            Logger::log('Flushing cache', LOG_DEBUG);
+            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+            FileHelper::deleteDir($hashPath);
+        }
     }
 }
