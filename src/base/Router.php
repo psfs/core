@@ -46,10 +46,6 @@ class Router
      * @var int
      */
     protected $cacheType = Cache::JSON;
-    /**
-     * @var bool
-     */
-    protected $loaded = false;
 
     /**
      * Constructor Router
@@ -541,11 +537,11 @@ class Router
     }
 
     /**
-     * @param $hydrateRoute
+     * @param bool $hydrateRoute
      * @param $modulePath
      * @param $externalModulePath
      */
-    private function loadExternalAutoloader(bool $hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
+    private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
     {
         $extModule = $modulePath->getBasename();
         $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
@@ -562,7 +558,7 @@ class Router
      * @param $module
      * @return mixed
      */
-    private function loadExternalModule(bool $hydrateRoute, $module)
+    private function loadExternalModule($hydrateRoute, $module)
     {
         $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
         $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';

@@ -56,7 +56,7 @@ Trait SingletonTrait
     /**
      * @param bool $loaded
      */
-    public function setLoaded(bool $loaded)
+    public function setLoaded($loaded = true)
     {
         $this->loaded = $loaded;
     }
