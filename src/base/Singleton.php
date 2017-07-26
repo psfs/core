@@ -61,6 +61,7 @@ class Singleton
      * @param bool $singleton
      * @param string $classNameSpace
      * @return $this
+     * @throws \Exception
      */
     public function load($variable, $singleton = true, $classNameSpace = null)
     {
@@ -75,6 +76,7 @@ class Singleton
             }
         } catch (\Exception $e) {
             Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
+            throw $e;
         }
         return $this;
     }
