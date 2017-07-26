@@ -12,10 +12,6 @@ use PSFS\base\types\traits\SingletonTrait;
 class Singleton
 {
     use SingletonTrait;
-    /**
-     * @var bool Flag that indicated if the class is already loaded
-     */
-    protected $loaded = false;
 
     public function __construct()
     {
@@ -43,24 +39,6 @@ class Singleton
     public function __get($variable)
     {
         return property_exists(get_class($this), $variable) ? $this->$variable : null;
-    }
-
-    /**
-     * Método que devuelve si una clase está isntanciada correctamente
-     * @return bool
-     */
-    public function isLoaded()
-    {
-        return $this->loaded;
-    }
-
-    /**
-     * Método que configura como cargada una clase
-     * @param bool $loaded
-     */
-    public function setLoaded($loaded = true)
-    {
-        $this->loaded = $loaded;
     }
 
     /**

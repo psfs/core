@@ -69,7 +69,8 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $session = Security::getInstance();
         $session->setSessionKey('__CACHE__', [
             'cache' => 600,
-            'http' => 'localhost/',
+            'params' => [],
+            'http' => 'GET',
             'slug' => 'test',
             'class' => 'Test',
             'method' => 'test',
@@ -80,7 +81,17 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($hash, 'Invalid cache hash');
         $this->assertNotEmpty($path, 'Invalid path to save the cache');
 
+        $cache_data_config = Config::getParam('cache.data.enable');
+        Config::save([], [
+            'label' => ['cache.data.enable'],
+            'value' => [true]
+        ]);
         Config::getInstance()->setDebugMode(false);
         $this->assertTrue(false !== Cache::needCache(), 'Test url expired or error checking cache');
+        Config::save([], [
+            'label' => ['cache.data.enable'],
+            'value' => [$cache_data_config]
+        ]);
+
     }
 }

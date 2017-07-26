@@ -58,6 +58,7 @@ class Config
         'angular.protection', // Add an angular suggested prefix in order to avoid JSONP injections
         'cors.headers', // Add extra headers to the CORS check
         'json.encodeUTF8', // Encode the json response
+        'cache.data.enable', // Enable data caching with PSFS
     ];
     protected $debug = false;
 

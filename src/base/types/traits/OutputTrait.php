@@ -157,12 +157,14 @@ trait OutputTrait {
         header('Content-length: ' . strlen($output));
 
         $needCache = Cache::needCache();
-        if (false !== $needCache && $this->getStatusCode() === Template::STATUS_OK) {
-            $cache = Cache::getInstance();
+        $cache = Cache::getInstance();
+        list($path, $cacheDataName) = $cache->getRequestCacheHash();
+        if (false !== $needCache && $this->getStatusCode() === Template::STATUS_OK && null !== $cacheDataName) {
             Logger::log('Saving output response into cache');
-            list($path, $cacheDataName) = $cache->getRequestCacheHash();
             $cache->storeData("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName, $output);
             $cache->storeData("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName . ".headers", headers_list(), Cache::JSON);
+        } elseif (Request::getInstance()->getMethod() !== 'GET') {
+            $cache->flushCache();
         }
         echo $output;
 

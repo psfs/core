@@ -2,6 +2,7 @@
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
+use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
@@ -15,6 +16,7 @@ use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 
 /**
@@ -27,7 +29,7 @@ class Router
 
     protected $routing;
     protected $slugs;
-    private $domains;
+    private $domains = [];
     /**
      * @var Finder $finder
      */
@@ -63,11 +65,13 @@ class Router
     public function init()
     {
         list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", $this->cacheType, TRUE);
-        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->cacheType, TRUE);
         if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
             $this->debugLoad();
+        } else {
+            $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->cacheType, TRUE);
         }
         $this->checkExternalModules(false);
+        $this->setLoaded(true);
     }
 
     /**
@@ -97,10 +101,8 @@ class Router
         }
         $template = Template::getInstance()->setStatus($e->getCode());
         if (preg_match('/json/i', Request::getInstance()->getServer('CONTENT_TYPE')) || $isJson) {
-            return $template->output(json_encode(array(
-                "success" => FALSE,
-                "error" => $e->getMessage(),
-            )), 'application/json');
+            $response = new JsonResponse(null, false, 0, 0, $e->getMessage());
+            return $template->output(json_encode($response), 'application/json');
         } else {
             $not_found_rouote = Config::getParam('route.404');
             if(null !== $not_found_rouote) {
@@ -158,10 +160,6 @@ class Router
     {
         Logger::log('Executing the request');
         try {
-            //Check CORS for requests
-            RequestHelper::checkCORS();
-            // Checks restricted access
-            SecurityHelper::checkRestrictedAccess($route);
             //Search action and execute
             $this->searchAction($route);
         } catch (AccessDeniedException $e) {
@@ -195,11 +193,17 @@ class Router
             list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($pattern);
             $matched = RouterHelper::matchRoutePattern($routePattern, $path);
             if ($matched && ($httpMethod === "ALL" || $httpRequest === $httpMethod) && RouterHelper::compareSlashes($routePattern, $path)) {
+                // Checks restricted access
+                SecurityHelper::checkRestrictedAccess($route);
                 $get = RouterHelper::extractComponents($route, $routePattern);
                 /** @var $class \PSFS\base\types\Controller */
                 $class = RouterHelper::getClassToCall($action);
                 try {
-                    $this->executeCachedRoute($route, $action, $class, $get);
+                    if($this->checkRequirements($action, $get)) {
+                        $this->executeCachedRoute($route, $action, $class, $get);
+                    } else {
+                        throw new RouterException(_('La ruta no es válida'), 400);
+                    }
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                     throw new \RuntimeException($e->getMessage(), 404, $e);
@@ -207,6 +211,29 @@ class Router
             }
         }
         throw new RouterException(_("Ruta no encontrada"));
+    }
+
+    /**
+     * @param array $action
+     * @param array $params
+     * @return bool
+     */
+    private function checkRequirements(array $action, array $params = []) {
+        $valid = true;
+        if(!empty($action['requirements'])) {
+            if(!empty($params)) {
+                $checked = 0;
+                foreach(array_keys($params) as $key) {
+                    if(in_array($key, $action['requirements'])) {
+                        $checked++;
+                    }
+                }
+                $valid = count($action['requirements']) == $checked;
+            } else {
+                $valid = false;
+            }
+        }
+        return $valid;
     }
 
     /**
@@ -239,23 +266,7 @@ class Router
         if (strlen($externalModules)) {
             $externalModules = explode(',', $externalModules);
             foreach ($externalModules as &$module) {
-                $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
-                $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-                if (file_exists($externalModulePath)) {
-                    $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-                    if (!empty($externalModule)) {
-                        foreach ($externalModule as $modulePath) {
-                            $extModule = $modulePath->getBasename();
-                            $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-                            if (file_exists($moduleAutoloader)) {
-                                @include $moduleAutoloader;
-                                if ($hydrateRoute) {
-                                    $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
-                                }
-                            }
-                        }
-                    }
-                }
+                $module = $this->loadExternalModule($hydrateRoute, $module);
             }
         }
     }
@@ -478,18 +489,17 @@ class Router
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
     {
         Logger::log('Executing route ' . $route, LOG_INFO);
+        $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
         Security::getInstance()->setSessionKey("__CACHE__", $action);
         $cache = Cache::needCache();
         $execute = TRUE;
-        if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE) {
+        if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE && $action['http'] === 'GET') {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
             $cachedData = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName,
-                $cache, function () {
-                });
+                $cache, null);
             if (NULL !== $cachedData) {
                 $headers = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName . ".headers",
-                    $cache, function () {
-                    }, Cache::JSON);
+                    $cache, null, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);
                 $execute = FALSE;
             }
@@ -524,6 +534,43 @@ class Router
             $this->slugs[$slug] = $key;
             $info["slug"] = $slug;
         }
+    }
+
+    /**
+     * @param bool $hydrateRoute
+     * @param $modulePath
+     * @param $externalModulePath
+     */
+    private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
+    {
+        $extModule = $modulePath->getBasename();
+        $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
+        if (file_exists($moduleAutoloader)) {
+            @include $moduleAutoloader;
+            if ($hydrateRoute) {
+                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
+            }
+        }
+    }
+
+    /**
+     * @param $hydrateRoute
+     * @param $module
+     * @return mixed
+     */
+    private function loadExternalModule($hydrateRoute, $module)
+    {
+        $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
+        $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
+        if (file_exists($externalModulePath)) {
+            $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
+            if (!empty($externalModule)) {
+                foreach ($externalModule as $modulePath) {
+                    $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
+                }
+            }
+        }
+        return $module;
     }
 
 }

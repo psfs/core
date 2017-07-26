@@ -154,15 +154,18 @@ class RouterHelper
         $default = '';
         $params = [];
         $parameters = $method->getParameters();
+        $requirements = [];
         /** @var \ReflectionParameter $param */
         if (count($parameters) > 0) foreach ($parameters as $param) {
             if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                 $params[$param->getName()] = $param->getDefaultValue();
                 $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+            } elseif(!$param->isOptional()) {
+                $requirements[] = $param->getName();
             }
         } else $default = $regex;
 
-        return array($regex, $default, $params);
+        return [$regex, $default, $params, $requirements];
     }
 
     /**
@@ -231,7 +234,7 @@ class RouterHelper
         $docComments = $method->getDocComment();
         preg_match('/@route\ (.*)(\n|\r)/i', $docComments, $sr);
         if (count($sr)) {
-            list($regex, $default, $params) = RouterHelper::extractReflectionParams($sr, $method);
+            list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($sr, $method);
             if (strlen($api) && false !== strpos($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
@@ -252,6 +255,7 @@ class RouterHelper
                 "visible" => RouterHelper::extractReflectionVisibility($docComments),
                 "http" => $httpMethod,
                 "cache" => RouterHelper::extractReflectionCacheability($docComments),
+                "requirements" => $requirements,
             ];
         }
         return [$route, $info];

@@ -8,8 +8,10 @@ use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\Order;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\Api\ManagerTrait;
 
 /**
@@ -69,10 +71,13 @@ abstract class Api extends Singleton
     public function init()
     {
         parent::init();
+        Logger::log(get_called_class() . ' init', LOG_DEBUG);
         $this->domain = $this->getDomain();
         $this->hydrateRequestData();
         $this->hydrateOrders();
         $this->createConnection($this->getTableMap());
+        $this->setLoaded(true);
+        Logger::log(get_called_class() . ' loaded', LOG_DEBUG);
     }
 
     /**
@@ -81,6 +86,7 @@ abstract class Api extends Singleton
     private function hydrateOrders()
     {
         if (count($this->query)) {
+            Logger::log(get_called_class() . ' gathering query string', LOG_DEBUG);
             foreach ($this->query as $key => $value) {
                 if ($key === self::API_ORDER_FIELD) {
                     foreach ($value as $field => $direction) {
@@ -97,9 +103,10 @@ abstract class Api extends Singleton
      */
     protected function extractPagination()
     {
+        Logger::log(get_called_class() . ' extract pagination start', LOG_DEBUG);
         $page = (array_key_exists(self::API_PAGE_FIELD, $this->query)) ? $this->query[self::API_PAGE_FIELD] : 1;
         $limit = (array_key_exists(self::API_LIMIT_FIELD, $this->query)) ? $this->query[self::API_LIMIT_FIELD] : 100;
-
+        Logger::log(get_called_class() . ' extract pagination end', LOG_DEBUG);
         return array($page, $limit);
     }
 
@@ -110,6 +117,7 @@ abstract class Api extends Singleton
      */
     private function addOrders(ModelCriteria &$query)
     {
+        Logger::log(get_called_class() . ' extract orders start ', LOG_DEBUG);
         $orderAdded = FALSE;
         $tableMap = $this->getTableMap();
         foreach ($this->order->getOrders() as $field => $direction) {
@@ -127,6 +135,7 @@ abstract class Api extends Singleton
                 $query->addAscendingOrderByColumn($pk);
             }
         }
+        Logger::log(get_called_class() . ' extract orders end', LOG_DEBUG);
     }
 
     /**

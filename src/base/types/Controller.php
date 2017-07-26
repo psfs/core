@@ -1,11 +1,13 @@
 <?php
 namespace PSFS\base\types;
 
+use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\types\traits\JsonTrait;
 use PSFS\base\types\traits\OutputTrait;
@@ -39,6 +41,9 @@ abstract class Controller extends Singleton implements ControllerInterface
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
+        if(Config::getParam('profiling.enable')) {
+            $vars['__profiling__'] = Inspector::getStats();
+        }
         $domain = (null === $domain) ? $this->getDomain() : $domain;
         return $this->tpl->render($domain . $template, $vars, $cookies);
     }
