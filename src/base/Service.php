@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base;
 
+use PSFS\base\config\Config;
 use PSFS\base\types\helpers\SecurityHelper;
 
 /**
@@ -280,7 +281,9 @@ class Service extends Singleton
     }
 
     protected function applyOptions() {
-        curl_setopt_array($this->con, $this->options);
+        if(count($this->options)) {
+            curl_setopt_array($this->con, $this->options);
+        }
     }
 
     protected function applyHeaders() {
@@ -288,7 +291,9 @@ class Service extends Singleton
         foreach($this->headers as $key => $value) {
             $headers[] = $key . ': ' . $value;
         }
-        curl_setopt($this->con, CURLOPT_HTTPHEADER, $headers);
+        if(count($headers)) {
+            curl_setopt($this->con, CURLOPT_HTTPHEADER, $headers);
+        }
     }
 
     protected function setDefaults()
@@ -330,6 +335,8 @@ class Service extends Singleton
 
         $this->addOption(CURLOPT_RETURNTRANSFER, true);
         $this->addOption(CURLOPT_FOLLOWLOCATION, true);
+        $this->addOption(CURLOPT_SSL_VERIFYHOST, false);
+        $this->addOption(CURLOPT_SSL_VERIFYPEER, false);
     }
 
     public function callSrv()
@@ -337,8 +344,22 @@ class Service extends Singleton
         $this->setDefaults();
         $this->applyOptions();
         $this->applyHeaders();
+        if('debug' === Config::getParam('log.level')) {
+            curl_setopt($this->con, CURLOPT_VERBOSE, true);
+            $verbose = fopen('php://temp', 'w+');
+            curl_setopt($this->con, CURLOPT_STDERR, $verbose);
+        }
         $result = curl_exec($this->con);
         $this->result = json_decode($result, true);
+        if('debug' === Config::getParam('log.level')) {
+            rewind($verbose);
+            $verboseLog = stream_get_contents($verbose);
+            Logger::log($verboseLog, LOG_DEBUG, [
+                'headers' => $this->getHeaders(),
+                'options' => $this->getOptions(),
+                'url' => $this->getUrl(),
+            ]);
+        }
         Logger::log($this->url . ' response: ', LOG_DEBUG, $this->result);
         $this->info = curl_getinfo($this->con);
     }
