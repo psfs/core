@@ -32,7 +32,7 @@ Trait JsonTrait {
                 $response = ProfilingJsonResponse::createFromPrevious($response, Inspector::getStats());
             }
         }
-        $data = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING | JSON_PRESERVE_ZERO_FRACTION);
+        $data = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING | JSON_NUMERIC_CHECK);
         if(Config::getParam('angular.protection', false)) {
             $data = ")]}',\n" . $data;
         }
