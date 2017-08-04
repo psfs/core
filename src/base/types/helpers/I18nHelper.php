@@ -1,9 +1,11 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 
 /**
  * Class I18nHelper
@@ -11,6 +13,44 @@ use PSFS\base\Logger;
  */
 class I18nHelper
 {
+
+    static $langs = ['es_ES', 'en_GB', 'fr_FR'];
+
+    /**
+     * @param string $default
+     * @return array|mixed|string
+     */
+    private static function extractLocale($default = null)
+    {
+        $locale = Request::header('X-API-LANG', self::$langs[0]);
+        if (empty($locale)) {
+            $BrowserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
+            for ($i = 0; $i < count($BrowserLocales); $i++) {
+                list($BrowserLocales[$i]) = explode(";", $BrowserLocales[$i]); //trick for "en;q=0.8"
+            }
+            $locale = array_shift($BrowserLocales);
+        } else {
+            $locale = strtolower($locale);
+        }
+        if (false !== strpos($locale, '_')) {
+            $locale = explode('_', $locale);
+            if ($locale[0] == 'en') {
+                $locale = $locale[0] . '_GB';
+            } else {
+                $locale = $locale[0] . '_' . strtoupper($locale[1]);
+            }
+        } else {
+            if (strtolower($locale) === 'en') {
+                $locale = 'en_GB';
+            } else {
+                $locale = $locale . '_' . strtoupper($locale);
+            }
+        }
+        if (!in_array($locale, self::$langs)) {
+            $locale = Config::getParam("default.language", $default);
+        }
+        return $locale;
+    }
 
     /**
      * Create translation file if not exists
@@ -34,8 +74,9 @@ class I18nHelper
     /**
      * Method to set the locale
      */
-    public static function setLocale() {
-        $locale = Config::getParam("default.language", 'es_ES');
+    public static function setLocale()
+    {
+        $locale = self::extractLocale('es_ES');
         Logger::log('Set locale to project [' . $locale . ']');
         // Load translations
         putenv("LC_ALL=" . $locale);
@@ -53,18 +94,19 @@ class I18nHelper
      * @param $data
      * @return string
      */
-    public static function utf8Encode($data) {
-        if(is_array($data)) {
-            foreach($data as $key => &$field) {
+    public static function utf8Encode($data)
+    {
+        if (is_array($data)) {
+            foreach ($data as $key => &$field) {
                 $field = self::utf8Encode($field);
             }
-        } elseif(is_object($data)) {
+        } elseif (is_object($data)) {
             $properties = get_class_vars($data);
-            foreach($properties as $property => $value) {
+            foreach ($properties as $property => $value) {
                 $data->$property = self::utf8Encode($data->$property);
             }
 
-        } elseif(is_string($data)) {
+        } elseif (is_string($data)) {
             $data = utf8_encode($data);
         }
         return $data;
