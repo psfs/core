@@ -23,9 +23,6 @@
                     $scope.model = response.data.data;
                     $scope.modelBackup = angular.copy($scope.model);
                     $msgSrv.send('populate_combos');
-                    $timeout(function(){
-                        $scope.itemLoading = false;
-                    }, 500);
                 }, function(err, status) {
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -35,7 +32,12 @@
                             .ariaLabel('Delete error')
                             .ok($scope.i18N['close'])
                     );
+                })
+                .finally(function() {
                     $scope.loading = false;
+                    $timeout(function(){
+                        $scope.itemLoading = false;
+                    }, 500);
                 });
         }
 

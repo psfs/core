@@ -68,9 +68,11 @@
                                 $scope.loading = false;
                             }, 500);
                             $scope.count = result.data.total;
-                        }, catchError);
+                        }, catchError)
+                        .finally(function() {
+                            $scope.loading = false;
+                        });
                 } catch(err) {
-                    $scope.loading = false;
                     $log.error(err.message);
                 }
             }
@@ -116,6 +118,9 @@
                                         .ariaLabel('Delete error')
                                         .ok($scope.i18N['close'])
                                 );
+                                $scope.loading = false;
+                            })
+                            .finally(function() {
                                 $scope.loading = false;
                             });
                     }, function() {

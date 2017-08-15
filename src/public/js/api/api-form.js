@@ -108,11 +108,23 @@
                     var model = $scope.model;
                     try {
                         $httpSrv.$put($scope.url.replace(/\/$/, '') + '/' + $apiSrv.getId($scope.modelBackup, $scope.form.fields), model)
-                            .then(clearForm, showError);
+                            .then(clearForm, showError)
+                            .finally(function() {
+                                $scope.loading = false;
+                                $timeout(function(){
+                                    $scope.itemLoading = false;
+                                }, 500);
+                            });
                     } catch (err) {
                         $log.debug('Create new entity');
                         $httpSrv.$post($scope.url.replace(/\/$/, ''), model)
-                            .then(clearForm, showError);
+                            .then(clearForm, showError)
+                            .finally(function() {
+                                $scope.loading = false;
+                                $timeout(function(){
+                                    $scope.itemLoading = false;
+                                }, 500);
+                            });
                     } finally {
                         $timeout(function () {
                             $msgSrv.send('psfs.list.reload');
@@ -147,6 +159,12 @@
                             deferred.resolve(response.data.data || []);
                         }, function () {
                             deferred.resolve([]);
+                        })
+                        .finally(function() {
+                            $scope.loading = false;
+                            $timeout(function(){
+                                $scope.itemLoading = false;
+                            }, 500);
                         });
                 }
 
@@ -183,6 +201,12 @@
                         $httpSrv.$get(field.url.replace(/\/$/, ''), query)
                             .then(function (response) {
                                 $scope.combos[field.name].item = response.data.data[0];
+                            })
+                            .finally(function() {
+                                $scope.loading = false;
+                                $timeout(function(){
+                                    $scope.itemLoading = false;
+                                }, 500);
                             });
                     }
                 }
@@ -266,11 +290,15 @@
                 $scope.extraActionExecution = false;
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
+                var message = 'Ha ocurrido un error ejecutando la acción, por favor revisa el log';
+                if(response.message) {
+                    message += ': ' + response.message;
+                }
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title(label)
-                        .content('Ha ocurrido un error ejecutando la acción, por favor revisa el log')
+                        .content(message)
                         .ariaLabel('Execution ko')
                         .ok('Close')
                 );
@@ -286,8 +314,14 @@
                             } else {
                                 extraActionKOFeedback(response, label);
                             }
-                        }, function() {
-
+                        }, function(response) {
+                            extraActionKOFeedback(response, label);
+                        })
+                        .finally(function() {
+                            $scope.loading = false;
+                            $timeout(function(){
+                                $scope.itemLoading = false;
+                            }, 500);
                         });
                         break;
                     case 'POST':
@@ -299,6 +333,12 @@
                             }
                         }, function (response) {
                             extraActionKOFeedback(response, label);
+                        })
+                        .finally(function() {
+                            $scope.loading = false;
+                            $timeout(function(){
+                                $scope.itemLoading = false;
+                            }, 500);
                         });
                         break;
                     case 'DELETE':
@@ -319,6 +359,12 @@
                                     }
                                 }, function(err, status){
                                     extraActionKOFeedback(err, label);
+                                })
+                                .finally(function() {
+                                    $scope.loading = false;
+                                    $timeout(function(){
+                                        $scope.itemLoading = false;
+                                    }, 500);
                                 });
                         }, function() {
                             $scope.loading = false;
