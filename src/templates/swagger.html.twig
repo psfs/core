@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Swagger UI</title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+    {{ resource("@ROOT/css/swagger/swagger-ui.css", '/css') }}
+    <link rel="stylesheet" type="text/css" href="/css/swagger-ui.css" >
     <link rel="icon" type="image/png" href="{{ asset('@ROOT/image/swagger/favicon-32x32.png') }}" sizes="32x32" />
     <link rel="icon" type="image/png" href="{{ asset('@ROOT/image/swagger/favicon-16x16.png') }}" sizes="16x16" />
     <style>
@@ -19,7 +21,6 @@
         {
             box-sizing: inherit;
         }
-
         body {
             margin:0;
             background: #fafafa;
@@ -64,10 +65,11 @@
 </svg>
 
 <div id="swagger-ui"></div>
-{% scripts
-"@ROOT/js/swagger/swagger-ui-bundle.js"
-"@ROOT/js/swagger/swagger-ui-standalone-preset.js"
-%}{% endscript %}
+
+{{ resource("@ROOT/js/swagger/swagger-ui-bundle.js", '/js') }}
+{{ resource("@ROOT/js/swagger/swagger-ui-standalone-preset.js", '/js') }}
+<script src="/js/swagger-ui-bundle.js"> </script>
+<script src="/js/swagger-ui-standalone-preset.js"> </script>
 <script>
     window.onload = function() {
         // Build a system

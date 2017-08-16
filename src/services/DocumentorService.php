@@ -19,8 +19,17 @@ use Symfony\Component\Finder\Finder;
  */
 class DocumentorService extends Service
 {
+    public static $nativeMethods = [
+        'modelList', // Api list
+        'get', // Api get
+        'post', // Api post
+        'put', // Api put
+        'delete', // Api delete
+    ];
+
     const DTO_INTERFACE = '\\PSFS\\base\\dto\\Dto';
     const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
+
     /**
      * @Inyectable
      * @var \PSFS\base\Router route
@@ -344,17 +353,20 @@ class DocumentorService extends Service
             if ($info['visible'] && !self::checkDeprecated($docComments)) {
                 try {
                     $return = $this->extractReturn($modelNamespace, $docComments);
+                    $url = array_pop($route);
                     $methodInfo = [
-                        'url' => array_pop($route),
+                        'url' => str_replace("/". $module ."/api", '', $url),
                         'method' => $info['http'],
                         'description' => $info['label'],
                         'return' => $return,
                         'objects' => $return['objects'],
+                        'class' => $reflection->getShortName(),
                     ];
                     unset($methodInfo['return']['objects']);
                     if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
                         $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
-                    } elseif($method->getNumberOfParameters() > 0) {
+                    }
+                    if($method->getNumberOfParameters() > 0) {
                         $methodInfo['parameters'] = [];
                         foreach($method->getParameters() as $parameter) {
                             $parameterName = $parameter->getName();
@@ -364,6 +376,33 @@ class DocumentorService extends Service
                                 $methodInfo['parameters'][$parameterName] = $types[1][0];
                             }
                         }
+                    }
+                    if (in_array($methodInfo['method'], ['GET']) && in_array($method->getShortName(), self::$nativeMethods)) {
+                        $methodInfo['query'] = [];
+                        $methodInfo['query'][] = [
+                            "name" => "__limit",
+                            "in" => "query",
+                            "description" => _("Límite de registros a devolver, -1 para devolver todos los registros"),
+                            "required" => false,
+                            "type" => "integer",
+                        ];
+                        $methodInfo['query'][] = [
+                            "name" => "__page",
+                            "in" => "query",
+                            "description" => _("Página a devolver"),
+                            "required" => false,
+                            "type" => "integer",
+                        ];
+                        $methodInfo['query'][] = [
+                            "name" => "__fields",
+                            "in" => "query",
+                            "description" => _("Campos a devolver"),
+                            "required" => false,
+                            "type" => "array",
+                            "items" => [
+                                "type" => "string",
+                            ]
+                        ];
                     }
                 } catch (\Exception $e) {
                     jpre($e->getMessage());
@@ -551,7 +590,11 @@ class DocumentorService extends Service
                                 'format' => $format,
                             ];
                         }
-
+                    }
+                    if(array_key_exists('query', $endpoint)) {
+                        foreach($endpoint['query'] as $query) {
+                            $paths[$url][$method]['parameters'][] = $query;
+                        }
                     }
                     foreach($endpoint['objects'] as $name => $object) {
                         if(class_exists($name)) {
@@ -572,6 +615,10 @@ class DocumentorService extends Service
                                     'required' => true,
                                     'schema' => $classDefinition
                                 ];
+                            }
+                        } else {
+                            if(!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'])) {
+                                $paths[$url][$method]['tags'][] = $endpoint['class'];
                             }
                         }
                     }
