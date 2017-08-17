@@ -8,7 +8,6 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
-use PSFS\base\types\Api;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
@@ -568,10 +567,20 @@ class DocumentorService extends Service
                     foreach ($endpoint['objects'] as $name => $object) {
                         if (class_exists($name)) {
                             $class = GeneratorHelper::extractClassFromNamespace($name);
-                            $classDefinition = [
-                                'type' => 'object',
-                                '$ref' => '#/definitions/' . $class,
-                            ];
+                            if(array_key_exists('data', $endpoint['return']) && count(array_keys($object)) === count(array_keys($endpoint['return']['data']))) {
+                                $classDefinition = [
+                                    'type' => 'object',
+                                    '$ref' => '#/definitions/' . $class,
+                                ];
+                            } else {
+                                $classDefinition = [
+                                    'type' => 'array',
+                                    'items' => [
+                                        '$ref' => '#/definitions/' . $class,
+                                    ],
+                                ];
+                            }
+
                             $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
                             $dtos += self::extractSwaggerDefinition($class, $object);
                             if (array_key_exists('payload', $endpoint)) {
@@ -579,7 +588,10 @@ class DocumentorService extends Service
                                     'in' => 'body',
                                     'name' => $class,
                                     'required' => true,
-                                    'schema' => $classDefinition,
+                                    'schema' => [
+                                        'type' => 'object',
+                                        '$ref' => '#/definitions/' . $class,
+                                    ],
                                 ];
                             }
                         }
@@ -666,10 +678,7 @@ class DocumentorService extends Service
                 ];
 
                 // Extract var type
-                preg_match('/@var\ (.*)\n/i', $doc, $type);
-                if(count($type)) {
-                    $header['type'] = $type[1];
-                }
+                $header['type'] = $this->extractVarType($doc);
 
                 // Extract description
                 preg_match('/@label\ (.*)\n/i', $doc, $label);
