@@ -366,7 +366,7 @@ class DocumentorService extends Service
                     unset($methodInfo['return']['objects']);
                     $this->setRequestParams($method, $methodInfo, $modelNamespace, $docComments);
                     $this->setQueryParams($method, $methodInfo);
-                    $this->setRequestHeaders($method, $methodInfo);
+                    $this->setRequestHeaders($reflection, $methodInfo);
                 } catch (\Exception $e) {
                     jpre($e->getMessage());
                     Logger::getInstance()->errorLog($e->getMessage());
@@ -648,27 +648,43 @@ class DocumentorService extends Service
         }
     }
     /**
-     * @param \ReflectionMethod $method
+     * @param \ReflectionClass $reflection
      * @param $methodInfo
      */
-    protected function setRequestHeaders(\ReflectionMethod $method, &$methodInfo)
+    protected function setRequestHeaders(\ReflectionClass $reflection, &$methodInfo)
     {
+
         $methodInfo['headers'] = [];
-        $methodInfo['headers'][] = [
-            "name" => Api::HEADER_API_LANG,
-            "in" => "header",
-            "description" => _("Idioma en que devuelve los datos la API"),
-            "required" => true,
-            "type" => "string",
-            "default" => "es",
-        ];
-        $methodInfo['headers'][] = [
-            "name" => Api::HEADER_API_TOKEN,
-            "in" => "header",
-            "description" => _("Token de seguridad de PSFS"),
-            "required" => false,
-            "type" => "string",
-        ];
+        foreach($reflection->getProperties() as $property) {
+            $doc = $property->getDocComment();
+            preg_match('/@header\ (.*)\n/i', $doc, $headers);
+            if(count($headers)) {
+                $header = [
+                    "name" => $headers[1],
+                    "in" => "header",
+                    "required" => true,
+                ];
+
+                // Extract var type
+                preg_match('/@var\ (.*)\n/i', $doc, $type);
+                if(count($type)) {
+                    $header['type'] = $type[1];
+                }
+
+                // Extract description
+                preg_match('/@label\ (.*)\n/i', $doc, $label);
+                if(count($label)) {
+                    $header['description'] = _($label[1]);
+                }
+
+                // Extract default value
+                preg_match('/@default\ (.*)\n/i', $doc, $default);
+                if(count($default)) {
+                    $header['default'] = $default[1];
+                }
+                $methodInfo['headers'][] = $header;
+            }
+        }
     }
 
     /**

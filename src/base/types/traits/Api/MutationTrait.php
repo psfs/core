@@ -18,6 +18,13 @@ use PSFS\base\types\Api;
  */
 trait MutationTrait
 {
+    /**
+     * @var string
+     * @header X-API-LANG
+     * @label Idioma de la petición REST
+     * @default es
+     */
+    protected $lang;
 
     /**
      * @var array extraColumns
@@ -157,16 +164,22 @@ trait MutationTrait
         return $columns;
     }
 
+
+    protected function extractApiLang() {
+        $default_language = explode('_', Config::getParam('default.language', 'es_ES'));
+        $this->lang = Request::header(APi::HEADER_API_LANG, $default_language[0]);
+    }
+
     /**
      * @param ModelCriteria $query
      */
     protected function checkI18n(ModelCriteria &$query)
     {
+        $this->extractApiLang();
         $model = $this->getModelNamespace();
         $modelI18n = $model . 'I18n';
         if (method_exists($query, 'useI18nQuery')) {
-            $default_language = explode('_', Config::getParam('default.language', 'es_ES'));
-            $query->useI18nQuery(Request::header(APi::HEADER_API_LANG, $default_language[0]));
+            $query->useI18nQuery($this->lang);
             $modelI18nTableMapClass = str_replace('\\Models\\', '\\Models\\Map\\', $modelI18n) . 'TableMap';
             /** @var TableMap $modelI18nTableMap */
             $modelI18nTableMap = $modelI18nTableMapClass::getTableMap();
@@ -174,7 +187,7 @@ trait MutationTrait
                 if(!$columnMap->isPrimaryKey()) {
                     $query->withColumn($modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName(), $columnMap->getPhpName());
                 } elseif(!$columnMap->isForeignKey()) {
-                    $query->withColumn('IFNULL(' . $modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName() . ', "'.Request::header(Api::HEADER_API_LANG, 'es').'")', $columnMap->getPhpName());
+                    $query->withColumn('IFNULL(' . $modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName() . ', "'.$this->lang.'")', $columnMap->getPhpName());
                 }
             }
         }
