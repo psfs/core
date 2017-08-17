@@ -38,6 +38,7 @@ abstract class Api extends Singleton
     const API_ACTION_DELETE = 'delete';
 
     const HEADER_API_TOKEN = 'X-API-SEC-TOKEN';
+    const HEADER_API_LANG = 'X-API-LANG';
 
     /**
      * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager $list

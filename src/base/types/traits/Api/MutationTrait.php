@@ -166,7 +166,7 @@ trait MutationTrait
         $modelI18n = $model . 'I18n';
         if (method_exists($query, 'useI18nQuery')) {
             $default_language = explode('_', Config::getParam('default.language', 'es_ES'));
-            $query->useI18nQuery(Request::header('X-API-LANG', $default_language[0]));
+            $query->useI18nQuery(Request::header(APi::HEADER_API_LANG, $default_language[0]));
             $modelI18nTableMapClass = str_replace('\\Models\\', '\\Models\\Map\\', $modelI18n) . 'TableMap';
             /** @var TableMap $modelI18nTableMap */
             $modelI18nTableMap = $modelI18nTableMapClass::getTableMap();
@@ -174,7 +174,7 @@ trait MutationTrait
                 if(!$columnMap->isPrimaryKey()) {
                     $query->withColumn($modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName(), $columnMap->getPhpName());
                 } elseif(!$columnMap->isForeignKey()) {
-                    $query->withColumn('IFNULL(' . $modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName() . ', "'.Request::header('X-API-LANG', 'es').'")', $columnMap->getPhpName());
+                    $query->withColumn('IFNULL(' . $modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName() . ', "'.Request::header(Api::HEADER_API_LANG, 'es').'")', $columnMap->getPhpName());
                 }
             }
         }

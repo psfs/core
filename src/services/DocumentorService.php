@@ -1,13 +1,14 @@
 <?php
+
 namespace PSFS\services;
 
 use Propel\Runtime\Map\ColumnMap;
-use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
+use PSFS\base\types\Api;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
@@ -355,7 +356,7 @@ class DocumentorService extends Service
                     $return = $this->extractReturn($modelNamespace, $docComments);
                     $url = array_pop($route);
                     $methodInfo = [
-                        'url' => str_replace("/". $module ."/api", '', $url),
+                        'url' => str_replace("/" . $module . "/api", '', $url),
                         'method' => $info['http'],
                         'description' => $info['label'],
                         'return' => $return,
@@ -363,47 +364,9 @@ class DocumentorService extends Service
                         'class' => $reflection->getShortName(),
                     ];
                     unset($methodInfo['return']['objects']);
-                    if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-                        $methodInfo['payload'] = $this->extractPayload($modelNamespace, $docComments);
-                    }
-                    if($method->getNumberOfParameters() > 0) {
-                        $methodInfo['parameters'] = [];
-                        foreach($method->getParameters() as $parameter) {
-                            $parameterName = $parameter->getName();
-                            $types = [];
-                            preg_match_all('/\@param\ (.*)\ \$'.$parameterName.'$/im', $docComments, $types);
-                            if(count($types) > 1) {
-                                $methodInfo['parameters'][$parameterName] = $types[1][0];
-                            }
-                        }
-                    }
-                    if (in_array($methodInfo['method'], ['GET']) && in_array($method->getShortName(), self::$nativeMethods)) {
-                        $methodInfo['query'] = [];
-                        $methodInfo['query'][] = [
-                            "name" => "__limit",
-                            "in" => "query",
-                            "description" => _("Límite de registros a devolver, -1 para devolver todos los registros"),
-                            "required" => false,
-                            "type" => "integer",
-                        ];
-                        $methodInfo['query'][] = [
-                            "name" => "__page",
-                            "in" => "query",
-                            "description" => _("Página a devolver"),
-                            "required" => false,
-                            "type" => "integer",
-                        ];
-                        $methodInfo['query'][] = [
-                            "name" => "__fields",
-                            "in" => "query",
-                            "description" => _("Campos a devolver"),
-                            "required" => false,
-                            "type" => "array",
-                            "items" => [
-                                "type" => "string",
-                            ]
-                        ];
-                    }
+                    $this->setRequestParams($method, $methodInfo, $modelNamespace, $docComments);
+                    $this->setQueryParams($method, $methodInfo);
+                    $this->setRequestHeaders($method, $methodInfo);
                 } catch (\Exception $e) {
                     jpre($e->getMessage());
                     Logger::getInstance()->errorLog($e->getMessage());
@@ -497,11 +460,12 @@ class DocumentorService extends Service
     /**
      * @return array
      */
-    private static function swaggerResponses() {
+    private static function swaggerResponses()
+    {
         $codes = [200, 400, 404, 500];
         $responses = [];
-        foreach($codes as $code) {
-            switch($code) {
+        foreach ($codes as $code) {
+            switch ($code) {
                 default:
                 case 200:
                     $message = _('Successful response');
@@ -568,8 +532,8 @@ class DocumentorService extends Service
         $endpoints = DocumentorService::getInstance()->extractApiEndpoints($module);
         foreach ($endpoints as $model) {
             foreach ($model as $endpoint) {
-                if(!preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url'])) {
-                    $url = preg_replace('/\/'.$module['name'].'\/api/i', '', $endpoint['url']);
+                if (!preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url'])) {
+                    $url = preg_replace('/\/' . $module['name'] . '\/api/i', '', $endpoint['url']);
                     $description = $endpoint['description'];
                     $method = strtolower($endpoint['method']);
                     $paths[$url][$method] = [
@@ -579,8 +543,8 @@ class DocumentorService extends Service
                         'responses' => self::swaggerResponses(),
                         'parameters' => [],
                     ];
-                    if(array_key_exists('parameters', $endpoint)) {
-                        foreach($endpoint['parameters'] as $parameter => $type) {
+                    if (array_key_exists('parameters', $endpoint)) {
+                        foreach ($endpoint['parameters'] as $parameter => $type) {
                             list($type, $format) = self::translateSwaggerFormats($type);
                             $paths[$url][$method]['parameters'][] = [
                                 'in' => 'path',
@@ -591,13 +555,18 @@ class DocumentorService extends Service
                             ];
                         }
                     }
-                    if(array_key_exists('query', $endpoint)) {
-                        foreach($endpoint['query'] as $query) {
+                    if (array_key_exists('query', $endpoint)) {
+                        foreach ($endpoint['query'] as $query) {
                             $paths[$url][$method]['parameters'][] = $query;
                         }
                     }
-                    foreach($endpoint['objects'] as $name => $object) {
-                        if(class_exists($name)) {
+                    if (array_key_exists('headers', $endpoint)) {
+                        foreach ($endpoint['headers'] as $query) {
+                            $paths[$url][$method]['parameters'][] = $query;
+                        }
+                    }
+                    foreach ($endpoint['objects'] as $name => $object) {
+                        if (class_exists($name)) {
                             $class = GeneratorHelper::extractClassFromNamespace($name);
                             $classDefinition = [
                                 'type' => 'object',
@@ -605,21 +574,17 @@ class DocumentorService extends Service
                             ];
                             $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
                             $dtos += self::extractSwaggerDefinition($class, $object);
-                            if(!isset($paths[$url][$method]['tags']) || !in_array($class, $paths[$url][$method]['tags'])) {
-                                $paths[$url][$method]['tags'][] = $class;
-                            }
-                            if(array_key_exists('payload', $endpoint)) {
+                            if (array_key_exists('payload', $endpoint)) {
                                 $paths[$url][$method]['parameters'][] = [
                                     'in' => 'body',
                                     'name' => $class,
                                     'required' => true,
-                                    'schema' => $classDefinition
+                                    'schema' => $classDefinition,
                                 ];
                             }
-                        } else {
-                            if(!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'])) {
-                                $paths[$url][$method]['tags'][] = $endpoint['class'];
-                            }
+                        }
+                        if (!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'])) {
+                            $paths[$url][$method]['tags'][] = $endpoint['class'];
                         }
                     }
                 }
@@ -646,5 +611,90 @@ class DocumentorService extends Service
         }
 
         return $modelDto;
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     * @param $methodInfo
+     */
+    protected function setQueryParams(\ReflectionMethod $method, &$methodInfo)
+    {
+        if (in_array($methodInfo['method'], ['GET']) && in_array($method->getShortName(), self::$nativeMethods)) {
+            $methodInfo['query'] = [];
+            $methodInfo['query'][] = [
+                "name" => "__limit",
+                "in" => "query",
+                "description" => _("Límite de registros a devolver, -1 para devolver todos los registros"),
+                "required" => false,
+                "type" => "integer",
+            ];
+            $methodInfo['query'][] = [
+                "name" => "__page",
+                "in" => "query",
+                "description" => _("Página a devolver"),
+                "required" => false,
+                "type" => "integer",
+            ];
+            $methodInfo['query'][] = [
+                "name" => "__fields",
+                "in" => "query",
+                "description" => _("Campos a devolver"),
+                "required" => false,
+                "type" => "array",
+                "items" => [
+                    "type" => "string",
+                ]
+            ];
+        }
+    }
+    /**
+     * @param \ReflectionMethod $method
+     * @param $methodInfo
+     */
+    protected function setRequestHeaders(\ReflectionMethod $method, &$methodInfo)
+    {
+        $methodInfo['headers'] = [];
+        $methodInfo['headers'][] = [
+            "name" => Api::HEADER_API_LANG,
+            "in" => "header",
+            "description" => _("Idioma en que devuelve los datos la API"),
+            "required" => true,
+            "type" => "string",
+            "default" => "es",
+        ];
+        $methodInfo['headers'][] = [
+            "name" => Api::HEADER_API_TOKEN,
+            "in" => "header",
+            "description" => _("Token de seguridad de PSFS"),
+            "required" => false,
+            "type" => "string",
+        ];
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     * @param array $methodInfo
+     * @param string $modelNamespace
+     * @param string $docComments
+     */
+    protected function setRequestParams(\ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
+    {
+        if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
+            $payload = $this->extractPayload($modelNamespace, $docComments);
+            if (count($payload)) {
+                $methodInfo['payload'] = $payload;
+            }
+        }
+        if ($method->getNumberOfParameters() > 0) {
+            $methodInfo['parameters'] = [];
+            foreach ($method->getParameters() as $parameter) {
+                $parameterName = $parameter->getName();
+                $types = [];
+                preg_match_all('/\@param\ (.*)\ \$' . $parameterName . '$/im', $docComments, $types);
+                if (count($types) > 1) {
+                    $methodInfo['parameters'][$parameterName] = $types[1][0];
+                }
+            }
+        }
     }
 }
