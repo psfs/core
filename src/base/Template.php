@@ -222,6 +222,7 @@ class Template
             'session' => TemplateFunctions::SESSION_FUNCTION,
             'existsFlash' => TemplateFunctions::EXISTS_FLASH_FUNCTION,
             'getFlash' => TemplateFunctions::GET_FLASH_FUNCTION,
+            'getQuery' => TemplateFunctions::GET_QUERY_FUNCTION,
         ];
         foreach($functions as $name => $function) {
             $this->addTemplateFunction($name, $function);

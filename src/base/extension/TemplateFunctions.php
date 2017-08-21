@@ -24,6 +24,7 @@ class TemplateFunctions
     const SESSION_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::session";
     const EXISTS_FLASH_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::existsFlash";
     const GET_FLASH_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::getFlash";
+    const GET_QUERY_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::query";
 
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
@@ -75,6 +76,17 @@ class TemplateFunctions
     public static function config($param, $default = '')
     {
         return Config::getInstance()->get($param) ?: $default;
+    }
+
+    /**
+     * Función que devuelve un query string
+     * @param string $query
+     *
+     * @return string
+     */
+    public static function query($query)
+    {
+        return Request::getInstance()->getQuery($query);
     }
 
     /**
