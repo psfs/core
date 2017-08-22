@@ -82,12 +82,10 @@ class DocumentorService extends Service
             if (count($finder)) {
                 /** @var \SplFileInfo $file */
                 foreach ($finder as $file) {
-                    if(preg_match('/User\.php$/i', $file->getFilename())) {
-                        $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
-                        $info = $this->extractApiInfo($namespace, $module_name);
-                        if (!empty($info)) {
-                            $endpoints[$namespace] = $info;
-                        }
+                    $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
+                    $info = $this->extractApiInfo($namespace, $module_name);
+                    if (!empty($info)) {
+                        $endpoints[$namespace] = $info;
                     }
                 }
             }
@@ -109,11 +107,9 @@ class DocumentorService extends Service
             $reflection = new \ReflectionClass($namespace);
             foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 try {
-                    if($method->getShortName() === 'checkLogin') {
-                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
-                        if (NULL !== $mInfo) {
-                            $info[] = $mInfo;
-                        }
+                    $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
+                    if (NULL !== $mInfo) {
+                        $info[] = $mInfo;
                     }
                 } catch (\Exception $e) {
                     Logger::getInstance()->errorLog($e->getMessage());
