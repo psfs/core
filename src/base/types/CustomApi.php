@@ -31,4 +31,8 @@ abstract class CustomApi extends Api {
     {
         return null;
     }
+
+    public function admin() {
+        return null;
+    }
 }
