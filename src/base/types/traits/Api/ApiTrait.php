@@ -104,19 +104,24 @@ trait ApiTrait {
      * @return ActiveRecordInterface|null
      * @throws ApiException
      */
-    private function findPk(ModelCriteria $query, $pk) {
+    protected function findPk(ModelCriteria $query, $pk) {
         $pks = explode(Api::API_PK_SEPARATOR, urldecode($pk));
-        if(count($pks) == 1) {
-            return $query->findPk($pks[0]);
+        if(count($pks) == 1 && !empty($pks[0])) {
+            $model = $query->findPk($pks[0], $this->con);
         } else {
             $i = 0;
             foreach($this->getPkDbName() as $key => $phpName) {
-                $query->filterBy($phpName, $pks[$i]);
-                $i++;
-                if($i >= count($pks)) break;
+                try {
+                    $query->filterBy($phpName, $pks[$i]);
+                    $i++;
+                    if($i >= count($pks)) break;
+                } catch(\Exception $e) {
+                    Logger::log($e->getMessage(), LOG_DEBUG);
+                }
             }
-            return $query->findOne();
+            $model = $query->findOne($this->con);
         }
+        return $model;
     }
 
     /**
@@ -162,7 +167,7 @@ trait ApiTrait {
     /**
      * @param ModelCriteria $query
      */
-    private function checkReturnFields(ModelCriteria &$query)
+    protected function checkReturnFields(ModelCriteria &$query)
     {
         $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
         if (null !== $returnFields) {

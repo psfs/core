@@ -144,7 +144,7 @@ abstract class Api extends Singleton
      *
      * @param ModelCriteria $query
      */
-    private function addFilters(ModelCriteria &$query)
+    protected function addFilters(ModelCriteria &$query)
     {
         if (count($this->query) > 0) {
             $tableMap = $this->getTableMap();

@@ -211,6 +211,9 @@ class Security
                         );
                         $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
                     }
+                } else {
+                    $this->admin = null;
+                    $this->setSessionKey(self::ADMIN_ID_TOKEN, null);
                 }
                 $this->checked = true;
             }
