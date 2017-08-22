@@ -82,10 +82,12 @@ class DocumentorService extends Service
             if (count($finder)) {
                 /** @var \SplFileInfo $file */
                 foreach ($finder as $file) {
-                    $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
-                    $info = $this->extractApiInfo($namespace, $module_name);
-                    if (!empty($info)) {
-                        $endpoints[$namespace] = $info;
+                    if(preg_match('/User\.php$/i', $file->getFilename())) {
+                        $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
+                        $info = $this->extractApiInfo($namespace, $module_name);
+                        if (!empty($info)) {
+                            $endpoints[$namespace] = $info;
+                        }
                     }
                 }
             }
@@ -107,9 +109,11 @@ class DocumentorService extends Service
             $reflection = new \ReflectionClass($namespace);
             foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 try {
-                    $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
-                    if (NULL !== $mInfo) {
-                        $info[] = $mInfo;
+                    if($method->getShortName() === 'checkLogin') {
+                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
+                        if (NULL !== $mInfo) {
+                            $info[] = $mInfo;
+                        }
                     }
                 } catch (\Exception $e) {
                     Logger::getInstance()->errorLog($e->getMessage());
@@ -236,9 +240,13 @@ class DocumentorService extends Service
         if (count($doc)) {
             $namespace = str_replace('{__API__}', $model, $doc[1]);
             $payload = $this->extractModelFields($namespace);
+            $reflector = new \ReflectionClass($namespace);
+            $namespace = $reflector->getShortName();
+        } else {
+            $namespace = $model;
         }
 
-        return $payload;
+        return [$namespace, $payload];
     }
 
     /**
@@ -584,13 +592,17 @@ class DocumentorService extends Service
                             $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
                             $dtos += self::extractSwaggerDefinition($class, $object);
                             if (array_key_exists('payload', $endpoint)) {
+                                $dtos[$endpoint['payload']['type']] = [
+                                    'type' => 'object',
+                                    'properties' => $endpoint['payload']['properties'],
+                                ];
                                 $paths[$url][$method]['parameters'][] = [
                                     'in' => 'body',
-                                    'name' => $class,
+                                    'name' => $endpoint['payload']['type'],
                                     'required' => true,
                                     'schema' => [
                                         'type' => 'object',
-                                        '$ref' => '#/definitions/' . $class,
+                                        '$ref' => '#/definitions/' . $endpoint['payload']['type'],
                                     ],
                                 ];
                             }
@@ -705,9 +717,12 @@ class DocumentorService extends Service
     protected function setRequestParams(\ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-            $payload = $this->extractPayload($modelNamespace, $docComments);
-            if (count($payload)) {
-                $methodInfo['payload'] = $payload;
+            list($payloadNamespace, $payloadDto) = $this->extractPayload($modelNamespace, $docComments);
+            if (count($payloadDto)) {
+                $methodInfo['payload'] = [
+                    'type' => $payloadNamespace,
+                    'properties' => $payloadDto,
+                ];
             }
         }
         if ($method->getNumberOfParameters() > 0) {

@@ -2,6 +2,7 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\Logger;
+use PSFS\services\DocumentorService;
 
 /**
  * Class InjectorHelper
@@ -20,7 +21,11 @@ class InjectorHelper
         foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
             if (null !== $instanceType) {
-                $variables[$property->getName()] = $instanceType;
+                list($type, $format) = DocumentorService::translateSwaggerFormats($instanceType);
+                $variables[$property->getName()] = [
+                    'type' => $type,
+                    'format' => $format,
+                ];
             }
         }
         return $variables;
