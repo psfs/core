@@ -319,9 +319,11 @@ class DocumentorService extends Service
                 $tableMap = $tableMap::getTableMap();
                 /** @var ColumnMap $field */
                 foreach ($tableMap->getColumns() as $field) {
+                    list($type, $format) = DocumentorService::translateSwaggerFormats($field->getType());
                     $info = [
-                        "type" => $field->getType(),
+                        "type" => $type,
                         "required" => $field->isNotNull(),
+                        'format' => $format,
                     ];
                     $payload[$field->getPhpName()] = $info;
                 }
