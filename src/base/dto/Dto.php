@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\dto;
 
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use PSFS\base\Logger;
 use PSFS\base\Singleton;
 
@@ -33,7 +34,12 @@ class Dto extends Singleton
             if (count($properties) > 0) {
                 /** @var \ReflectionProperty $property */
                 foreach ($properties as $property) {
-                    $dto[$property->getName()] = $property->getValue($this);
+                    $value = $property->getValue($this);
+                    if(is_object($value) && method_exists($value, 'toArray')) {
+                        $dto[$property->getName()] = $value->toArray();
+                    } else {
+                        $dto[$property->getName()] = $property->getValue($this);
+                    }
                 }
             }
         } catch (\Exception $e) {
