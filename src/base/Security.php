@@ -367,7 +367,7 @@ class Security
     {
         $flashes = $this->getFlashes();
         if (!is_array($flashes)) {
-            $flashes = array();
+            $flashes = [];
         }
         $flashes[$key] = $data;
         $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, $flashes);

@@ -38,6 +38,7 @@ class JsonResponse extends Dto
      */
     public function __construct($data = array(), $result = false, $total = null, $pages = 1, $message = null)
     {
+        parent::__construct();
         $this->data = $data;
         $this->success = $result;
         $this->total = $total ?: count($data);

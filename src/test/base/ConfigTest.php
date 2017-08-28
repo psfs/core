@@ -1,13 +1,19 @@
 <?php
     namespace PSFS\test\base;
+    use PSFS\base\Cache;
     use PSFS\base\config\Config;
+    use PSFS\base\types\helpers\FileHelper;
     use PSFS\base\types\helpers\GeneratorHelper;
+
+    require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
     /**
      * Class DispatcherTest
      * @package PSFS\test\base
      */
     class ConfigTest extends \PHPUnit_Framework_TestCase {
+
+        const CONFIG_BACKUP_PATH = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json.bak';
 
         /**
          * Creates an instance of Config
@@ -19,7 +25,14 @@
 
             $this->assertNotNull($config, 'Instance not created');
             $this->assertInstanceOf("\\PSFS\\base\\config\\Config", $config, 'Instance different than expected');
+            Cache::getInstance()->storeData(self::CONFIG_BACKUP_PATH, $config->dumpConfig(), Cache::JSON, true);
             return $config;
+        }
+
+        private function restoreConfig() {
+            $config = Cache::getInstance()->getDataFromFile(self::CONFIG_BACKUP_PATH, Cache::JSON, true);
+            Config::save($config, []);
+            FileHelper::deleteDir(self::CONFIG_BACKUP_PATH);
         }
 
         private function simulateRequiredConfig(){
@@ -93,5 +106,6 @@
             $this->assertNotEquals($original_data, $config->dumpConfig(), 'The same configuration file');
 
             Config::save($original_data, []);
+            $this->restoreConfig();
         }
     }

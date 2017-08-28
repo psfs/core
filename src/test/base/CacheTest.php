@@ -58,7 +58,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         }, Cache::JSONGZ);
         $this->assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
 
-        @rmdir(CACHE_DIR . DIRECTORY_SEPARATOR . 'test');
+        FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'test');
     }
 
     /**
@@ -81,6 +81,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($hash, 'Invalid cache hash');
         $this->assertNotEmpty($path, 'Invalid path to save the cache');
 
+        $config = Config::getInstance()->dumpConfig();
         $cache_data_config = Config::getParam('cache.data.enable');
         Config::save([], [
             'label' => ['cache.data.enable'],
@@ -88,10 +89,16 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         ]);
         Config::getInstance()->setDebugMode(false);
         $this->assertTrue(false !== Cache::needCache(), 'Test url expired or error checking cache');
-        Config::save([], [
-            'label' => ['cache.data.enable'],
-            'value' => [$cache_data_config]
-        ]);
 
+        // Flushing cache
+        Cache::getInstance()->flushCache();
+        $this->assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . $path, 'Cache directory not deleted properly');
+
+        $config['cache.data.enable'] = $cache_data_config;
+        Config::save($config, []);
+
+        // Cleaning test data
+        FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests');
+        $this->assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\test;
 
+use PSFS\base\config\Config;
 use PSFS\base\Router;
 
 /**
@@ -11,6 +12,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
 
     public function testRouterBasics() {
         $router = Router::getInstance();
+        $config = Config::getInstance()->dumpConfig();
+        $config['debug'] = true;
+        Config::save($config, []);
         $this->assertNotNull($router);
         $this->assertInstanceOf('\\PSFS\\base\\Router', $router);
 
@@ -31,4 +35,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
 
         $router->execute(uniqid(time()));
     }
+
+
 }
