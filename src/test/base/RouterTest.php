@@ -2,6 +2,7 @@
 namespace PSFS\test;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 
 /**
@@ -16,7 +17,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $config['debug'] = true;
         Config::save($config, []);
         $this->assertNotNull($router);
-        $this->assertInstanceOf('\\PSFS\\base\\Router', $router);
+        $this->assertInstanceOf(Router::class, $router);
+        $this->assertTrue(Router::exists(Router::class), "Can't check the namespace");
 
         $slugs = $router->getSlugs();
         $this->assertNotEmpty($slugs);
@@ -36,5 +38,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $router->execute(uniqid(time()));
     }
 
+    public function testGetRoute() {
+        $router = Router::getInstance();
+        $this->assertNotNull($router->getRoute(), "Can't gather the homepage route");
+        $this->assertNotNull($router->getRoute('admin'), "Can't gather the admin route");
+        $this->assertNotEquals($router->getRoute('admin'), $router->getRoute('admin', true), 'Absolute route is equal than normal');
+        try {
+            $router->getRoute(uniqid('test'));
+        } catch(\Exception $e) {
+            $this->assertInstanceOf(RouterException::class, $e, 'Exception is not the expected: ' . get_class($e));
+        }
+    }
 
 }
