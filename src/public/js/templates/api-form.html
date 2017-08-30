@@ -1,4 +1,4 @@
-<md-content layout="column" flex="65" flex-sm="100" layout-padding class="api-form" ng-cloak>
+<md-content layout="column" flex="65" flex-xs="100" layout-padding class="api-form" ng-cloak>
     <md-card>
         <md-card-title>
             <md-card-title-text>
@@ -39,11 +39,9 @@
                 </md-menu-content>
             </md-menu>
         </md-card-actions>
-        <md-card-content layout="column" layout-align="space-between">
-            <div class="text-center" data-ng-show="itemLoading" style="margin-top: 25%;">
-                <md-progress-circular md-mode="indeterminate" flex="100"></md-progress-circular>
-            </div>
-            <div flex="100">
+        <md-card-content layout="column" layout-align="center center">
+            <md-progress-circular md-mode="indeterminate" flex="100" data-ng-show="itemLoading"></md-progress-circular>
+            <div layout-fill layout="column">
                 <form name="entity_form"
                       id="{{ entity }}_form"
                       onsubmit="return false;"

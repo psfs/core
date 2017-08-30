@@ -1,21 +1,31 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
-    <div class="page-header">
-        <h1>{{ "Generación de traducciones"|trans }}</h1>
-        <h2>{{ get_config('platform.name') }}</h2>
-    </div>
+    <md-subheader class="page-header">
+        <h2>{{ "Generación de traducciones"|trans }}</h2>
+        <h1>{{ get_config('platform.name') }}</h1>
+    </md-subheader>
 {% endblock body_header %}
 {% block body_content %}
-    <section class="container-fluid">
-        <ul class="list-group">
+    <md-content layout="column" layout-fill class="container-fluid">
+        <md-list layout-fill flex class="list-group">
         {% for translation in translations %}
-            <li class="list-group-item">
-                <pre>{{ translation | raw }}</pre>
-            </li>
+            <md-list-item class="list-group-item">
+                <md-card layout-fill flex>
+                    <md-card-title>
+                        <md-card-title-text>{{ loop.index }} / {{ translations|length }}</md-card-title-text>
+                    </md-card-title>
+                    <md-card-content>
+                        <code>{{ translation | raw }}</code>
+                    </md-card-content>
+                </md-card><br>
+            </md-list-item>
         {% endfor %}
-        </ul>
-    </section>
+        </md-list>
+    </md-content>
 {% endblock body_content %}
 {% block scripts %}
+    {% if base_version == 'v1' %}
     <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
+    {% endif %}
 {% endblock scripts %}

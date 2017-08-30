@@ -1,24 +1,29 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
-    <div class="page-header">
-        <h1>{{ "Rutas definidas en el sistema"|trans }}</h1>
-        <h2>{{ get_config('platform.name') }}</h2>
-    </div>
+    <md-toolbar class="md-hue-2">
+        <div class="md-toolbar-tools">
+            <h2 flex md-truncate>{{ "Rutas definidas en el sistema"|trans }}</h2>
+            <md-button aria-label="Generar ruta" ng-href="{{ path('admin-routes-gen') }}">
+                <i class="fa fa-map-signs"></i>
+                &nbsp;{{ "Generar rutas"|trans }}
+                <md-tooltip md-direction="bottom">{{ "Regenera las rutas del sistema"|trans }}</md-tooltip>
+            </md-button>
+        </div>
+    </md-toolbar>
 {% endblock body_header %}
 {% block body_content %}
-    <p>
-        <a href="{{ path('admin-routes-gen') }}" class="btn btn-primary active">
-            <span>{{ "Generar rutas"|trans }}</span>
-        </a>
-    </p>
-    <div class="list-group">
+    <md-list flex layout-fill>
     {% for url, route in slugs %}
         {% set cleanRoute = route|split("#|#") %}
-        <a class="list-group-item" href="{{ cleanRoute[1] }}">
-            <span class="label label-success">{{ cleanRoute[0] }}</span>&nbsp;
-            <span class="label label-default">{{ url }}</span>
+        <md-list-item flex ng-href="{{ cleanRoute[1] }}" target="_blank">
+            <md-button class="md-raised md-primary" ng-href="{{ cleanRoute[1] }}" target="_blank">
+                <md-tooltip md-direction="top">{{ "Haz click para visitar la ruta"|trans }}</md-tooltip>
+                {{ cleanRoute[0] }}
+            </md-button>&nbsp;
+            <md-button class="md-raised" ng-click="null">{{ url }}</md-button>
             {{ cleanRoute[1] }}
-        </a>
+        </md-list-item>
     {% endfor %}
-    </div>
+    </md-list>
 {% endblock body_content %}

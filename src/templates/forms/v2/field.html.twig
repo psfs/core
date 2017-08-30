@@ -1,0 +1,48 @@
+{% if field.type == "hidden" %}
+    <input type="{{ field.type }}"  id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+{% elseif not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
+    <md-input-container flex="50">
+    {% if field.hasLabel %}
+        <label>{{ field.label|default(field.name) }}</label>
+    {% endif %}
+        <input
+        {% for name, value in field %}
+            {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
+                {{ name }}="{{ value }}"
+            {% endif %}
+        {% endfor %}
+        {% if field.required %}
+            ng-required
+        {% endif %}
+        value="{{ field.value }}"
+        >
+    </md-input-container>
+{% elseif field.type in ['select'] %}
+    <md-input-container flex="50">
+    {% if field.hasLabel %}
+        <label>{{ field.label|default(field.name) }}</label>
+    {% endif %}
+        <md-select id="{{ field.id }}" ng-model="{{ field.name }}"
+            name="{{ field.name }}"
+            {% if field.required %}
+                ng-required
+            {% endif %}
+            {% if field.multiple %}
+                multiple
+            {% endif %}
+           placeholder="{{ field.label|default(field.name) }}"
+        >
+        {% for key, value in field.data %}
+            {% if value is not iterable %}
+                <md-option value="{{ key }}" {% if key in field.value %}selected{% endif %}>{{ value }}</md-option>
+            {% else %}
+                <md-optgroup label="{{ key }}">
+                {% for _key, _value in value %}
+                    <mdoption value="{{ _key }}" {% if _key in field.value %}selected{% endif %}>{{ _value }}</mdoption>
+                {% endfor %}
+                </md-optgroup>
+            {% endif %}
+        {% endfor %}
+        </md-select>
+    </md-input-container>
+{% endif %}

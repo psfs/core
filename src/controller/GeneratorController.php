@@ -55,8 +55,8 @@ class GeneratorController extends Admin
         $form->build();
         $form->hydrate();
         if ($form->isValid()) {
-            $module = $form->getFieldValue("module");
-            $type = $form->getFieldValue("controllerType");
+            $module = strtoupper($form->getFieldValue("module"));
+            $type = preg_replace('/normal/i', '', $form->getFieldValue("controllerType"));
             $apiClass = $form->getFieldValue("api");
             try {
                 $module = preg_replace('/(\\\|\/)/', '/', $module);

@@ -1,9 +1,10 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
-    <div class="page-header">
-        <h1>{{ "Herramienta de Administración"|trans }}</h1>
-        <h2>{{ get_config('platform_name') }}</h2>
-    </div>
+    <md-subheader class="md-primary page-header">
+        <h2>{{ "Herramienta de Administración"|trans }}</h2>
+        <h1>{{ get_config('platform.name') }}</h1>
+    </md-subheader>
 {% endblock body_header %}
 {% block body_content %}
 {% endblock body_content %}

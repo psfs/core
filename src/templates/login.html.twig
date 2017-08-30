@@ -1,4 +1,5 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
     <div class="page-header col-md-4 col-md-offset-4">
         <h1>{{ "Acceso Web"|trans }} <br><small>{{ get_config('platform.name') }}</small></h1>

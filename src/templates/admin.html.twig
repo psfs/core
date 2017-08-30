@@ -1,22 +1,50 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
-    <div class="page-header">
-        <h1>{{ "Herramienta de Gestión de Administradores PSFS"|trans }}</h1>
-        <h2>{{ get_config('platform_name') }}</h2>
-    </div>
+    <md-subheader class="page-header">
+        <h2>{{ "Herramienta de Gestión de Administradores PSFS"|trans }}</h2>
+        <h1>{{ get_config('platform_name') }}</h1>
+    </md-subheader>
 {% endblock body_header %}
 {% block body_content %}
-<div class="panel panel-default">
-    <div class="panel-body">
-    {% for user, admin in admins %}
-    <span class="label label-{{ admin.class }}">{{ user }}</span>
-    {% else %}
-    <p class="well">{{ "No hay administradores definidos" }}</p>
-    {% endfor %}
+    {% if base_version == 'v1' %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+        {% for user, admin in admins %}
+        <span class="label label-{{ admin.class }}">{{ user }}</span>
+        {% else %}
+        <p class="well">{{ "No hay administradores definidos" }}</p>
+        {% endfor %}
+        </div>
     </div>
-</div>
+    {% else %}
+    <md-card class="panel panel-default">
+        <md-card-content>
+        {% for user, admin in admins %}
+            {% if admin.class == 'info' %}
+                {% set user_class = 'fa-user-plus' %}
+                {% set user_color = 'md-warn' %}
+            {% elseif admin.class == 'warning' %}
+                {% set user_class = 'fa-user' %}
+                {% set user_color = 'md-info' %}
+            {% else %}
+                {% set user_class = 'fa-user-o' %}
+                {% set user_color = 'md-primary' %}
+            {% endif %}
+            <md-button class="md-raised {{ user_color }}" ng-click="null">
+                <i class="fa {{ user_class }}"></i>
+                {{ user }}
+            </md-button>
+        {% else %}
+            <p class="well">{{ "No hay administradores definidos" }}</p>
+        {% endfor %}
+        </md-card-content>
+    </md-card>
+    {% endif %}
     {{ form(form) }}
 {% endblock body_content %}
 {% block scripts %}
+    {% if base_version == 'v1' %}
     <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
+    {% endif %}
 {% endblock scripts %}

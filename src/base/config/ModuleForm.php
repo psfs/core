@@ -30,7 +30,7 @@ class ModuleForm extends Form
             ->setAttrs(array());
 
         $controllerTypes = array(
-            "" => _("Normal"),
+            "Normal" => _("Normal"),
             "Auth" => _("Requiere autenticación de usuario"),
             "AuthAdmin" => _("Requiere autenticación de administrador"),
         );

@@ -1,0 +1,38 @@
+<div layout="column" ng-clock class="md-inline-form">
+    {% if form.title %}
+    <md-content layout-padding>
+        <md-subheader>
+            <h2 class="md-primary">{{ form.title | raw }}</h2>
+        </md-subheader>
+    </md-content>
+    {% endif %}
+    <md-content layout-padding>
+        <form id="{{ form.name }}"
+              name="{{ form.name }}"
+              enctype="{{ form.enctype }}"
+              action="{{ form.action }}"
+              method="{{ form.method }}"
+              role="form"
+        {% for name, attr in form.attrs %}
+            {{ name }}="{{ attr }}"
+        {% endfor %}>
+        {% for name, field in form.fields %}
+        {% if loop.index is odd %}
+            <div layout-gt-xs="row">
+        {% endif %}
+        {% if name == '__SEPARATOR__' %}
+            </div><md-divider flex="100"></md-divider><br><div layout-gt-xs="row">
+        {% else %}
+            {{ form_widget(field) }}
+        {% endif %}
+        {% if loop.index is even %}
+            </div>
+        {% endif %}
+        {% endfor %}
+        <md-divider></md-divider>
+        {% for button in form.buttons %}
+            {{ form_button(button) }}
+        {% endfor %}
+        </form>
+    </md-content>
+</div>

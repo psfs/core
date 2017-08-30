@@ -1,0 +1,31 @@
+html body {
+  font-family: Roboto, Helvetica Neue, sans-serif;
+  height: 100%;
+  padding-bottom: 15px;
+  padding-top: 64px; }
+  @media (max-width: 400px) {
+    html body {
+      padding-top: 55px; } }
+  @media (max-width: 800px) {
+    html body {
+      padding-top: 48px; } }
+  html body #admin-principal-nav {
+    position: fixed;
+    top: 0; }
+  html body #admin-sidenav {
+    padding-top: 64px; }
+    @media (max-width: 400px) {
+      html body #admin-sidenav {
+        padding-top: 60px; } }
+    @media (max-width: 800px) {
+      html body #admin-sidenav {
+        padding-top: 60px; } }
+    html body #admin-sidenav #admin-sidenav-content {
+      margin-top: 48px; }
+      html body #admin-sidenav #admin-sidenav-content a {
+        text-decoration: none; }
+    html body #admin-sidenav #admin-sidenav-title {
+      position: fixed;
+      top: 0; }
+
+/*# sourceMappingURL=styles.css.map */

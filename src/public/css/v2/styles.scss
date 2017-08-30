@@ -1,0 +1,42 @@
+@import "colors";
+
+@mixin fixed_top() {
+  position: fixed;
+  top: 0;
+}
+
+html {
+  body {
+    font-family: Roboto, Helvetica Neue, sans-serif;
+    height: 100%;
+    padding-bottom: 15px;
+    padding-top: 64px;
+    @media(max-width: 400px) {
+      padding-top: 55px;
+    }
+    @media(max-width: 800px) {
+      padding-top: 48px;
+    }
+    #admin-principal-nav {
+      @include fixed_top;
+    }
+    #admin-sidenav {
+      padding-top: 64px;
+      @media(max-width: 400px) {
+        padding-top: 60px;
+      }
+      @media(max-width: 800px) {
+        padding-top: 60px;
+      }
+      #admin-sidenav-content {
+        margin-top: 48px;
+        a {
+          text-decoration: none;
+        }
+      }
+      #admin-sidenav-title {
+        @include fixed_top;
+      }
+    }
+  }
+}

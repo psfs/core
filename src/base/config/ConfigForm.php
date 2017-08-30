@@ -78,13 +78,20 @@ class ConfigForm extends Form
         //Hidratamos el formulario
         $this->setData($data);
         //Añadimos las acciones del formulario
+        $add = [
+            "class" => "btn-warning md-default",
+            "icon" => "fa-plus",
+        ];
+        if(Config::getParam('admin.version', 'v1') === 'v1') {
+            $add["onclick"] = "javascript:addNewField(document.getElementById('" . $this->getName() . "'));";
+        } else {
+            $add["ng-click"] = "addNewField()";
+        }
         $this->addButton('submit', _("Guardar configuración"), "submit", array(
-            "class" => "btn-success col-md-offset-2"
-        ))
-            ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', array(
-                "onclick" => "javascript:addNewField(document.getElementById('" . $this->getName() . "'));",
-                "class" => "btn-warning",
-            ));
+                "class" => "btn-success col-md-offset-2 md-primary",
+                "icon" => "fa-save",
+            ))
+            ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', $add);
     }
 
     /**

@@ -68,6 +68,7 @@
                                 $scope.loading = false;
                             }, 500);
                             $scope.count = result.data.total;
+                            $msgSrv.send('admin.message', 'Hay ' + $scope.count + ' registros');
                         }, catchError)
                         .finally(function() {
                             $scope.loading = false;

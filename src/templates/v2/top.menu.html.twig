@@ -1,0 +1,39 @@
+<md-sidenav class="md-sidenav-left" md-component-id="left"
+            md-disable-backdrop md-whiteframe="4" id="admin-sidenav">
+
+    <md-toolbar class="md-hue-2" md-scroll-shrink="true" id="admin-sidenav-title">
+        <div class="md-toolbar-tools">
+            <h2 flex md-truncate>{{ 'Menú de administración'|trans }}</h2>
+            <md-button data-ng-click="toggleMenu()" aria-label="Toggle menu" class="md-icon-button">
+                <i class="fa fa-window-close"></i>
+            </md-button>
+        </div>
+    </md-toolbar>
+    <md-content layout-fill id="admin-sidenav-content">
+        {% for module, routes in __menu__ %}
+        {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ or module != 'PSFS' %}
+        <md-list flex>
+            <md-subheader class="md-primary">{{ module }}</md-subheader>
+            {% for route in routes.visible %}
+            <md-list-item ng-click="goTo('{{ path(route.slug) }}')">
+                <i class="fa {{ route.icon }}"></i>&nbsp;<span>{{ route.label|trans }}</span>
+            </md-list-item>
+            {% endfor %}
+        {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ and routes.hidden|length > 0 %}
+            <md-divider ></md-divider>
+            <md-list-item ng-click="toggleModuleMenu('{{ module }}')">
+                <span>{{ "Menus ocultos %s%"|trans|replace({'%s%':module}) }}</span>
+                <md-icon class="fa" ng-class="{'fa-caret-down':!menus['{{ module }}'], 'fa-caret-up':menus['{{ module }}']}"></md-icon>
+            </md-list-item>
+        {% for route in routes.hidden %}
+            <md-list-item ng-click="goTo('{{ path(route.slug) }}')" class="md-info" ng-show="menus['{{ module }}']">
+                <i class="fa fa-eye-slash"></i>&nbsp;<span>{{ route.label|trans }}</span>
+            </md-list-item>
+        {% endfor %}
+        {% endif %}
+        </md-list>
+        {% endif %}
+        <md-divider ></md-divider>
+        {% endfor %}
+    </md-content>
+</md-sidenav>

@@ -29,7 +29,7 @@
                             .clickOutsideToClose(true)
                             .title($scope.entity + ' Error ' + status)
                             .content(err)
-                            .ariaLabel('Delete error')
+                            .ariaLabel('Loading error')
                             .ok($scope.i18N['close'])
                     );
                 })

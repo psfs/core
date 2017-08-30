@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+{% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
+<html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if __DEBUG__ is defined %}
+        <meta name="robots" content="NOINDEX,NOFOLLOW">
+    {% else %}
+        <meta name="robots" content="INDEX,FOLLOW">
+    {% endif %}
+    {% styles
+    '@ROOT/css/normalize.css'
+    '@ROOT/css/angular-materials.css'
+    '@ROOT/css/font-awesome.css'
+    '@ROOT/css/v2/styles.css' %}{% endstyles %}
+    {% block styles %}{% endblock styles %}
+    {% block head %}
+        {% block seo %}
+            <title>{% block doc_title %}{{ get_config('platform.name') }}{% endblock doc_title %}</title>
+            <meta name="description" content="Php Simple Fast & Secure">
+        {% endblock seo %}
+    {% endblock head %}
+</head>
+<body data-ng-controller="AdminCtrl" data-layout="column" data-ng-cloak md-swipe-right="toggleMenu()" md-swipe-left="toogleActions()">
+{% block menu %}
+    {% include 'v2/top.menu.html.twig' %}
+{% endblock menu %}
+    <md-toolbar flex="100" id="admin-principal-nav">
+        <div class="md-toolbar-tools">
+            <md-button data-ng-click="toggleMenu()" aria-label="Toggle menu" class="md-icon-button">
+                <i class="fa fa-bars"></i>
+            </md-button>
+            <h2 flex md-truncate>{{ 'Bienvenido'|trans }} <strong>{{ __admin__.alias }}</strong></h2>
+            <a href="{{ path('admin', true) }}" aria-label="Home">
+                <i class="fa fa-home"></i>
+            </a>
+        </div>
+    </md-toolbar>
+    <md-content flex layout="column" layout-fill layout-padding  layout-align="center center" ng-show="loadingPage">
+        <md-progress-circular md-mode="indeterminate" md-diameter="100"></md-progress-circular>
+    </md-content>
+    <md-content flex="100" layout-fill ng-hide="loadingPage">
+    {% block body %}
+        {% block body_header %}
+        {% endblock body_header %}
+        {% block body_content %}
+        {% endblock body_content %}
+        {% block body_footer %}
+        {% endblock body_footer %}
+    {% endblock body %}
+    </md-content>
+    <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+<script src="{{ asset("@ROOT/js/angular.js") }}"></script>
+<script type="application/javascript">
+    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
+    (function () {
+        app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
+        app.config(function($mdThemingProvider) {
+                $mdThemingProvider.theme('default')
+                    .primaryPalette('{{ get_config('admin.theme', 'blue-grey') }}');
+            });
+    })();
+</script>
+{% block base_scripts %}
+    {% scripts
+    "@ROOT/js/angular/aria.js"
+    "@ROOT/js/angular/animate.js"
+    "@ROOT/js/angular/sanitize.js"
+    "@ROOT/js/angular/messages.js"
+    "@ROOT/js/angular/materials.js"
+    "@ROOT/js/angular/paging.js"
+    '@ROOT/js/api/api-srv.js'
+    '@ROOT/js/api/api-ctrl.js'
+    '@ROOT/js/api/api-lists.js'
+    '@ROOT/js/api/api-form.js'
+    "@ROOT/js/v2/admin.js"
+    %}{% endscript %}
+{% endblock base_scripts %}
+{% block scripts %}
+{% endblock scripts %}
+{% if existsFlash("callback_message") %}
+    <script type="text/javascript">
+        (function () {
+            alert("{{ getFlash("callback_message") | raw }}");
+        })();
+    </script>
+{% endif %}
+{% include 'debug.html.twig' %}
+</body>
+</html>

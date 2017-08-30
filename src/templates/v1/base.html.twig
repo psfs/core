@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+{% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
+<html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if __DEBUG__ is defined %}
+        <meta name="robots" content="NOINDEX,NOFOLLOW">
+    {% else %}
+        <meta name="robots" content="INDEX,FOLLOW">
+    {% endif %}
+    {% styles
+    '@ROOT/css/normalize.css'
+    '@ROOT/css/angular-materials.css'
+    '@ROOT/css/bootstrap.min.css'
+    '@ROOT/css/font-awesome.css'
+    '@ROOT/css/typeahead.css'
+    '@ROOT/css/v1/styles.css' %}{% endstyles %}
+    {% block styles %}{% endblock styles %}
+    {% block head %}
+        {% block seo %}
+            <title>{% block doc_title %}{{ get_config('platform.name') }}{% endblock doc_title %}</title>
+            <meta name="description" content="Php Simple Fast & Secure">
+        {% endblock seo %}
+    {% endblock head %}
+</head>
+<body>
+{% block menu %}
+    {% include 'v1/top.menu.html.twig' %}
+{% endblock menu %}
+<header role="banner">{% block header %}{% endblock header %}</header>
+<section class="container-fluid">
+    {% block body %}
+        <article class="container">
+            {% block body_header %}
+            {% endblock body_header %}
+            {% block body_content %}
+            {% endblock body_content %}
+            {% block body_footer %}
+            {% endblock body_footer %}
+        </article>
+    {% endblock body %}
+</section>
+<footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+<a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page"
+   data-toggle="tooltip" data-placement="left"><span class="fa fa-chevron-up"></span></a>
+{% block base_scripts %}
+    {% scripts
+    "@ROOT/js/jquery.min.js"
+    "@ROOT/js/bootstrap.min.js"
+    "@ROOT/js/angular.js"
+    "@ROOT/js/angular/aria.js"
+    "@ROOT/js/angular/animate.js"
+    "@ROOT/js/angular/sanitize.js"
+    "@ROOT/js/angular/messages.js"
+    "@ROOT/js/angular/materials.js"
+    "@ROOT/js/angular/paging.js"
+    "@ROOT/js/bootbox.js"
+    "@ROOT/js/typeahead.js"
+    "@ROOT/js/admins.js"
+    "@ROOT/js/forms.js" %}{% endscript %}
+{% endblock base_scripts %}
+<script type="application/javascript">
+    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
+    (function () {
+        app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
+    })();
+</script>
+{% block scripts %}
+{% endblock scripts %}
+{% if existsFlash("callback_message") %}
+    <script type="text/javascript">
+        function showCallbackMessage() {
+            try {
+                bootbox.dialog({
+                    title: "{{ get_config("platform_name") | default("PSFS") }}",
+                    message: "{{ getFlash("callback_message") | raw }}",
+                    buttons: {
+                        success: {
+                            label: "{{ "Aceptar" | trans }}",
+                            className: "btn-primary",
+                            callback: function () {
+                                if ({{ existsFlash("callback_route")|default('false') }}) {
+                                    location.href = "{{ getFlash("callback_route") }}";
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                setTimeout(showCallbackMessage, 100);
+            }
+        }
+
+        (function () {
+            showCallbackMessage();
+        })();
+    </script>
+{% endif %}
+{% include 'debug.html.twig' %}
+</body>
+</html>

@@ -1,4 +1,4 @@
-<md-content flex="35" flex-sm="100" layout-padding layout="column" class="api-list">
+<md-content flex="35" flex-xs="100" layout-padding layout="column" class="api-list">
     <md-card>
         <md-card-title>
             <md-card-title-text layout="column">
@@ -6,7 +6,9 @@
             </md-card-title-text>
         </md-card-title>
         <md-card-content layout="column" layout-align="space-between">
-            <input type="search" class="form-control" ng-model="listSearch" placeholder="{{ i18N['search'] + ' ' + api }}">
+            <md-input-container>
+                <input type="search" class="form-control" ng-model="listSearch" placeholder="{{ i18N['search'] + ' ' + api }}">
+            </md-input-container>
         </md-card-content>
     </md-card>
     <md-card>
@@ -20,9 +22,9 @@
                  data-ng-if="count > limit">
             </div>
         </md-card-title>
-        <md-card-content layout="column" layout-center>
+        <md-card-content flex layout="column" layout-padding layout-align="center center">
             <md-progress-circular flex="100" md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
-            <md-list layout="column" data-ng-hide="loading">
+            <md-list layout-fill layout="column" data-ng-hide="loading">
                 <md-list-item
                               ng-click="loadItem(item, $event)"
                               data-ng-repeat="item in list"

@@ -1,8 +1,13 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
+{% block body_header %}
+    <md-subheader class="md-primary">
+        <h2>{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
+    </md-subheader>
+{% endblock body_header %}
 {% block body_content %}
     {{ resource('@ROOT/js/templates', '/js') }}
-    <br><h2 class="md-flex">{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
-    <div class="row" layout="row" layout-fill layout-wrap ng-controller="apiCtrl">
+    <section class="row" layout="row" layout-padding ng-controller="apiCtrl" layout-xs="column">
         <input type="hidden" ng-model="entity" ng-init="entity = '{{ api }}'"/>
         <input type="hidden" ng-model="api" ng-init="api = '{{ api }}'"/>
         <input type="hidden" ng-model="url" ng-init="url = '{{ url }}'"/>
@@ -12,7 +17,7 @@
         <input type="hidden" ng-model="modelId" ng-init="modelId = '{{ modelId }}'"/>
         <api-lists></api-lists>
         <api-form></api-form>
-    </div>
+    </section>
 {% endblock body_content %}
 {% block scripts %}
     <script type="text/javascript">
@@ -32,10 +37,12 @@
             'no_records': '{{ "No existen registros"|trans }}'
         };
     </script>
+    {% if base_version == 'v1' %}
     {% scripts
     '@ROOT/js/api/api-srv.js'
     '@ROOT/js/api/api-ctrl.js'
     '@ROOT/js/api/api-lists.js'
     '@ROOT/js/api/api-form.js'
     %}{% endscripts %}
+    {% endif %}
 {% endblock scripts %}

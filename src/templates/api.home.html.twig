@@ -1,10 +1,9 @@
-{% extends 'base.html.twig' %}
+{% set base_version = get_config('admin.version', 'v1') %}
+{% extends base_version ~ '/base.html.twig' %}
 {% block body_header %}
-    <md-toolbar class="md-info">
-        <div class="md-toolbar-tools">
-            <h2 class="md-flex">{{ "Visor de documentación de API"|trans }}</h2>
-        </div>
-    </md-toolbar>
+    <md-subheader class="md-primary">
+        <h2>{{ "Visor de documentación de API"|trans }}</h2>
+    </md-subheader>
 {% endblock body_header %}
 {% block body_content %}
     <md-content>
@@ -13,21 +12,21 @@
         {% for domain,info in domains %}
             {% set _domain = domain|replace({'@':'', '/':''}) %}
             {% if _domain != 'ROOT' %}
-            <md-list-item class="noright">
+            <md-list-item class="noright" ng-click="null">
                 <p>{{ _domain }}</p>
                 {% set swagger_uri = path('domain-api-doc', true, {'domain':_domain}) ~ '?type=swagger' %}
-                <a href="/admin/{{ _domain }}/swagger-ui?url={{ swagger_uri|url_encode }}" target="_blank">
+                <md-button ng-href="/admin/{{ _domain }}/swagger-ui" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en html"|trans }}</md-tooltip>
                     <md-icon class="fa fa-html5"></md-icon>
-                </a>
-                <a href="{{ swagger_uri }}" target="_blank">
+                </md-button>
+                <md-button ng-href="{{ swagger_uri }}" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en formato Swagger"|trans }}</md-tooltip>
                     <md-icon class="fa fa-file-code-o"></md-icon>
-                </a>
-                <a href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" target="_blank">
+                </md-button>
+                <md-button ng-href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en formato Postman"|trans }}</md-tooltip>
                     <md-icon class="fa fa-mobile"></md-icon>
-                </a>
+                </md-button>
             </md-list-item>
             {% endif %}
         {% endfor %}
