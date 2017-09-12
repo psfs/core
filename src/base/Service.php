@@ -44,12 +44,12 @@ class Service extends Singleton
     private $info;
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Logger Log de las llamadas
      */
     protected $log;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Cache $cache
      */
     protected $cache;

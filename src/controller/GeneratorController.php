@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class GeneratorController extends Admin
 {
     /**
-     * @Inyectable
+     * @Injectable
      * @var  \PSFS\services\GeneratorService Servicio de generación de estructura de directorios
      */
     protected $gen;

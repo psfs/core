@@ -9,17 +9,17 @@ use PSFS\base\types\helpers\GeneratorHelper;
 class GeneratorService extends Service
 {
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
      */
     protected $config;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
     protected $security;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Template Servicio de gestión de plantillas
      */
     protected $tpl;
@@ -85,7 +85,6 @@ class GeneratorService extends Service
      * Service that creates the root paths for the modules
      * @param string $module
      * @param string $mod_path
-     * @param boolean $isModule
      */
     private function createModulePath($module, $mod_path)
     {
@@ -106,7 +105,8 @@ class GeneratorService extends Service
         //Creamos las carpetas CORE del módulo
         $this->log->infoLog("Generamos la estructura");
         $paths = [
-            "Api", "Api/base", "Config", "Controller", "Form", "Models", "Public", "Templates", "Services", "Test"
+            "Api", "Api/base", "Config", "Controller", "Models",
+            "Public", "Templates", "Services", "Test", "Doc",
         ];
         $module_path = $mod_path . $module;
         foreach ($paths as $path) {

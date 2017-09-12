@@ -31,7 +31,7 @@ class DocumentorService extends Service
     const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Router route
      */
     protected $route;

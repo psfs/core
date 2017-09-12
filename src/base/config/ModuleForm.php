@@ -13,7 +13,7 @@ class ModuleForm extends Form
 {
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Router $router
      */
     protected $router;

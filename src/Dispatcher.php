@@ -27,17 +27,17 @@ class Dispatcher extends Singleton
 {
     use SystemTrait;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Security $security
      */
     protected $security;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Router $router
      */
     protected $router;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\config\Config $config
      */
     protected $config;

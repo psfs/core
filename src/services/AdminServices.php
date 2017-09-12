@@ -11,17 +11,17 @@ class AdminServices extends Service
 {
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
      */
     protected $config;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
     protected $security;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Template Servicio de gestión de plantillas
      */
     protected $tpl;

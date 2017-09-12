@@ -6,12 +6,12 @@ use PSFS\base\Singleton;
 
 class SingletonClassTest extends Singleton {
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\Security $security
      */
     protected $security;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\test\examples\NonSingletonClassTest $testClass
      */
     protected $testClass;

@@ -9,7 +9,7 @@ class DocumentorController extends Controller {
     const DOMAIN = 'ROOT';
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\services\DocumentorService $srv
      */
     protected $srv;

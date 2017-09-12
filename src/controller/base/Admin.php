@@ -21,12 +21,12 @@ abstract class Admin extends AuthAdminController
     const DOMAIN = 'ROOT';
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\base\config\Config Configuration service
      */
     protected $config;
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\services\AdminServices Admin service
      */
     protected $srv;

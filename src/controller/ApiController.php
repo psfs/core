@@ -16,7 +16,7 @@ class ApiController extends AuthAdminController
     const HTML_DOC = 'html';
 
     /**
-     * @Inyectable
+     * @Injectable
      * @var \PSFS\services\DocumentorService $srv
      */
     protected $srv;

@@ -146,8 +146,13 @@ trait MutationTrait
             $this->addPkToList();
         }
         if (!empty($this->extraColumns)) {
+            $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
+            $fields = explode(',', $returnFields ?: '');
+            $fields[] = self::API_MODEL_KEY_FIELD;
             foreach ($this->extraColumns as $expression => $columnName) {
-                $query->withColumn($expression, $columnName);
+                if(empty($fields) || in_array($columnName, $fields)) {
+                    $query->withColumn($expression, $columnName);
+                }
             }
         }
     }
