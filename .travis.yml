@@ -8,7 +8,6 @@ php:
 install:
   - composer self-update
   - composer install -o
-  - vendor/bin/psfs psfs:create:root
 
 after_deploy:
   - phpunit
