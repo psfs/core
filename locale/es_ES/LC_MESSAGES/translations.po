@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-04 16:02+0100\n"
+"POT-Creation-Date: 2017-08-29 17:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,6 +45,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:63
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:76
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:77
+#: /Users/c15k0/Development/psfs/core/src/base/Security.php:88
 msgid "Administrador"
 msgstr ""
 
@@ -57,6 +58,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:64
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:77
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:78
+#: /Users/c15k0/Development/psfs/core/src/base/Security.php:89
 msgid "Gestor"
 msgstr ""
 
@@ -74,6 +76,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:341
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:342
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:346
+#: /Users/c15k0/Development/psfs/core/src/base/Template.php:148
 msgid "Plantillas regeneradas correctamente"
 msgstr ""
 
@@ -92,6 +95,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:365
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:366
 #: /Users/c15k0/Development/psfs/core/src/base/Template.php:369
+#: /Users/c15k0/Development/psfs/core/src/base/Template.php:171
 #, possible-php-format
 msgid "Generando plantillas en path '%s' para el dominio '%d'"
 msgstr ""
@@ -136,6 +140,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:75
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:78
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:77
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:81
 msgid "Guardar configuración"
 msgstr ""
 
@@ -148,6 +153,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:78
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:81
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:80
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:84
 msgid "Añadir nuevo parámetro"
 msgstr ""
 
@@ -159,6 +165,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:78
 #: /Users/c15k0/Development/psfs/core/src/base/config/LoginForm.php:23
 #: /Users/c15k0/Development/psfs/core/src/base/Security.php:79
+#: /Users/c15k0/Development/psfs/core/src/base/Security.php:90
 msgid "Usuario"
 msgstr ""
 
@@ -174,6 +181,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:102
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:102
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:102
 msgid "Cancelar"
 msgstr ""
 
@@ -215,6 +227,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/exception/RouterException.php:15
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:176
 #: /Users/c15k0/Development/psfs/core/src/base/exception/RouterException.php:17
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:175
 msgid "Página no encontrada"
 msgstr ""
 
@@ -225,6 +238,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthApi.php:17
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthApi.php:16
 #: /Users/c15k0/Development/psfs/core/src/base/exception/SecurityException.php:15
+#: /Users/c15k0/Development/psfs/core/src/base/types/AuthApi.php:22
 msgid "Not authorized"
 msgstr ""
 
@@ -368,6 +382,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/f4/f4051d9e0dfcb6ce534409743d818ba5ca8e1e2be199b23f22bcdf198634b063.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/fa/fa05672656cad734a44315ae1316947fe123653890b8e596775837c88559fcc3.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/c9/c9b2ff3fd8cd43cb4c55e3245e9afce1908a759eb1a577d350e1d141b1aa2114.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/27/271ca2e7ebf2f0603f81750568139d93318094520fb6a7a1a6f2703b73256aa5.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/37/37bad8c10b74b7465180858779fd1ec3de1fdb2756961fd8b89c1da50af29dbc.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/52/52a978d4440ed1b44a73f5189de049fe37701cc53ef7fa437fe7fc19477e71ba.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/87/8720c09cbe403ce6d2a3ec2e5e39b1cce27e590d062f3a311ab9201043a9be60.php:36
 msgid "Opps, esto no era lo que me esperaba..."
 msgstr ""
 
@@ -380,6 +398,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/72/72375b0b0c409207e354a354d42c9a34e5e921a4608b299643eb0036a19a1e8e.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/b4/b49a945b8185879be932888e205b0699c76ea7e506c6343f602e02d38142539b.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd1b4f34eb833edab4e75b2daf13ed9f77bd82c602bd2dfcdc22b5cbbc996dfa.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/0c/0cd2fc920f7b405b4203763ac0111c0d1708460ecf21e638639dbf090492b7da.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/19/194077832663f8cd91c9fc727a29c0b5c94309308b85b24c77886d4d59bde1bc.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/80/80294a49e4854dbee60dd247f5cd760e2738c2e2df00e652de4eaae7570928b7.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/b3/b341ecd28ae60ce192641e016981cf6c53361e47501d0fc25177a3e2e604ca76.php:35
 msgid "Acceso Web"
 msgstr ""
 
@@ -393,6 +415,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/ec/ec873e8dba1cc5e4381b46142d96e6335419339b0a9ac5501e5606419154a768.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/89/89820c5c746b53952e40e0e84768d5dd99eb3509ffd1e75b905d493be6424160.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/20/20c03ebc9a94014ee6e3aa56bd68c5556d7fa7512f15595f44d08639da5e45f5.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/c4/c455e7f2f47dae4b763810135b6d2e7236b63c7409eff03f360f54436ce4f880.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/e0/e0a5af0217482c18a4af6e48f9960dfb14733fa3a2547d9502d1dbb726644976.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/ee/ee173d3404dcc18d2435b38ca2bb9d6b8cbdc51f3675932bc15838202067a6c0.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/f7/f70ead50b238d88efa5dac2e3faafe76e037007a559a697553dc3041bb6372fb.php:35
 msgid "Rutas definidas en el sistema"
 msgstr ""
 
@@ -408,6 +434,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/71/71664842e733c9855181fbd7347ed5ab702a6d38b094ea7f9711979f05f3085a.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/98/983392636570c712f932499d284ee5aea56f72d881c91d1487359d3fbd2990d3.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/24/248a9cd7a03769d6c6e896c376e8e8c16b231b7df3ecfc466eed440e61501371.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/2d/2d6dcc8b2d9170ad82787ecac45faf354de8b1a36a9ae247520f5f74c4a3066d.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/36/3638bcb67459048ad21de4932c2128dde1e70c4a6f9cdc77ff1d0ddf5f0ed9b3.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/84/84c69871e129caf0036b53f6e912aedb44ccdb1aad3f027b8283ae0743a7bb1d.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/97/9703f214765d20f6dec002f2620b47f28526e531a7f9779145baf7562a2bc1c6.php:36
 msgid "Herramienta de Gestión de Módulos"
 msgstr ""
 
@@ -424,6 +454,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/3f/3f01e7469006612f14e574a3b599f57eb231c3b9fefb990b2d0a3e1b9366aa71.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/41/41d9d65f7742ee84f88dae452d4226ca03251112eb08deabc8470026501a82be.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/88/88ff27036cfbc8d63793442e11cb21ac4bc661bbb1eaac76af6ab2a74e3dec5c.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/71/712b4e9a6d1824cc585f710c20ac667f6236475dff44bccccaa4b3da08d92d2e.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/7e/7e9abd9e13ba11b03ac6527ad76c8c084852b61c13d673da26c3d02f100cfb98.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/e4/e4cd24953e954f307af5b4e14f052dd666d0776d10c3d61adfeadfc98036ad4e.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/e5/e556b8b70392c1b747b1303052d8beab80831b4bcf0795d971f90b6281205e1a.php:36
 msgid "Herramienta de Gestión de Administradores PSFS"
 msgstr ""
 
@@ -436,6 +470,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/d1/d10245fd533bf5e51f871d0d1d7a5da7a6adf0180ede2c265557b171463687c9.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f866521cfdf0355a4ead051ef3874a62fe279f5929140ed7f3328ac88519b15.php:35
 #: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f2e30314f82590ea122f188a9325dee62fdfe82558cac6617d063bef39494c3.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/04/04df5e62e935ef1d21ad5337e1586eb6db42371a4c7aa92e0acc51de856cad89.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f83038cf2654440168651b4cbb45c2225a395af42938a02e8929f20922d30e5.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/d1/d199437c068ee5914acdee0914ccc1e66b6ff94ffa3223d94b0c45f378cd6dc9.php:35
+#: /Users/c15k0/Development/psfs/core/cache/twig/ed/ed6cb1b131537ac11cb759c21f74d15d4e7460558d39e0f6872e9d625ee73673.php:37
 msgid "Logs de la plataforma"
 msgstr ""
 
@@ -452,6 +490,12 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/9943307ec0b357aea769f574f839ea57cb37cf4fd98fac03c4b8ced5a01d5577.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/12/12978c1b5b5a2c1c12668d949c6a41410ee4b00011babe82e4e418ff9373e956.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/56/5626c6b3f8ebac906a03c5071dbb22dc633e395828905abb0776cf045d729036.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/54/54cd92a532417c355767a28239a55650af9b3ee1e33af32c0984c0b197a40f2b.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/6b/6bb0fdee48c8083e9bf9bb34214b880f89e960355c7b6376631e27c9b3aa0ddc.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/78/78a287c407f483d1b9b6053ec6824075d38a7ba985dfd123013a0d2f605be719.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/8e/8ef7e184a1608dc4c2187e7850a62a67962998ca0a7497c965cc8995b6cca268.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/af/af84f5a799781c91f1ffc168defaddd6c30f6145bddacc2a4847836725222292.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/f6/f6ae67270c7c644f4a8566a4e9528c6b17cf21a3c2065efcabcb9d2e76153bc8.php:36
 msgid "Herramienta de Administración"
 msgstr ""
 
@@ -472,6 +516,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/0f/0f1698860a2f26e47127f48bd3133956701569d280eebdd0b7a1970b4c4092b3.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/15/15e285c4a875c6c8481ecc44f2d233bd3c829e60c9aa833a4f69f8dd3c42b749.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/69/69fae9d9c20ebb027dc24f23137334b593d817d98154501dba6e4d4c5e6aa26b.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/06/064aefff1de9bc228ba93a9d737bd2929cabfc5254242be8c244ac6c367ab943.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/7b/7b3fa0f6229fdd40613732486f64c9aff43c54309f676030052014e63358f2e5.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/80/8001af99f62a4dbbd65e706d27bf95a7290bc4c1790886aaa59e2e29c35ea3a7.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/83/83949ccc9df08913bc1ed30c9a57382e9261e5c93022c843c13f572ba4a42783.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/b8/b8caf36e314339c595eb53ebf4b6858cf775f1eee40834e6bbb60a1a626bea25.php:36
 msgid "Herramienta de configuración"
 msgstr ""
 
@@ -484,6 +533,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/76/76a4d04ceb67463f9e908074f26e3db766271461f9953473fc1f45547c51503a.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e8c683623fee952f1da820ddee68ea7bb3951d84250a155c72aaec1f8deb6d0.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/a2/a281bb02cb59bc81dcaa5d222d741ab291c1e1b7ff1c85c8bd58bb0f2fbfec90.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/02/02adae60c6326bd4be315f97885292c9f3e6f496fff3f8c3e20b063e0a00c978.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/59/598e69ab47fcf5a14a97aeb1bbfe55bf8967c70312edf1467f73895fd7cf7e03.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/ac/ac7c760dcdb1c460c291f7001801a89bac12c559ed2e0db5e9c2a8e06a8fa5ba.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/c5/c5178bbc5cb3feac5d55584d549c74e092cada8cd2cb85bea0b6f42456f18fd5.php:38
 msgid "No tienes privilegios para acceder"
 msgstr ""
 
@@ -496,6 +549,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/76/76a4d04ceb67463f9e908074f26e3db766271461f9953473fc1f45547c51503a.php:51
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e8c683623fee952f1da820ddee68ea7bb3951d84250a155c72aaec1f8deb6d0.php:51
 #: /Users/c15k0/Development/psfs/core/cache/twig/a2/a281bb02cb59bc81dcaa5d222d741ab291c1e1b7ff1c85c8bd58bb0f2fbfec90.php:51
+#: /Users/c15k0/Development/psfs/core/cache/twig/02/02adae60c6326bd4be315f97885292c9f3e6f496fff3f8c3e20b063e0a00c978.php:51
+#: /Users/c15k0/Development/psfs/core/cache/twig/59/598e69ab47fcf5a14a97aeb1bbfe55bf8967c70312edf1467f73895fd7cf7e03.php:51
+#: /Users/c15k0/Development/psfs/core/cache/twig/ac/ac7c760dcdb1c460c291f7001801a89bac12c559ed2e0db5e9c2a8e06a8fa5ba.php:51
+#: /Users/c15k0/Development/psfs/core/cache/twig/c5/c5178bbc5cb3feac5d55584d549c74e092cada8cd2cb85bea0b6f42456f18fd5.php:53
 #, possible-php-format
 msgid "La ruta a la que accedes %s es de acceso restringido"
 msgstr ""
@@ -661,6 +718,16 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:208
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:206
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:208
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:206
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:208
 msgid "Nuevo "
 msgstr ""
 
@@ -682,6 +749,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd81d777f1f59a78c469c2e1429763738cc6f64061a6b453cb9a8aacfdf04923.php:297
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:297
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:297
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:297
 msgid "Deseleccionar todo"
 msgstr ""
 
@@ -703,6 +775,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd81d777f1f59a78c469c2e1429763738cc6f64061a6b453cb9a8aacfdf04923.php:307
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:307
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:307
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:307
 msgid "Deseleccionar"
 msgstr ""
 
@@ -724,6 +801,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd81d777f1f59a78c469c2e1429763738cc6f64061a6b453cb9a8aacfdf04923.php:317
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:317
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:317
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:317
 msgid "Info"
 msgstr ""
 
@@ -745,6 +827,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd81d777f1f59a78c469c2e1429763738cc6f64061a6b453cb9a8aacfdf04923.php:325
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:325
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:325
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:325
 msgid "Seleccionar"
 msgstr ""
 
@@ -766,6 +853,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/cd/cd81d777f1f59a78c469c2e1429763738cc6f64061a6b453cb9a8aacfdf04923.php:335
 #: /Users/c15k0/Development/psfs/core/cache/twig/ef/efe6a4625b1d625027535ec93b66496e53abd61e8c9e48ab56d73f888505110d.php:335
 #: /Users/c15k0/Development/psfs/core/cache/twig/99/993e15899e8d24e894e96767b0932d51ba1a6bd99758a3d69c65da7fb2b3db43.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/7f/7f2b0ee8a442426042b957bae9b702a6070201ff84349cddb8e8411816147cc2.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/b2/b29995c3d38ffedb8c2804071d95eec07cefd63a97b7a20fd3ae4605b59be8f4.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/e1/e1777220596814fe740744a6e86c6746a308bc5ad51a23bc87195cf0c688aab5.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/ef/ef72398c5ca228452df0dbea49da74cc4482d6bed02074653c9ffbaf27f7c51a.php:335
+#: /Users/c15k0/Development/psfs/core/cache/twig/f9/f9ddbb5c24157a085b6b3c696081e8adc5302fa746d648a56c243cce867dde34.php:335
 msgid "Seleccionar todo"
 msgstr ""
 
@@ -774,6 +866,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Request.php:163
 #: /Users/flopez/Development/PSFS/src/base/Request.php:187
 #: /Users/c15k0/Development/psfs/core/src/base/Request.php:222
+#: /Users/c15k0/Development/psfs/core/src/base/Request.php:230
 msgid "Redireccionando..."
 msgstr ""
 
@@ -783,6 +876,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:99
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:102
 #: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:101
+#: /Users/c15k0/Development/psfs/core/src/base/config/ConfigForm.php:105
 msgid "Parámetros necesarios para la ejecución de PSFS"
 msgstr ""
 
@@ -808,6 +902,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/Cache.php:34
 #: /Users/c15k0/Development/psfs/core/src/base/Cache.php:36
 #: /Users/c15k0/Development/psfs/core/src/base/Cache.php:54
+#: /Users/c15k0/Development/psfs/core/src/base/Cache.php:53
 msgid "No se tienen los permisos suficientes para escribir en el fichero "
 msgstr ""
 
@@ -834,6 +929,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/f3/f396fbda918a55143844b69e99db6b7e5b10a55ae70a2d756970517068bde32a.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/27/278e99c18c625603fc0ebf994ec4c5c1ca959b03785d7c6b9894c30eec78283d.php:36
 #: /Users/c15k0/Development/psfs/core/cache/twig/d7/d77f03e18de81cf10386481db71729959aa5cb761af0738b3ee6393e8ab89364.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/10/1051e4df380654abc5e3c3c13a8ee382191eedc25121c744bc90a9b57043e886.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/4c/4c34c20a5b5b225cf24e4772665b05610503d4fdab9ce0a99c63c4b5aa6d5ef3.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/54/549cddb7966b3a286dfed396a9e1e01a22ab8f6c5668576bd6b7f60c6386e347.php:36
+#: /Users/c15k0/Development/psfs/core/cache/twig/e6/e6a4244883d8577955a353c7ff89cc67c59f745d6e016acb22e0d89bfde7071a.php:36
 msgid "Generación de traducciones"
 msgstr ""
 
@@ -872,6 +971,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:144
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:145
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:167
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:166
 msgid "Solicitamos credenciales de acceso a zona restringida"
 msgstr ""
 
@@ -895,6 +995,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:187
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:186
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:208
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:213
 msgid "Ruta no encontrada"
 msgstr ""
 
@@ -940,6 +1041,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:168
 #: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:174
 #: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:183
+#: /Users/c15k0/Development/psfs/core/src/base/extension/AssetsParser.php:202
 msgid "No se tienen permisos para escribir en "
 msgstr ""
 
@@ -947,6 +1049,7 @@ msgstr ""
 #: /Users/flopez/Development/PSFS/src/base/types/AuthController.php:23
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthController.php:23
 #: /Users/c15k0/Development/psfs/core/src/base/types/AuthController.php:27
+#: /Users/c15k0/Development/psfs/core/src/base/types/AuthController.php:25
 msgid "User not logged in"
 msgstr ""
 
@@ -981,6 +1084,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:422
 #: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:426
 #: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:408
+#: /Users/c15k0/Development/psfs/core/src/services/GeneratorService.php:406
 msgid " not exists or cant write"
 msgstr ""
 
@@ -1001,6 +1105,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:387
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:395
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:417
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:440
 msgid "No existe la ruta especificada"
 msgstr ""
 
@@ -1029,6 +1134,7 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/controller/base/Admin.php:175
 #: /Users/c15k0/Development/psfs/core/src/controller/GeneratorController.php:61
 #: /Users/c15k0/Development/psfs/core/src/controller/GeneratorController.php:62
+#: /Users/c15k0/Development/psfs/core/src/controller/GeneratorController.php:66
 #, possible-php-format
 msgid "Módulo %s generado correctamente"
 msgstr ""
@@ -1052,6 +1158,13 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/09/0922ebd292bfce08aa49716cb55978d1b152fdacf2066ee3ebd8125abcd1b4e2.php:136
 #: /Users/c15k0/Development/psfs/core/cache/twig/19/19ab517fcea2cc4bb0ecb7c31bb3c82262acb057652d596287a4169ac8c87a91.php:136
 #: /Users/c15k0/Development/psfs/core/cache/twig/55/558d3060e24a59ef6506a081610dcc59b9a6050e93d35efd4021d00cb42e07a3.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/0d/0da3b65d555791dec4920ecbb3969aa2dc369ede3553a6060f7bc8ce28afd392.php:137
+#: /Users/c15k0/Development/psfs/core/cache/twig/18/18d146abd6f9da4b26887ba590cb1532e572892eec386c73ff6979b02829b626.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/2f/2f487d82b7a529b611c312072f38c9ad21fb7f55940c643fde83163f250277d6.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/88/8838c5843caf2f0eb49cdc768e9d3b8df253dd230e6e365bfbb1c355e63ad65d.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/b6/b66978637d07f6b1c9e0b6bbb068b88ca67c203177ad63ac5902bd11aca3526f.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/bc/bc7e278fd03254e2ad0a0441589b54331114a669c088ccfd33f50f5058b1586b.php:136
+#: /Users/c15k0/Development/psfs/core/cache/twig/d5/d50f1e7509968214c9f1d71fa6f020b3780be7f806e8b262797404ba4a70bd94.php:136
 msgid "Aceptar"
 msgstr ""
 
@@ -1095,6 +1208,11 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:37
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:37
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:37
 #, possible-php-format
 msgid "Admin %s% site"
 msgstr ""
@@ -1301,6 +1419,10 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/ec/ec873e8dba1cc5e4381b46142d96e6335419339b0a9ac5501e5606419154a768.php:56
 #: /Users/c15k0/Development/psfs/core/cache/twig/89/89820c5c746b53952e40e0e84768d5dd99eb3509ffd1e75b905d493be6424160.php:56
 #: /Users/c15k0/Development/psfs/core/cache/twig/20/20c03ebc9a94014ee6e3aa56bd68c5556d7fa7512f15595f44d08639da5e45f5.php:56
+#: /Users/c15k0/Development/psfs/core/cache/twig/c4/c455e7f2f47dae4b763810135b6d2e7236b63c7409eff03f360f54436ce4f880.php:56
+#: /Users/c15k0/Development/psfs/core/cache/twig/e0/e0a5af0217482c18a4af6e48f9960dfb14733fa3a2547d9502d1dbb726644976.php:56
+#: /Users/c15k0/Development/psfs/core/cache/twig/ee/ee173d3404dcc18d2435b38ca2bb9d6b8cbdc51f3675932bc15838202067a6c0.php:58
+#: /Users/c15k0/Development/psfs/core/cache/twig/f7/f70ead50b238d88efa5dac2e3faafe76e037007a559a697553dc3041bb6372fb.php:56
 msgid "Generar rutas"
 msgstr ""
 
@@ -1409,26 +1531,31 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:473
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:481
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:487
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:508
 msgid "Start executing action"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:475
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:483
 #: /Users/c15k0/Development/psfs/core/src/base/Router.php:489
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:510
 msgid "An error ocurred trying to execute the action"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:213
+#: /Users/c15k0/Development/psfs/core/src/base/types/traits/Api/MutationTrait.php:83
 msgid ""
 "El modelo de la API no está debidamente mapeado, no hay Primary Key o es "
 "compuesta"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:451
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:256
 msgid "Ha ocurrido un error intentando guardar el elemento: "
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:482
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:328
 msgid ""
 "Ha ocurrido un error intentando eliminar el elemento, por favor verifica que "
 "no tenga otros elementos relacionados"
@@ -1436,6 +1563,7 @@ msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:517
 #: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:524
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:291
 msgid ""
 "Ha ocurrido un error intentando actualizar el elemento, por favor revisa los "
 "logs"
@@ -1521,18 +1649,33 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:86
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:86
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:86
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:86
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:86
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:86
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:86
 msgid "Algo ha ido mal"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:90
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:90
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:90
 msgid "Vas a eliminar: %entity%"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:94
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:94
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:94
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:94
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:94
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:94
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:94
 msgid ""
 "Si eliminas este elemento puede que borres más datos relacionados, ¿estás "
 "seguro?"
@@ -1541,39 +1684,74 @@ msgstr ""
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:98
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:98
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:98
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:98
 msgid "Eliminar"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:106
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:106
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:118
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:106
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:106
 msgid "Cerrar"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:110
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:110
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:122
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:110
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:110
 msgid "elementos"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:114
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b4afab78e8076c79de0c092f9496eac5e302075788cd5ad0baa518f9224ff35.php:114
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:126
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:114
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:114
 msgid "Buscar"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:118
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:118
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:118
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:130
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:118
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:118
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:118
 msgid "Guardar"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:122
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:122
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:122
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:134
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:122
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:122
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:122
 msgid "Nuevo"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/1b/1b354e1ef313420950f7ef0da48fb72f0ab1969de9ad22f159897cb447396b23.php:126
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:126
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:126
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:138
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:126
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:126
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:126
 msgid "Selecciona un valor"
 msgstr ""
 
@@ -2142,6 +2320,11 @@ msgid "classes"
 msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/5e/5e5040700f083b8bc69f6002363f17fbada1bda761e342922d3915aedcc757aa.php:130
+#: /Users/c15k0/Development/psfs/core/cache/twig/14/1490a671ac10a34d5a3a43a99424fc8f7e353a45a1d98aeff375f8bb8c6d27db.php:130
+#: /Users/c15k0/Development/psfs/core/cache/twig/60/600d1644adbd85036f85ed7b5640257e16a6d7288dbf491af03f28843dd049bf.php:142
+#: /Users/c15k0/Development/psfs/core/cache/twig/6e/6e6978c9fb612f5367b55c50181a07dc458f386558313aea0d38f06c3affaa91.php:130
+#: /Users/c15k0/Development/psfs/core/cache/twig/8f/8f1437b58ad3be606bc1594382ceb978910e7e708604ffb0ba6fdc949fb694c9.php:130
+#: /Users/c15k0/Development/psfs/core/cache/twig/c3/c3db73f98d486d65e6b94655b1434765cefba6b02c880abb143de9f5bc5886ce.php:130
 msgid "No existen registros"
 msgstr ""
 
@@ -2151,4 +2334,140 @@ msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/78/78c55ba9d2804bdcf17f2c2b0c8085c20335098b54ccb7370255358f6a6d7e68.php:65
 msgid "Listado de endpoints"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/Router.php:205
+msgid "La ruta no es válida"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:198
+msgid "No se han encontrado elementos para la búsqueda"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:224
+msgid "No se ha encontrado el elemento solicitado"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:253
+msgid "No se ha podido modificar el modelo seleccionado"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/base/types/Api.php:298
+msgid "No se ha encontrado el modelo al que se hace referencia para actualizar"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:476
+msgid "Successful response"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:479
+msgid "Client error in request"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:482
+msgid "Service not found"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:485
+msgid "Server error"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:528
+msgid "Documentación API módulo "
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:649
+msgid "Límite de registros a devolver, -1 para devolver todos los registros"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:656
+msgid "Página a devolver"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/src/services/DocumentorService.php:663
+msgid "Campos a devolver"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:173
+msgid "admin-api-docs"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:174
+msgid "admin-api-doc-domain"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:175
+msgid "domain-api-doc"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:176
+msgid "admin-domain-swagger-ui"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:177
+msgid "client-api-testi18n"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:178
+msgid "client-api-testi18n-pk"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:179
+msgid "admin-client-testi18n"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:180
+msgid "admin-api-form-client-testi18n"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/32/3282857fbfec30c771cbc9a18123d8b018df3c41bd077520129c2af77a5497d4.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/39/3912fce16552e5c0b4c3b2010914b03103cd5e7698b7b2ba2f1b1ce3f2943502.php:38
+#: /Users/c15k0/Development/psfs/core/cache/twig/7c/7c7fbd74c77500baee0df339122a97fedbd148aa7668cdfa193179858062e923.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/96/968bea0babe7a8d1fcd3d595fd87f670bbbf036ef7ac50f6da85c6aa396ae12f.php:37
+#: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d703ae69470e1199878b6c1a8f4a69831adcabbd17fe796ff6f8763c7c745fd.php:37
+msgid "Visor de documentación de API"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/32/3282857fbfec30c771cbc9a18123d8b018df3c41bd077520129c2af77a5497d4.php:52
+#: /Users/c15k0/Development/psfs/core/cache/twig/39/3912fce16552e5c0b4c3b2010914b03103cd5e7698b7b2ba2f1b1ce3f2943502.php:52
+#: /Users/c15k0/Development/psfs/core/cache/twig/7c/7c7fbd74c77500baee0df339122a97fedbd148aa7668cdfa193179858062e923.php:52
+#: /Users/c15k0/Development/psfs/core/cache/twig/96/968bea0babe7a8d1fcd3d595fd87f670bbbf036ef7ac50f6da85c6aa396ae12f.php:52
+#: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d703ae69470e1199878b6c1a8f4a69831adcabbd17fe796ff6f8763c7c745fd.php:52
+msgid "Selecciona un módulo"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/32/3282857fbfec30c771cbc9a18123d8b018df3c41bd077520129c2af77a5497d4.php:82
+#: /Users/c15k0/Development/psfs/core/cache/twig/39/3912fce16552e5c0b4c3b2010914b03103cd5e7698b7b2ba2f1b1ce3f2943502.php:80
+#: /Users/c15k0/Development/psfs/core/cache/twig/7c/7c7fbd74c77500baee0df339122a97fedbd148aa7668cdfa193179858062e923.php:82
+#: /Users/c15k0/Development/psfs/core/cache/twig/96/968bea0babe7a8d1fcd3d595fd87f670bbbf036ef7ac50f6da85c6aa396ae12f.php:82
+#: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d703ae69470e1199878b6c1a8f4a69831adcabbd17fe796ff6f8763c7c745fd.php:82
+msgid "Ver documentación en html"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/32/3282857fbfec30c771cbc9a18123d8b018df3c41bd077520129c2af77a5497d4.php:92
+#: /Users/c15k0/Development/psfs/core/cache/twig/39/3912fce16552e5c0b4c3b2010914b03103cd5e7698b7b2ba2f1b1ce3f2943502.php:90
+#: /Users/c15k0/Development/psfs/core/cache/twig/7c/7c7fbd74c77500baee0df339122a97fedbd148aa7668cdfa193179858062e923.php:92
+#: /Users/c15k0/Development/psfs/core/cache/twig/96/968bea0babe7a8d1fcd3d595fd87f670bbbf036ef7ac50f6da85c6aa396ae12f.php:92
+#: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d703ae69470e1199878b6c1a8f4a69831adcabbd17fe796ff6f8763c7c745fd.php:92
+msgid "Ver documentación en formato Swagger"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/32/3282857fbfec30c771cbc9a18123d8b018df3c41bd077520129c2af77a5497d4.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/39/3912fce16552e5c0b4c3b2010914b03103cd5e7698b7b2ba2f1b1ce3f2943502.php:100
+#: /Users/c15k0/Development/psfs/core/cache/twig/7c/7c7fbd74c77500baee0df339122a97fedbd148aa7668cdfa193179858062e923.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/96/968bea0babe7a8d1fcd3d595fd87f670bbbf036ef7ac50f6da85c6aa396ae12f.php:102
+#: /Users/c15k0/Development/psfs/core/cache/twig/9d/9d703ae69470e1199878b6c1a8f4a69831adcabbd17fe796ff6f8763c7c745fd.php:102
+msgid "Ver documentación en formato Postman"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/3e/3e6f248152e467d34facc0096211c950eba0ab60aaabae0e4081f33b876a7a1b.php:88
+msgid "Bienvenido"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/49/49d1befb65b7e24745e8463226935efab3a5f5267c5a637969a59bc43b263c37.php:26
+msgid "Menú de administración"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/twig/49/49d1befb65b7e24745e8463226935efab3a5f5267c5a637969a59bc43b263c37.php:80
+msgid "Menus ocultos %s%"
 msgstr ""

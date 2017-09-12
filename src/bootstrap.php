@@ -1,6 +1,9 @@
 <?php
 namespace PSFS;
 
+defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage());
+defined('PSFS_START_TS') or define('PSFS_START_TS', microtime(true));
+
 if (!defined('SOURCE_DIR')) define('SOURCE_DIR', __DIR__);
 if (preg_match('/vendor/', SOURCE_DIR)) {
     if (!defined('BASE_DIR')) define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..');

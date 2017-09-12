@@ -2,6 +2,7 @@
 namespace PSFS\Services;
 
 use PSFS\base\Cache;
+use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Service;
 use PSFS\base\types\helpers\GeneratorHelper;
@@ -105,8 +106,8 @@ class GeneratorService extends Service
         //Creamos las carpetas CORE del módulo
         $this->log->infoLog("Generamos la estructura");
         $paths = [
-            "Api", "Api/base", "Config", "Controller", "Models",
-            "Public", "Templates", "Services", "Test", "Doc",
+            "Api", "Api/base", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
+            "Locale", "Locale/" . Config::getParam('default.locale', 'es_ES'), "Locale/" . Config::getParam('default.locale', 'es_ES') . "/LC_MESSAGES"
         ];
         $module_path = $mod_path . $module;
         foreach ($paths as $path) {
