@@ -155,6 +155,7 @@ trait OutputTrait {
         ob_start();
         $this->setReponseHeaders($contentType, $cookies);
         header('Content-length: ' . strlen($output));
+        header('CRC: ' . crc32($output));
 
         $needCache = Cache::needCache();
         $cache = Cache::getInstance();

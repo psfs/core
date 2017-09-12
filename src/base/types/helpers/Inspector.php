@@ -39,8 +39,8 @@ class Inspector {
      */
     protected static function processStats() {
         self::stats('Profiling collect start');
-        $ts = $_SERVER['REQUEST_TIME_FLOAT'] ?: 0;
-        $mem = 0;
+        $ts = defined('PSFS_START_TS') ? PSFS_START_TS : 0;
+        $mem = defined('PSFS_START_MEM') ? PSFS_START_MEM : 0;
         $files = 0;
         foreach(self::$profiling as $key => &$value) {
             $value = self::calculateStats($value, $ts, $mem, $files);

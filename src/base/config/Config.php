@@ -59,6 +59,8 @@ class Config
         'cors.headers', // Add extra headers to the CORS check
         'json.encodeUTF8', // Encode the json response
         'cache.data.enable', // Enable data caching with PSFS
+        'profiling.enable', // Enable the profiling headers
+        'api.extrafields.compat', // Disbale retro compatibility with extra field mapping in api
     ];
     protected $debug = false;
 

@@ -5,6 +5,7 @@ use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\ProfilingJsonResponse;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\ResponseHelper;
 
 /**
  * Class JsonTrait
@@ -37,6 +38,7 @@ Trait JsonTrait {
             $data = ")]}',\n" . $data;
         }
         $this->setStatus($statusCode);
+        ResponseHelper::setDebugHeaders([]);
         return $this->output($data, "application/json");
     }
 

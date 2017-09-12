@@ -75,8 +75,8 @@ Trait SystemTrait {
         if (null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
             $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
         } else {
-            $this->ts = Request::getInstance()->getTs();
+            $this->ts = PSFS_START_TS;
         }
-        $this->mem = memory_get_usage();
+        $this->mem = PSFS_START_MEM;
     }
 }
