@@ -9,7 +9,6 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\types\helpers\AdminHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
-use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SingletonTrait;
@@ -17,7 +16,6 @@ use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-
 
 /**
  * Class Router
@@ -59,7 +57,7 @@ class Router
     }
 
     /**
-     * Inicializador Router
+     * Initializer Router
      * @throws ConfigException
      */
     public function init()
@@ -104,9 +102,9 @@ class Router
             $response = new JsonResponse(null, false, 0, 0, $e->getMessage());
             return $template->output(json_encode($response), 'application/json');
         } else {
-            $not_found_rouote = Config::getParam('route.404');
-            if(null !== $not_found_rouote) {
-                Request::getInstance()->redirect($this->getRoute($not_found_rouote, true));
+            $not_found_route = Config::getParam('route.404');
+            if(null !== $not_found_route) {
+                Request::getInstance()->redirect($this->getRoute($not_found_route, true));
             } else {
                 return $template->render('error.html.twig', array(
                     'exception' => $e,
@@ -219,19 +217,16 @@ class Router
      * @return bool
      */
     private function checkRequirements(array $action, array $params = []) {
-        $valid = true;
-        if(!empty($action['requirements'])) {
-            if(!empty($params)) {
-                $checked = 0;
-                foreach(array_keys($params) as $key) {
-                    if(in_array($key, $action['requirements'])) {
-                        $checked++;
-                    }
+        if(!empty($action['requirements']) && !empty($params)) {
+            $checked = 0;
+            foreach(array_keys($params) as $key) {
+                if(in_array($key, $action['requirements'])) {
+                    $checked++;
                 }
-                $valid = count($action['requirements']) == $checked;
-            } else {
-                $valid = false;
             }
+            $valid = count($action['requirements']) == $checked;
+        } else {
+            $valid = true;
         }
         return $valid;
     }
@@ -257,7 +252,7 @@ class Router
     }
 
     /**
-     * Method that check if the proyect has sub project to include
+     * Method that check if the project has sub project to include
      * @param boolean $hydrateRoute
      */
     private function checkExternalModules($hydrateRoute = true)
@@ -357,6 +352,9 @@ class Router
     private function addRouting($namespace, &$routing, $module = 'PSFS')
     {
         if (self::exists($namespace)) {
+            if(I18nHelper::checkI18Class($namespace)) {
+                return $routing;
+            }
             $reflection = new \ReflectionClass($namespace);
             if (FALSE === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
@@ -493,7 +491,7 @@ class Router
         Security::getInstance()->setSessionKey("__CACHE__", $action);
         $cache = Cache::needCache();
         $execute = TRUE;
-        if (FALSE !== $cache && Config::getInstance()->getDebugMode() === FALSE && $action['http'] === 'GET') {
+        if (FALSE !== $cache && Config::getParam('debug') === FALSE && $action['http'] === 'GET') {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
             $cachedData = $this->cache->readFromCache("json" . DIRECTORY_SEPARATOR . $path . $cacheDataName,
                 $cache, null);
@@ -521,14 +519,11 @@ class Router
     {
         $translations = I18nHelper::generateTranslationsFile($absoluteTranslationFileName);
         foreach ($this->routing as $key => &$info) {
-            $keyParts = $key;
-            if (FALSE === strstr("#|#", $key)) {
-                $keyParts = explode("#|#", $key);
-                $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : '';
-            }
+            $keyParts = explode("#|#", $key);
+            $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : $keyParts[0];
             $slug = RouterHelper::slugify($keyParts);
             if (NULL !== $slug && !array_key_exists($slug, $translations)) {
-                $translations[$slug] = $key;
+                $translations[$slug] = $info['label'];
                 file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$slug}\");\n", FILE_APPEND);
             }
             $this->slugs[$slug] = $key;
@@ -545,11 +540,9 @@ class Router
     {
         $extModule = $modulePath->getBasename();
         $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-        if (file_exists($moduleAutoloader)) {
-            @include $moduleAutoloader;
-            if ($hydrateRoute) {
-                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
-            }
+        @include $moduleAutoloader;
+        if ($hydrateRoute) {
+            $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
         }
     }
 
@@ -560,15 +553,16 @@ class Router
      */
     private function loadExternalModule($hydrateRoute, $module)
     {
-        $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
-        $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-        if (file_exists($externalModulePath)) {
+        try {
+            $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
+            $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
             $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-            if (!empty($externalModule)) {
-                foreach ($externalModule as $modulePath) {
-                    $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
-                }
+            foreach ($externalModule as $modulePath) {
+                $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
             }
+        } catch (\Exception $e) {
+            Logger::log($e->getMessage(), LOG_WARNING);
+            $module = null;
         }
         return $module;
     }

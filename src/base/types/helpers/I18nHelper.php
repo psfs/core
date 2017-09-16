@@ -6,6 +6,7 @@ use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Router;
 
 /**
  * Class I18nHelper
@@ -110,5 +111,20 @@ class I18nHelper
             $data = utf8_encode($data);
         }
         return $data;
+    }
+
+    /**
+     * @param string $namespace
+     * @return bool
+     */
+    public static function checkI18Class($namespace) {
+        $isI18n = false;
+        if(preg_match('/I18n$/i', $namespace)) {
+            $parentClass = preg_replace('/I18n$/i', '', $namespace);
+            if(Router::exists($parentClass)) {
+                $isI18n = true;
+            }
+        }
+        return $isI18n;
     }
 }

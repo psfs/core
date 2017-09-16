@@ -9,6 +9,7 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use Symfony\Component\Finder\Finder;
@@ -29,6 +30,8 @@ class DocumentorService extends Service
 
     const DTO_INTERFACE = '\\PSFS\\base\\dto\\Dto';
     const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
+
+    private $classes = [];
 
     /**
      * @Injectable
@@ -97,13 +100,13 @@ class DocumentorService extends Service
      * Method that extract all the endpoit information by reflection
      *
      * @param string $namespace
-     *
+     * @param string $module
      * @return array
      */
     public function extractApiInfo($namespace, $module)
     {
         $info = [];
-        if (class_exists($namespace)) {
+        if (Router::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
             $reflection = new \ReflectionClass($namespace);
             foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 try {
