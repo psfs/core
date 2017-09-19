@@ -36,25 +36,9 @@ app.controller('AdminCtrl', ['$msgSrv', '$scope', '$log', '$mdSidenav', '$timeou
         function buildToggler(componentId) {
             return function() {
                 try {
-                    switch(componentId) {
-                        default:
-                        case 'left':
-                            // Do nothing
-                            //if($mdSidenav('right').isOpen()) {
-                            //    $mdSidenav('right').close();
-                            //}
-                            break;
-                        case 'right':
-                            if($mdSidenav('left').isOpen()) {
-                                $mdSidenav('left').close();
-                            }
-                            break;
-                    }
-                    if(componentId === 'left') {
-                        $mdSidenav(componentId, true).toggle();
-                    }
+                    $mdSidenav(componentId, true).toggle();
                 } catch(err) {
-                    $log.warn(err.message);
+                    $log.debug(err.message);
                 }
 
             };
@@ -79,8 +63,9 @@ app.controller('AdminCtrl', ['$msgSrv', '$scope', '$log', '$mdSidenav', '$timeou
             );
         };
 
-        $scope.goTo = function(path) {
-            $scope.toggleMenu();
+        $scope.goTo = function(path, componentId) {
+            componentId = componentId || 'left';
+            buildToggler(componentId);
             $msgSrv.send('page.load.start');
             $window.location.href = path;
         };
