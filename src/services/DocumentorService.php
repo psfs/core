@@ -376,7 +376,6 @@ class DocumentorService extends Service
                     $this->setQueryParams($method, $methodInfo);
                     $this->setRequestHeaders($reflection, $methodInfo);
                 } catch (\Exception $e) {
-                    jpre($e->getMessage());
                     Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
