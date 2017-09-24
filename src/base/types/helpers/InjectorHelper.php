@@ -10,6 +10,8 @@ use PSFS\services\DocumentorService;
  */
 class InjectorHelper
 {
+    const INJECTABLE_PATTERN = '/@(Inyectable|Injectable|autoload|autowired)/im';
+    const VAR_PATTERN = '/@var /im';
 
     /**
      * @param \ReflectionClass $reflector
@@ -37,12 +39,12 @@ class InjectorHelper
      * @param integer $type
      * @return array
      */
-    public static function extractProperties(\ReflectionClass $reflector, $type = \ReflectionProperty::IS_PROTECTED)
+    public static function extractProperties(\ReflectionClass $reflector, $type = \ReflectionProperty::IS_PROTECTED, $pattern = self::INJECTABLE_PATTERN)
     {
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
             $doc = $property->getDocComment();
-            if (preg_match('/@(Inyectable|Injectable|autoload|autowired)/im', $doc)) {
+            if (preg_match($pattern, $doc)) {
                 $instanceType = self::extractVarType($property->getDocComment());
                 if (null !== $instanceType) {
                     $properties[$property->getName()] = $instanceType;

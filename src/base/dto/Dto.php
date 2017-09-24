@@ -3,7 +3,9 @@ namespace PSFS\base\dto;
 
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\InjectorHelper;
 
 /**
  * Class Dto
@@ -11,6 +13,14 @@ use PSFS\base\Singleton;
  */
 class Dto extends Singleton
 {
+
+    public function __construct($hydrate = true)
+    {
+        parent::__construct();
+        if($hydrate) {
+            $this->fromArray(Request::getInstance()->getData());
+        }
+    }
 
     /**
      * ToArray wrapper
@@ -58,15 +68,66 @@ class Dto extends Singleton
     }
 
     /**
+     * @param array $properties
+     * @param string $key
+     * @param mixed $value
+     */
+    protected function parseDtoField(array $properties, $key, $value = null) {
+        $type = 'string';
+        $is_array = false;
+        if(array_key_exists($key, $properties)) {
+            $type = $properties[$key];
+            if(preg_match('/(\[\]|Array)/i', $type)) {
+                $type = preg_replace('/(\[\]|Array)/i', '', $type);
+                $is_array = true;
+            }
+        }
+        $reflector = (class_exists($type)) ? new \ReflectionClass($type) : null;
+        if(null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
+            if($is_array) {
+                $this->$key = [];
+                foreach($value as $data) {
+                    $dto = new $type(false);
+                    $dto->fromArray($data);
+                    $this->$key[] = $dto;
+                }
+            } else {
+                $this->$key = new $type(false);
+                $this->$key->fromArray($value);
+            }
+        } else {
+            switch($type) {
+                default:
+                case 'string':
+                    $this->$key = $value;
+                    break;
+                case 'integer':
+                    $this->$key = (integer)$value;
+                    break;
+                case 'float':
+                    $this->$key = (float)$value;
+                    break;
+                case 'boolean':
+                case 'bool':
+                    $this->$key = (bool)$value;
+                    break;
+            }
+        }
+    }
+
+    /**
      * Hydrate object from array
      * @param array $object
      */
     public function fromArray(array $object = array())
     {
         if (count($object) > 0) {
+            $reflector = new \ReflectionClass($this);
+            $properties = InjectorHelper::extractProperties($reflector, \ReflectionProperty::IS_PUBLIC, InjectorHelper::VAR_PATTERN);
+            unset($reflector);
             foreach ($object as $key => $value) {
                 if (property_exists($this, $key)) {
-                    $this->$key = $value;
+                    $this->parseDtoField($properties, $key, $value);
                 }
             }
         }
