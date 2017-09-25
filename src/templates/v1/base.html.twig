@@ -50,21 +50,22 @@
     "@ROOT/js/jquery.min.js"
     "@ROOT/js/bootstrap.min.js"
     "@ROOT/js/angular.js"
-    "@ROOT/js/angular/aria.js"
     "@ROOT/js/angular/animate.js"
-    "@ROOT/js/angular/sanitize.js"
+    "@ROOT/js/angular/aria.js"
     "@ROOT/js/angular/messages.js"
     "@ROOT/js/angular/materials.js"
     "@ROOT/js/angular/paging.js"
     "@ROOT/js/bootbox.js"
     "@ROOT/js/typeahead.js"
     "@ROOT/js/admins.js"
-    "@ROOT/js/forms.js" %}{% endscript %}
+    "@ROOT/js/forms.js"
+    %}{% endscript %}
+    <script type="text/javascript" src="{{ asset("@ROOT/js/angular/sanitize.js") }}"></script>
 {% endblock base_scripts %}
-<script type="application/javascript">
+<script type="application/javascript" defer>
     var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
     (function () {
-        app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
+        app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging', 'ngSanitize']);
     })();
 </script>
 {% block scripts %}
