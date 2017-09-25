@@ -89,7 +89,7 @@ class Dto extends Singleton
                 foreach($value as $data) {
                     $dto = new $type(false);
                     $dto->fromArray($data);
-                    $this->$key[] = $dto;
+                    array_push($this->$key, $dto);
                 }
             } else {
                 $this->$key = new $type(false);

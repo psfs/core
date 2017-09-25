@@ -250,7 +250,7 @@ abstract class Api extends Singleton
                 $saved = TRUE;
                 $model = $this->model->toArray();
             } else {
-                $message = _('No se ha podido modificar el modelo seleccionado');
+                $message = _('No se ha podido guardar el modelo seleccionado');
             }
         } catch (\Exception $e) {
             $message = _('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
