@@ -302,6 +302,7 @@ class Service extends Singleton
             case 'GET':
             default:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
+                $this->setUrl($this->getUrl() . '?' . http_build_query($this->params));
                 break;
             case 'POST':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
@@ -350,7 +351,7 @@ class Service extends Singleton
             curl_setopt($this->con, CURLOPT_STDERR, $verbose);
         }
         $result = curl_exec($this->con);
-        $this->result = json_decode($result, true);
+        $this->result = $this->isJson ? json_decode($result, true) : $result;
         if('debug' === Config::getParam('log.level')) {
             rewind($verbose);
             $verboseLog = stream_get_contents($verbose);
@@ -370,4 +371,5 @@ class Service extends Singleton
     public function getCallInfo() {
         return $this->info;
     }
+
 }

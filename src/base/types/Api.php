@@ -76,7 +76,9 @@ abstract class Api extends Singleton
         $this->domain = $this->getDomain();
         $this->hydrateRequestData();
         $this->hydrateOrders();
-        $this->createConnection($this->getTableMap());
+        if($this instanceof CustomApi === false) {
+            $this->createConnection($this->getTableMap());
+        }
         $this->setLoaded(true);
         Logger::log(get_called_class() . ' loaded', LOG_DEBUG);
     }
@@ -84,7 +86,7 @@ abstract class Api extends Singleton
     /**
      * Hydrate order from request
      */
-    private function hydrateOrders()
+    protected function hydrateOrders()
     {
         if (count($this->query)) {
             Logger::log(get_called_class() . ' gathering query string', LOG_DEBUG);
@@ -336,7 +338,7 @@ abstract class Api extends Singleton
     /**
      * Hydrate data from request
      */
-    private function hydrateRequestData()
+    protected function hydrateRequestData()
     {
         $request = Request::getInstance();
         $this->query = array_merge($this->query, $request->getQueryParams());

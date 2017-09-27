@@ -39,15 +39,17 @@ trait ConnectionTrait {
      */
     protected function closeTransaction($status)
     {
-        $this->traceDebugQuery();
-        if (null !== $this->con && $this->con->inTransaction()) {
-            if ($status === 200) {
-                $this->con->commit();
-            } else {
-                $this->con->rollBack();
+        if(null !== $this->con) {
+            $this->traceDebugQuery();
+            if (null !== $this->con && $this->con->inTransaction()) {
+                if ($status === 200) {
+                    $this->con->commit();
+                } else {
+                    $this->con->rollBack();
+                }
             }
+            Propel::closeConnections();
         }
-        Propel::closeConnections();
     }
 
     /**

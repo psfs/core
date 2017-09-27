@@ -45,7 +45,7 @@ trait MutationTrait
     {
         /** @var TableMap $tableMap */
         $tableMap = $this->getModelTableMap();
-        return $tableMap::getOMClass(FALSE);
+        return (null !== $tableMap) ? $tableMap::getOMClass(FALSE) : null;
     }
 
     /**
@@ -54,7 +54,7 @@ trait MutationTrait
     private function getTableMap()
     {
         $tableMapClass = $this->getModelTableMap();
-        return $tableMapClass::getTableMap();
+        return (null !== $tableMapClass) ? $tableMapClass::getTableMap() : null;
     }
 
     protected function getPkDbName()
