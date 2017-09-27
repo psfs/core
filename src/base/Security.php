@@ -1,6 +1,8 @@
 <?php
 namespace PSFS\base;
 
+use PSFS\base\types\helpers\RequestHelper;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\SecureTrait;
 use PSFS\base\types\traits\SingletonTrait;
 
@@ -210,6 +212,14 @@ class Security
                             'profile' => $admins[$user]['profile'],
                         );
                         $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+                        ResponseHelper::setCookieHeaders([
+                            [
+                                'name' => $this->getHash(),
+                                'value' => base64_encode("$user:$pass"),
+                                'http' => true,
+                                'domain' => '',
+                            ]
+                        ]);
                     }
                 } else {
                     $this->admin = null;

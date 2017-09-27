@@ -15,7 +15,7 @@ class ResponseHelper
      */
     public static function setCookieHeaders($cookies)
     {
-        if (!empty($cookies) && is_array($cookies)) {
+        if (!empty($cookies) && is_array($cookies) && false === headers_sent()) {
             foreach ($cookies as $cookie) {
                 setcookie($cookie["name"],
                     $cookie["value"],
@@ -23,7 +23,7 @@ class ResponseHelper
                     (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
                     (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
                     (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
-                    (array_key_exists('http', $cookie)) ? $cookie["http"] : FALSE
+                    (array_key_exists('http', $cookie)) ? $cookie["http"] : true
                 );
             }
         }

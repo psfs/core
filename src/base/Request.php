@@ -266,10 +266,9 @@ class Request
      */
     public function getRootUrl($protocol = true)
     {
-        $host = $this->getServerName();
+        $url = $this->getServerName();
         $protocol = $protocol ? $this->getProtocol() : '';
-        $url = '';
-        if (!empty($host) && !empty($protocol)) $url = $protocol . $host;
+        if (!empty($protocol)) $url = $protocol . $url;
         if (!in_array($this->getServer('SERVER_PORT'), [80, 443])) {
             $url .= ':' . $this->getServer('SERVER_PORT');
         }
