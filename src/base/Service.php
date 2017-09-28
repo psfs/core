@@ -258,6 +258,7 @@ class Service extends Singleton
     private function initialize()
     {
         $this->closeConnection();
+        $this->params = [];
         $this->con = curl_init($this->url);
     }
 
@@ -304,7 +305,7 @@ class Service extends Singleton
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
                 if(!empty($this->params)) {
                     $sep = !preg_match('/\?/', $this->getUrl()) ? '?' : '';
-                    $this->setUrl($this->getUrl() . $sep . http_build_query($this->params));
+                    $this->url = $this->url . $sep . http_build_query($this->params);
                 }
                 break;
             case 'POST':
