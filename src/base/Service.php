@@ -302,7 +302,10 @@ class Service extends Singleton
             case 'GET':
             default:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
-                $this->setUrl($this->getUrl() . '?' . http_build_query($this->params));
+                if(!empty($this->params)) {
+                    $sep = false === preg_match('/\?/', $this->getUrl() ? '?' : '';
+                    $this->setUrl($this->getUrl() . $sep . http_build_query($this->params));
+                }
                 break;
             case 'POST':
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
