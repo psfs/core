@@ -303,7 +303,7 @@ class Service extends Singleton
             default:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
                 if(!empty($this->params)) {
-                    $sep = false === preg_match('/\?/', $this->getUrl() ? '?' : '';
+                    $sep = false === preg_match('/\?/', $this->getUrl()) ? '?' : '';
                     $this->setUrl($this->getUrl() . $sep . http_build_query($this->params));
                 }
                 break;
