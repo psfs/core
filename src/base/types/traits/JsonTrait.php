@@ -33,7 +33,12 @@ Trait JsonTrait {
 
         $this->decodeJsonReponse($response);
 
-        $data = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK | JSON_BIGINT_AS_STRING);
+        $mask = JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING;
+        if(Config::getParam('output.json.strict_numbers')) {
+            $mask = JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING | JSON_NUMERIC_CHECK;
+        }
+
+        $data = json_encode($response, $mask);
         if(Config::getParam('angular.protection', false)) {
             $data = ")]}',\n" . $data;
         }

@@ -22,11 +22,13 @@ class InjectorHelper
         $variables = [];
         foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
+            $isRequired = self::checkIsRequired($property->getDocComment());
             if (null !== $instanceType) {
                 list($type, $format) = DocumentorService::translateSwaggerFormats($instanceType);
                 $variables[$property->getName()] = [
                     'type' => $type,
                     'format' => $format,
+                    'required' => $isRequired,
                 ];
             }
         }
@@ -66,6 +68,34 @@ class InjectorHelper
             list(, $type) = $matches;
         }
         return $type;
+    }
+
+    /**
+     * Method extract if a variable is required
+     * @param $doc
+     * @return null|string
+     */
+    public static function checkIsRequired($doc)
+    {
+        $required = false;
+        if (false !== preg_match('/@required/', $doc, $matches)) {
+            $required = (bool)count($matches);
+        }
+        return $required;
+    }
+
+    /**
+     * Method extract if a class or variable is visible
+     * @param $doc
+     * @return null|string
+     */
+    public static function checkIsVisible($doc)
+    {
+        $visible = false;
+        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches)) {
+            $visible = 'false' !== strtolower($matches[1]);
+        }
+        return $visible;
     }
 
     /**

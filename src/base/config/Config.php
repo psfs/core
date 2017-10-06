@@ -61,6 +61,8 @@ class Config
         'cache.data.enable', // Enable data caching with PSFS
         'profiling.enable', // Enable the profiling headers
         'api.extrafields.compat', // Disbale retro compatibility with extra field mapping in api
+        'output.json.strict_numbers', // Enable strict numbers in json responses
+        'admin.version', // Determines the version for the admin ui
     ];
     protected $debug = false;
 

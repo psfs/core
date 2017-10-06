@@ -108,14 +108,17 @@ class DocumentorService extends Service
         $info = [];
         if (Router::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
             $reflection = new \ReflectionClass($namespace);
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                try {
-                    $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
-                    if (NULL !== $mInfo) {
-                        $info[] = $mInfo;
+            $visible = InjectorHelper::checkIsVisible($reflection->getDocComment());
+            if($visible) {
+                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    try {
+                        $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
+                        if (NULL !== $mInfo) {
+                            $info[] = $mInfo;
+                        }
+                    } catch (\Exception $e) {
+                        Logger::getInstance()->errorLog($e->getMessage());
                     }
-                } catch (\Exception $e) {
-                    Logger::getInstance()->errorLog($e->getMessage());
                 }
             }
         }
@@ -328,6 +331,12 @@ class DocumentorService extends Service
                         "required" => $field->isNotNull(),
                         'format' => $format,
                     ];
+                    if(count($field->getValueSet())) {
+                        $info['enum'] = array_values($field->getValueSet());
+                    }
+                    if(null !== $field->getDefaultValue()) {
+                        $info['default'] = $field->getDefaultValue();
+                    }
                     $payload[$field->getPhpName()] = $info;
                 }
             } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
@@ -407,7 +416,7 @@ class DocumentorService extends Service
             case 'binary':
             case 'varbinary':
                 $swaggerType = 'string';
-                $swaggerFormat = 'binary';
+                $swaggerFormat = 'password';
                 break;
             case 'int':
             case 'integer':
@@ -423,6 +432,7 @@ class DocumentorService extends Service
                 $swaggerType = 'string';
                 $swaggerFormat = 'date';
                 break;
+            case 'timestamp':
             case 'datetime':
                 $swaggerType = 'string';
                 $swaggerFormat = 'date-time';
@@ -528,10 +538,10 @@ class DocumentorService extends Service
             "schemes" => [Request::getInstance()->getServer('HTTPS') == 'on' ? "https" : "http"],
             "info" => [
                 "title" => _('Documentación API módulo ') . $module['name'],
-                "version" => Config::getParam('api.version', '1.0'),
+                "version" => Config::getParam('api.version', '1.0.0'),
                 "contact" => [
                     "name" => Config::getParam("author", "Fran López"),
-                    "email" => Config::getParam("author_email", "fran.lopez84@hotmail.es"),
+                    "email" => Config::getParam("author.email", "fran.lopez84@hotmail.es"),
                 ]
             ]
         ];
@@ -614,6 +624,12 @@ class DocumentorService extends Service
                 }
             }
         }
+        ksort($dtos);
+        uasort($paths, function($path1, $path2) {
+            $key1 = array_keys($path1)[0];
+            $key2 = array_keys($path2)[0];
+            return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
+        });
         $formatted['definitions'] = $dtos;
         $formatted['paths'] = $paths;
         return $formatted;
