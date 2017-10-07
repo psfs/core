@@ -109,7 +109,7 @@
             $this->restoreConfig();
         }
 
-        public function testMultipleModuleConfig() {
+        public function _testMultipleModuleConfig() {
             Config::dropInstance();
             $config = $this->getInstance();
 
@@ -126,7 +126,7 @@
             $this->assertEquals(Config::getParam('test', null, 'test'), $test_data, 'The value is not the same without module value');
 
             $test_data2 = microtime(true);
-            $original_data = $this->getBasicConfigUse();
+            $original_data = $config->dumpConfig();
             Config::save($original_data, [
                 'label' => ['test.test'],
                 'value' => [$test_data2],
