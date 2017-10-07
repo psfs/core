@@ -108,4 +108,35 @@
             Config::save($original_data, []);
             $this->restoreConfig();
         }
+
+        public function testMultipleModuleConfig() {
+            Config::dropInstance();
+            $config = $this->getInstance();
+
+            // Original config data
+            $original_data = $config->dumpConfig();
+            $test_data = microtime(true);
+            Config::save($original_data, [
+                'label' => ['test'],
+                'value' => [$test_data],
+            ]);
+
+            $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
+            $this->assertEquals(Config::getParam('test' . uniqid(), $test_data), $test_data, 'The value is not the same with default value');
+            $this->assertEquals(Config::getParam('test', null, 'test'), $test_data, 'The value is not the same without module value');
+
+            $test_data2 = microtime(true);
+            $original_data = $this->getBasicConfigUse();
+            Config::save($original_data, [
+                'label' => ['test.test'],
+                'value' => [$test_data2],
+            ]);
+            $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
+            $this->assertEquals(Config::getParam('test' . uniqid(), $test_data), $test_data, 'The value is not the same with default value');
+            $this->assertEquals(Config::getParam('test', null, 'test'), $test_data2, 'The value is not the same with module value');
+            $this->assertEquals(Config::getParam('test', null, 'testa'), $test_data, 'The value is not the same with module value and default value');
+            $this->assertEquals(Config::getParam('test', $test_data2, 'testa'), $test_data, 'The value is not the same with module value and default value');
+
+            $this->restoreConfig();
+        }
     }

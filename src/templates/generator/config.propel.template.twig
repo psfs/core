@@ -8,9 +8,9 @@ $serviceContainer->checkVersion('2.0.0-dev');
 $serviceContainer->setAdapterClass('{{ module }}', 'mysql');
 $manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
-    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host') . ';port=' . \PSFS\base\config\Config::getParam('db.port') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name') . '',
-    'user' => \PSFS\base\config\Config::getParam('db.user'),
-    'password' => \PSFS\base\config\Config::getParam('db.password'),
+    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host', null, '{{ module|lower }}') . ';port=' . \PSFS\base\config\Config::getParam('db.port', null, '{{ module|lower }}') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name', null, '{{ module|lower }}') . '',
+    'user' => \PSFS\base\config\Config::getParam('db.user', null, '{{ module|lower }}'),
+    'password' => \PSFS\base\config\Config::getParam('db.password', null, '{{ module|lower }}'),
     'classname' => 'Propel\\Runtime\\Connection\\PropelPDO',
     'model_paths' => array(
         0 => 'src',
@@ -23,9 +23,9 @@ $serviceContainer->setConnectionManager('{{ module }}', $manager);
 $serviceContainer->setAdapterClass('debug{{ module }}', 'mysql');
 $manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
-    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host') . ';port=' . \PSFS\base\config\Config::getParam('db.port') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name') . '',
-    'user' => \PSFS\base\config\Config::getParam('db.user'),
-    'password' => \PSFS\base\config\Config::getParam('db.password'),
+    'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host', null, '{{ module|lower }}') . ';port=' . \PSFS\base\config\Config::getParam('db.port', null, '{{ module|lower }}') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name', null, '{{ module|lower }}') . '',
+    'user' => \PSFS\base\config\Config::getParam('db.user', null, '{{ module|lower }}'),
+    'password' => \PSFS\base\config\Config::getParam('db.password', null, '{{ module|lower }}'),
     'classname' => 'Propel\\Runtime\\Connection\\DebugPDO',
     'model_paths' => array(
         0 => 'src',

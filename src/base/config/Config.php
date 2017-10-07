@@ -239,11 +239,16 @@ class Config
      * Static wrapper for extracting params
      * @param string $key
      * @param mixed|null $defaultValue
+     * @param string $module
      * @return mixed|null
      */
-    public static function getParam($key, $defaultValue = null)
+    public static function getParam($key, $defaultValue = null, $module = null)
     {
-        $param = Config::getInstance()->get($key);
-        return (null !== $param) ? $param : $defaultValue;
+        if(null !== $module) {
+            return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));
+        } else {
+            $param = Config::getInstance()->get($key);
+            return (null !== $param) ? $param : $defaultValue;
+        }
     }
 }

@@ -8,7 +8,7 @@ propel:
     paths:
         # Directory where the project files (`schema.xml`, etc.) are located.
         # Default value is current path #
-        projectDir:  modules
+        projectDir:  src
 
         # The directory where Propel should output classes, sql, config, etc.
         # Default value is current path #
@@ -21,7 +21,7 @@ propel:
         phpConfDir: %projectDir%/%project%/Config
 
         # The directory where Propel should output the generated DDL (or data insert statements, etc.)
-        sqlDir: %projectDir%/%project%/Config
+        sqlDir: %projectDir%/%project%/Config/Sql
 
         # Directory in which your composer.json resides
         composerDir: .
@@ -37,7 +37,7 @@ propel:
                 user: {{ user }}
                 password: {{ pass }}
                 classname: Propel\Runtime\Connection\PropelPDO
-            debug{{ namespace }}:
+            debug_{{ namespace }}:
                 # The PDO dsn
                 adapter: mysql
                 dsn: mysql:host={{ host }};port={{ port }};dbname={{ db }}
@@ -63,7 +63,7 @@ propel:
         # This section affects config:convert command
         connections:
             - {{ namespace }}
-            - debug{{ namespace }}
+            - debug_{{ namespace }}
 
         ## Log and loggers definitions ##
         # For `type` and `level` options see Monolog documentation https://github.com/Seldaek/monolog
@@ -79,4 +79,4 @@ propel:
         # Datasources as defined in database.connections
         connections:
             - {{ namespace }}
-            - debug{{ namespace }}
+            - debug_{{ namespace }}

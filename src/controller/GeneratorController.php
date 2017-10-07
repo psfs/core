@@ -64,10 +64,10 @@ class GeneratorController extends Admin
                 GeneratorHelper::checkCustomNamespaceApi($apiClass);
                 $this->gen->createStructureModule($module, false, $type, $apiClass);
                 Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, _("Módulo %s generado correctamente")));
-                Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
+               // Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (\Exception $e) {
                 Logger::getInstance()->infoLog($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
-                Security::getInstance()->setFlash("callback_message", $e->getMessage());
+                Security::getInstance()->setFlash("callback_message", htmlentities($e->getMessage()));
             }
         }
         return $this->render("modules.html.twig", array(

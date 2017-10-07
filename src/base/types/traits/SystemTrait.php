@@ -3,6 +3,7 @@ namespace PSFS\base\types\traits;
 
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Router;
 
 /**
  * Class SystemTrait
@@ -64,6 +65,19 @@ Trait SystemTrait {
             Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
             return true;
         }, E_ALL | E_STRICT);
+
+        register_shutdown_function(function () {
+            $error = error_get_last();
+            if( $error !== NULL) {
+                $errno   = $error["type"];
+                $errfile = $error["file"];
+                $errline = $error["line"];
+                $errstr  = $error["message"];
+
+                Logger::log($errstr, LOG_ERR, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
+            }
+            return false;
+        });
     }
 
     /**

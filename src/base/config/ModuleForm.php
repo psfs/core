@@ -34,9 +34,6 @@ class ModuleForm extends Form
             "Auth" => _("Requiere autenticación de usuario"),
             "AuthAdmin" => _("Requiere autenticación de administrador"),
         );
-        if(Config::getParam('psfs.auth')) {
-            $controllerTypes['SessionAuthApi'] = _('Requiere autenticación usando PSFS AUTH');
-        }
         $this->add('module', array(
             'label' => _('Nombre del Módulo'),
         ))->add('controllerType', array(

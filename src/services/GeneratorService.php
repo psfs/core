@@ -1,11 +1,23 @@
 <?php
 namespace PSFS\Services;
 
+use Propel\Common\Config\ConfigurationManager;
+use Propel\Generator\Config\GeneratorConfig;
+use Propel\Generator\Manager\AbstractManager;
+use Propel\Generator\Manager\MigrationManager;
+use Propel\Generator\Manager\ModelManager;
+use Propel\Generator\Manager\SqlManager;
+use Propel\Generator\Model\Database;
+use Propel\Generator\Model\Diff\DatabaseComparator;
+use Propel\Generator\Model\IdMethod;
+use Propel\Generator\Model\Schema;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\Logger;
 use PSFS\base\Service;
 use PSFS\base\types\helpers\GeneratorHelper;
+use Symfony\Component\Filesystem\Filesystem;
 
 class GeneratorService extends Service
 {
@@ -149,28 +161,20 @@ class GeneratorService extends Service
     {
         $module_path = $path . $module;
         $module_path = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $module_path);
-        //Generamos las clases de propel y la configuración
-        $exec = "export PATH=\$PATH:/opt/local/bin; " . BASE_DIR . DIRECTORY_SEPARATOR .
-            "vendor" . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "propel ";
-        $schemaOpt = " --schema-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path .
-            DIRECTORY_SEPARATOR . "Config";
-        $opt = " --config-dir=" . CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR .
-            "Config --output-dir=" . CORE_DIR . " --verbose";
-        $this->log->infoLog("[GENERATOR] Ejecutamos propel:\n" . $exec . "build" . $opt . $schemaOpt);
-        $ret = shell_exec($exec . "build" . $opt . $schemaOpt);
 
-        $this->log->infoLog("[GENERATOR] Generamos clases invocando a propel:\n $ret");
-        $ret = shell_exec($exec . "sql:build" . $opt . " --output-dir=" . CORE_DIR . DIRECTORY_SEPARATOR .
-            $module_path . DIRECTORY_SEPARATOR . "Config" . $schemaOpt);
-        $this->log->infoLog("[GENERATOR] Generamos sql invocando a propel:\n $ret");
+        $configGenerator = $this->getConfigGenerator($module_path);
+
+        $this->buildModels($configGenerator);
+        $this->buildSql($configGenerator);
 
         $configTemplate = $this->tpl->dump("generator/config.propel.template.twig", array(
             "module" => $module,
         ));
         $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config" .
             DIRECTORY_SEPARATOR . "config.php", true);
-        $this->log->infoLog("Generado config genérico para propel:\n $ret");
+        $this->log->infoLog("Generado config genérico para propel");
     }
+
 
     /**
      * @param string $module
@@ -502,5 +506,89 @@ class GeneratorService extends Service
             }
         }
         closedir($dir);
+    }
+
+    /**
+     * @param $module_path
+     * @return array
+     */
+    private function getPropelPaths($module_path)
+    {
+        $moduleDir = CORE_DIR . DIRECTORY_SEPARATOR . $module_path;
+        GeneratorHelper::createDir($moduleDir);
+        $moduleDir = realpath($moduleDir);
+        $configDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config';
+        $sqlDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql';
+        $migrationDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations';
+        $paths = [
+            'projectDir' => $moduleDir,
+            'outputDir' => $moduleDir,
+            'phpDir' => $moduleDir,
+            'phpConfDir' => $configDir,
+            'sqlDir' => $sqlDir,
+            'migrationDir' => $migrationDir,
+            'schemaDir' => $configDir,
+        ];
+        return $paths;
+    }
+
+    /**
+     * @param string $module_path
+     * @return GeneratorConfig
+     */
+    private function getConfigGenerator($module_path)
+    {
+        // Generate the configurator
+        $paths = $this->getPropelPaths($module_path);
+        foreach ($paths as $path) {
+            GeneratorHelper::createDir($path);
+        }
+        $configGenerator = new GeneratorConfig($paths['phpConfDir'], [
+            'propel' => [
+                'paths' => $paths,
+            ]
+        ]);
+        return $configGenerator;
+    }
+
+    /**
+     * @param GeneratorConfig $configGenerator
+     */
+    private function buildModels(GeneratorConfig $configGenerator)
+    {
+        $manager = new ModelManager();
+        $manager->setFilesystem(new Filesystem());
+        $this->setupManager($configGenerator, $manager);
+        $manager->build();
+    }
+
+    /**
+     * @param GeneratorConfig $configGenerator
+     */
+    private function buildSql(GeneratorConfig $configGenerator)
+    {
+        $manager = new SqlManager();
+        $connections = $configGenerator->getBuildConnections();
+        $manager->setConnections($connections);
+        $manager->setValidate(true);
+        $this->setupManager($configGenerator, $manager, $configGenerator->getSection('paths')['sqlDir']);
+
+        $manager->buildSql();
+    }
+
+    /**
+     * @param GeneratorConfig $configGenerator
+     * @param AbstractManager $manager
+     * @param string $workingDir
+     */
+    private function setupManager(GeneratorConfig $configGenerator, AbstractManager &$manager, $workingDir = CORE_DIR)
+    {
+        $manager->setGeneratorConfig($configGenerator);
+        $schemaFile = new \SplFileInfo($configGenerator->getSection('paths')['schemaDir'] . DIRECTORY_SEPARATOR . 'schema.xml');
+        $manager->setSchemas([$schemaFile]);
+        $manager->setLoggerClosure(function ($message) {
+            Logger::log($message, LOG_INFO);
+        });
+        $manager->setWorkingDirectory($workingDir);
     }
 }
