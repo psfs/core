@@ -245,9 +245,7 @@ class Router
      */
     private function getExternalModules() {
         $externalModules = Config::getParam('modules.extend', '');
-        if(Config::getParam('psfs.auth', false)) {
-            $externalModules .= ',psfs/auth';
-        }
+        $externalModules .= ',psfs/auth';
         return $externalModules;
     }
 
