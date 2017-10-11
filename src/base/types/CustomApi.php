@@ -40,4 +40,9 @@ abstract class CustomApi extends Api {
     public function admin() {
         return null;
     }
+
+    public function bulk()
+    {
+        return null;
+    }
 }
