@@ -8,6 +8,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
@@ -38,6 +39,7 @@ class DocumentorService extends Service
      * @var \PSFS\base\Router route
      */
     protected $route;
+
 
     /**
      * Method that extract all modules
@@ -239,8 +241,13 @@ class DocumentorService extends Service
     {
         $payload = [];
         preg_match('/@payload\ (.*)\n/i', $comments, $doc);
+        $isArray = false;
         if (count($doc)) {
             $namespace = str_replace('{__API__}', $model, $doc[1]);
+            if (false !== strpos($namespace, '[') && false !== strpos($namespace, ']')) {
+                $namespace = str_replace(']', '', str_replace('[', '', $namespace));
+                $isArray = true;
+            }
             $payload = $this->extractModelFields($namespace);
             $reflector = new \ReflectionClass($namespace);
             $namespace = $reflector->getShortName();
@@ -248,7 +255,7 @@ class DocumentorService extends Service
             $namespace = $model;
         }
 
-        return [$namespace, $payload];
+        return [$namespace, $payload, $isArray];
     }
 
     /**
@@ -325,7 +332,7 @@ class DocumentorService extends Service
                 $tableMap = $tableMap::getTableMap();
                 /** @var ColumnMap $field */
                 foreach ($tableMap->getColumns() as $field) {
-                    list($type, $format) = DocumentorService::translateSwaggerFormats($field->getType());
+                    list($type, $format) = DocumentorHelper::translateSwaggerFormats($field->getType());
                     $info = [
                         "type" => $type,
                         "required" => $field->isNotNull(),
@@ -391,87 +398,6 @@ class DocumentorService extends Service
         }
 
         return $methodInfo;
-    }
-
-    /**
-     * Translator from php types to swagger types
-     * @param string $format
-     *
-     * @return array
-     */
-    public static function translateSwaggerFormats($format)
-    {
-        switch (strtolower($format)) {
-            case 'bool':
-            case 'boolean':
-                $swaggerType = 'boolean';
-                $swaggerFormat = '';
-                break;
-            default:
-            case 'string':
-            case 'varchar':
-                $swaggerType = 'string';
-                $swaggerFormat = '';
-                break;
-            case 'binary':
-            case 'varbinary':
-                $swaggerType = 'string';
-                $swaggerFormat = 'password';
-                break;
-            case 'int':
-            case 'integer':
-                $swaggerType = 'integer';
-                $swaggerFormat = 'int32';
-                break;
-            case 'float':
-            case 'double':
-                $swaggerType = 'number';
-                $swaggerFormat = strtolower($format);
-                break;
-            case 'date':
-                $swaggerType = 'string';
-                $swaggerFormat = 'date';
-                break;
-            case 'timestamp':
-            case 'datetime':
-                $swaggerType = 'string';
-                $swaggerFormat = 'date-time';
-                break;
-
-        }
-        return [$swaggerType, $swaggerFormat];
-    }
-
-    /**
-     * Method that parse the definitions for the api's
-     * @param string $name
-     * @param array $fields
-     *
-     * @return array
-     */
-    public static function extractSwaggerDefinition($name, array $fields)
-    {
-        $definition = [
-            $name => [
-                "type" => "object",
-                "properties" => [],
-            ],
-        ];
-        foreach ($fields as $field => $info) {
-            list($type, $format) = self::translateSwaggerFormats($info['type']);
-            $dto['properties'][$field] = [
-                "type" => $type,
-                "required" => $info['required'],
-            ];
-            $definition[$name]['properties'][$field] = [
-                "type" => $type,
-                "required" => $info['required'],
-            ];
-            if (strlen($format)) {
-                $definition[$name]['properties'][$field]['format'] = $format;
-            }
-        }
-        return $definition;
     }
 
     /**
@@ -562,7 +488,7 @@ class DocumentorService extends Service
                     ];
                     if (array_key_exists('parameters', $endpoint)) {
                         foreach ($endpoint['parameters'] as $parameter => $type) {
-                            list($type, $format) = self::translateSwaggerFormats($type);
+                            list($type, $format) = DocumentorHelper::translateSwaggerFormats($type);
                             $paths[$url][$method]['parameters'][] = [
                                 'in' => 'path',
                                 'required' => true,
@@ -583,43 +509,7 @@ class DocumentorService extends Service
                         }
                     }
                     foreach ($endpoint['objects'] as $name => $object) {
-                        if (class_exists($name)) {
-                            $class = GeneratorHelper::extractClassFromNamespace($name);
-                            if(array_key_exists('data', $endpoint['return']) && count(array_keys($object)) === count(array_keys($endpoint['return']['data']))) {
-                                $classDefinition = [
-                                    'type' => 'object',
-                                    '$ref' => '#/definitions/' . $class,
-                                ];
-                            } else {
-                                $classDefinition = [
-                                    'type' => 'array',
-                                    'items' => [
-                                        '$ref' => '#/definitions/' . $class,
-                                    ],
-                                ];
-                            }
-
-                            $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
-                            $dtos += self::extractSwaggerDefinition($class, $object);
-                            if (array_key_exists('payload', $endpoint)) {
-                                $dtos[$endpoint['payload']['type']] = [
-                                    'type' => 'object',
-                                    'properties' => $endpoint['payload']['properties'],
-                                ];
-                                $paths[$url][$method]['parameters'][] = [
-                                    'in' => 'body',
-                                    'name' => $endpoint['payload']['type'],
-                                    'required' => true,
-                                    'schema' => [
-                                        'type' => 'object',
-                                        '$ref' => '#/definitions/' . $endpoint['payload']['type'],
-                                    ],
-                                ];
-                            }
-                        }
-                        if (!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'])) {
-                            $paths[$url][$method]['tags'][] = $endpoint['class'];
-                        }
+                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method);
                     }
                 }
             }
@@ -733,11 +623,12 @@ class DocumentorService extends Service
     protected function setRequestParams(\ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-            list($payloadNamespace, $payloadDto) = $this->extractPayload($modelNamespace, $docComments);
+            list($payloadNamespace, $payloadDto, $isArray) = $this->extractPayload($modelNamespace, $docComments);
             if (count($payloadDto)) {
                 $methodInfo['payload'] = [
                     'type' => $payloadNamespace,
                     'properties' => $payloadDto,
+                    'is_array' => $isArray,
                 ];
             }
         }

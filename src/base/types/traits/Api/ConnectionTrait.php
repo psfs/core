@@ -20,12 +20,18 @@ trait ConnectionTrait {
     protected $con = null;
 
     /**
+     * @var int
+     */
+    protected $items = 0;
+
+    /**
      * Initialize db connection
      * @param TableMap $tableMap
      */
     protected function createConnection(TableMap $tableMap)
     {
         $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
+        $this->con->beginTransaction();
         if(method_exists($this->con, 'useDebug')) {
             Logger::log('Enabling debug queries mode', LOG_INFO);
             $this->con->useDebug(Config::getParam('debug'));
@@ -59,6 +65,22 @@ trait ConnectionTrait {
     {
         if (Config::getParam('debug')) {
             Logger::getInstance(get_class($this))->debugLog($this->con->getLastExecutedQuery());
+        }
+    }
+
+    /**
+     * Checks if the connection has a transaction initialized
+     */
+    protected function checkTransaction() {
+        if(null !== $this->con && !$this->con->inTransaction()) {
+            $this->con->beginTransaction();
+        }
+        if(null !== $this->con && $this->con->inTransaction()) {
+            $this->items++;
+        }
+        if($this->items >= Config::getParam('api.block.limit', 1000)) {
+            $this->con->commit();
+            $this->items = 0;
         }
     }
 }

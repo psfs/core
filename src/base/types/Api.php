@@ -3,6 +3,7 @@ namespace PSFS\base\types;
 
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Map\TableMap;
+use Propel\Runtime\Propel;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\Order;
@@ -36,6 +37,7 @@ abstract class Api extends Singleton
     const API_ACTION_POST = 'create';
     const API_ACTION_PUT = 'update';
     const API_ACTION_DELETE = 'delete';
+    const API_ACTION_BULK = 'bulk';
 
     const HEADER_API_TOKEN = 'X-API-SEC-TOKEN';
     const HEADER_API_LANG = 'X-API-LANG';
@@ -333,6 +335,32 @@ abstract class Api extends Singleton
         }
 
         return $this->json(new JsonResponse(null, $deleted, $deleted, 0, $message), ($deleted) ? 200 : 400);
+    }
+
+    /**
+     * @label Bulk insert for {__API__} model
+     * @POST
+     * @route /{__DOMAIN__}/api/{__API__}s
+     *
+     * @payload [{__API__}]
+     * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
+     */
+    public function bulk() {
+        $this->action = self::API_ACTION_BULK;
+        $saved = FALSE;
+        $status = 400;
+        $model = NULL;
+        $message = null;
+        try {
+            $this->hydrateBulkRequest();
+            $this->saveBulk();
+            $saved = true;
+            $status = 200;
+        } catch(\Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR, $this->getRequest()->getData());
+            $message = _('Bulk insert rolled back');
+        }
+        return $this->json(new JsonResponse($this->exportList(), $saved, count($this->list), 1, $message), $status);
     }
 
     /**

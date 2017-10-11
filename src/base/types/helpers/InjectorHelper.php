@@ -24,7 +24,7 @@ class InjectorHelper
             $instanceType = self::extractVarType($property->getDocComment());
             $isRequired = self::checkIsRequired($property->getDocComment());
             if (null !== $instanceType) {
-                list($type, $format) = DocumentorService::translateSwaggerFormats($instanceType);
+                list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
                 $variables[$property->getName()] = [
                     'type' => $type,
                     'format' => $format,

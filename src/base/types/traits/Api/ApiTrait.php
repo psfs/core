@@ -4,6 +4,8 @@ namespace PSFS\base\types\traits\Api;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\TableMap;
+use Propel\Runtime\Propel;
+use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
@@ -86,6 +88,52 @@ trait ApiTrait {
         $class = new \ReflectionClass($this->getModelNamespace());
         $this->model = $class->newInstance();
         $this->hydrateModelFromRequest($this->model, $this->data);
+    }
+
+    /**
+     * Hydrate list elements for bulk insert
+     */
+    protected function hydrateBulkRequest() {
+        $class = new \ReflectionClass($this->getModelNamespace());
+        foreach($this->data as $item) {
+            if(count($this->list) < Config::getParam('api.block.limit', 1000)) {
+                /** @var ActiveRecordInterface $model */
+                $model = $class->newInstance();
+                $this->hydrateModelFromRequest($model, $item);
+                $this->list[] = $model;
+            } else {
+                Logger::log(_('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . _('items'));
+            }
+        }
+    }
+
+    /**
+     * Save the list of items
+     */
+    protected function saveBulk() {
+        $tablemap = $this->getTableMap();
+        foreach($this->list as &$model) {
+            $con = Propel::getWriteConnection($tablemap::DATABASE_NAME);
+            try {
+                $model->save($con);
+                $con->commit();
+            } catch(\Exception $e) {
+                Logger::log($e->getMessage(), LOG_ERR, $model->toArray());
+                $con->rollBack();
+            }
+        }
+    }
+
+    /**
+     * @return array
+     */
+    protected function exportList() {
+        $list = [];
+        /** @var ActiveRecordInterface $item */
+        foreach($this->list as $item) {
+            $list[] = $item->toArray();
+        }
+        return $list;
     }
 
     /**
