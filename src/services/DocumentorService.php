@@ -599,16 +599,11 @@ class DocumentorService extends Service
                 $header['type'] = $this->extractVarType($doc);
 
                 // Extract description
-                preg_match('/@label\ (.*)\n/i', $doc, $label);
-                if(count($label)) {
-                    $header['description'] = _($label[1]);
-                }
+                $header['description'] = InjectorHelper::getLabel($doc);
 
                 // Extract default value
-                preg_match('/@default\ (.*)\n/i', $doc, $default);
-                if(count($default)) {
-                    $header['default'] = $default[1];
-                }
+                $header['default'] = InjectorHelper::getDefaultValue($doc);
+
                 $methodInfo['headers'][] = $header;
             }
         }

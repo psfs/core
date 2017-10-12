@@ -23,12 +23,14 @@ class InjectorHelper
         foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
             $isRequired = self::checkIsRequired($property->getDocComment());
+            $label = self::getLabel($property->getDocComment());
             if (null !== $instanceType) {
                 list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
                 $variables[$property->getName()] = [
                     'type' => $type,
                     'format' => $format,
                     'required' => $isRequired,
+                    'description' => $label,
                 ];
             }
         }
@@ -96,6 +98,33 @@ class InjectorHelper
             $visible = 'false' !== strtolower($matches[1]);
         }
         return $visible;
+    }
+
+    /**
+     * @param $doc
+     * @return null|string
+     */
+    public static function getLabel($doc) {
+        // Extract description
+        $label = null;
+        preg_match('/@label\ (.*)\n/i', $doc, $matches);
+        if(count($matches)) {
+            $label = _($matches[1]);
+        }
+        return $label;
+    }
+
+    /**
+     * @param $doc
+     * @return null
+     */
+    public static function getDefaultValue($doc) {
+        $default = null;
+        preg_match('/@default\ (.*)\n/i', $doc, $matches);
+        if(count($matches)) {
+            $default = $matches[1];
+        }
+        return $default;
     }
 
     /**

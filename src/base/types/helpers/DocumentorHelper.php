@@ -88,7 +88,7 @@ class DocumentorHelper {
      */
     public static function translateSwaggerFormats($format)
     {
-        switch (strtolower($format)) {
+        switch (strtolower(preg_replace('/\\\\/im', '', $format))) {
             case 'bool':
             case 'boolean':
                 $swaggerType = 'boolean';
@@ -146,14 +146,18 @@ class DocumentorHelper {
         ];
         foreach ($fields as $field => $info) {
             list($type, $format) = self::translateSwaggerFormats($info['type']);
-            $dto['properties'][$field] = [
+            $fieldData = [
                 "type" => $type,
                 "required" => $info['required'],
             ];
-            $definition[$name]['properties'][$field] = [
-                "type" => $type,
-                "required" => $info['required'],
-            ];
+            if(array_key_exists('description', $info)) {
+                $fieldData['description'] = $info['description'];
+            }
+            if(array_key_exists('format', $info)) {
+                $fieldData['format'] = $info['format'];
+            }
+            $dto['properties'][$field] = $fieldData;
+            $definition[$name]['properties'][$field] = $fieldData;
             if (strlen($format)) {
                 $definition[$name]['properties'][$field]['format'] = $format;
             }
