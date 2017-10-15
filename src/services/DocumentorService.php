@@ -297,8 +297,8 @@ class DocumentorService extends Service
                 $subDtos = preg_split('/,?\ /', str_replace('{__API__}', $model, $returnTypes[2]));
                 if (count($subDtos)) {
                     foreach ($subDtos as $subDto) {
-                        $isArray = false;
                         list($field, $dtoName) = explode('=', $subDto);
+                        $isArray = false;
                         if (false !== strpos($dtoName, '[') && false !== strpos($dtoName, ']')) {
                             $dtoName = str_replace(']', '', str_replace('[', '', $dtoName));
                             $isArray = true;
@@ -306,6 +306,7 @@ class DocumentorService extends Service
                         $dto = $this->extractModelFields($dtoName);
                         $modelDto[$field] = ($isArray) ? [$dto] : $dto;
                         $modelDto['objects'][$dtoName] = $dto;
+                        $modelDto = $this->checkDtoAttributes($dto, $modelDto, $dtoName);
                     }
                 }
             }
@@ -508,8 +509,10 @@ class DocumentorService extends Service
                             $paths[$url][$method]['parameters'][] = $query;
                         }
                     }
+                    $isReturn = true;
                     foreach ($endpoint['objects'] as $name => $object) {
-                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method);
+                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method, $isReturn);
+                        $isReturn = false;
                     }
                 }
             }
@@ -638,5 +641,40 @@ class DocumentorService extends Service
                 }
             }
         }
+    }
+
+    /**
+     * @param $dto
+     * @param $modelDto
+     * @param $dtoName
+     * @return array
+     */
+    protected function checkDtoAttributes($dto, $modelDto, $dtoName)
+    {
+        foreach ($dto as $param => &$info) {
+            if (array_key_exists('class', $info)) {
+                if ($info['is_array']) {
+                    $modelDto['objects'][$dtoName][$param] = [
+                        'type' => 'array',
+                        'items' => [
+                            '$ref' => '#/definitions/' . $info['shortName'],
+                        ]
+                    ];
+                } else {
+                    $modelDto['objects'][$dtoName][$param] = [
+                        'type' => 'object',
+                        '$ref' => '#/definitions/' . $info['shortName'],
+                    ];
+                }
+                $modelDto['objects'][$info['class']] = $info['variables'];
+                $paramDto = $this->checkDtoAttributes($info['variables'], $info['variables'], $info['class']);
+                if(array_key_exists('objects', $paramDto)) {
+                    $modelDto['objects'] = array_merge($modelDto['objects'], $paramDto['objects']);
+                }
+            } else {
+                $modelDto['objects'][$dtoName][$param] = $info;
+            }
+        }
+        return $modelDto;
     }
 }

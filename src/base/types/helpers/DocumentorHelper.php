@@ -49,9 +49,10 @@ class DocumentorHelper {
      * @param $url
      * @param $method
      * @param $dtos
+     * @param $isReturn
      * @return array
      */
-    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method)
+    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method, $isReturn = false)
     {
         if (class_exists($name)) {
             $class = GeneratorHelper::extractClassFromNamespace($name);
@@ -69,7 +70,9 @@ class DocumentorHelper {
                 ];
             }
 
-            $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
+            if($paths[$url][$method]['responses'][200]['schema']['properties']['data']['type'] === 'boolean') {
+                $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
+            }
             $dtos += self::extractSwaggerDefinition($class, $object);
             if (array_key_exists('payload', $endpoint)) {
                 list($dtos, $paths) = DocumentorHelper::parsePayload($endpoint, $dtos, $paths, $url, $method);
@@ -145,21 +148,25 @@ class DocumentorHelper {
             ],
         ];
         foreach ($fields as $field => $info) {
-            list($type, $format) = self::translateSwaggerFormats($info['type']);
-            $fieldData = [
-                "type" => $type,
-                "required" => $info['required'],
-            ];
-            if(array_key_exists('description', $info)) {
-                $fieldData['description'] = $info['description'];
-            }
-            if(array_key_exists('format', $info)) {
-                $fieldData['format'] = $info['format'];
-            }
-            $dto['properties'][$field] = $fieldData;
-            $definition[$name]['properties'][$field] = $fieldData;
-            if (strlen($format)) {
-                $definition[$name]['properties'][$field]['format'] = $format;
+            if(array_key_exists('type', $info) || in_array($info['type'], ['array', 'object'])) {
+                $definition[$name]['properties'][$field] = $info;
+            } else {
+                list($type, $format) = self::translateSwaggerFormats($info['type']);
+                $fieldData = [
+                    "type" => $type,
+                    "required" => $info['required'],
+                ];
+                if(array_key_exists('description', $info)) {
+                    $fieldData['description'] = $info['description'];
+                }
+                if(array_key_exists('format', $info)) {
+                    $fieldData['format'] = $info['format'];
+                }
+                $dto['properties'][$field] = $fieldData;
+                $definition[$name]['properties'][$field] = $fieldData;
+                if (strlen($format)) {
+                    $definition[$name]['properties'][$field]['format'] = $format;
+                }
             }
         }
         return $definition;

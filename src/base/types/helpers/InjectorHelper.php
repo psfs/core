@@ -2,6 +2,7 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\Logger;
+use PSFS\base\Router;
 use PSFS\services\DocumentorService;
 
 /**
@@ -22,16 +23,30 @@ class InjectorHelper
         $variables = [];
         foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
-            $isRequired = self::checkIsRequired($property->getDocComment());
-            $label = self::getLabel($property->getDocComment());
             if (null !== $instanceType) {
-                list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
-                $variables[$property->getName()] = [
-                    'type' => $type,
-                    'format' => $format,
-                    'required' => $isRequired,
-                    'description' => $label,
-                ];
+                $isRequired = self::checkIsRequired($property->getDocComment());
+                $label = self::getLabel($property->getDocComment());
+                $isArray = (bool)preg_match('/\[\]$/', $instanceType);
+                if($isArray) {
+                    $instanceType = str_replace('[]', '', $instanceType);
+                }
+                if(!Router::exists($instanceType) || $instanceType === '\\DateTime') {
+                    list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
+                    $variables[$property->getName()] = [
+                        'type' => $type,
+                        'format' => $format,
+                        'required' => $isRequired,
+                        'description' => $label,
+                    ];
+                } else {
+                    $instance = new \ReflectionClass($instanceType);
+                    $variables[$property->getName()] = [
+                        'is_array' => $isArray,
+                        'class' => $instanceType,
+                        'shortName' => $instance->getShortName(),
+                        'variables' => self::extractVariables($instance),
+                    ];
+                }
             }
         }
         return $variables;
@@ -41,6 +56,7 @@ class InjectorHelper
      * Method that extract the properties of a Class
      * @param \ReflectionClass $reflector
      * @param integer $type
+     * @param string $pattern
      * @return array
      */
     public static function extractProperties(\ReflectionClass $reflector, $type = \ReflectionProperty::IS_PROTECTED, $pattern = self::INJECTABLE_PATTERN)
