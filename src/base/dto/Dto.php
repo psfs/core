@@ -85,21 +85,19 @@ class Dto extends Singleton
         }
         $reflector = (class_exists($type)) ? new \ReflectionClass($type) : null;
         if(null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
-            if($is_array) {
-                $this->$key = [];
-                foreach($value as $data) {
-                    if(null !== $data && is_array($data)) {
-                        $dto = new $type(false);
-                        $dto->fromArray($data);
-                        array_push($this->$key, $dto);
+            if(null !== $value && is_array($value)) {
+                if($is_array) {
+                    $this->$key = [];
+                    foreach($value as $data) {
+                        if(null !== $data && is_array($data)) {
+                            $dto = new $type(false);
+                            $dto->fromArray($data);
+                            array_push($this->$key, $dto);
+                        }
                     }
-                }
-            } else {
-                if(null !== $value && is_array($value)) {
+                } else {
                     $this->$key = new $type(false);
                     $this->$key->fromArray($value);
-                } elseif(Config::getParam('api.default.null', true)) {
-                    $this->$key = null;
                 }
             }
         } else {
