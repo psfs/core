@@ -131,7 +131,7 @@ class Dto extends Singleton
             $properties = InjectorHelper::extractProperties($reflector, \ReflectionProperty::IS_PUBLIC, InjectorHelper::VAR_PATTERN);
             unset($reflector);
             foreach ($object as $key => $value) {
-                if (property_exists($this, $key)) {
+                if (property_exists($this, $key) && null !== $value) {
                     $this->parseDtoField($properties, $key, $value);
                 }
             }
