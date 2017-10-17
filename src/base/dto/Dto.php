@@ -2,6 +2,7 @@
 namespace PSFS\base\dto;
 
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
@@ -87,13 +88,19 @@ class Dto extends Singleton
             if($is_array) {
                 $this->$key = [];
                 foreach($value as $data) {
-                    $dto = new $type(false);
-                    $dto->fromArray($data);
-                    array_push($this->$key, $dto);
+                    if(null !== $data) {
+                        $dto = new $type(false);
+                        $dto->fromArray($data);
+                        array_push($this->$key, $dto);
+                    }
                 }
             } else {
-                $this->$key = new $type(false);
-                $this->$key->fromArray($value);
+                if(null !== $value) {
+                    $this->$key = new $type(false);
+                    $this->$key->fromArray($value);
+                } elseif(Config::getParam('api.default.null', true)) {
+                    $this->$key = null;
+                }
             }
         } else {
             switch($type) {
