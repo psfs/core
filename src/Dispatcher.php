@@ -7,6 +7,7 @@
 namespace PSFS;
 
 use PSFS\base\exception\AdminCredentialsException;
+use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
@@ -81,6 +82,8 @@ class Dispatcher extends Singleton
             return $this->security->notAuthorized($this->actualUri);
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
+        } catch(ApiException $a) {
+            return $this->router->httpNotFound($a, true);
         } catch (\Exception $e) {
             return $this->dumpException($e);
         }

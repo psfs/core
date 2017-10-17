@@ -4,6 +4,7 @@ namespace PSFS\base;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\AccessDeniedException;
+use PSFS\base\exception\ApiException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\helpers\AdminHelper;
@@ -204,7 +205,7 @@ class Router
                     }
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
-                    throw new \RuntimeException($e->getMessage(), 404, $e);
+                    throw $e;
                 }
             }
         }
