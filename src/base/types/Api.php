@@ -318,6 +318,7 @@ abstract class Api extends Singleton
     public function delete($pk = NULL)
     {
         $this->action = self::API_ACTION_DELETE;
+        $this->closeTransaction(200);
         $deleted = FALSE;
         $message = null;
         if (NULL !== $pk) {
@@ -325,6 +326,9 @@ abstract class Api extends Singleton
                 $this->con->beginTransaction();
                 $this->hydrateModel($pk);
                 if (NULL !== $this->model) {
+                    if(method_exists('clearAllReferences', $this->model)) {
+                        $this->model->clearAllReferences(true);
+                    }
                     $this->model->delete($this->con);
                     $deleted = TRUE;
                 }
