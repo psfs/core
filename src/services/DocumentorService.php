@@ -250,12 +250,13 @@ class DocumentorService extends Service
             }
             $payload = $this->extractModelFields($namespace);
             $reflector = new \ReflectionClass($namespace);
-            $namespace = $reflector->getShortName();
+            $shortName = $reflector->getShortName();
         } else {
             $namespace = $model;
+            $shortName = $model;
         }
 
-        return [$namespace, $payload, $isArray];
+        return [$namespace, $shortName, $payload, $isArray];
     }
 
     /**
@@ -621,13 +622,14 @@ class DocumentorService extends Service
     protected function setRequestParams(\ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-            list($payloadNamespace, $payloadDto, $isArray) = $this->extractPayload($modelNamespace, $docComments);
+            list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload($modelNamespace, $docComments);
             if (count($payloadDto)) {
                 $methodInfo['payload'] = [
-                    'type' => $payloadNamespace,
+                    'type' => $payloadNamespaceShortName,
                     'properties' => $payloadDto,
                     'is_array' => $isArray,
                 ];
+                $methodInfo = $this->checkDtoAttributes($payloadDto, $methodInfo, $payloadNamespace);
             }
         }
         if ($method->getNumberOfParameters() > 0) {
@@ -657,17 +659,17 @@ class DocumentorService extends Service
                     $modelDto['objects'][$dtoName][$param] = [
                         'type' => 'array',
                         'items' => [
-                            '$ref' => '#/definitions/' . $info['shortName'],
+                            '$ref' => '#/definitions/' . $info['type'],
                         ]
                     ];
                 } else {
                     $modelDto['objects'][$dtoName][$param] = [
                         'type' => 'object',
-                        '$ref' => '#/definitions/' . $info['shortName'],
+                        '$ref' => '#/definitions/' . $info['type'],
                     ];
                 }
-                $modelDto['objects'][$info['class']] = $info['variables'];
-                $paramDto = $this->checkDtoAttributes($info['variables'], $info['variables'], $info['class']);
+                $modelDto['objects'][$info['class']] = $info['properties'];
+                $paramDto = $this->checkDtoAttributes($info['properties'], $info['properties'], $info['class']);
                 if(array_key_exists('objects', $paramDto)) {
                     $modelDto['objects'] = array_merge($modelDto['objects'], $paramDto['objects']);
                 }

@@ -8,6 +8,24 @@ namespace PSFS\base\types\helpers;
 class DocumentorHelper {
 
     /**
+     * @param array $params
+     * @param string $variable
+     * @return bool
+     */
+    private static function searchPayloadParam($params, $variable) {
+        $exists = false;
+        if(null !== $param && count($params)) {
+            foreach($params as $param) {
+                if($param['name'] === $variable) {
+                    $exists = true;
+                    break;
+                }
+            }
+        }
+        return $exists;
+    }
+
+    /**
      * @param array $endpoint
      * @param array $dtos
      * @param array $paths
@@ -17,11 +35,6 @@ class DocumentorHelper {
      */
     public static function parsePayload($endpoint, $dtos, $paths, $url, $method)
     {
-        $dtos[$endpoint['payload']['type']] = [
-            'type' => 'object',
-            'properties' => $endpoint['payload']['properties'],
-        ];
-
         $schema = [
             'type' => $endpoint['payload']['is_array'] ? 'array' : 'object',
         ];
@@ -32,12 +45,14 @@ class DocumentorHelper {
         } else {
             $schema['$ref'] = '#/definitions/' . $endpoint['payload']['type'];
         }
-        $paths[$url][$method]['parameters'][] = [
-            'in' => 'body',
-            'name' => $endpoint['payload']['type'],
-            'required' => true,
-            'schema' => $schema,
-        ];
+        if(!self::searchPayloadParam($paths[$url][$method]['parameters'], $endpoint['payload']['type'])) {
+            $paths[$url][$method]['parameters'][] = [
+                'in' => 'body',
+                'name' => $endpoint['payload']['type'],
+                'required' => true,
+                'schema' => $schema,
+            ];
+        }
         return [$dtos, $paths];
     }
 

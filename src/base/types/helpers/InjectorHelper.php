@@ -43,8 +43,8 @@ class InjectorHelper
                     $variables[$property->getName()] = [
                         'is_array' => $isArray,
                         'class' => $instanceType,
-                        'shortName' => $instance->getShortName(),
-                        'variables' => self::extractVariables($instance),
+                        'type' => $instance->getShortName(),
+                        'properties' => self::extractVariables($instance),
                     ];
                 }
             }
