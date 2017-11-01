@@ -10,6 +10,11 @@ use PSFS\base\types\helpers\SecurityHelper;
  */
 class Service extends Singleton
 {
+    const CTYPE_JSON = 'application/json';
+    const CTYPE_MULTIPART = 'multipart/form-data';
+    const CTYPE_FORM = 'application/x-www-form-urlencoded';
+    const CTYPE_PLAIN = 'text/plain';
+
     /**
      * @var String Url de destino de la llamada
      */
@@ -41,7 +46,7 @@ class Service extends Singleton
     /**
      * @var mixed
      */
-    private $info;
+    private $info = [];
 
     /**
      * @Injectable
@@ -57,6 +62,10 @@ class Service extends Singleton
      * @var bool
      */
     protected $isJson = true;
+    /**
+     * @var bool
+     */
+    protected $isMultipart = false;
 
     private function closeConnection() {
         if(null !== $this->con) {
@@ -222,6 +231,9 @@ class Service extends Singleton
      */
     public function setIsJson($isJson = true) {
         $this->isJson = $isJson;
+        if($isJson) {
+            $this->setIsMultipart(false);
+        }
     }
 
     /**
@@ -229,6 +241,23 @@ class Service extends Singleton
      */
     public function getIsJson() {
         return $this->isJson;
+    }
+
+    /**
+     * @param bool $isMultipart
+     */
+    public function setIsMultipart($isMultipart = true) {
+        $this->isMultipart = $isMultipart;
+        if($isMultipart) {
+            $this->setIsJson(false);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsMultipart() {
+        return $this->isMultipart;
     }
 
     /**
@@ -312,6 +341,8 @@ class Service extends Singleton
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } elseif($this->getIsMultipart()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
                 } else {
                     $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
                 }
@@ -324,6 +355,8 @@ class Service extends Singleton
 
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } elseif($this->getIsMultipart()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
                 } else {
                     $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
                 }
@@ -332,6 +365,8 @@ class Service extends Singleton
                 $this->addOption(CURLOPT_CUSTOMREQUEST, "PATCH");
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
+                } elseif($this->getIsMultipart()) {
+                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
                 } else {
                     $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
                 }
@@ -364,9 +399,10 @@ class Service extends Singleton
                 'options' => $this->getOptions(),
                 'url' => $this->getUrl(),
             ]);
+            $this->info['verbose'] = $verboseLog;
         }
         Logger::log($this->url . ' response: ', LOG_DEBUG, $this->result);
-        $this->info = curl_getinfo($this->con);
+        $this->info = array_merge($this->info, curl_getinfo($this->con));
     }
 
     /**
