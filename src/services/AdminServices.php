@@ -32,7 +32,7 @@ class AdminServices extends Service
      */
     public function setAdminHeaders()
     {
-        $platform = trim(Config::getInstance()->get("platform_name"));
+        $platform = trim(Config::getInstance()->get("platform.name"));
         header('HTTP/1.1 401 Unauthorized');
         header('WWW-Authenticate: Basic Realm="' . $platform . '"');
         echo _("Zona restringida");

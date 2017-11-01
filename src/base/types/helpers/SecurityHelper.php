@@ -27,7 +27,7 @@ class SecurityHelper
         Logger::log('Checking admin zone');
         //Chequeamos si entramos en el admin
         if (!Config::getInstance()->checkTryToSaveConfig()
-            && (preg_match('/^\/(admin|setup\-admin)/i', $route) || NULL !== Config::getInstance()->get('restricted'))
+            && (preg_match('/^\/(admin|setup\-admin)/i', $route) || Config::getParam('restricted', false))
         ) {
             if (null === Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true)) {
                 throw new AdminCredentialsException();

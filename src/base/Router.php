@@ -162,7 +162,7 @@ class Router
             //Search action and execute
             $this->searchAction($route);
         } catch (AccessDeniedException $e) {
-            Logger::log(_('Solicitamos credenciales de acceso a zona restringida'));
+            Logger::log(_('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
             Logger::log($r->getMessage(), LOG_WARNING);
