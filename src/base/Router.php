@@ -539,9 +539,11 @@ class Router
     {
         $extModule = $modulePath->getBasename();
         $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-        @include $moduleAutoloader;
-        if ($hydrateRoute) {
-            $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
+        if(file_exists($moduleAutoloader)) {
+            include_once $moduleAutoloader;
+            if ($hydrateRoute) {
+                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
+            }
         }
     }
 
