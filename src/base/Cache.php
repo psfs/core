@@ -231,11 +231,13 @@ class Cache
         if(Config::getParam('cache.data.enable', false)) {
             Logger::log('Flushing cache', LOG_DEBUG);
             $action = Security::getInstance()->getSessionKey("__CACHE__");
-            $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-            if(!file_exists($hashPath)) {
-                $hashPath = CACHE_DIR . DIRECTORY_SEPARATOR . $hashPath;
+            if(is_array($action)) {
+                $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+                if(!file_exists($hashPath)) {
+                    $hashPath = CACHE_DIR . DIRECTORY_SEPARATOR . $hashPath;
+                }
+                FileHelper::deleteDir($hashPath);
             }
-            FileHelper::deleteDir($hashPath);
         }
     }
 }
