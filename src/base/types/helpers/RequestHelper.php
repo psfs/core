@@ -42,7 +42,8 @@ class RequestHelper
 
                     // TODO include this headers in Template class output method
                     header("Access-Control-Allow-Credentials: true");
-                    header("Access-Control-Allow-Origin: *");
+                    header("Access-Control-Allow-Origin: " . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
+                    header("Vary: Origin");
                     header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS");
                     header("Access-Control-Allow-Headers: " . implode(', ', self::getCorsHeaders()));
                 }

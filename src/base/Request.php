@@ -235,12 +235,12 @@ class Request
     /**
      * Devuelve un parámetro de $_SERVER
      * @param string $param
-     *
+     * @param $default
      * @return string|null
      */
-    public function getServer($param)
+    public function getServer($param, $default = null)
     {
-        return array_key_exists($param, $this->server) ? $this->server[$param] : null;
+        return array_key_exists($param, $this->server) ? $this->server[$param] : $default;
     }
 
     /**
