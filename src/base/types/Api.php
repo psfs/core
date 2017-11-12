@@ -388,7 +388,7 @@ abstract class Api extends Singleton
 
         /** @var CustomerTableMap $tableMap */
         $modelPk = ApiHelper::extractPrimaryKeyColumnName($this->getTableMap());
-        foreach($this->list->getResults() as $data) {
+        foreach($this->list->getData() as $data) {
             $return[] = ApiHelper::mapArrayObject($this->getModelNamespace(), $modelPk, $this->query, $data);
         }
         return $return;
