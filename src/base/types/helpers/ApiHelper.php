@@ -4,13 +4,17 @@ namespace PSFS\base\types\helpers;
 use Propel\Generator\Model\PropelTypes;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Connection\ConnectionInterface;
+use Propel\Runtime\DataFetcher\ArrayDataFetcher;
+use Propel\Runtime\Formatter\ObjectFormatter;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\dto\Field;
 use PSFS\base\dto\Form;
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use PSFS\base\types\Api;
 
 /**
  * Class ApiHelper
@@ -331,5 +335,50 @@ class ApiHelper
             }
         }
         return $fDto;
+    }
+
+    /**
+     * @param TableMap $tableMap
+     * @return null|ColumnMap
+     */
+    public static function extractPrimaryKeyColumnName(TableMap $tableMap) {
+        $modelPk = null;
+        foreach($tableMap->getPrimaryKeys() as $pk) {
+            $modelPk = $pk;
+            break;
+        }
+        return $modelPk;
+    }
+
+    private static function mapResult(ActiveRecordInterface $model, array $data = []) {
+        $result = [];
+        foreach($data as $key => $value) {
+            try {
+                $realValue = $model->getByName($key);
+            } catch(\Exception $e) {
+                $realValue = $value;
+            }
+            if(Api::API_MODEL_KEY_FIELD === $key) {
+                $result[$key] = (integer)$realValue;
+            } else {
+                $result[$key] = $realValue;
+            }
+        }
+        return $result;
+    }
+
+    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array $data = []) {
+        $formatter = new ObjectFormatter();
+        $formatter->setClass($namespace);
+        $data[$modelPk->getPhpName()] = $data[Api::API_MODEL_KEY_FIELD];
+        $dataFetcher = new ArrayDataFetcher($data);
+        $formatter->setDataFetcher($dataFetcher);
+        /** @var ActiveRecordInterface $obj */
+        $obj = $formatter->getAllObjectsFromRow($data);
+        $result = self::mapResult($obj, $data);
+        if(!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
+            unset($result[$modelPk->getPhpName()]);
+        }
+        return $result;
     }
 }

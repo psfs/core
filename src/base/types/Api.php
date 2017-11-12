@@ -385,35 +385,11 @@ abstract class Api extends Singleton
 
     private function extractDataWithFormat() {
         $return = [];
-        $formatter = new ObjectFormatter();
-        $formatter->setClass($this->getModelNamespace());
+
         /** @var CustomerTableMap $tableMap */
-        $tableMap = $this->getTableMap();
-        $modelPk = null;
-        foreach($tableMap->getPrimaryKeys() as $pk) {
-            $modelPk = $pk;
-            break;
-        }
-        foreach($this->list->getResults() as &$arrObj) {
-            $arrObj[$modelPk->getPhpName()] = $arrObj[self::API_MODEL_KEY_FIELD];
-            $dataFetcher = new ArrayDataFetcher($arrObj);
-            $formatter->setDataFetcher($dataFetcher);
-            /** @var Customer $obj */
-            $obj = $formatter->getAllObjectsFromRow($arrObj);
-            $result = [];
-            foreach($arrObj as $key => $value) {
-                if(self::API_MODEL_KEY_FIELD === $key) {
-                    $result[$key] = (integer)$value;
-                } elseif (null !== $obj->getByName($key)) {
-                    $result[$key] = $obj->getByName($key);
-                } else {
-                    $result[$key] = $value;
-                }
-            }
-            if(!preg_match('/' . $modelPk->getPhpName() . '/i', $this->query[self::API_FIELDS_RESULT_FIELD])) {
-                unset($result[$modelPk->getPhpName()]);
-            }
-            $return[] = $result;
+        $modelPk = ApiHelper::extractPrimaryKeyColumnName($this->getTableMap());
+        foreach($this->list->getResults() as $data) {
+            $return[] = ApiHelper::mapArrayObject($this->getModelNamespace(), $modelPk, $this->query, $data);
         }
         return $return;
     }
