@@ -64,6 +64,7 @@ class Config
         'output.json.strict_numbers', // Enable strict numbers in json responses
         'admin.version', // Determines the version for the admin ui
         'api.block.limit', // Determine the number of rows for bulk insert
+        'api.field.types', // Extract __fields from api with their types
     ];
     protected $debug = false;
 

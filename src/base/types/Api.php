@@ -1,7 +1,13 @@
 <?php
 namespace PSFS\base\types;
 
+use CORE\Models\Customer;
+use CORE\Models\Map\CustomerTableMap;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
+use Propel\Runtime\DataFetcher\ArrayDataFetcher;
+use Propel\Runtime\Formatter\ObjectFormatter;
+use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
 use PSFS\base\config\Config;
@@ -377,18 +383,57 @@ abstract class Api extends Singleton
         $this->data = array_merge($this->data, $request->getRawData());
     }
 
+    private function extractDataWithFormat() {
+        $return = [];
+        $formatter = new ObjectFormatter();
+        $formatter->setClass($this->getModelNamespace());
+        /** @var CustomerTableMap $tableMap */
+        $tableMap = $this->getTableMap();
+        $modelPk = null;
+        foreach($tableMap->getPrimaryKeys() as $pk) {
+            $modelPk = $pk;
+            break;
+        }
+        foreach($this->list->getResults() as &$arrObj) {
+            $arrObj[$modelPk->getPhpName()] = $arrObj[self::API_MODEL_KEY_FIELD];
+            $dataFetcher = new ArrayDataFetcher($arrObj);
+            $formatter->setDataFetcher($dataFetcher);
+            /** @var Customer $obj */
+            $obj = $formatter->getAllObjectsFromRow($arrObj);
+            $result = [];
+            foreach($arrObj as $key => $value) {
+                if(self::API_MODEL_KEY_FIELD === $key) {
+                    $result[$key] = (integer)$value;
+                } elseif (null !== $obj->getByName($key)) {
+                    $result[$key] = $obj->getByName($key);
+                } else {
+                    $result[$key] = $value;
+                }
+            }
+            if(!preg_match('/' . $modelPk->getPhpName() . '/i', $this->query[self::API_FIELDS_RESULT_FIELD])) {
+                unset($result[$modelPk->getPhpName()]);
+            }
+            $return[] = $result;
+        }
+        return $return;
+    }
+
     /**
      * @return array
      */
     private function getList()
     {
-        $return = array();
+        $return = [];
         $total = 0;
         $pages = 0;
         try {
             $this->paginate();
             if (null !== $this->list) {
-                $return = $this->list->toArray(null, false, TableMap::TYPE_PHPNAME, false);
+                if(array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam('api.field.types')) {
+                    $return = $this->extractDataWithFormat();
+                } else {
+                    $return = $this->list->toArray(null, false, TableMap::TYPE_PHPNAME, false);
+                }
                 $total = $this->list->getNbResults();
                 $pages = $this->list->getLastPage();
             }
