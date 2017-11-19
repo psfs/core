@@ -99,7 +99,7 @@ abstract class Api extends Singleton
         if (count($this->query)) {
             Logger::log(get_called_class() . ' gathering query string', LOG_DEBUG);
             foreach ($this->query as $key => $value) {
-                if ($key === self::API_ORDER_FIELD) {
+                if ($key === self::API_ORDER_FIELD && is_array($value)) {
                     foreach ($value as $field => $direction) {
                         $this->order->addOrder($field, $direction);
                     }
@@ -410,8 +410,12 @@ abstract class Api extends Singleton
                 } else {
                     $return = $this->list->toArray(null, false, TableMap::TYPE_PHPNAME, false);
                 }
-                $total = $this->list->getNbResults();
-                $pages = $this->list->getLastPage();
+                $total = 0;
+                $pages = 0;
+                if(null !== $this->list) {
+                    $total = $this->list->getNbResults();
+                    $pages = $this->list->getLastPage();
+                }
             }
         } catch (\Exception $e) {
             Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
