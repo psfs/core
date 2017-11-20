@@ -54,7 +54,7 @@
     <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
 <script src="{{ asset("@ROOT/js/angular.js") }}"></script>
 <script type="application/javascript">
-    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
+    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}'), __basic_auth = '{{ session('__U_T_L__') }}';
     (function () {
         app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
         app.config(function($mdThemingProvider) {

@@ -17,6 +17,7 @@
     '@ROOT/css/font-awesome.css'
     '@ROOT/css/typeahead.css'
     '@ROOT/css/v1/styles.css' %}{% endstyles %}
+    {{ resource('@ROOT/font', '') }}
     {% block styles %}{% endblock styles %}
     {% block head %}
         {% block seo %}
@@ -63,7 +64,7 @@
     <script type="text/javascript" src="{{ asset("@ROOT/js/angular/sanitize.js") }}"></script>
 {% endblock base_scripts %}
 <script type="application/javascript" defer>
-    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}');
+    var app, globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}'), __basic_auth = '{{ session('__U_T_L__') }}';
     (function () {
         app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging', 'ngSanitize']);
     })();

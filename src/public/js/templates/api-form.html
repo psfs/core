@@ -29,7 +29,7 @@
                             <span ng-bind="i18N['new'] + ' ' + entity"></span>
                         </md-button>
                     </md-menu-item>
-                    <md-menu-divider ng-show="isSaved()"></md-menu-divider>
+                    <md-menu-divider ng-show="isSaved() && formActions().length"></md-menu-divider>
                     <md-menu-item ng-repeat="action in formActions()">
                         <md-button ng-click="executeAction(action)" aria-label="New">
                             <i class="fa fa-cog"></i>&nbsp;

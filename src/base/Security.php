@@ -20,6 +20,7 @@ class Security
     const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
     // sha1('FLASHES')
     const FLASH_MESSAGE_TOKEN = '4680c68435db1bfbf17c3fcc4f7b39d2c6122504';
+    const LOGGED_USER_TOKEN = '__U_T_L__';
 
     use SecureTrait;
     use SingletonTrait;
@@ -220,6 +221,7 @@ class Security
                                 'domain' => '',
                             ]
                         ]);
+                        $this->setSessionKey(self::LOGGED_USER_TOKEN, base64_encode("{$user}:{$pass}"));
                     }
                 } else {
                     $this->admin = null;

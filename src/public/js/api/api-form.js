@@ -87,6 +87,7 @@
             function clearForm() {
                 $scope.itemLoading = false;
                 $scope.model = {};
+                $scope.modelBackup = {};
                 for(var i in $scope.combos) {
                     var combo = $scope.combos[i];
                     combo.item = null;
@@ -105,31 +106,24 @@
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
                     $scope.itemLoading = true;
-                    var model = $scope.model;
+                    var model = $scope.model, promise, identifier = null;
                     try {
-                        $httpSrv.$put($scope.url.replace(/\/$/, '') + '/' + $apiSrv.getId($scope.modelBackup, $scope.form.fields), model)
-                            .then(clearForm, showError)
-                            .finally(function() {
-                                $scope.loading = false;
-                                $timeout(function(){
-                                    $scope.itemLoading = false;
-                                }, 500);
-                            });
-                    } catch (err) {
-                        $log.debug('Create new entity');
-                        $httpSrv.$post($scope.url.replace(/\/$/, ''), model)
-                            .then(clearForm, showError)
-                            .finally(function() {
-                                $scope.loading = false;
-                                $timeout(function(){
-                                    $scope.itemLoading = false;
-                                }, 500);
-                            });
-                    } finally {
-                        $timeout(function () {
-                            $msgSrv.send('psfs.list.reload');
-                        }, 250);
+                        identifier = $apiSrv.getId($scope.modelBackup, $scope.form.fields);
+                    } catch(err) {}
+                    if(identifier) {
+                        promise = $httpSrv.$put($scope.url.replace(/\/$/, '') + '/' + identifier, model);
+                    } else {
+                        promise = $httpSrv.$post($scope.url.replace(/\/$/, ''), model);
                     }
+
+                    promise.then(clearForm, showError)
+                    .finally(function() {
+                        $msgSrv.send('psfs.list.reload');
+                        $scope.loading = false;
+                        $timeout(function(){
+                            $scope.itemLoading = false;
+                        }, 500);
+                    });
                 } else {
                     $mdDialog.show(
                         $mdDialog.alert()

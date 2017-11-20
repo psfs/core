@@ -34,6 +34,7 @@
 
             function addNewItem() {
                 $scope.model = {};
+                $scope.modelBackup = {};
                 $scope.dates = {};
                 for(var i in $scope.combos) {
                     var combo = $scope.combos[i];
