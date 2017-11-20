@@ -152,11 +152,11 @@
                     'X-API-SEC-TOKEN': srvConfig.psfsToken,
                     'X-API-LANG': srvConfig.lang
                 }
-            };
+            }, __basic_auth = __basic_auth || null ;
             if(srvConfig.userToken) {
                 config.headers['Authorization'] = 'Bearer ' + srvConfig.userToken;
             }
-            if(undefined !== __basic_auth && !config.headers['Authorization']) {
+            if(null !== __basic_auth && !config.headers['Authorization']) {
                 config.headers['Authorization'] = 'Basic ' + __basic_auth;
             }
             if(!angular.isUndefined($data) && angular.isObject($data)) {
