@@ -156,7 +156,7 @@
             if(srvConfig.userToken) {
                 config.headers['Authorization'] = 'Bearer ' + srvConfig.userToken;
             }
-            if(undefined !== __basic_auth) {
+            if(undefined !== __basic_auth && !config.headers['Authorization']) {
                 config.headers['Authorization'] = 'Basic ' + __basic_auth;
             }
             if(!angular.isUndefined($data) && angular.isObject($data)) {
