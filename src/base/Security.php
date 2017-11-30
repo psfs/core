@@ -173,6 +173,18 @@ class Security
     }
 
     /**
+     * @param $alias
+     * @param $profile
+     */
+    public function updateAdmin($alias, $profile) {
+        $this->admin = array(
+            'alias' => $alias,
+            'profile' => $profile,
+        );
+        $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+    }
+
+    /**
      * Método que devuelve los administradores de una plataforma
      * @return array|null
      */
@@ -208,11 +220,7 @@ class Security
                     $auth = $admins[$user]['hash'];
                     $this->authorized = ($auth == sha1($user . $pass));
                     if ($this->authorized) {
-                        $this->admin = array(
-                            'alias' => $user,
-                            'profile' => $admins[$user]['profile'],
-                        );
-                        $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+                        $this->updateAdmin($user , $admins[$user]['profile']);
                         ResponseHelper::setCookieHeaders([
                             [
                                 'name' => $this->getHash(),
