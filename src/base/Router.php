@@ -280,7 +280,7 @@ class Router
         $this->checkExternalModules();
         if (file_exists($modulesPath)) {
             $modules = $this->finder->directories()->in($modulesPath)->depth(0);
-            if(is_iterable($modules)) {
+            if(is_array($modules)) {
                 foreach ($modules as $modulePath) {
                     $module = $modulePath->getBasename();
                     $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
@@ -324,7 +324,7 @@ class Router
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
         $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth(1)->name('*.php');
-        if(is_iterable($files)) {
+        if(is_array($files)) {
             foreach ($files as $file) {
                 $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
                 $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
@@ -560,7 +560,7 @@ class Router
             $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
             $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
             $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-            if(is_iterable($externalModule)) {
+            if(is_array($externalModule)) {
                 foreach ($externalModule as $modulePath) {
                     $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
                 }
