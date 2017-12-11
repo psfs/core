@@ -35,7 +35,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
     public function testNotFound() {
         $router = Router::getInstance();
 
-        $router->execute(uniqid(time()));
+        $router->execute(uniqid(time(), true));
     }
 
     public function testGetRoute() {
@@ -44,7 +44,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $this->assertNotNull($router->getRoute('admin'), "Can't gather the admin route");
         $this->assertNotEquals($router->getRoute('admin'), $router->getRoute('admin', true), 'Absolute route is equal than normal');
         try {
-            $router->getRoute(uniqid('test'));
+            $router->getRoute(uniqid('test', true));
         } catch(\Exception $e) {
             $this->assertInstanceOf(RouterException::class, $e, 'Exception is not the expected: ' . get_class($e));
         }

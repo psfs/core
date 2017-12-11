@@ -56,7 +56,10 @@ class Router
     protected $cacheType = Cache::JSON;
 
     /**
+     * Router constructor.
+     * @throws exception\GeneratorException
      * @throws ConfigException
+     * @throws \InvalidArgumentException
      */
     public function __construct()
     {
@@ -68,14 +71,15 @@ class Router
     /**
      * @throws exception\GeneratorException
      * @throws ConfigException
+     * @throws \InvalidArgumentException
      */
     public function init()
     {
-        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json", $this->cacheType, TRUE);
+        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, TRUE);
         if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
             $this->debugLoad();
         } else {
-            $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", $this->cacheType, TRUE);
+            $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, TRUE);
         }
         $this->checkExternalModules(false);
         $this->setLoaded();
@@ -84,6 +88,7 @@ class Router
     /**
      * @throws exception\GeneratorException
      * @throws ConfigException
+     * @throws \InvalidArgumentException
      */
     private function debugLoad() {
         Logger::log('Begin routes load');
@@ -280,8 +285,8 @@ class Router
         $this->checkExternalModules();
         if (file_exists($modulesPath)) {
             $modules = $this->finder->directories()->in($modulesPath)->depth(0);
-            if(is_array($modules)) {
-                foreach ($modules as $modulePath) {
+            if($modules->hasResults()) {
+                foreach ($modules->getIterator() as $modulePath) {
                     $module = $modulePath->getBasename();
                     $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
                 }
@@ -298,7 +303,7 @@ class Router
     public function hydrateRouting()
     {
         $this->generateRouting();
-        $home = Config::getInstance()->get('home.action');
+        $home = Config::getParam('home.action');
         if (NULL !== $home || $home !== '') {
             $home_params = NULL;
             foreach ($this->routing as $pattern => $params) {
@@ -324,8 +329,8 @@ class Router
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
         $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth(1)->name('*.php');
-        if(is_array($files)) {
-            foreach ($files as $file) {
+        if($files->hasResults()) {
+            foreach ($files->getIterator() as $file) {
                 $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
                 $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
             }
@@ -560,8 +565,8 @@ class Router
             $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
             $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
             $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-            if(is_array($externalModule)) {
-                foreach ($externalModule as $modulePath) {
+            if($externalModule->hasResults()) {
+                foreach ($externalModule->getIterator() as $modulePath) {
                     $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
                 }
             }
