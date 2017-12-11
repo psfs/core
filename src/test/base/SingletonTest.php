@@ -1,8 +1,13 @@
 <?php
 namespace PSFS\test\base;
 
+use PSFS\base\Singleton;
 use PSFS\test\examples\SingletonClassTest;
 
+/**
+ * Class SingletonTest
+ * @package PSFS\test\base
+ */
 class SingletonTest extends \PHPUnit_Framework_TestCase {
 
     public function testCompleteSingletonCases()
@@ -11,7 +16,7 @@ class SingletonTest extends \PHPUnit_Framework_TestCase {
 
         // Basic instance cases
         $this->assertNotNull($exampleClass, 'Error when instance the class');
-        $this->assertInstanceOf('\\PSFS\\base\\Singleton', $exampleClass, 'Instance not valid');
+        $this->assertInstanceOf(Singleton::class, $exampleClass, 'Instance not valid');
 
         // Singleton pattern cases
         $example2 = SingletonClassTest::getInstance();

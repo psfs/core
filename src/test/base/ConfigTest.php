@@ -24,7 +24,7 @@
             $config = Config::getInstance();
 
             $this->assertNotNull($config, 'Instance not created');
-            $this->assertInstanceOf("\\PSFS\\base\\config\\Config", $config, 'Instance different than expected');
+            $this->assertInstanceOf(Config::class, $config, 'Instance different than expected');
             Cache::getInstance()->storeData(self::CONFIG_BACKUP_PATH, $config->dumpConfig(), Cache::JSON, true);
             return $config;
         }
@@ -39,7 +39,7 @@
             $config = Config::getInstance();
             $data = [];
             foreach(Config::$required as $key) {
-                $data[$key] = uniqid('test');
+                $data[$key] = uniqid('test', true);
             }
             Config::save($data, []);
             $config->loadConfigData();
@@ -56,7 +56,7 @@
             $config->clearConfig();
 
             // Check if config can create the config dir
-            $dirtmp = uniqid('test');
+            $dirtmp = uniqid('test', true);
             GeneratorHelper::createDir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
             $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp, 'Can\'t create test dir');
             @rmdir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
@@ -99,7 +99,7 @@
             $this->assertEquals($original_data, $config->dumpConfig(), 'Missmatch configurations');
 
             Config::save($original_data, [
-                'label' => [uniqid()],
+                'label' => [uniqid('t', true)],
                 'value' => [microtime(true)],
             ]);
 
@@ -109,7 +109,7 @@
             $this->restoreConfig();
         }
 
-        public function _testMultipleModuleConfig() {
+        public function testMultipleModuleConfig() {
             Config::dropInstance();
             $config = $this->getInstance();
 
@@ -122,7 +122,7 @@
             ]);
 
             $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
-            $this->assertEquals(Config::getParam('test' . uniqid(), $test_data), $test_data, 'The value is not the same with default value');
+            $this->assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
             $this->assertEquals(Config::getParam('test', null, 'test'), $test_data, 'The value is not the same without module value');
 
             $test_data2 = microtime(true);
@@ -132,7 +132,7 @@
                 'value' => [$test_data2],
             ]);
             $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
-            $this->assertEquals(Config::getParam('test' . uniqid(), $test_data), $test_data, 'The value is not the same with default value');
+            $this->assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
             $this->assertEquals(Config::getParam('test', null, 'test'), $test_data2, 'The value is not the same with module value');
             $this->assertEquals(Config::getParam('test', null, 'testa'), $test_data, 'The value is not the same with module value and default value');
             $this->assertEquals(Config::getParam('test', $test_data2, 'testa'), $test_data, 'The value is not the same with module value and default value');

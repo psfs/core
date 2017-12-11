@@ -1,10 +1,14 @@
 <?php
 namespace PSFS\Test\base;
 
+use http\Exception\UnexpectedValueException;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\FileHelper;
+use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\test\base\type\helper\GeneratorHelperTest;
 
 /**
  * Class CacheTest
@@ -22,7 +26,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $cache = Cache::getInstance();
 
         $this->assertNotNull($cache);
-        $this->assertInstanceOf("\\PSFS\\base\\Cache", $cache, 'Instance different than expected');
+        $this->assertInstanceOf(Cache::class, $cache, 'Instance different than expected');
 
         return $cache;
     }
@@ -35,7 +39,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $cache = $this->getInstance();
 
         // Test data
-        $data = [uniqid('test') => microtime()];
+        $data = [uniqid('test', true) => microtime()];
         $hash = sha1(microtime());
 
         // TXT cache test
@@ -61,23 +65,28 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'test');
     }
 
+    private function prepareTestVariables() {
+        $session = Security::getInstance();
+        $hash = sha1(microtime());
+        $session->setSessionKey('__CACHE__', [
+            'cache' => 600,
+            'params' => [],
+            'http' => 'GET',
+            'slug' => 'test-' . $hash,
+            'class' => 'Test',
+            'method' => 'test' . ucfirst($hash),
+            'module' => 'TEST',
+        ]);
+
+        return Cache::getInstance()->getRequestCacheHash();
+    }
+
     /**
      * Test for specific cache functionality in requests
      */
     public function testCacheForRequests()
     {
-        $session = Security::getInstance();
-        $session->setSessionKey('__CACHE__', [
-            'cache' => 600,
-            'params' => [],
-            'http' => 'GET',
-            'slug' => 'test',
-            'class' => 'Test',
-            'method' => 'test',
-            'module' => 'TEST',
-        ]);
-
-        list($path, $hash) = Cache::getInstance()->getRequestCacheHash();
+        list($path, $hash) = $this->prepareTestVariables();
         $this->assertNotNull($hash, 'Invalid cache hash');
         $this->assertNotEmpty($path, 'Invalid path to save the cache');
 
@@ -88,7 +97,7 @@ class CacheTest extends \PHPUnit_Framework_TestCase
             'value' => [true]
         ]);
         Config::getInstance()->setDebugMode(false);
-        $this->assertTrue(false !== Cache::needCache(), 'Test url expired or error checking cache');
+        $this->assertNotFalse(Cache::needCache(), 'Test url expired or error checking cache');
 
         // Flushing cache
         Cache::getInstance()->flushCache();
@@ -100,5 +109,19 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         // Cleaning test data
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests');
         $this->assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
+
+    }
+
+    /**
+     * Test privileges in folder
+     * @expectedException \PSFS\base\exception\ConfigException
+     */
+    public function testPrivileges() {
+        list($path, $hash) = $this->prepareTestVariables();
+        GeneratorHelper::createDir(dirname(CACHE_DIR . DIRECTORY_SEPARATOR . $path));
+        GeneratorHelper::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
+        $cache = $this->getInstance();
+        chmod(realpath(CACHE_DIR . DIRECTORY_SEPARATOR . $path), 0600);
+        $cache->storeData($path . $hash, json_encode(''));
     }
 }

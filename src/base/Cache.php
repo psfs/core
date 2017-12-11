@@ -3,8 +3,10 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
-use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\exception\GeneratorException;
+use PSFS\base\types\Api;
 use PSFS\base\types\helpers\FileHelper;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\traits\SingletonTrait;
 
 /**
@@ -25,6 +27,8 @@ class Cache
     const JSONGZ = 4;
     const MEMCACHE = 5;
 
+    const CACHE_SESSION_VAR = '__CACHE__';
+
     use SingletonTrait;
 
     public function __construct()
@@ -41,9 +45,9 @@ class Cache
     }
 
     /**
-     * Método que guarda un text en un fichero
      * @param string $data
      * @param string $path
+     * @throws GeneratorException
      * @throws ConfigException
      */
     private function saveTextToFile($data, $path)
@@ -55,7 +59,6 @@ class Cache
     }
 
     /**
-     * Método que extrae el texto de un fichero
      * @param string $path
      * @param int $transform
      * @param boolean $absolute
@@ -65,15 +68,14 @@ class Cache
     {
         Logger::log('Gathering data from cache', LOG_DEBUG, ['path' => $path]);
         $data = null;
-        $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+        $absolutePath = $absolute ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         if (file_exists($absolutePath)) {
             $data = FileHelper::readFile($absolutePath);
         }
-        return Cache::extractDataWithFormat($data, $transform);
+        return self::extractDataWithFormat($data, $transform);
     }
 
     /**
-     * Método que verifica si un fichero tiene la cache expirada
      * @param string $path
      * @param int $expires
      * @param boolean $absolute
@@ -88,24 +90,23 @@ class Cache
     }
 
     /**
-     * Método que transforma los datos de salida
      * @param string $data
      * @param int $transform
-     * @return array|string|null
+     * @return mixed
      */
-    public static function extractDataWithFormat($data, $transform = Cache::TEXT)
+    public static function extractDataWithFormat($data = null, $transform = Cache::TEXT)
     {
-        Logger::log('Extracting data from cache', LOG_DEBUG);
+        Logger::log('Extracting data from cache');
         switch ($transform) {
-            case Cache::JSON:
+            case self::JSON:
                 $data = json_decode($data, true);
                 break;
-            case Cache::JSONGZ:
-                $data = Cache::extractDataWithFormat($data, Cache::GZIP);
-                $data = Cache::extractDataWithFormat($data, Cache::JSON);
+            case self::JSONGZ:
+                $data = self::extractDataWithFormat($data, self::GZIP);
+                $data = self::extractDataWithFormat($data, self::JSON);
                 break;
-            case Cache::GZIP:
-                if (function_exists('gzuncompress') && !empty($data)) {
+            case self::GZIP:
+                if (null !== $data && function_exists('gzuncompress')) {
                     $data = @gzuncompress($data ?: '');
                 }
                 break;
@@ -114,7 +115,6 @@ class Cache
     }
 
     /**
-     * Método que transforma los datos de entrada del fichero
      * @param string $data
      * @param int $transform
      * @return string
@@ -123,14 +123,14 @@ class Cache
     {
         Logger::log('Transform data in cache', LOG_DEBUG);
         switch ($transform) {
-            case Cache::JSON:
+            case self::JSON:
                 $data = json_encode($data, JSON_PRETTY_PRINT);
                 break;
-            case Cache::JSONGZ:
-                $data = Cache::transformData($data, Cache::JSON);
-                $data = Cache::transformData($data, Cache::GZIP);
+            case self::JSONGZ:
+                $data = self::transformData($data, self::JSON);
+                $data = self::transformData($data, self::GZIP);
                 break;
-            case Cache::GZIP:
+            case self::GZIP:
                 if (function_exists('gzcompress')) {
                     $data = gzcompress($data ?: '');
                 }
@@ -140,28 +140,29 @@ class Cache
     }
 
     /**
-     * Método que guarda en fichero los datos pasados
-     * @param $path
-     * @param $data
+     * @param string $path
+     * @param mixed $data
      * @param int $transform
-     * @param boolean $absolute
-     * @param integer $expires
+     * @param bool $absolute
+     * @throws GeneratorException
+     * @throws ConfigException
      */
-    public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false, $expires = 600)
+    public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false)
     {
         Logger::log('Store data in cache', LOG_DEBUG, ['path' => $path]);
-        $data = Cache::transformData($data, $transform);
-        $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
+        $data = self::transformData($data, $transform);
+        $absolutePath = $absolute ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $this->saveTextToFile($data, $absolutePath);
     }
 
     /**
-     * Método que verifica si tiene que leer o no un fichero de cache
      * @param string $path
      * @param int $expires
-     * @param callable $function
+     * @param null $function
      * @param int $transform
-     * @return mixed
+     * @return mixed|null
+     * @throws GeneratorException
+     * @throws ConfigException
      */
     public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT)
     {
@@ -169,7 +170,7 @@ class Cache
         Logger::log('Reading data from cache', LOG_DEBUG, ['path' => $path]);
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
             if (is_callable($function) && $this->hasExpiredCache($path, $expires)) {
-                $data = call_user_func($function);
+                $data = $function();
                 $this->storeData($path, $data, $transform, false, $expires);
             } else {
                 $data = $this->getDataFromFile($path, $transform);
@@ -187,50 +188,45 @@ class Cache
     }
 
     /**
-     * Método estático que revisa si se necesita cachear la respuesta de un servicio o no
      * @return integer|boolean
      */
     public static function needCache()
     {
         $needCache = false;
-        Logger::log('Checking cache requirements', LOG_DEBUG);
+        Logger::log('Checking cache requirements');
         if (!self::checkAdminSite() && !Config::getParam('debug') && Config::getParam('cache.data.enable', false)) {
-            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
             Logger::log('Gathering cache params from Session', LOG_DEBUG, $action);
-            if (null !== $action && array_key_exists("cache", $action) && $action["cache"] > 0) {
-                $needCache = $action["cache"];
+            if (null !== $action && array_key_exists('cache', $action) && $action['cache'] > 0) {
+                $needCache = $action['cache'];
             }
         }
         return $needCache;
     }
 
     /**
-     * Método que construye un hash para almacenar la cache
      * @return array
      */
     public function getRequestCacheHash()
     {
         $hashPath = null;
         $filename = null;
-        $action = Security::getInstance()->getSessionKey("__CACHE__");
+        $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
         Logger::log('Gathering cache hash for request', LOG_DEBUG, $action);
-        if (null !== $action && $action["cache"] > 0) {
+        if (null !== $action && $action['cache'] > 0) {
             $query = $action['params'];
-            $query['X-API-LANG'] = Request::header('X-API-LANG', 'es');
-            $filename = FileHelper::generateHashFilename($action["http"], $action["slug"], $query);
+            $query[Api::HEADER_API_LANG] = Request::header(Api::HEADER_API_LANG, 'es');
+            $filename = FileHelper::generateHashFilename($action['http'], $action['slug'], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
             Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath]);
         }
         return [$hashPath, $filename];
     }
 
-    /**
-     * Flush cache when save a registry
-     */
     public function flushCache() {
         if(Config::getParam('cache.data.enable', false)) {
             Logger::log('Flushing cache', LOG_DEBUG);
-            $action = Security::getInstance()->getSessionKey("__CACHE__");
+            $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
             if(is_array($action)) {
                 $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
                 if(!file_exists($hashPath)) {

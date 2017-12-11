@@ -56,7 +56,7 @@ class TemplateFunctions
      *
      * @return string|null
      */
-    public static function route($path = '', $absolute = false, array $params = null)
+    public static function route($path = '', $absolute = false, array $params = [])
     {
         $router = Router::getInstance();
         try {

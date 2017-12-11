@@ -1,7 +1,7 @@
 <?php
 namespace PSFS\base;
 
-use PSFS\base\types\helpers\RequestHelper;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\SecureTrait;
 use PSFS\base\types\traits\SingletonTrait;
@@ -55,22 +55,19 @@ class Security
     public function init()
     {
         $this->initSession();
-        $this->session = (is_null($_SESSION)) ? array() : $_SESSION;
+        $this->session = null === $_SESSION ? array() : $_SESSION;
         if (NULL === $this->getSessionKey('__FLASH_CLEAR__')) {
             $this->clearFlashes();
             $this->setSessionKey('__FLASH_CLEAR__', microtime(TRUE));
         }
-        $this->user = (array_key_exists(self::USER_ID_TOKEN, $this->session)) ? unserialize($this->session[self::USER_ID_TOKEN]) : NULL;
-        $this->admin = (array_key_exists(self::ADMIN_ID_TOKEN, $this->session)) ? unserialize($this->session[self::ADMIN_ID_TOKEN]) : NULL;
+        $this->user = array_key_exists(self::USER_ID_TOKEN, $this->session) ? unserialize($this->session[self::USER_ID_TOKEN]) : NULL;
+        $this->admin = array_key_exists(self::ADMIN_ID_TOKEN, $this->session) ? unserialize($this->session[self::ADMIN_ID_TOKEN]) : NULL;
         if (null === $this->admin) {
             $this->checkAdmin();
         }
         $this->setLoaded(true);
     }
 
-    /**
-     * Initializator for SESSION
-     */
     private function initSession() {
         if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
             session_start();
@@ -82,7 +79,6 @@ class Security
     }
 
     /**
-     * Método estático que devuelve los perfiles de la plataforma
      * @return array
      */
     public static function getProfiles()
@@ -95,7 +91,6 @@ class Security
     }
 
     /**
-     * Method that returns all the available profiles
      * @return array
      */
     public function getAdminProfiles()
@@ -104,7 +99,6 @@ class Security
     }
 
     /**
-     * Método estático que devuelve los perfiles disponibles
      * @return array
      */
     public static function getCleanProfiles()
@@ -117,7 +111,6 @@ class Security
     }
 
     /**
-     * Método estático que devuelve los perfiles disponibles
      * @return array
      */
     public function getAdminCleanProfiles()
@@ -126,32 +119,26 @@ class Security
     }
 
     /**
-     * Método que guarda los administradores
-     *
-     * @param array $user
-     *
+     * @param mixed $user
      * @return bool
+     * @throws exception\GeneratorException
+     * @throws ConfigException
      */
     public static function save($user)
     {
         $saved = true;
-        try {
-            $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
-            $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
-            $admins[$user['username']]['profile'] = $user['profile'];
+        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
+        $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
+        $admins[$user['username']]['profile'] = $user['profile'];
 
-            Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
-        } catch(\Exception $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
-            $saved = false;
-        }
+        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
         return $saved;
     }
 
     /**
-     * Method to save a new admin user
-     * @param array $user
+     * @param mixed $user
      * @return bool
+     * @throws exception\GeneratorException
      */
     public function saveUser($user)
     {
@@ -163,9 +150,7 @@ class Security
     }
 
     /**
-     * Servicio que actualiza los datos del usuario
-     *
-     * @param $user
+     * @param mixed $user
      */
     public function updateUser($user)
     {
@@ -185,7 +170,6 @@ class Security
     }
 
     /**
-     * Método que devuelve los administradores de una plataforma
      * @return array|null
      */
     public function getAdmins()
@@ -194,14 +178,11 @@ class Security
     }
 
     /**
-     * Método que devuelve si un usuario tiene privilegios para acceder a la zona de administración
-     *
-     * @param null $user
-     * @param null $pass
+     * @param string $user
+     * @param string $pass
      * @param boolean $force
      *
      * @return bool
-     * @throws \HttpException
      */
     public function checkAdmin($user = NULL, $pass = NULL, $force = false)
     {
@@ -218,7 +199,7 @@ class Security
                 }
                 if (!empty($user) && !empty($admins[$user])) {
                     $auth = $admins[$user]['hash'];
-                    $this->authorized = ($auth == sha1($user . $pass));
+                    $this->authorized = ($auth === sha1($user . $pass));
                     if ($this->authorized) {
                         $this->updateAdmin($user , $admins[$user]['profile']);
                         ResponseHelper::setCookieHeaders([
@@ -308,7 +289,6 @@ class Security
     }
 
     /**
-     * Servicio que chequea si un usuario es super administrador o no
      * @return bool
      */
     public function isSuperAdmin()
@@ -324,7 +304,6 @@ class Security
     }
 
     /**
-     * Servicio que devuelve un dato de sesión
      *
      * @param string $key
      *
@@ -341,7 +320,6 @@ class Security
     }
 
     /**
-     * Servicio que setea una variable de sesión
      *
      * @param string $key
      * @param mixed $data
@@ -356,7 +334,6 @@ class Security
     }
 
     /**
-     * Servicio que devuelve los mensajes flash de sesiones
      * @return mixed
      */
     public function getFlashes()
@@ -367,7 +344,6 @@ class Security
     }
 
     /**
-     * Servicio que limpia los mensajes flash
      * @return $this
      */
     public function clearFlashes()
@@ -378,7 +354,6 @@ class Security
     }
 
     /**
-     * Servicio que inserta un flash en sesión
      *
      * @param string $key
      * @param mixed $data
@@ -394,7 +369,6 @@ class Security
     }
 
     /**
-     * Servicio que devuelve un flash de sesión
      *
      * @param string $key
      *
@@ -408,7 +382,6 @@ class Security
     }
 
     /**
-     * Servicio que actualiza
      *
      * @param boolean $closeSession
      *
@@ -429,9 +402,6 @@ class Security
         return $this;
     }
 
-    /**
-     * Servicio que limpia la sesión
-     */
     public function closeSession()
     {
         unset($_SESSION);

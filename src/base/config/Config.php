@@ -14,21 +14,21 @@ class Config
 {
     use SingletonTrait;
 
-    const DEFAULT_LANGUAGE = "es";
-    const DEFAULT_ENCODE = "UTF-8";
-    const DEFAULT_CTYPE = "text/html";
-    const DEFAULT_DATETIMEZONE = "Europe/Madrid";
+    const DEFAULT_LANGUAGE = 'es';
+    const DEFAULT_ENCODE = 'UTF-8';
+    const DEFAULT_CTYPE = 'text/html';
+    const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     const CONFIG_FILE = 'config.json';
 
     protected $config = array();
     static public $defaults = array(
-        "db.host" => "localhost",
-        "db.port" => "3306",
-        "default.language" => "es_ES",
-        "debug" => true,
-        "front.version" => "v1",
-        "version" => "v1",
+        'db.host' => 'localhost',
+        'db.port' => '3306',
+        'default.language' => 'es_ES',
+        'debug' => true,
+        'front.version' => 'v1',
+        'version' => 'v1',
     );
     static public $required = array('db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug');
     static public $encrypted = array('db.password');
@@ -188,10 +188,10 @@ class Config
         $saved = false;
         try {
             $final_data = array_filter($final_data, function($key, $value) {
-                return in_array($key, Config::$required) || !empty($value);
+                return in_array($key, self::$required, true) || !empty($value);
             }, ARRAY_FILTER_USE_BOTH);
             $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($final_data, JSON_PRETTY_PRINT)));
-            Config::getInstance()->loadConfigData();
+            self::getInstance()->loadConfigData();
             $saved = true;
         } catch (ConfigException $e) {
             Logger::log($e->getMessage(), LOG_ERR);
@@ -226,7 +226,7 @@ class Config
     public function loadConfigData()
     {
         $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
-        $this->debug = (array_key_exists('debug', $this->config)) ? (bool)$this->config['debug'] : FALSE;
+        $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
     }
 
     /**
@@ -248,9 +248,8 @@ class Config
     {
         if(null !== $module) {
             return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));
-        } else {
-            $param = Config::getInstance()->get($key);
-            return (null !== $param) ? $param : $defaultValue;
         }
+        $param = self::getInstance()->get($key);
+        return (null !== $param) ? $param : $defaultValue;
     }
 }

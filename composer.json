@@ -52,6 +52,7 @@
     },
     "scripts": {
         "post-update-cmd": "\\PSFS\\command\\base\\CreateRootCommand::execute",
-        "post-install-cmd": "\\PSFS\\command\\base\\CreateRootCommand::execute"
+        "post-install-cmd": "\\PSFS\\command\\base\\CreateRootCommand::execute",
+        "post-require-cmd": "\\PSFS\\command\\base\\CreateRootCommand::execute"
     }
 }

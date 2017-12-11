@@ -30,7 +30,7 @@ class InjectorHelper
                 if($isArray) {
                     $instanceType = str_replace('[]', '', $instanceType);
                 }
-                if(!Router::exists($instanceType) || $instanceType === '\\DateTime') {
+                if($instanceType === '\\DateTime' || !Router::exists($instanceType)) {
                     list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
                     $variables[$property->getName()] = [
                         'type' => $type,
@@ -144,7 +144,6 @@ class InjectorHelper
     }
 
     /**
-     * Create the dependency injected
      * @param string $variable
      * @param bool $singleton
      * @param string $classNameSpace
@@ -157,7 +156,7 @@ class InjectorHelper
         $reflector = new \ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
         $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType($property->getDocComment()) : $classNameSpace;
-        if (true === $singleton && method_exists($varInstanceType, "getInstance")) {
+        if (true === $singleton && method_exists($varInstanceType, 'getInstance')) {
             $instance = $varInstanceType::getInstance();
         } else {
             $instance = new $varInstanceType();

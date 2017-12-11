@@ -2,6 +2,7 @@
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\traits\SingletonTrait;
 
@@ -13,6 +14,12 @@ class Singleton
 {
     use SingletonTrait;
 
+    /**
+     * Singleton constructor.
+     * @throws \Exception
+     * @throws exception\GeneratorException
+     * @throws ConfigException
+     */
     public function __construct()
     {
         Logger::log(get_class($this) . ' constructor invoked');
@@ -20,25 +27,32 @@ class Singleton
     }
 
     /**
-     * Magic setter
-     * @param $variable
-     * @param $value
+     * @param string $variable
+     * @param mixed $value
      */
     public function __set($variable, $value)
     {
-        if (property_exists(get_class($this), $variable)) {
+        if ($this->__isset($variable)) {
             $this->$variable = $value;
         }
     }
 
     /**
-     * Magic getter
+     * @param string $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return property_exists(get_class($this), $name);
+    }
+
+    /**
      * @param string $variable
-     * @return $mixed
+     * @return mixed
      */
     public function __get($variable)
     {
-        return property_exists(get_class($this), $variable) ? $this->$variable : null;
+        return $this->__isset($variable) ? $this->$variable : null;
     }
 
     /**
@@ -46,7 +60,6 @@ class Singleton
      */
 
     /**
-     * Método que extrae el nombre de la clase
      * @return string
      */
     public function getShortName()
@@ -56,7 +69,6 @@ class Singleton
     }
 
     /**
-     * Dependency injector service invoker
      * @param string $variable
      * @param bool $singleton
      * @param string $classNameSpace
@@ -65,10 +77,10 @@ class Singleton
      */
     public function load($variable, $singleton = true, $classNameSpace = null)
     {
-        $calledClass = get_called_class();
+        $calledClass = static::class;
         try {
             $instance = InjectorHelper::constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
-            $setter = "set" . ucfirst($variable);
+            $setter = 'set' . ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
             } else {
@@ -82,13 +94,15 @@ class Singleton
     }
 
     /**
-     * Método que inyecta automáticamente las dependencias en la clase
+     * @throws \Exception
+     * @throws exception\GeneratorException
+     * @throws ConfigException
      */
     public function init()
     {
         if (!$this->isLoaded()) {
             $filename = sha1(get_class($this));
-            $cacheFilename = "reflections" . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . ".json";
+            $cacheFilename = 'reflections' . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . ".json";
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
@@ -100,8 +114,10 @@ class Singleton
                 $cacheService->storeData($cacheFilename, $properties, $cache);
             }
             /** @var \ReflectionProperty $property */
-            if (!empty($properties) && is_array($properties)) foreach ($properties as $property => $class) {
-                $this->load($property, true, $class);
+            if (!empty($properties) && is_array($properties)) {
+                foreach ($properties as $property => $class) {
+                    $this->load($property, true, $class);
+                }
             }
             $this->setLoaded();
         } else {

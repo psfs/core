@@ -1,6 +1,8 @@
 <?php
 namespace PSFS\test\base;
 
+use PSFS\base\config\Config;
+use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\Dispatcher;
 
@@ -41,7 +43,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
      */
     private function mockConfiguredDebugConfig($configured = true, $debug = true)
     {
-        $config = $this->createMock("\\PSFS\\base\\config\\Config");
+        $config = $this->createMock(Config::class);
         $config->expects($this->any())->method("isConfigured")->will($this->returnValue($configured));
         $config->expects($this->any())->method("getDebugMode")->will($this->returnValue($debug));
         return $config;
@@ -53,7 +55,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
      */
     private function mockDebugRouter()
     {
-        return $this->createMock("\\PSFS\\base\\Router");
+        return $this->createMock(Router::class);
     }
 
     /**
@@ -62,7 +64,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
      */
     private function mockDebugSecurity()
     {
-        return $this->createMock("\\PSFS\\base\\Security");
+        return $this->createMock(Security::class);
     }
 
     public function testConstructor()
@@ -70,7 +72,7 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $dispatcher = $this->getInstance();
 
         $this->assertNotNull($dispatcher);
-        $this->assertTrue($dispatcher instanceof Dispatcher);
+        $this->assertInstanceOf(Dispatcher::class, $dispatcher);
 
     }
 

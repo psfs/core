@@ -18,13 +18,13 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
      */
     public function getInstance()
     {
-        if(!isset($_SESSION)) {
+        if(null === $_SESSION) {
             $_SESSION = [];
         }
         $instance = Security::getInstance(true);
 
         $this->assertNotNull($instance, 'Security instance is null');
-        $this->assertInstanceOf("\\PSFS\\base\\Security", $instance, 'Instance is different than expected');
+        $this->assertInstanceOf(Security::class, $instance, 'Instance is different than expected');
         return $instance;
     }
 
@@ -41,9 +41,9 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
 
         $cleanProfiles = $security->getAdminCleanProfiles();
         $this->assertNotEmpty($cleanProfiles, 'Malformed security profiles array');
-        $this->assertTrue(in_array(Security::ADMIN_ID_TOKEN, $cleanProfiles), 'Key not exists');
-        $this->assertTrue(in_array(Security::MANAGER_ID_TOKEN, $cleanProfiles), 'Key not exists');
-        $this->assertTrue(in_array(Security::USER_ID_TOKEN, $cleanProfiles), 'Key not exists');
+        $this->assertTrue(in_array(Security::ADMIN_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
+        $this->assertTrue(in_array(Security::MANAGER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
+        $this->assertTrue(in_array(Security::USER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
         return $security;
     }
 
@@ -54,8 +54,8 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
      */
     public function testSecurityUserManagement(Security $security) {
         $user = [
-            'username' => uniqid('test'),
-            'password' => uniqid('test'),
+            'username' => uniqid('test', true),
+            'password' => uniqid('test', true),
             'profile' => Security::ADMIN_ID_TOKEN,
         ];
         $security = $this->getInstance();
@@ -70,12 +70,12 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
 
         $security->updateUser($user);
         $this->assertNotNull($security->getUser(), 'An error occurred when update user in session');
-        $this->assertFalse($security->checkAdmin(uniqid('test'),uniqid('error'), true), 'Error checking admin user');
+        $this->assertFalse($security->checkAdmin(uniqid('test', true), uniqid('error', true), true), 'Error checking admin user');
         $this->assertNull($security->getAdmin(), 'Wrong admin parser');
 
         $_COOKIE[substr(Security::MANAGER_ID_TOKEN, 0, 8)] = base64_encode($user['username'] . ':' . $user['password']);
         Request::getInstance()->init();
-        $this->assertTrue($security->checkAdmin(null, null, true), 'An error ocurred verifying the admin user');
+        $this->assertTrue($security->checkAdmin(null, null, true), 'An error occurred verifying the admin user');
         $admin = $security->getAdmin();
         $this->assertNotNull($admin, 'An error ocurred gathering the admin user');
         $this->assertEquals($admin['alias'], $user['username'], 'Wrong data gathered from admins.json');
@@ -97,7 +97,7 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
      */
     public function testSessionHandler(Security $security) {
 
-        $testValue = rand(0, 1e5);
+        $testValue = mt_rand(0, 1e5);
         $security->setSessionKey('test', $testValue);
         $this->assertNotNull($security->getSessionKey('test'), 'Error trying to gather the session key');
         $this->assertEquals($security->getSessionKey('test'), $testValue, 'The session key value is not the same than expected');
@@ -112,7 +112,6 @@ class SecurityTest extends \PHPUnit_Framework_TestCase
         $security->clearFlashes();
         $this->assertNull($security->getFlash('flash_test'), 'Flash key not deleted');
         $this->assertEmpty($security->getFlashes(), 'Flash with data yet');
-        $sessionId = session_id();
         $security->closeSession();
         //$this->assertNotEquals($sessionId, session_id(), 'An error occurred trying to close the session');
     }
