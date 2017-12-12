@@ -37,7 +37,7 @@ class RouterHelper
         $httpMethod = 'ALL';
         $routePattern = $pattern;
         if (FALSE !== strpos($pattern, '#|#')) {
-            list($httpMethod, $routePattern) = explode('#|', $pattern, 2);
+            list($httpMethod, $routePattern) = explode('#|#', $pattern, 2);
         }
 
         return array(strtoupper($httpMethod), $routePattern);
