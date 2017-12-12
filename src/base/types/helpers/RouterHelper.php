@@ -23,7 +23,7 @@ class RouterHelper
     {
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
         $actionClass = class_exists($action["class"]) ? $action["class"] : "\\" . $action["class"];
-        $class = (method_exists($actionClass, "getInstance")) ? $actionClass::getInstance() : new $actionClass;
+        $class = method_exists($actionClass, "getInstance") ? $actionClass::getInstance() : new $actionClass;
         return $class;
     }
 
@@ -34,10 +34,10 @@ class RouterHelper
      */
     public static function extractHttpRoute($pattern)
     {
-        $httpMethod = "ALL";
+        $httpMethod = 'ALL';
         $routePattern = $pattern;
-        if (FALSE !== strstr($pattern, "#|#")) {
-            list($httpMethod, $routePattern) = explode("#|#", $pattern, 2);
+        if (FALSE !== strpos($pattern, '#|#')) {
+            list($httpMethod, $routePattern) = explode('#|', $pattern, 2);
         }
 
         return array(strtoupper($httpMethod), $routePattern);
@@ -133,10 +133,10 @@ class RouterHelper
             $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
         }
         return [
-            "base" => $path,
-            "template" => $path . $tpl_path,
-            "model" => $path . $model_path,
-            "public" => $path . $public_path,
+            'base' => $path,
+            'template' => $path . $tpl_path,
+            'model' => $path . $model_path,
+            'public' => $path . $public_path,
         ];
     }
 
@@ -156,14 +156,18 @@ class RouterHelper
         $parameters = $method->getParameters();
         $requirements = [];
         /** @var \ReflectionParameter $param */
-        if (count($parameters) > 0) foreach ($parameters as $param) {
-            if ($param->isOptional() && !is_array($param->getDefaultValue())) {
-                $params[$param->getName()] = $param->getDefaultValue();
-                $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
-            } elseif(!$param->isOptional()) {
-                $requirements[] = $param->getName();
+        if (count($parameters) > 0) {
+            foreach ($parameters as $param) {
+                if ($param->isOptional() && !is_array($param->getDefaultValue())) {
+                    $params[$param->getName()] = $param->getDefaultValue();
+                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+                } elseif(!$param->isOptional()) {
+                    $requirements[] = $param->getName();
+                }
             }
-        } else $default = $regex;
+        } else {
+            $default = $regex;
+        }
 
         return [$regex, $default, $params, $requirements];
     }
@@ -219,7 +223,7 @@ class RouterHelper
     {
         preg_match('/@cache\ (.*)(\n|\r)/i', $docComments, $cache);
 
-        return (count($cache) > 0) ? $cache[1] : "0";
+        return (count($cache) > 0) ? $cache[1] : '0';
     }
 
     /**
@@ -235,27 +239,27 @@ class RouterHelper
         preg_match('/@route\ (.*)(\n|\r)/i', $docComments, $sr);
         if (count($sr)) {
             list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($sr, $method);
-            if (strlen($api) && false !== strpos($regex, '__API__')) {
+            if ('' !== $api && false !== strpos($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
             }
             $regex = str_replace('{__DOMAIN__}', $module, $regex);
             $default = str_replace('{__DOMAIN__}', $module, $default);
-            $httpMethod = RouterHelper::extractReflectionHttpMethod($docComments);
-            $label = RouterHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
+            $httpMethod = self::extractReflectionHttpMethod($docComments);
+            $label = self::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
-                "method" => $method->getName(),
-                "params" => $params,
-                "default" => $default,
-                "label" => $label,
-                "icon" => strlen($api) > 0 ? 'fa-database' : '',
-                "module" => preg_replace('/(\\\|\\/)/', '', $module),
-                "visible" => RouterHelper::extractReflectionVisibility($docComments),
-                "http" => $httpMethod,
-                "cache" => RouterHelper::extractReflectionCacheability($docComments),
-                "requirements" => $requirements,
+                'method' => $method->getName(),
+                'params' => $params,
+                'default' => $default,
+                'label' => $label,
+                'icon' => strlen($api) > 0 ? 'fa-database' : '',
+                'module' => preg_replace('/(\\\|\\/)/', '', $module),
+                'visible' => self::extractReflectionVisibility($docComments),
+                'http' => $httpMethod,
+                'cache' => self::extractReflectionCacheability($docComments),
+                'requirements' => $requirements,
             ];
         }
         return [$route, $info];
@@ -264,6 +268,7 @@ class RouterHelper
     /**
      * @param string $route
      * @return null|string
+     * @throws \Exception
      */
     public static function checkDefaultRoute($route)
     {

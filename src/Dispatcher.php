@@ -55,7 +55,7 @@ class Dispatcher extends Singleton
         $this->initiateStats();
         I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
-        $this->actualUri = Request::getInstance()->getServer("REQUEST_URI");
+        $this->actualUri = Request::getInstance()->getServer('REQUEST_URI');
         Logger::log('End dispatcher init');
     }
 

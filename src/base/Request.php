@@ -10,13 +10,46 @@ use PSFS\base\types\traits\SingletonTrait;
 class Request
 {
     use SingletonTrait;
+
+    const VERB_GET = 'GET';
+    const VERB_POST = 'POST';
+    const VERB_PUT = 'PUT';
+    const VERB_DELETE = 'DELETE';
+    const VERB_OPTIONS = 'OPTIONS';
+    const VERB_HEAD = 'HEAD';
+    const VERB_PATCH = 'PATCH';
+
+    /**
+     * @var array
+     */
     protected $server;
+    /**
+     * @var array
+     */
     protected $cookies;
+    /**
+     * @var array
+     */
     protected $upload;
+    /**
+     * @var array
+     */
     protected $header;
+    /**
+     * @var array
+     */
     protected $data;
+    /**
+     * @var array
+     */
     protected $raw = [];
+    /**
+     * @var array
+     */
     protected $query;
+    /**
+     * @var bool
+     */
     private $isLoaded = false;
 
     public function init()
@@ -27,7 +60,7 @@ class Request
         $this->header = $this->parseHeaders();
         $this->data = $_REQUEST or [];
         $this->query = $_GET or [];
-        $this->raw = json_decode(file_get_contents("php://input"), true) ?: [];
+        $this->raw = json_decode(file_get_contents('php://input'), true) ?: [];
         $this->isLoaded = true;
     }
 
@@ -100,7 +133,7 @@ class Request
      */
     public function getMethod()
     {
-        return (array_key_exists('REQUEST_METHOD', $this->server)) ? strtoupper($this->server['REQUEST_METHOD']) : 'GET';
+        return array_key_exists('REQUEST_METHOD', $this->server) ? strtoupper($this->server['REQUEST_METHOD']) : 'GET';
     }
 
     /**
@@ -165,8 +198,7 @@ class Request
      */
     public function isFile()
     {
-        $file = (preg_match('/\.[a-z0-9]{2,4}$/', $this->getRequestUri()) !== 0);
-        return $file;
+        return preg_match('/\.[a-z0-9]{2,4}$/', $this->getRequestUri()) !== 0;
     }
 
     /**
@@ -199,7 +231,7 @@ class Request
      */
     public function get($param)
     {
-        return (array_key_exists($param, $this->data)) ? $this->data[$param] : null;
+        return array_key_exists($param, $this->data) ? $this->data[$param] : null;
     }
 
     /**
@@ -229,7 +261,7 @@ class Request
         header('Location: ' . $url);
         ob_end_clean();
         Security::getInstance()->updateSession();
-        exit(_("Redireccionando..."));
+        exit(_('Redireccionando...'));
     }
 
     /**
@@ -249,7 +281,7 @@ class Request
      */
     public function getServerName()
     {
-        return $this->getServer("SERVER_NAME");
+        return $this->getServer('SERVER_NAME');
     }
 
     /**
@@ -258,7 +290,7 @@ class Request
      */
     public function getProtocol()
     {
-        return ($this->getServer("HTTPS") || $this->getServer("https")) ? 'https://' : 'http://';
+        return ($this->getServer('HTTPS') || $this->getServer('https')) ? 'https://' : 'http://';
     }
 
     /**
@@ -271,7 +303,7 @@ class Request
         $url = $this->getServerName();
         $protocol = $protocol ? $this->getProtocol() : '';
         if (!empty($protocol)) $url = $protocol . $url;
-        if (!in_array($this->getServer('SERVER_PORT'), [80, 443])) {
+        if (!in_array($this->getServer('SERVER_PORT'), [80, 443], true)) {
             $url .= ':' . $this->getServer('SERVER_PORT');
         }
         return $url;
@@ -305,8 +337,8 @@ class Request
      */
     public function isAjax()
     {
-        $requested = $this->getServer("HTTP_X_REQUESTED_WITH");
-        return (null !== $requested && strtolower($requested) == 'xmlhttprequest');
+        $requested = $this->getServer('HTTP_X_REQUESTED_WITH');
+        return (null !== $requested && strtolower($requested) === 'xmlhttprequest');
     }
 
 }

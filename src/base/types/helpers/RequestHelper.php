@@ -5,23 +5,27 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 
+/**
+ * Class RequestHelper
+ * @package PSFS\base\types\helpers
+ */
 class RequestHelper
 {
     private static function getCorsHeaders() {
         $headers = [
-            "Access-Control-Allow-Methods",
-            "Access-Control-Allow-Headers",
-            "Access-Control-Allow-Origin",
-            "Access-Control-Expose-Headers",
-            "Origin",
-            "X-Requested-With",
-            "Content-Type",
-            "Accept",
-            "Authorization",
-            "X-API-SEC-TOKEN",
-            "X-API-USER-TOKEN",
-            "X-API-LANG",
-            "api_key"
+            'Access-Control-Allow-Methods',
+            'Access-Control-Allow-Headers',
+            'Access-Control-Allow-Origin',
+            'Access-Control-Expose-Headers',
+            'Origin',
+            'X-Requested-With',
+            'Content-Type',
+            'Accept',
+            'Authorization',
+            'X-API-SEC-TOKEN',
+            'X-API-USER-TOKEN',
+            'X-API-LANG',
+            'api_key',
         ];
         $extra_headers = Config::getParam('cors.headers', '');
         $headers = array_merge($headers, explode(',', $extra_headers));
@@ -47,7 +51,7 @@ class RequestHelper
                     header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS");
                     header("Access-Control-Allow-Headers: " . implode(', ', self::getCorsHeaders()));
                 }
-                if (Request::getInstance()->getMethod() == 'OPTIONS') {
+                if (Request::getInstance()->getMethod() === Request::VERB_OPTIONS) {
                     Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
                     header("HTTP/1.1 200 OK");
                     exit();

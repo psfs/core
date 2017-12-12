@@ -12,9 +12,10 @@
         "symfony/console": "3.4.x-dev",
         "symfony/finder": "3.4.x-dev",
         "twig/twig": "1.x-dev",
-        "twig/extensions": "dev-master",
+        "twig/extensions": "1.5.x-dev",
         "monolog/monolog": "1.x-dev",
-        "matthiasmullie/minify": "dev-master"
+        "matthiasmullie/minify": "1.3.*",
+        "roave/security-advisories": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "5.7.x"

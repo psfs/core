@@ -268,7 +268,7 @@ class Service extends Singleton
         $this->url = NULL;
         $this->params = array();
         $this->headers = array();
-        Logger::log("Context service for " . get_called_class() . " cleared!");
+        Logger::log('Context service for ' . static::class . ' cleared!');
         $this->closeConnection();
     }
 
@@ -329,16 +329,16 @@ class Service extends Singleton
     protected function setDefaults()
     {
         switch (strtoupper($this->type)) {
-            case 'GET':
+            case Request::VERB_GET:
             default:
-                $this->addOption(CURLOPT_CUSTOMREQUEST, "GET");
+                $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_GET);
                 if(!empty($this->params)) {
                     $sep = !preg_match('/\?/', $this->getUrl()) ? '?' : '';
                     $this->url = $this->url . $sep . http_build_query($this->params);
                 }
                 break;
-            case 'POST':
-                $this->addOption(CURLOPT_CUSTOMREQUEST, "POST");
+            case Request::VERB_POST:
+                $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_POST);
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
                 } elseif($this->getIsMultipart()) {
@@ -347,11 +347,11 @@ class Service extends Singleton
                     $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
                 }
                 break;
-            case 'DELETE':
-                $this->addOption(CURLOPT_CUSTOMREQUEST, "DELETE");
+            case Request::VERB_DELETE:
+                $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_DELETE);
                 break;
-            case 'PUT':
-                $this->addOption(CURLOPT_CUSTOMREQUEST, "PUT");
+            case Request::VERB_PUT:
+                $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_PUT);
 
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
@@ -361,8 +361,8 @@ class Service extends Singleton
                     $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
                 }
                 break;
-            case 'PATCH':
-                $this->addOption(CURLOPT_CUSTOMREQUEST, "PATCH");
+            case Request::VERB_PATCH:
+                $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_PATCH);
                 if($this->getIsJson()) {
                     $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
                 } elseif($this->getIsMultipart()) {
