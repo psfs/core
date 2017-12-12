@@ -10,10 +10,10 @@ use PSFS\base\types\helpers\SecurityHelper;
  */
 class Service extends Singleton
 {
-    const CTYPE_JSON = 'application/json';
-    const CTYPE_MULTIPART = 'multipart/form-data';
-    const CTYPE_FORM = 'application/x-www-form-urlencoded';
-    const CTYPE_PLAIN = 'text/plain';
+    public const CTYPE_JSON = 'application/json';
+    public const CTYPE_MULTIPART = 'multipart/form-data';
+    public const CTYPE_FORM = 'application/x-www-form-urlencoded';
+    public const CTYPE_PLAIN = 'text/plain';
 
     /**
      * @var String Url de destino de la llamada
@@ -401,7 +401,7 @@ class Service extends Singleton
             ]);
             $this->info['verbose'] = $verboseLog;
         }
-        Logger::log($this->url . ' response: ', LOG_DEBUG, $this->result);
+        Logger::log($this->url . ' response: ', LOG_DEBUG, is_array($this->result) ? $this->result : [$this->result]);
         $this->info = array_merge($this->info, curl_getinfo($this->con));
     }
 
