@@ -202,8 +202,11 @@ class Logger
      * @param int $type
      * @param array $context
      */
-    public static function log($msg, $type = LOG_DEBUG, array $context = [])
+    public static function log($msg, $type = LOG_DEBUG, array $context = null)
     {
+        if(null === $context) {
+            $context = [];
+        }
         if(Config::getParam('profiling.enable')) {
             Inspector::stats($msg);
         }
