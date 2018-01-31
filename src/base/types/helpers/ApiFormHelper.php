@@ -44,7 +44,9 @@ class ApiFormHelper {
     {
         $action = null;
         if (false !== preg_match('/@action\s+([^\s]+)/', $doc, $matches)) {
-            list(, $action) = $matches;
+            if(count($matches) > 1) {
+                list(, $action) = $matches;
+            }
         }
         return $action;
     }

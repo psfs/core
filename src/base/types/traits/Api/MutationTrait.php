@@ -206,12 +206,13 @@ trait MutationTrait
      * @param ActiveRecordInterface $model
      * @param array $data
      */
-    protected function hydrateModelFromRequest(ActiveRecordInterface &$model, array $data = []) {
+    protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = []) {
         $model->fromArray($data);
         $tableMap = $this->getTableMap();
         try {
-            $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
-            if(null !== $relateI18n) {
+            if($tableMap->hasRelation($tableMap->getPhpName() . 'I18n'))
+            {
+                $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
                 foreach($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
