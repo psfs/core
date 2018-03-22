@@ -214,7 +214,7 @@ class ApiHelper
                     $value = array_search($value, $valueSet);
                 }
             }
-            $query->add($tableField, $value, Criteria::EQUAL);
+            $query->add($tableField, $value, is_array($value) ? Criteria::IN : Criteria::EQUAL);
         }
     }
 
