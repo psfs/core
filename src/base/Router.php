@@ -331,7 +331,11 @@ class Router
         $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth(1)->name('*.php');
         if($files->hasResults()) {
             foreach ($files->getIterator() as $file) {
-                $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
+                if(method_exists($file, 'getRelativePathname') && $namespace !== 'PSFS') {
+                    $filename = '\\' . str_replace('/', '\\', str_replace($origen, '', $file->getRelativePathname()));
+                } else {
+                    $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
+                }
                 $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
             }
         }
