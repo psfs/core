@@ -41,7 +41,7 @@ trait MutationTrait
      * Extract model api namespace
      * @return mixed
      */
-    private function getModelNamespace()
+    protected function getModelNamespace()
     {
         /** @var TableMap $tableMap */
         $tableMap = $this->getModelTableMap();
