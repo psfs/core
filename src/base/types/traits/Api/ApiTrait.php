@@ -96,13 +96,15 @@ trait ApiTrait {
     protected function hydrateBulkRequest() {
         $class = new \ReflectionClass($this->getModelNamespace());
         foreach($this->data as $item) {
-            if(count($this->list) < Config::getParam('api.block.limit', 1000)) {
-                /** @var ActiveRecordInterface $model */
-                $model = $class->newInstance();
-                $this->hydrateModelFromRequest($model, $item);
-                $this->list[] = $model;
-            } else {
-                Logger::log(_('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . _('items'));
+            if(is_array($item)) {
+                if(count($this->list) < Config::getParam('api.block.limit', 1000)) {
+                    /** @var ActiveRecordInterface $model */
+                    $model = $class->newInstance();
+                    $this->hydrateModelFromRequest($model, $item);
+                    $this->list[] = $model;
+                } else {
+                    Logger::log(_('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . _('items'));
+                }
             }
         }
     }
