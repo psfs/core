@@ -3,6 +3,7 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\extension\AssetsTokenParser;
+use PSFS\base\extension\CustomTranslateExtension;
 use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\ResponseHelper;
@@ -281,7 +282,7 @@ class Template
     private function optimizeTemplates()
     {
         //Optimizamos
-        $this->tpl->addExtension(new \Twig_Extensions_Extension_I18n());
+        $this->tpl->addExtension(new CustomTranslateExtension());
     }
 
     /**

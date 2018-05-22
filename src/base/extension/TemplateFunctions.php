@@ -261,4 +261,8 @@ class TemplateFunctions
         Security::getInstance()->setFlash($key, null);
         return $var;
     }
+
+    public static function translate($key) {
+
+    }
 }

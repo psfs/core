@@ -21,7 +21,7 @@ class I18nHelper
      * @param string $default
      * @return array|mixed|string
      */
-    private static function extractLocale($default = null)
+    public static function extractLocale($default = null)
     {
         $locale = Request::header('X-API-LANG', self::$langs[0]);
         if (empty($locale)) {
