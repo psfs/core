@@ -7,6 +7,7 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
+use PSFS\base\Security;
 
 /**
  * Class I18nHelper
@@ -14,8 +15,9 @@ use PSFS\base\Router;
  */
 class I18nHelper
 {
+    const PSFS_SESSION_LANGUAGE_KEY = '__PSFS_SESSION_LANG_SELECTED__';
 
-    static $langs = ['es_ES', 'en_GB', 'fr_FR'];
+    static $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
 
     /**
      * @param string $default
@@ -23,16 +25,18 @@ class I18nHelper
      */
     public static function extractLocale($default = null)
     {
-        $locale = Request::header('X-API-LANG', self::$langs[0]);
+        $locale = Request::header('X-API-LANG');
         if (empty($locale)) {
-            $BrowserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
-            for ($i = 0; $i < count($BrowserLocales); $i++) {
-                list($BrowserLocales[$i]) = explode(";", $BrowserLocales[$i]); //trick for "en;q=0.8"
+            $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
+            if(empty($locale)) {
+                $BrowserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
+                for ($i = 0; $i < count($BrowserLocales); $i++) {
+                    list($BrowserLocales[$i]) = explode(";", $BrowserLocales[$i]); //trick for "en;q=0.8"
+                }
+                $locale = array_shift($BrowserLocales);
             }
-            $locale = array_shift($BrowserLocales);
-        } else {
-            $locale = strtolower($locale);
         }
+        $locale = strtolower($locale);
         if (false !== strpos($locale, '_')) {
             $locale = explode('_', $locale);
             if ($locale[0] == 'en') {
