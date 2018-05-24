@@ -28,7 +28,7 @@ class I18nHelper
         $locale = Request::header('X-API-LANG');
         if (empty($locale)) {
             $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
-            if(empty($locale)) {
+            if(empty($locale) && array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
                 $BrowserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
                 for ($i = 0; $i < count($BrowserLocales); $i++) {
                     list($BrowserLocales[$i]) = explode(";", $BrowserLocales[$i]); //trick for "en;q=0.8"
