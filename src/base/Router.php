@@ -568,10 +568,12 @@ class Router
         try {
             $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
             $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-            $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-            if($externalModule->hasResults()) {
-                foreach ($externalModule->getIterator() as $modulePath) {
-                    $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
+            if(file_exists($externalModulePath)) {
+                $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
+                if($externalModule->hasResults()) {
+                    foreach ($externalModule->getIterator() as $modulePath) {
+                        $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
+                    }
                 }
             }
         } catch (\Exception $e) {

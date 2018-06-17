@@ -185,7 +185,7 @@ class ApiHelper
         try {
             $column = $tableMap->getColumnByPhpName($field);
         } catch (\Exception $e) {
-            Logger::log($e->getMessage(), LOG_WARNING);
+            Logger::log($e->getMessage(), LOG_DEBUG);
             //foreach($tableMap->getRelations() as $relation) {
             //    $column = self::checkFieldExists($relation->getLocalTable(), $field);
             //}
@@ -201,13 +201,7 @@ class ApiHelper
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
         $tableField = $column->getFullyQualifiedName();
-        if (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
-            $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
-        } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
-            $text = preg_replace('/(\'|\")/', '', $value);
-            $text = preg_replace('/\ /', '%', $text);
-            $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
-        } else {
+        if(is_array($value)) {
             if(null !== $column->getValueSet()) {
                 $valueSet = $column->getValueSet();
                 if(in_array($value, $valueSet)) {
@@ -215,6 +209,12 @@ class ApiHelper
                 }
             }
             $query->add($tableField, $value, is_array($value) ? Criteria::IN : Criteria::EQUAL);
+        } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
+            $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
+        } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
+            $text = preg_replace('/(\'|\")/', '', $value);
+            $text = preg_replace('/\ /', '%', $text);
+            $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
         }
     }
 
@@ -374,7 +374,7 @@ class ApiHelper
         $dataFetcher = new ArrayDataFetcher($data);
         $formatter->setDataFetcher($dataFetcher);
         /** @var ActiveRecordInterface $obj */
-        $obj = $formatter->getAllObjectsFromRow($data);
+        $obj = @$formatter->getAllObjectsFromRow($data);
         $result = self::mapResult($obj, $data);
         if(!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
             unset($result[$modelPk->getPhpName()]);

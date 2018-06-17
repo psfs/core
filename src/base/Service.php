@@ -14,6 +14,7 @@ class Service extends Singleton
     const CTYPE_MULTIPART = 'multipart/form-data';
     const CTYPE_FORM = 'application/x-www-form-urlencoded';
     const CTYPE_PLAIN = 'text/plain';
+    const PSFS_TRACK_HEADER = 'X-PSFS-UID';
 
     /**
      * @var String Url de destino de la llamada
@@ -321,6 +322,7 @@ class Service extends Singleton
         foreach($this->headers as $key => $value) {
             $headers[] = $key . ': ' . $value;
         }
+        $headers[self::PSFS_TRACK_HEADER] = Logger::getUid();
         if(count($headers)) {
             curl_setopt($this->con, CURLOPT_HTTPHEADER, $headers);
         }

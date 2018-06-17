@@ -10,6 +10,7 @@ use Propel\Runtime\Formatter\ObjectFormatter;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
+use Propel\Runtime\Util\PropelModelPager;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\Order;
@@ -412,7 +413,7 @@ abstract class Api extends Singleton
                 }
                 $total = 0;
                 $pages = 0;
-                if(null !== $this->list) {
+                if($this->list instanceof PropelModelPager) {
                     $total = $this->list->getNbResults();
                     $pages = $this->list->getLastPage();
                 }

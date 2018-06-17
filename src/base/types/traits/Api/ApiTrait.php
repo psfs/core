@@ -57,7 +57,7 @@ trait ApiTrait {
     public function getDomain()
     {
         $model = explode("\\", $this->getModelNamespace());
-        return (strlen($model[0])) ? $model[0] : $model[1];
+        return (strlen($model[0]) || 1 === count($model)) ? $model[0] : $model[1];
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\types\traits;
 
+use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -60,11 +61,16 @@ Trait SystemTrait {
     protected function bindWarningAsExceptions()
     {
         Logger::log('Added handlers for errors');
+        if(Config::getParam('debug')) {
+            Logger::log('Setting error_reporting as E_ALL');
+            ini_set('error_reporting', E_ALL);
+            ini_set('display_errors', 1);
+        }
         //Warning & Notice handler
         set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
             return true;
-        }, E_ALL | E_STRICT);
+        }, E_ALL | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
 
         register_shutdown_function(function () {
             $error = error_get_last();

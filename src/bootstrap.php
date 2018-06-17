@@ -4,32 +4,35 @@ namespace PSFS;
 defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage());
 defined('PSFS_START_TS') or define('PSFS_START_TS', microtime(true));
 
-if (!defined('SOURCE_DIR')) define('SOURCE_DIR', __DIR__);
+defined('SOURCE_DIR') or define('SOURCE_DIR', __DIR__);
 if (preg_match('/vendor/', SOURCE_DIR)) {
-    if (!defined('BASE_DIR')) define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..');
-    if (!defined('CORE_DIR')) define('CORE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'src');
+    defined('BASE_DIR') or define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..');
+    defined('CORE_DIR') or define('CORE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'src');
 } else {
-    if (!defined('BASE_DIR')) define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..');
-    if (!defined('CORE_DIR')) define('CORE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'modules');
+    defined('BASE_DIR') or define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..');
+    defined('CORE_DIR') or define('CORE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'modules');
 }
-if (!defined('VENDOR_DIR')) define('VENDOR_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'vendor');
-if (!defined('LOG_DIR')) define('LOG_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
-if (!defined('CACHE_DIR')) define('CACHE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'cache');
-if (!defined('CONFIG_DIR')) define('CONFIG_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'config');
-if (!defined('WEB_DIR')) define('WEB_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'html');
-if (!defined('LOCALE_DIR')) define('LOCALE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
+defined('VENDOR_DIR') or define('VENDOR_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'vendor');
+defined('LOG_DIR') or define('LOG_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
+defined('CACHE_DIR') or define('CACHE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'cache');
+defined('CONFIG_DIR') or define('CONFIG_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'config');
+defined('WEB_DIR') or define('WEB_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'html');
+defined('LOCALE_DIR') or define('LOCALE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
 
-
-/**
- * Class Bootstrap
- * @package PSFS
- */
-class bootstrap {
-    public static function load() {
-        if (!defined('PSFS_BOOTSTRAP_LOADED')) {
-            \PSFS\base\Logger::log('Bootstrap initialized', LOG_INFO);
-            defined('PSFS_BOOTSTRAP_LOADED') or define('PSFS_BOOTSTRAP_LOADED', true);
+if(!class_exists(bootstrap::class)) {
+    /**
+     * Class Bootstrap
+     * @package PSFS
+     */
+    class bootstrap {
+        protected static $loaded = false;
+        public static function load() {
+            if(!self::$loaded) {
+                defined('PSFS_BOOTSTRAP_LOADED') or define('PSFS_BOOTSTRAP_LOADED', true);
+                if(class_exists("\\PSFS\\base\\Logger")) \PSFS\base\Logger::log('Bootstrap initialized', LOG_INFO);
+                self::$loaded = true;
+            }
         }
     }
+    require_once 'functions.php';
 }
-require_once 'functions.php';

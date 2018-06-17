@@ -295,7 +295,9 @@ class Security
     {
         $users = $this->getAdmins();
         $logged = $this->getAdmin();
-        if ($users[$logged['alias']]) {
+        if (is_array($logged)
+            && array_key_exists('alias', $logged)
+            && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];
             return self::ADMIN_ID_TOKEN === $security;
         }

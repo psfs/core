@@ -37,6 +37,10 @@ class Logger
      */
     private $stream;
     /**
+     * @var UidProcessor
+     */
+    private $uuid;
+    /**
      * @var string
      */
     protected $log_level;
@@ -117,6 +121,7 @@ class Logger
      * @param string $logger
      * @param boolean $debug
      * @param Config $config
+     * @throws \Exception
      */
     private function addPushLogger($logger, $debug, Config $config)
     {
@@ -132,7 +137,8 @@ class Logger
                 $this->logger->pushProcessor(new MemoryUsageProcessor());
             }
         }
-        $this->logger->pushProcessor(new UidProcessor());
+        $this->uuid = new UidProcessor();
+        $this->logger->pushProcessor($this->uuid);
     }
 
     /**
@@ -233,6 +239,7 @@ class Logger
     /**
      * @param bool $debug
      * @return StreamHandler
+     * @throws \Exception
      */
     private function addDefaultStreamHandler($debug = false)
     {
@@ -255,6 +262,23 @@ class Logger
     {
         $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
         $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
+        if(null !== $_SERVER && array_key_exists('HTTP_X_PSFS_UID', $_SERVER)) {
+            $context['uid'] = $_SERVER['HTTP_X_PSFS_UID'];
+        }
         return $context;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLogUid() {
+        return $this->uuid->getUid();
+    }
+
+    /**
+     * @return string
+     */
+    public static function getUid() {
+        return self::getInstance()->getLogUid();
     }
 }
