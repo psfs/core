@@ -207,16 +207,16 @@ class ApiHelper
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);
             $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
+        } elseif(is_array($value)) {
+            $query->add($tableField, $value, Criteria::IN);
         } else {
-            if(is_array($value)) {
-                if(null !== $column->getValueSet()) {
-                    $valueSet = $column->getValueSet();
-                    if(in_array($value, $valueSet)) {
-                        $value = array_search($value, $valueSet);
-                    }
+            if(null !== $column->getValueSet()) {
+                $valueSet = $column->getValueSet();
+                if(in_array($value, $valueSet)) {
+                    $value = array_search($value, $valueSet);
                 }
             }
-            $query->add($tableField, $value, is_array($value) ? Criteria::IN : Criteria::EQUAL);
+            $query->add($tableField, $value);
         }
     }
 
