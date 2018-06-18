@@ -201,20 +201,22 @@ class ApiHelper
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
         $tableField = $column->getFullyQualifiedName();
-        if(is_array($value)) {
-            if(null !== $column->getValueSet()) {
-                $valueSet = $column->getValueSet();
-                if(in_array($value, $valueSet)) {
-                    $value = array_search($value, $valueSet);
-                }
-            }
-            $query->add($tableField, $value, is_array($value) ? Criteria::IN : Criteria::EQUAL);
-        } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
+        if (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
             $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);
             $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
+        } else {
+            if(is_array($value)) {
+                if(null !== $column->getValueSet()) {
+                    $valueSet = $column->getValueSet();
+                    if(in_array($value, $valueSet)) {
+                        $value = array_search($value, $valueSet);
+                    }
+                }
+            }
+            $query->add($tableField, $value, is_array($value) ? Criteria::IN : Criteria::EQUAL);
         }
     }
 
