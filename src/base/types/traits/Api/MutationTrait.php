@@ -224,7 +224,7 @@ trait MutationTrait
                 }
             }
         } catch(\Exception $e) {
-            Logger::log($e->getMessage(), LOG_WARNING);
+            Logger::log($e->getMessage(), LOG_DEBUG);
         }
     }
 }

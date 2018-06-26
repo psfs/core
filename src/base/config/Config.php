@@ -65,6 +65,7 @@ class Config
         'admin.version', // Determines the version for the admin ui
         'api.block.limit', // Determine the number of rows for bulk insert
         'api.field.types', // Extract __fields from api with their types
+        'i18n.locales', // Default locales for any project
     ];
     protected $debug = false;
 

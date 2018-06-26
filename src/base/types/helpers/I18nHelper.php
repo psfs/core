@@ -51,7 +51,8 @@ class I18nHelper
                 $locale = $locale . '_' . strtoupper($locale);
             }
         }
-        if (!in_array($locale, self::$langs)) {
+        $default_locales = explode(',', Config::getParam('i18n.locales', ''));
+        if (!in_array($locale, array_merge($default_locales, self::$langs))) {
             $locale = Config::getParam("default.language", $default);
         }
         return $locale;
