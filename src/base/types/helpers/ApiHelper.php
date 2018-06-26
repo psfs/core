@@ -10,6 +10,7 @@ use Propel\Runtime\DataFetcher\ArrayDataFetcher;
 use Propel\Runtime\Formatter\ObjectFormatter;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
+use Propel\Runtime\Map\TableMapTrait;
 use PSFS\base\dto\Field;
 use PSFS\base\dto\Form;
 use PSFS\base\Logger;
@@ -201,14 +202,14 @@ class ApiHelper
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
         $tableField = $column->getFullyQualifiedName();
-        if (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
+        if(is_array($value)) {
+            $query->add($tableField, $value, Criteria::IN);
+        } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
             $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
         } elseif (preg_match('/^(\'|\")(.*)(\'|\")$/', $value)) {
             $text = preg_replace('/(\'|\")/', '', $value);
             $text = preg_replace('/\ /', '%', $text);
             $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
-        } elseif(is_array($value)) {
-            $query->add($tableField, $value, Criteria::IN);
         } else {
             if(null !== $column->getValueSet()) {
                 $valueSet = $column->getValueSet();
@@ -376,7 +377,15 @@ class ApiHelper
         $dataFetcher = new ArrayDataFetcher($data);
         $formatter->setDataFetcher($dataFetcher);
         /** @var ActiveRecordInterface $obj */
-        $obj = @$formatter->getAllObjectsFromRow($data);
+        $objTableMap = get_class($formatter->getTableMap());
+        /** @var TableMapTrait $objTableMap */
+        $objData = $data;
+        foreach($objTableMap::getFieldNames() as $field) {
+            if(!array_key_exists($field, $objData)) {
+                $objData[$field] = null;
+            }
+        }
+        $obj = @$formatter->getAllObjectsFromRow($objData);
         $result = self::mapResult($obj, $data);
         if(!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
             unset($result[$modelPk->getPhpName()]);
