@@ -249,8 +249,10 @@ class ApiHelper
             }
         }
         foreach ($extraColumns as $extra => $name) {
-            $exp .= $sep . $extra;
-            $sep = ', " ", ';
+            if(!preg_match("/(COUNT|DISTINCT|SUM|MAX|MIN|GROUP)/i", $extra)) {
+                $exp .= $sep . $extra;
+                $sep = ', " ", ';
+            }
         }
         $exp .= ")";
         $text = preg_replace('/(\'|\")/', '', $value);
