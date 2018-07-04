@@ -23,9 +23,9 @@ class I18nHelper
      * @param string $default
      * @return array|mixed|string
      */
-    public static function extractLocale($default = null)
+    public static function extractLocale($default = 'es_ES')
     {
-        $locale = Request::header('X-API-LANG');
+        $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
             $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
             if(empty($locale) && array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
@@ -79,10 +79,12 @@ class I18nHelper
 
     /**
      * Method to set the locale
+     * @param string $default
+     * @throws \Exception
      */
-    public static function setLocale()
+    public static function setLocale($default = 'es_ES')
     {
-        $locale = self::extractLocale('es_ES');
+        $locale = self::extractLocale($default);
         Logger::log('Set locale to project [' . $locale . ']');
         // Load translations
         putenv("LC_ALL=" . $locale);
