@@ -66,6 +66,7 @@ class Config
         'api.block.limit', // Determine the number of rows for bulk insert
         'api.field.types', // Extract __fields from api with their types
         'i18n.locales', // Default locales for any project
+        'i18n.autogenerate', // Set PSFS auto generate i18n mode
     ];
     protected $debug = false;
 
