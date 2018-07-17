@@ -1,25 +1,18 @@
 <?php
 namespace PSFS\base\types;
 
-use CORE\Models\Customer;
 use CORE\Models\Map\CustomerTableMap;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
-use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
-use Propel\Runtime\DataFetcher\ArrayDataFetcher;
-use Propel\Runtime\Formatter\ObjectFormatter;
-use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
-use Propel\Runtime\Propel;
 use Propel\Runtime\Util\PropelModelPager;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\Order;
+use PSFS\base\extension\CustomTranslateExtension as i18n;
 use PSFS\base\Logger;
 use PSFS\base\Request;
-use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\ApiHelper;
-use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\Api\ManagerTrait;
 
 /**
@@ -206,7 +199,7 @@ abstract class Api extends Singleton
         list($return, $total, $pages) = $this->getList();
         $message = null;
         if(!$total) {
-            $message = _('No se han encontrado elementos para la búsqueda');
+            $message = i18n::_('No se han encontrado elementos para la búsqueda');
         }
 
         return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
@@ -232,7 +225,7 @@ abstract class Api extends Singleton
         $message = null;
         list($code, $return) = $this->getSingleResult($pk);
         if($code !== 200) {
-            $message = _('No se ha encontrado el elemento solicitado');
+            $message = i18n::_('No se ha encontrado el elemento solicitado');
         }
 
         return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
@@ -261,11 +254,15 @@ abstract class Api extends Singleton
                 $saved = TRUE;
                 $model = $this->model->toArray();
             } else {
-                $message = _('No se ha podido guardar el modelo seleccionado');
+                $message = i18n::_('No se ha podido guardar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $message = _('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
-            Logger::log($e->getMessage(), LOG_ERR);
+            $message = i18n::_('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
+            $context = [];
+            if(null !== $e->getPrevious()) {
+                $context[] = $e->getPrevious()->getMessage();
+            }
+            Logger::log($e->getMessage(), LOG_CRIT, $context);
         }
 
         return $this->json(new JsonResponse($model, $saved, $saved, 0, $message), $status);
@@ -299,14 +296,18 @@ abstract class Api extends Singleton
                     $status = 200;
                     $model = $this->model->toArray();
                 } else {
-                    $message = _('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                    $message = i18n::_('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
             } catch (\Exception $e) {
-                $message = $e->getMessage();
-                Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
+                $message = i18n::_('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                $context = [];
+                if(null !== $e->getPrevious()) {
+                    $context[] = $e->getPrevious()->getMessage();
+                }
+                Logger::log($e->getMessage(), LOG_CRIT, $context);
             }
         } else {
-            $message = _('No se ha encontrado el modelo al que se hace referencia para actualizar');
+            $message = i18n::_('No se ha encontrado el modelo al que se hace referencia para actualizar');
         }
 
         return $this->json(new JsonResponse($model, $updated, $updated, 0, $message), $status);
@@ -340,8 +341,12 @@ abstract class Api extends Singleton
                     $deleted = TRUE;
                 }
             } catch (\Exception $e) {
-                $message = _('Ha ocurrido un error intentando eliminar el elemento, por favor verifica que no tenga otros elementos relacionados');
-                Logger::getInstance(get_class($this->model))->errorLog($e->getMessage());
+                $context = [];
+                if(null !== $e->getPrevious()) {
+                    $context[] = $e->getPrevious()->getMessage();
+                }
+                Logger::log($e->getMessage(), LOG_CRIT, $context);
+
             }
         }
 
@@ -368,8 +373,8 @@ abstract class Api extends Singleton
             $saved = true;
             $status = 200;
         } catch(\Exception $e) {
-            Logger::log($e->getMessage(), LOG_ERR, $this->getRequest()->getData());
-            $message = _('Bulk insert rolled back');
+            Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
+            $message = i18n::_('Bulk insert rolled back');
         }
         return $this->json(new JsonResponse($this->exportList(), $saved, count($this->list), 1, $message), $status);
     }

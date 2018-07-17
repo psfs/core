@@ -5,6 +5,7 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
+use PSFS\base\types\helpers\SlackHelper;
 
 /**
  * Class SystemTrait
@@ -70,17 +71,26 @@ Trait SystemTrait {
         set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
             return true;
-        }, E_ALL | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED);
+        }, E_ALL | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED | E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR);
 
         register_shutdown_function(function () {
-            $error = error_get_last();
+            $error = error_get_last() or json_last_error() or preg_last_error() or \DateTime::getLastErrors();
             if( $error !== NULL) {
                 $errno   = $error["type"];
                 $errfile = $error["file"];
                 $errline = $error["line"];
                 $errstr  = $error["message"];
+                Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
+                if(null !== Config::getParam('log.slack.hook')) {
+                    SlackHelper::getInstance()->trace($errstr, $errfile, $errline, $error);
+                }
+            }
 
-                Logger::log($errstr, LOG_ERR, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
+            if(self::getTs() > 10 && null !== Config::getParam('log.slack.hook')) {
+                SlackHelper::getInstance()->trace('Slow service endpoint', '', '', [
+                    'time' => round(self::getTs(), 3) . ' secs',
+                    'memory' => round(self::getMem('MBytes'), 3) . ' Mb',
+                ]);
             }
             return false;
         });

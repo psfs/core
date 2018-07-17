@@ -11,6 +11,7 @@ use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\SlackHelper;
 use PSFS\base\types\traits\SingletonTrait;
 
 
@@ -105,6 +106,20 @@ class Logger
     public function errorLog($msg, array $context = [])
     {
         return $this->logger->addError($msg, $this->addMinimalContext($context));
+    }
+
+    /**
+     * @param $msg
+     * @param array $context
+     *
+     * @return bool
+     */
+    public function criticalLog($msg, array $context = [])
+    {
+        if(Config::getParam('log.slack.hook')) {
+            SlackHelper::getInstance()->trace($msg, '', '', $context);
+        }
+        return $this->logger->addCritical($msg, $this->addMinimalContext($context));
     }
 
     /**
@@ -224,6 +239,8 @@ class Logger
                 self::getInstance()->warningLog($msg, $context);
                 break;
             case LOG_CRIT:
+                self::getInstance()->criticalLog($msg, $context);
+                break;
             case LOG_ERR:
                 self::getInstance()->errorLog($msg, $context);
                 break;
