@@ -443,7 +443,7 @@ abstract class Api extends Singleton
         if (NULL === $model || !method_exists($model, 'toArray')) {
             $code = 404;
         } else {
-            $return = $model->toArray();
+            $return = $model->toArray(TableMap::TYPE_PHPNAME, true, [], true);
         }
 
         return array($code, $return);

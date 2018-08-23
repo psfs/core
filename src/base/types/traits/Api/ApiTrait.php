@@ -156,8 +156,8 @@ trait ApiTrait {
      */
     protected function findPk(ModelCriteria $query, $pk) {
         $pks = explode(Api::API_PK_SEPARATOR, urldecode($pk));
-        if(count($pks) == 1 && !empty($pks[0])) {
-            $model = $query->findPk($pks[0], $this->con);
+        if(count($pks) === 1 && !empty($pks[0])) {
+            $query->filterByPrimaryKey($pks[0]);
         } else {
             $i = 0;
             foreach($this->getPkDbName() as $key => $phpName) {
@@ -169,9 +169,9 @@ trait ApiTrait {
                     Logger::log($e->getMessage(), LOG_DEBUG);
                 }
             }
-            $model = $query->findOne($this->con);
         }
-        return $model;
+        $results = $query->find($this->con);
+        return $results->getFirst();
     }
 
     /**
