@@ -68,6 +68,7 @@ class Config
         'i18n.locales', // Default locales for any project
         'log.slack.hook', // Hook for slack traces
         'i18n.autogenerate', // Set PSFS auto generate i18n mode
+        'resources.cdn.url', // CDN URL base path
     ];
     protected $debug = false;
 

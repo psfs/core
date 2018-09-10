@@ -7,6 +7,7 @@ use MatthiasMullie\Minify\JS;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Template;
 use PSFS\base\types\helpers\GeneratorHelper;
 
@@ -24,6 +25,7 @@ class AssetsParser
     protected $path;
     protected $domains = [];
     private $debug = false;
+    private $cdnPath = null;
 
     /**
      * Constructor por defecto
@@ -35,7 +37,8 @@ class AssetsParser
         $this->type = $type;
         $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
-        $this->debug = Config::getInstance()->getDebugMode();
+        $this->debug = Config::getParam('debug');
+        $this->cdnPath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
     }
 
     /**
@@ -229,7 +232,8 @@ class AssetsParser
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
         } else {
-            echo "\t\t<script type='text/javascript' src='/js/" . $this->hash . ".js'></script>\n";
+            $basePath = $this->cdnPath ?: '';
+            echo "\t\t<script type='text/javascript' src='" . $basePath . "/js/" . $this->hash . ".js'></script>\n";
         }
     }
 
@@ -243,7 +247,8 @@ class AssetsParser
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
         } else {
-            echo "\t\t<link href='/css/" . $this->hash . ".css' rel='stylesheet'>";
+            $basePath = $this->cdnPath ?: '';
+            echo "\t\t<link href='" . $basePath . "/css/" . $this->hash . ".css' rel='stylesheet'>";
         }
     }
 

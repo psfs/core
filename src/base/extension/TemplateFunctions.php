@@ -44,7 +44,8 @@ class TemplateFunctions
         $filename_path = AssetsParser::findDomainPath($string, $file_path);
 
         $file_path = self::processAsset($string, $name, $return, $filename_path);
-        $return_path = (empty($name)) ? Request::getInstance()->getRootUrl() . '/' . $file_path : $name;
+        $base_path = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
+        $return_path = (empty($name)) ? $base_path . '/' . $file_path : $name;
         return ($return) ? $return_path : '';
     }
 
@@ -143,7 +144,7 @@ class TemplateFunctions
      */
     public static function resource($path, $dest, $force = false)
     {
-        $debug = Config::getInstance()->getDebugMode();
+        $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
         $filename_path = self::extractPathname($path, $domains);
         \PSFS\Services\GeneratorService::copyResources($dest, $force, $filename_path, $debug);
@@ -262,7 +263,4 @@ class TemplateFunctions
         return $var;
     }
 
-    public static function translate($key) {
-
-    }
 }
