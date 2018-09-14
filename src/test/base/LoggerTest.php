@@ -66,7 +66,7 @@ class LoggerTest extends \PHPUnit_Framework_TestCase
 
         // Create a new logger instance
         $logger = new Logger(['test', true]);
-        $logger->debugLog('Test');
+        $logger->addLog('Test', \Monolog\Logger::DEBUG);
         $logger = null;
         unset($defaultConfig['logger.memory']);
         Config::save($defaultConfig, []);
