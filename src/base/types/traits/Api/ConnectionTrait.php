@@ -64,7 +64,7 @@ trait ConnectionTrait {
     protected function traceDebugQuery()
     {
         if (Config::getParam('debug')) {
-            Logger::getInstance(get_class($this))->debugLog($this->con->getLastExecutedQuery());
+            Logger::log($this->con->getLastExecutedQuery(), LOG_DEBUG);
         }
     }
 

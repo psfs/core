@@ -40,4 +40,5 @@ $serviceContainer->setLoggerConfiguration('defaultLogger', array(
     'type' => 'stream',
     'path' => LOG_DIR . '/db.log',
     'level' => 300,
+    'bubble' => true,
 ));
