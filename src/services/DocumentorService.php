@@ -119,7 +119,7 @@ class DocumentorService extends Service
                             $info[] = $mInfo;
                         }
                     } catch (\Exception $e) {
-                        Logger::getInstance()->errorLog($e->getMessage());
+                        Logger::log($e->getMessage(), LOG_ERR);
                     }
                 }
             }
@@ -352,7 +352,7 @@ class DocumentorService extends Service
                 $payload = $this->extractDtoProperties($namespace);
             }
         } catch (\Exception $e) {
-            Logger::getInstance()->errorLog($e->getMessage());
+            Logger::log($e->getMessage(), LOG_ERR);
         }
 
         return $payload;
@@ -394,7 +394,7 @@ class DocumentorService extends Service
                     $this->setQueryParams($method, $methodInfo);
                     $this->setRequestHeaders($reflection, $methodInfo);
                 } catch (\Exception $e) {
-                    Logger::getInstance()->errorLog($e->getMessage());
+                    Logger::log($e->getMessage(), LOG_ERR);
                 }
             }
         }

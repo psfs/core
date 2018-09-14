@@ -91,7 +91,7 @@ class GeneratorService extends Service
         $this->createModuleModels($module, $mod_path);
         $this->generateBaseApiTemplate($module, $mod_path, $force, $apiClass);
         //Redireccionamos al home definido
-        $this->log->infoLog("Módulo generado correctamente");
+        $this->log->addLog("Módulo generado correctamente");
     }
 
     /**
@@ -116,7 +116,7 @@ class GeneratorService extends Service
     private function createModulePathTree($module, $mod_path)
     {
         //Creamos las carpetas CORE del módulo
-        $this->log->infoLog("Generamos la estructura");
+        $this->log->addLog("Generamos la estructura");
         $paths = [
             "Api", "Api/base", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
             "Locale", "Locale/" . Config::getParam('default.locale', 'es_ES'), "Locale/" . Config::getParam('default.locale', 'es_ES') . "/LC_MESSAGES"
@@ -172,7 +172,7 @@ class GeneratorService extends Service
         ));
         $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $module_path . DIRECTORY_SEPARATOR . "Config" .
             DIRECTORY_SEPARATOR . "config.php", true);
-        $this->log->infoLog("Generado config genérico para propel");
+        $this->log->addLog("Generado config genérico para propel");
     }
 
 
@@ -186,7 +186,7 @@ class GeneratorService extends Service
     private function generateControllerTemplate($module, $mod_path, $force = false, $controllerType = "")
     {
         //Generamos el controlador base
-        $this->log->infoLog("Generamos el controlador BASE");
+        $this->log->addLog("Generamos el controlador BASE");
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $controllerBody = $this->tpl->dump("generator/controller.template.twig", array(
             "module" => $module,
@@ -245,7 +245,7 @@ class GeneratorService extends Service
                     && preg_match('/\.php$/i', $file)
                 ) {
                     $filename = str_replace(".php", "", $file);
-                    $this->log->infoLog("Generamos Api BASES para {$filename}");
+                    $this->log->addLog("Generamos Api BASES para {$filename}");
                     $this->createApiBaseFile($module, $api_path, $filename, $apiClass);
                     $this->createApi($module, $api_path, $force, $filename);
                 }
@@ -262,7 +262,7 @@ class GeneratorService extends Service
     private function generateConfigTemplate($mod_path, $force = false)
     {
         //Generamos el fichero de configuración
-        $this->log->infoLog("Generamos fichero vacío de configuración");
+        $this->log->addLog("Generamos fichero vacío de configuración");
         return $this->writeTemplateToFile("<?php\n\t",
             $mod_path . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php",
             $force);
@@ -277,7 +277,7 @@ class GeneratorService extends Service
     private function generatePublicTemplates($mod_path, $force = false)
     {
         //Generamos el fichero de configuración
-        $this->log->infoLog("Generamos ficheros para assets base");
+        $this->log->addLog("Generamos ficheros para assets base");
         $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n",
             $mod_path . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css",
             $force);
@@ -296,7 +296,7 @@ class GeneratorService extends Service
     private function generateServiceTemplate($module, $mod_path, $force = false)
     {
         //Generamos el controlador base
-        $this->log->infoLog("Generamos el servicio BASE");
+        $this->log->addLog("Generamos el servicio BASE");
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $controller = $this->tpl->dump("generator/service.template.twig", array(
             "module" => $module,
@@ -317,7 +317,7 @@ class GeneratorService extends Service
     private function genereateAutoloaderTemplate($module, $mod_path, $force = false)
     {
         //Generamos el autoloader del módulo
-        $this->log->infoLog("Generamos el autoloader");
+        $this->log->addLog("Generamos el autoloader");
         $autoloader = $this->tpl->dump("generator/autoloader.template.twig", array(
             "module" => $module,
             "autoloader" => preg_replace('/(\\\|\/)/', '_', $module),
@@ -325,7 +325,7 @@ class GeneratorService extends Service
         ));
         $autoload = $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
 
-        $this->log->infoLog("Generamos el phpunit");
+        $this->log->addLog("Generamos el phpunit");
         $phpUnitTemplate = $this->tpl->dump("generator/phpunit.template.twig", array(
             "module" => $module,
         ));
@@ -342,7 +342,7 @@ class GeneratorService extends Service
     private function generateSchemaTemplate($module, $mod_path, $force = false)
     {
         //Generamos el autoloader del módulo
-        $this->log->infoLog("Generamos el schema");
+        $this->log->addLog("Generamos el schema");
         $schema = $this->tpl->dump("generator/schema.propel.twig", array(
             "module" => $module,
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
@@ -362,7 +362,7 @@ class GeneratorService extends Service
      */
     private function generatePropertiesTemplate($module, $mod_path, $force = false)
     {
-        $this->log->infoLog("Generamos la configuración de Propel");
+        $this->log->addLog("Generamos la configuración de Propel");
         $build_properties = $this->tpl->dump("generator/build.properties.twig", array(
             "module" => $module,
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
@@ -381,7 +381,7 @@ class GeneratorService extends Service
     private function generateIndexTemplate($module, $mod_path, $force = false)
     {
         //Generamos la plantilla de index
-        $this->log->infoLog("Generamos una plantilla base por defecto");
+        $this->log->addLog("Generamos una plantilla base por defecto");
         $index = $this->tpl->dump("generator/index.template.twig", array(
             "module" => $module,
         ));

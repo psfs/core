@@ -50,7 +50,7 @@ class ConfigController extends Admin
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         return $this->render('welcome.html.twig', array(
-            'text' => _("Bienvenido a PSFS"),
+            'text' => t("Bienvenido a PSFS"),
             'config' => $form,
             'typeahead_data' => array_merge(Config::$required, Config::$optional),
         ));
@@ -66,7 +66,7 @@ class ConfigController extends Admin
      */
     public function saveConfig()
     {
-        Logger::getInstance()->infoLog(_("Guardando configuración"));
+        Logger::log(t("Guardando configuración"), LOG_INFO);
         /* @var $form \PSFS\base\config\ConfigForm */
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
@@ -75,19 +75,19 @@ class ConfigController extends Admin
             $debug = Config::getInstance()->getDebugMode();
             $newDebug = $form->getFieldValue("debug");
             if (Config::save($form->getData(), $form->getExtraData())) {
-                Logger::log(_('Configuración guardada correctamente'));
+                Logger::log(t('Configuración guardada correctamente'));
                 //Verificamos si tenemos que limpiar la cache del DocumentRoot
                 if (boolval($debug) !== boolval($newDebug)) {
                     GeneratorHelper::clearDocumentRoot();
                 }
-                Security::getInstance()->setFlash("callback_message", _("Configuración actualizada correctamente"));
+                Security::getInstance()->setFlash("callback_message", t("Configuración actualizada correctamente"));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-config", true));
             } else {
-                throw new \HttpException(_('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
+                throw new \HttpException(t('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(
-            'text' => _("Bienvenido a PSFS"),
+            'text' => t("Bienvenido a PSFS"),
             'config' => $form,
             'typeahead_data' => array_merge(Config::$required, Config::$optional),
         ));
