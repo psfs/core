@@ -23,7 +23,7 @@ class I18nHelper
      * @param string $default
      * @return array|mixed|string
      */
-    public static function extractLocale($default = 'es_ES')
+    public static function extractLocale($default = null)
     {
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
@@ -78,7 +78,7 @@ class I18nHelper
      * @param string $default
      * @throws \Exception
      */
-    public static function setLocale($default = 'es_ES')
+    public static function setLocale($default = null)
     {
         $locale = self::extractLocale($default);
         Logger::log('Set locale to project [' . $locale . ']');
@@ -92,7 +92,7 @@ class I18nHelper
         bindtextdomain('translations', $locale_path);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
-        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, $locale);
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
     }
 
     /**
