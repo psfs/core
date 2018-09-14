@@ -172,15 +172,26 @@ class Logger
             Inspector::stats($msg);
         }
         switch ($type) {
+            case LOG_DEBUG:
+                self::getInstance()->addLog($msg, \Monolog\Logger::DEBUG, $context);
+                break;
+            case LOG_WARNING:
+                self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context);
+                break;
             case LOG_CRIT:
                 if(Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace($msg, '', '', $context);
                 }
+                self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context);
+                break;
             case LOG_ERR:
-                self::getInstance()->addLog($msg, $type, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::ERROR, $context);
+                break;
+            case LOG_INFO:
+                self::getInstance()->addLog($msg, \Monolog\Logger::INFO, $context);
                 break;
             default:
-                self::getInstance()->addLog($msg, $type, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::NOTICE, $context);
                 break;
         }
     }
