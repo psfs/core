@@ -487,6 +487,25 @@ class Router
     }
 
     /**
+     * @param string $class
+     * @param string $method
+     */
+    private function checkPreActions($class, $method) {
+        $preAction = 'pre' . ucfirst($method);
+        if(method_exists($class, $preAction)) {
+            Logger::log(_('Pre action invoked'));
+            try {
+                if(false === call_user_func_array([$class, $preAction])) {
+                    Logger::log(_('Pre action failed'), LOG_ERR, [error_get_last()]);
+                    error_clear_last();
+                }
+            } catch (\Exception $e) {
+                Logger::log($e->getMessage(), LOG_ERR, [$class, $method]);
+            }
+        }
+    }
+
+    /**
      * @param string $route
      * @param array $action
      * @param string $class
@@ -503,18 +522,17 @@ class Router
         $execute = TRUE;
         if (FALSE !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === FALSE) {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
-            $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName,
-                $cache);
+            $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $cache);
             if (NULL !== $cachedData) {
-                $headers = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers',
-                    $cache, null, Cache::JSON);
+                $headers = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers', $cache, null, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);
                 $execute = FALSE;
             }
         }
         if ($execute) {
             Logger::log(_('Start executing action'));
-            if (false === call_user_func_array(array($class, $action['method']), $params)) {
+            $this->checkPreActions($class, $action['method']);
+            if (false === call_user_func_array([$class, $action['method']], $params)) {
                 Logger::log(_('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
             }
         }

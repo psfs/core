@@ -95,6 +95,7 @@ trait ApiTrait {
      */
     protected function hydrateBulkRequest() {
         $class = new \ReflectionClass($this->getModelNamespace());
+        $this->list = [];
         foreach($this->data as $item) {
             if(is_array($item)) {
                 if(count($this->list) < Config::getParam('api.block.limit', 1000)) {

@@ -30,7 +30,7 @@ class I18nHelper
             $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
             if(empty($locale) && array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
                 $BrowserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
-                for ($i = 0; $i < count($BrowserLocales); $i++) {
+                for ($i = 0, $ct = count($BrowserLocales); $i < $ct; $i++) {
                     list($BrowserLocales[$i]) = explode(";", $BrowserLocales[$i]); //trick for "en;q=0.8"
                 }
                 $locale = array_shift($BrowserLocales);
@@ -39,21 +39,17 @@ class I18nHelper
         $locale = strtolower($locale);
         if (false !== strpos($locale, '_')) {
             $locale = explode('_', $locale);
-            if ($locale[0] == 'en') {
-                $locale = $locale[0] . '_GB';
-            } else {
-                $locale = $locale[0] . '_' . strtoupper($locale[1]);
-            }
+            $locale = $locale[0];
+        }
+        // TODO check more en locales
+        if (strtolower($locale) === 'en') {
+            $locale = 'en_GB';
         } else {
-            if (strtolower($locale) === 'en') {
-                $locale = 'en_GB';
-            } else {
-                $locale = $locale . '_' . strtoupper($locale);
-            }
+            $locale = $locale . '_' . strtoupper($locale);
         }
         $default_locales = explode(',', Config::getParam('i18n.locales', ''));
         if (!in_array($locale, array_merge($default_locales, self::$langs))) {
-            $locale = Config::getParam("default.language", $default);
+            $locale = Config::getParam('default.language', $default);
         }
         return $locale;
     }
@@ -96,6 +92,7 @@ class I18nHelper
         bindtextdomain('translations', $locale_path);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, $locale);
     }
 
     /**
@@ -140,42 +137,28 @@ class I18nHelper
      * @return string
      */
     public static function sanitize($string) {
+        $from = [
+            ['á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'],
+            ['é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'],
+            ['í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'],
+            ['ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'],
+            ['ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'],
+            ['ñ', 'Ñ', 'ç', 'Ç'],
+        ];
+        $to = [
+            ['a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A'],
+            ['e', 'e', 'e', 'e', 'E', 'E', 'E', 'E'],
+            ['i', 'i', 'i', 'i', 'I', 'I', 'I', 'I'],
+            ['o', 'o', 'o', 'o', 'O', 'O', 'O', 'O'],
+            ['u', 'u', 'u', 'u', 'U', 'U', 'U', 'U'],
+            ['n', 'N', 'c', 'C',],
+        ];
+
         $text = filter_var($string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-        $text = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'),
-            array('a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A'),
-            $text
-        );
+        for($i = 0, $total = count($from); $i < $total; $i++) {
+            $text = str_replace($from[$i],$to[$i], $text);
+        }
 
-        $text = str_replace(
-            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'),
-            array('e', 'e', 'e', 'e', 'E', 'E', 'E', 'E'),
-            $text
-        );
-
-        $text = str_replace(
-            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'),
-            array('i', 'i', 'i', 'i', 'I', 'I', 'I', 'I'),
-            $text
-        );
-
-        $text = str_replace(
-            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'),
-            array('o', 'o', 'o', 'o', 'O', 'O', 'O', 'O'),
-            $text
-        );
-
-        $text = str_replace(
-            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'),
-            array('u', 'u', 'u', 'u', 'U', 'U', 'U', 'U'),
-            $text
-        );
-
-        $text = str_replace(
-            array('ñ', 'Ñ', 'ç', 'Ç'),
-            array('n', 'N', 'c', 'C',),
-            $text
-        );
         return $text;
     }
 }

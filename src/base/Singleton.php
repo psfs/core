@@ -22,7 +22,7 @@ class Singleton
      */
     public function __construct()
     {
-        Logger::log(get_class($this) . ' constructor invoked');
+        Logger::log(static::class . ' constructor invoked');
         $this->init();
     }
 
@@ -61,6 +61,7 @@ class Singleton
 
     /**
      * @return string
+     * @throws \ReflectionException
      */
     public function getShortName()
     {

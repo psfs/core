@@ -11,19 +11,21 @@ use PSFS\base\Router;
  */
 class RouterHelper
 {
-
     /**
-     * Método que extrae el controller a invocar
-     *
      * @param array $action
-     *
-     * @return Object
+     * @return mixed
+     * @throws \ReflectionException
      */
-    public static function getClassToCall($action)
+    public static function getClassToCall(array $action)
     {
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
-        $actionClass = class_exists($action["class"]) ? $action["class"] : "\\" . $action["class"];
-        $class = method_exists($actionClass, "getInstance") ? $actionClass::getInstance() : new $actionClass;
+        $actionClass = class_exists($action['class']) ? $action['class'] : "\\" . $action['class'];
+        $reflectionClass = new \ReflectionClass($actionClass);
+        if($reflectionClass->hasMethod('getInstance')) {
+            $class = $reflectionClass->getMethod('getInstance')->invoke(null, $action['method']);
+        } else {
+            $class = new $actionClass;
+        }
         return $class;
     }
 

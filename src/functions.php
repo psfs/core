@@ -1,4 +1,6 @@
 <?php
+
+use PSFS\base\extension\CustomTranslateExtension;
 use Symfony\Component\Finder\Finder;
 //Cargamos en memoria la función de desarrollo PRE
 if (!function_exists('pre')) {
@@ -50,5 +52,11 @@ if (file_exists(CORE_DIR)) {
             $loaded_files[] = $path;
             require_once($path);
         }
+    }
+}
+
+if(!function_exists('t')) {
+    function t($message, $key = null, $reload = false) {
+        return CustomTranslateExtension::_($message, $key, $reload);
     }
 }

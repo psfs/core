@@ -10,7 +10,7 @@ class Inspector {
             'ts' => microtime(true),
             'mem' => memory_get_usage(),
             'files' => count(get_required_files()),
-            'name' => $name ?: get_called_class(),
+            'name' => $name ?: static::class,
         ];
     }
 

@@ -162,17 +162,14 @@ class Logger
      * @return array
      * @throws exception\GeneratorException
      */
-    private function setup(Config $config, array $args = array())
+    private function setup(Config $config, array $args = [])
     {
+        $args = $args ?? [];
         $debug = $config->getDebugMode();
         $namespace = self::DEFAULT_NAMESPACE;
         if (0 !== count($args)) {
-            if (array_key_exists(0, $args) && array_key_exists(0, $args[0])) {
-                $namespace = $args[0][0];
-            }
-            if (array_key_exists(0, $args) && array_key_exists(1, $args[0])) {
-                $debug = $args[0][1];
-            }
+            $namespace = $args[0][0] ?? 'PSFS';
+            $debug = $args[0][1] ?? true;
         }
         $path = $this->createLoggerPath($config);
         return array($this->cleanLoggerName($namespace), $debug, $path);
