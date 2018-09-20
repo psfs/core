@@ -23,7 +23,11 @@
     },
     "config" : {
         "optimize-autoloader": true,
-        "discard-changes": true
+        "discard-changes": true,
+        "apcu-autoloader": true,
+        "platform": {
+            "php": "7.2"
+        }
     },
     "license": "MIT",
     "authors": [
@@ -51,5 +55,10 @@
         "branch-alias": {
             "dev-master": "1.0.x-dev"
         }
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "vendor/bin/psfs psfs:create:root"
+        ]
     }
 }
