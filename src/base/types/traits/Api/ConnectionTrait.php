@@ -64,7 +64,7 @@ trait ConnectionTrait {
     protected function traceDebugQuery()
     {
         if (Config::getParam('debug')) {
-            Logger::log($this->con->getLastExecutedQuery(), LOG_DEBUG);
+            Logger::log($this->con->getLastExecutedQuery()?: 'Empty Query', LOG_DEBUG);
         }
     }
 

@@ -405,10 +405,10 @@ class GeneratorService extends Service
                 $this->cache->storeData($filename, $fileContent, Cache::TEXT, true);
                 $created = true;
             } catch (\Exception $e) {
-                $this->log->errorLog($e->getMessage());
+                Logger::log($e->getMessage(), LOG_ERR);
             }
         } else {
-            $this->log->errorLog($filename . _(' not exists or cant write'));
+            Logger::log($filename . _(' not exists or cant write'), LOG_ERR);
         }
         return $created;
     }
