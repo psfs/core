@@ -5,6 +5,7 @@ php:
   - '7.0'
   - '7.1'
   - '7.2'
+  - '7.3'
 
 install:
   - composer self-update
@@ -14,5 +15,10 @@ after_deploy:
   - phpunit
 
 addons:
-  code_climate:
-    repo_token: ada8a3a044a98d6a8ec603521ac59efc9f2f57ad
+  sonarcloud:
+    organization: "c15k0-github"
+    token:
+      secure: 3812034bb658a5def0f47e792b94eec08388638e
+
+script:
+  - sonar-scanner
