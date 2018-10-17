@@ -44,7 +44,7 @@ class Logger
     /**
      * @var string
      */
-    protected $log_level;
+    protected $logLevel;
 
     /**
      * Logger constructor.
@@ -57,7 +57,7 @@ class Logger
         list($logger, $debug, $path) = $this->setup($config, $args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'a+');
         $this->addPushLogger($logger, $debug, $config);
-        $this->log_level = Config::getParam('log.level', 'info');
+        $this->logLevel = Config::getParam('log.level', 'NOTICE');
     }
 
     public function __destruct()
@@ -115,7 +115,7 @@ class Logger
      */
     private function setLoggerName(Config $config)
     {
-        $logger = $config->get('platform_name') ?: self::DEFAULT_NAMESPACE;
+        $logger = $config->get('platform.name') ?: self::DEFAULT_NAMESPACE;
         $logger = $this->cleanLoggerName($logger);
 
         return $logger;
@@ -154,8 +154,25 @@ class Logger
      * @param array $context
      * @return bool
      */
-    public function addLog($msg, $type = LOG_DEBUG, array $context = []) {
-        return $this->logger->addRecord($type, $msg, $this->addMinimalContext($context));
+    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = []) {
+        return $this->checkLogLevel($type) ? $this->logger->addRecord($type, $msg, $this->addMinimalContext($context)) : true;
+    }
+
+    /**
+     * @param int $level
+     * @return bool
+     */
+    private function checkLogLevel($level = \Monolog\Logger::NOTICE) {
+        switch($this->logLevel) {
+            case 'DEBUG': $logPass = Monolog::DEBUG; break;
+            case 'INFO': $logPass = Monolog::INFO; break;
+            default:
+            case 'NOTICE': $logPass = Monolog::NOTICE; break;
+            case 'WARNING': $logPass = Monolog::WARNING; break;
+            case 'ERROR': $logPass = Monolog::ERROR; break;
+            case 'CRITICAL': $logPass = Monolog::CRITICAL; break;
+        }
+        return $logPass <= $level;
     }
 
     /**
