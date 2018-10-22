@@ -185,7 +185,7 @@ class Logger
         if(null === $context) {
             $context = [];
         }
-        if(Config::getParam('profiling.enable')) {
+        if(Config::getParam('profiling.enable') && 'DEBUG' === Config::getParam('log.level', 'NOTICE')) {
             Inspector::stats($msg);
         }
         switch ($type) {
