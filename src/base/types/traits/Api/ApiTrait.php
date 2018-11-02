@@ -230,7 +230,6 @@ trait ApiTrait {
                 if (in_array($field, $this->extraColumns)) {
                     $select[] = $field;
                 } elseif (null !== ApiHelper::checkFieldExists($tablemap, $field)) {
-                    // TODO check fieldType
                     $select[] = $field;
                 }
             }
