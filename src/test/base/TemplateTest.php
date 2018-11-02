@@ -1,13 +1,14 @@
 <?php
 namespace PSFS\test;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\Template;
 
 /**
  * Class TemplateTest
  * @package PSFS\test
  */
-class TemplateTest extends \PHPUnit_Framework_TestCase {
+class TemplateTest extends TestCase {
 
     public function testTemplateBasics() {
         $template = Template::getInstance();

@@ -1,9 +1,10 @@
 <?php
 namespace PSFS\test\base\type\helper;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\GeneratorHelper;
 
-class GeneratorHelperTest extends \PHPUnit_Framework_TestCase
+class GeneratorHelperTest extends TestCase
 {
 
     /**

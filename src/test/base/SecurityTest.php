@@ -1,5 +1,6 @@
 <?php
 namespace PSFS\test\base;
+use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
@@ -10,7 +11,7 @@ use PSFS\base\Security;
  * @package PSFS\test\base
  * @runInSeparateProcess
  */
-class SecurityTest extends \PHPUnit_Framework_TestCase
+class SecurityTest extends TestCase
 {
     /**
      * Test to check if the Logger has been created successful

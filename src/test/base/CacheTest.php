@@ -2,6 +2,7 @@
 namespace PSFS\Test\base;
 
 use http\Exception\UnexpectedValueException;
+use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
@@ -14,7 +15,7 @@ use PSFS\test\base\type\helper\GeneratorHelperTest;
  * Class CacheTest
  * @package PSFS\Test\base
  */
-class CacheTest extends \PHPUnit_Framework_TestCase
+class CacheTest extends TestCase
 {
     /**
      * Function to test the instance of Cache class

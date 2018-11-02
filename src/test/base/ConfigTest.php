@@ -1,5 +1,6 @@
 <?php
     namespace PSFS\test\base;
+    use PHPUnit\Framework\TestCase;
     use PSFS\base\Cache;
     use PSFS\base\config\Config;
     use PSFS\base\types\helpers\FileHelper;
@@ -11,7 +12,7 @@
      * Class DispatcherTest
      * @package PSFS\test\base
      */
-    class ConfigTest extends \PHPUnit_Framework_TestCase {
+    class ConfigTest extends TestCase {
 
         const CONFIG_BACKUP_PATH = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json.bak';
 
@@ -110,7 +111,7 @@
         }
 
         public function testMultipleModuleConfig() {
-            if(PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 1) {
+            if(PHP_MAJOR_VERSION === 7) {
                 Config::dropInstance();
                 $config = $this->getInstance();
 

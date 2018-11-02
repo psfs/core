@@ -1,11 +1,13 @@
 <?php
 namespace PSFS\Test;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Class ServiceTest
  * @package PSFS\Test
  */
-class ServiceTest extends \PHPUnit_Framework_TestCase {
+class ServiceTest extends TestCase {
     public function testSimpleCall() {
         $this->markTestIncomplete(
             'This test has not been implemented yet.'

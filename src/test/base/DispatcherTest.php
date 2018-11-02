@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\test\base;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -10,7 +11,7 @@ use PSFS\Dispatcher;
  * Class DispatcherTest
  * @package PSFS\test\base
  */
-class DispatcherTest extends \PHPUnit_Framework_TestCase
+class DispatcherTest extends TestCase
 {
 
     /**

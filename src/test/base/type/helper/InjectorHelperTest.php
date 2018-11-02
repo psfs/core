@@ -1,10 +1,11 @@
 <?php
 namespace PSFS\test\base\type\helper;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\test\examples\SingletonClassTest;
 
-class InjectorHelperTest extends \PHPUnit_Framework_TestCase
+class InjectorHelperTest extends TestCase
 {
 
     /**

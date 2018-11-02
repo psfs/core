@@ -6,7 +6,6 @@
          verbose="true"
          cacheTokens="false"
          bootstrap="vendor/autoload.php"
-         strict="true"
         >
     <testsuites>
         <testsuite name="PSFS Test">

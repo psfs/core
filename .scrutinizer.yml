@@ -2,6 +2,13 @@ checks:
   php: true
 
 build:
+  environment:
+    php: "7.0"
+    variables:
+      - MYSQL_USER: root
+      - MYSQL_ALLOW_EMPTY_PASSWORD: yes
+  services:
+    mysql: "5.7"
   tests:
     override:
       -
@@ -9,8 +16,6 @@ build:
         coverage:
           file: 'psfs-coverage'
           format: 'clover'
-  environment:
-    php: '7.2'
 
 filter:
   excluded_paths:

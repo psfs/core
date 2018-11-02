@@ -12,12 +12,12 @@
         "symfony/console": "@stable",
         "symfony/finder": "@stable",
         "twig/twig": "@stable",
-        "twig/extensions": "1.5.x-dev",
+        "twig/extensions": "@stable",
         "monolog/monolog": "@stable",
         "matthiasmullie/minify": "@stable"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.7.x",
+        "phpunit/phpunit": "@stable",
         "phpmd/phpmd": "@stable",
         "roave/security-advisories": "dev-master"
     },
@@ -50,7 +50,7 @@
     "bin": [
         "src/bin/psfs"
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"

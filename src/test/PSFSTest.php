@@ -2,6 +2,7 @@
 
 namespace PSFS\test;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -9,7 +10,7 @@ use PSFS\base\Security;
 use PSFS\base\types\helpers\AdminHelper;
 use PSFS\Dispatcher;
 
-class PSFSTest extends \PHPUnit_Framework_TestCase{
+class PSFSTest extends TestCase {
 
     /**
      * Basic test for the basic funcitonality

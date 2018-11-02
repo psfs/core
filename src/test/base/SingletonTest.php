@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\test\base;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\Singleton;
 use PSFS\test\examples\SingletonClassTest;
 
@@ -8,7 +9,7 @@ use PSFS\test\examples\SingletonClassTest;
  * Class SingletonTest
  * @package PSFS\test\base
  */
-class SingletonTest extends \PHPUnit_Framework_TestCase {
+class SingletonTest extends TestCase {
 
     public function testCompleteSingletonCases()
     {

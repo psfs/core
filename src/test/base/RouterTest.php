@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\test;
 
+use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
@@ -9,7 +10,7 @@ use PSFS\base\Router;
  * Class RouterTest
  * @package PSFS\test
  */
-class RouterTest extends \PHPUnit_Framework_TestCase {
+class RouterTest extends TestCase {
 
     public function testRouterBasics() {
         $router = Router::getInstance();
