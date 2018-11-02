@@ -11,6 +11,7 @@ use Propel\Runtime\Formatter\ObjectFormatter;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Map\TableMapTrait;
+use PSFS\base\config\Config;
 use PSFS\base\dto\Field;
 use PSFS\base\dto\Form;
 use PSFS\base\Logger;
@@ -69,7 +70,7 @@ class ApiHelper
      */
     public static function extractForeignModelsField(ColumnMap $mappedColumn, $field, $domain)
     {
-        $fDto = new Field($field, _($field));
+        $fDto = new Field($field, t($field));
         $fDto->type = Field::COMBO_TYPE;
         $fDto->required = $mappedColumn->isNotNull();
         $foreignTable = $mappedColumn->getRelation()->getForeignTable();
@@ -89,7 +90,7 @@ class ApiHelper
      */
     private static function createField($field, $type = Field::TEXT_TYPE, $required = false)
     {
-        $fDto = new Field($field, _($field));
+        $fDto = new Field($field, t($field));
         $fDto->type = $type;
         $fDto->required = $required;
         return $fDto;
@@ -184,12 +185,15 @@ class ApiHelper
     {
         $column = null;
         try {
-            $column = $tableMap->getColumnByPhpName($field);
+            foreach($tableMap->getColumns() as $tableMapColumn) {
+                $columnName = $tableMapColumn->getPhpName();
+                if(preg_match('/'.$field.'/i', $columnName)) {
+                    $column = $tableMapColumn;
+                    break;
+                }
+            }
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
-            //foreach($tableMap->getRelations() as $relation) {
-            //    $column = self::checkFieldExists($relation->getLocalTable(), $field);
-            //}
         }
         return $column;
     }
@@ -329,7 +333,7 @@ class ApiHelper
             foreach ($mappedColumn->getValueSet() as $value) {
                 $fDto->data[] = [
                     $field => $value,
-                    "Label" => _($value),
+                    "Label" => t($value),
                 ];
             }
         }
@@ -338,6 +342,21 @@ class ApiHelper
             if ($mappedColumn->isPrimaryKey()) {
                 $fDto->pk = true;
             }
+        }
+        switch(Config::getParam('api.field.type', TableMap::TYPE_PHPNAME)) {
+            default:
+            case TableMap::TYPE_PHPNAME:
+                $fDto->name = $mappedColumn->getPhpName();
+                $fDto->label = t($mappedColumn->getPhpName());
+                break;
+            case TableMap::TYPE_CAMELNAME:
+                $fDto->name = lcfirst($mappedColumn->getPhpName());
+                $fDto->label = t(lcfirst($mappedColumn->getPhpName()));
+                break;
+            case TableMap::TYPE_COLNAME:
+                $fDto->name = $mappedColumn->getFullyQualifiedName();
+                $fDto->label = t($mappedColumn->getFullyQualifiedName());
+                break;
         }
         return $fDto;
     }

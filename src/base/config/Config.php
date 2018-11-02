@@ -69,6 +69,7 @@ class Config
         'log.slack.hook', // Hook for slack traces
         'i18n.autogenerate', // Set PSFS auto generate i18n mode
         'resources.cdn.url', // CDN URL base path
+        'api.field.type', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap calss
     ];
     protected $debug = false;
 

@@ -43,6 +43,7 @@ abstract class Api extends Singleton
 
     const HEADER_API_TOKEN = 'X-API-SEC-TOKEN';
     const HEADER_API_LANG = 'X-API-LANG';
+    const HEADER_API_FIELDTYPE = 'X-FIELD-TYPE';
 
     /**
      * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager $list
@@ -89,6 +90,7 @@ abstract class Api extends Singleton
         if($this instanceof CustomApi === false) {
             $this->createConnection($this->getTableMap());
         }
+        $this->checkFieldType();
         $this->setLoaded(true);
         Logger::log(static::class . ' loaded', LOG_DEBUG);
     }
@@ -272,7 +274,7 @@ abstract class Api extends Singleton
             if (false !== $this->model->save($this->con)) {
                 $status = 200;
                 $saved = TRUE;
-                $model = $this->model->toArray();
+                $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
             } else {
                 $message = i18n::_('No se ha podido guardar el modelo seleccionado');
             }
@@ -314,7 +316,7 @@ abstract class Api extends Singleton
                 if ($this->model->save($this->con) !== FALSE) {
                     $updated = TRUE;
                     $status = 200;
-                    $model = $this->model->toArray();
+                    $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
                 } else {
                     $message = i18n::_('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
@@ -434,7 +436,7 @@ abstract class Api extends Singleton
                 if(array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam('api.field.types')) {
                     $return = $this->extractDataWithFormat();
                 } else {
-                    $return = $this->list->toArray(null, false, TableMap::TYPE_PHPNAME, false);
+                    $return = $this->list->toArray(null, false, $this->fieldType ?: TableMap::TYPE_PHPNAME, false);
                 }
                 $total = 0;
                 $pages = 0;
@@ -466,7 +468,7 @@ abstract class Api extends Singleton
         if (NULL === $model || !method_exists($model, 'toArray')) {
             $code = 404;
         } else {
-            $return = $model->toArray(TableMap::TYPE_PHPNAME, true, [], true);
+            $return = $model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
         }
 
         return array($code, $return);

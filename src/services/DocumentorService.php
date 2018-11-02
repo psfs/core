@@ -3,6 +3,7 @@
 namespace PSFS\services;
 
 use Propel\Runtime\Map\ColumnMap;
+use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
@@ -346,7 +347,24 @@ class DocumentorService extends Service
                     if(null !== $field->getDefaultValue()) {
                         $info['default'] = $field->getDefaultValue();
                     }
-                    $payload[$field->getPhpName()] = $info;
+                    switch(Config::getParam('api.field.type', TableMap::TYPE_PHPNAME)) {
+                        case 'UpperCamelCase':
+                        case TableMap::TYPE_PHPNAME:
+                            $payload[$field->getPhpName()] = $info;
+                            break;
+                        case 'camelCase':
+                        case 'lowerCamelCase':
+                        case TableMap::TYPE_CAMELNAME:
+                            $payload[lcfirst($field->getPhpName())] = $info;
+                            break;
+                        case 'dbColumn':
+                        case TableMap::TYPE_COLNAME:
+                            $payload[$field->getFullyQualifiedName()] = $info;
+                            break;
+                        case TableMap::TYPE_FIELDNAME:
+                            $payload[$field->getName()] = $info;
+                            break;
+                    }
                 }
             } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
                 $payload = $this->extractDtoProperties($namespace);

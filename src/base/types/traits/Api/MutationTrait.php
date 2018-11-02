@@ -21,10 +21,20 @@ trait MutationTrait
     /**
      * @var string
      * @header X-API-LANG
-     * @label Idioma de la petición REST
+     * @label Locale for the API request
      * @default es
      */
     protected $lang;
+
+
+
+    /**
+     * @var string
+     * @header X-FIELD-TYPE
+     * @label Field type for API Dto
+     * @default phpName
+     */
+    protected $fieldType = TableMap::TYPE_PHPNAME;
 
     /**
      * @var array extraColumns
@@ -225,6 +235,34 @@ trait MutationTrait
             }
         } catch(\Exception $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
+        }
+    }
+
+    /**
+     * Check and change the fieldType for API dto
+     */
+    protected function checkFieldType() {
+        $configType = Config::getParam('api.field.type');
+        switch($configType) {
+            case 'UpperCamelCase':
+            case TableMap::TYPE_PHPNAME:
+                $this->fieldType = TableMap::TYPE_PHPNAME;
+                break;
+            case 'camelCase':
+            case 'lowerCamelCase':
+            case TableMap::TYPE_CAMELNAME:
+                $this->fieldType = TableMap::TYPE_CAMELNAME;
+                break;
+            case 'dbColumn':
+            case TableMap::TYPE_COLNAME:
+                $this->fieldType = TableMap::TYPE_COLNAME;
+                break;
+            case TableMap::TYPE_FIELDNAME:
+                $this->fieldType = TableMap::TYPE_FIELDNAME;
+                break;
+            case TableMap::TYPE_NUM:
+                $this->fieldType = TableMap::TYPE_NUM;
+                break;
         }
     }
 }
