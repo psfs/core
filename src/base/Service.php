@@ -3,6 +3,7 @@ namespace PSFS\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\base\types\helpers\ServiceHelper;
 
 /**
  * Class Service
@@ -239,6 +240,7 @@ class Service extends Singleton
 
     /**
      * @return bool
+     *
      */
     public function getIsJson() {
         return $this->isJson;
@@ -328,50 +330,45 @@ class Service extends Singleton
         }
     }
 
+    /**
+     * @return int
+     */
+    private function parseServiceType() {
+        if($this->getIsJson()) {
+            return ServiceHelper::TYPE_JSON;
+        }
+        if($this->getIsMultipart()) {
+            return ServiceHelper::TYPE_MULTIPART;
+        }
+        return ServiceHelper::TYPE_HTTP;
+    }
+
     protected function setDefaults()
     {
+        $serviceType = $this->parseServiceType();
         switch (strtoupper($this->type)) {
             case Request::VERB_GET:
             default:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_GET);
                 if(!empty($this->params)) {
-                    $sep = !preg_match('/\?/', $this->getUrl()) ? '?' : '';
+                    $sep = false !== strpos($this->getUrl(), '?') ? '?' : '';
                     $this->url = $this->url . $sep . http_build_query($this->params);
                 }
                 break;
             case Request::VERB_POST:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_POST);
-                if($this->getIsJson()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
-                } elseif($this->getIsMultipart()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
-                } else {
-                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
-                }
+                $this->addOption(CURLOPT_POSTFIELDS, ServiceHelper::parseRawData($serviceType, $this->getParams()));
                 break;
             case Request::VERB_DELETE:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_DELETE);
                 break;
             case Request::VERB_PUT:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_PUT);
-
-                if($this->getIsJson()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
-                } elseif($this->getIsMultipart()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
-                } else {
-                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
-                }
+                $this->addOption(CURLOPT_POSTFIELDS, ServiceHelper::parseRawData($serviceType, $this->getParams()));
                 break;
             case Request::VERB_PATCH:
                 $this->addOption(CURLOPT_CUSTOMREQUEST, Request::VERB_PATCH);
-                if($this->getIsJson()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, json_encode($this->params));
-                } elseif($this->getIsMultipart()) {
-                    $this->addOption(CURLOPT_POSTFIELDS, $this->params);
-                } else {
-                    $this->addOption(CURLOPT_POSTFIELDS, http_build_query($this->params));
-                }
+                $this->addOption(CURLOPT_POSTFIELDS, ServiceHelper::parseRawData($serviceType, $this->getParams()));
                 break;
         }
 
@@ -386,9 +383,10 @@ class Service extends Singleton
         $this->setDefaults();
         $this->applyOptions();
         $this->applyHeaders();
+        $verbose = null;
         if('debug' === Config::getParam('log.level')) {
             curl_setopt($this->con, CURLOPT_VERBOSE, true);
-            $verbose = fopen('php://temp', 'w+');
+            $verbose = fopen('php://temp', 'wb+');
             curl_setopt($this->con, CURLOPT_STDERR, $verbose);
         }
         $result = curl_exec($this->con);
