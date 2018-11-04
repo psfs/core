@@ -7,9 +7,12 @@ use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\Logger;
 use PSFS\base\Security;
+use PSFS\base\types\traits\TestTrait;
 
 class SecurityHelper
 {
+    use TestTrait;
+
     const RAND_SEP = '?!.:,()[]+{}#|_-=';
     const RAND_ODD = 0;
     const RAND_EVEN = 1;
@@ -29,7 +32,8 @@ class SecurityHelper
         if (!Config::getInstance()->checkTryToSaveConfig()
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || Config::getParam('restricted', false))
         ) {
-            if (null === Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true)) {
+            if (!self::isTest() &&
+                null === Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true)) {
                 throw new AdminCredentialsException();
             }
             if (!Security::getInstance()->checkAdmin()) {

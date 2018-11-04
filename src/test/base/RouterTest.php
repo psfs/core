@@ -5,9 +5,6 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
-use PSFS\base\Security;
-use PSFS\base\types\helpers\ResponseHelper;
-use PSFS\controller\base\Admin;
 
 /**
  * Class RouterTest
@@ -50,21 +47,6 @@ class RouterTest extends TestCase {
         } catch(\Exception $e) {
             $this->assertInstanceOf(RouterException::class, $e, 'Exception is not the expected: ' . get_class($e));
         }
-    }
-
-    public function testExecuteRoute() {
-        $router = Router::getInstance();
-        Admin::setTest(true);
-        Security::setTest(true);
-        ResponseHelper::setTest(true);
-        $result = $router->execute('/admin/config/params');
-        $this->assertNotEmpty($result, 'Empty response');
-        $jsonDecodedResponse = json_decode($result, true);
-        $this->assertNotNull($jsonDecodedResponse, 'Bad JSON response');
-        $this->assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
-        Admin::setTest(false);
-        Security::setTest(false);
-        ResponseHelper::setTest(false);
     }
 
 }

@@ -5,6 +5,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\traits\SingletonTrait;
+use PSFS\base\types\traits\TestTrait;
 
 /**
  * Class Config
@@ -13,6 +14,7 @@ use PSFS\base\types\traits\SingletonTrait;
 class Config
 {
     use SingletonTrait;
+    use TestTrait;
 
     const DEFAULT_LANGUAGE = 'es';
     const DEFAULT_ENCODE = 'UTF-8';
@@ -165,7 +167,7 @@ class Config
                 }
             }
         }
-        return ($configured || $this->checkTryToSaveConfig());
+        return $configured || $this->checkTryToSaveConfig() || self::isTest();
     }
 
     /**

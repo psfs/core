@@ -60,9 +60,10 @@ class Dispatcher extends Singleton
 
     /**
      * Run method
+     * @param string $uri
      * @return string HTML
      */
-    public function run()
+    public function run($uri = null)
     {
         Logger::log('Begin runner');
         try {
@@ -70,7 +71,7 @@ class Dispatcher extends Singleton
                 //Check CORS for requests
                 RequestHelper::checkCORS();
                 if (!Request::getInstance()->isFile()) {
-                    return $this->router->execute($this->actualUri);
+                    return $this->router->execute($uri ?: $this->actualUri);
                 }
             } else {
                 return ConfigController::getInstance()->config();

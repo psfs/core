@@ -6,6 +6,8 @@ use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\ResponseHelper;
+use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\controller\base\Admin;
 use PSFS\Dispatcher;
 
@@ -207,6 +209,26 @@ class DispatcherTest extends TestCase
         $secondStats = Inspector::getStats();
         $this->assertNotEmpty($secondStats, 'Empty stats');
         $this->assertNotEquals($stats, $secondStats, 'Stats are similar');
+    }
 
+    public function testExecuteRoute() {
+        $router = Router::getInstance();
+        $security = Security::getInstance();
+        $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router, $security);
+        Admin::setTest(true);
+        ResponseHelper::setTest(true);
+        Security::setTest(true);
+        SecurityHelper::setTest(true);
+        Config::setTest(true);
+        $result = $dispatcher->run('/admin/config/params');
+        $this->assertNotEmpty($result, 'Empty response');
+        $jsonDecodedResponse = json_decode($result, true);
+        $this->assertNotNull($jsonDecodedResponse, 'Bad JSON response');
+        $this->assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
+        Admin::setTest(false);
+        Security::setTest(false);
+        SecurityHelper::setTest(false);
+        ResponseHelper::setTest(false);
+        Config::setTest(false);
     }
 }

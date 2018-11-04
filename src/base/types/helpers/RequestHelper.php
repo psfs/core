@@ -25,7 +25,6 @@ class RequestHelper
             'X-API-SEC-TOKEN',
             'X-API-USER-TOKEN',
             'X-API-LANG',
-            'api_key',
         ];
         $extraHeaders = Config::getParam('cors.headers', '');
         $headers = array_merge($headers, explode(',', $extraHeaders));
@@ -38,7 +37,7 @@ class RequestHelper
     public static function checkCORS()
     {
         Logger::log('Checking CORS');
-        $corsEnabled = Config::getInstance()->get('cors.enabled');
+        $corsEnabled = Config::getParam('cors.enabled');
         $request = Request::getInstance();
         if (NULL !== $corsEnabled) {
             if ($corsEnabled === '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
