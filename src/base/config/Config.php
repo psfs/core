@@ -23,17 +23,17 @@ class Config
 
     const CONFIG_FILE = 'config.json';
 
-    private static $config = array();
-    static public $defaults = array(
+    protected $config = [];
+    static public $defaults = [
         'db.host' => 'localhost',
         'db.port' => '3306',
         'default.language' => 'es_ES',
         'debug' => true,
         'front.version' => 'v1',
         'version' => 'v1',
-    );
-    static public $required = array('db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug');
-    static public $encrypted = array('db.password');
+    ];
+    static public $required = ['db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug'];
+    static public $encrypted = ['db.password'];
     static public $optional = [
         'platform.name', // Platform name
         'restricted', // Restrict the web access
@@ -91,7 +91,7 @@ class Config
      * @return bool
      */
     public function isLoaded() {
-        return !empty(self::$config);
+        return !empty($this->config);
     }
 
     /**
@@ -148,7 +148,7 @@ class Config
      */
     public function setDebugMode($debug = true) {
         $this->debug = $debug;
-        self::$config['debug'] = $this->debug;
+        $this->config['debug'] = $this->debug;
     }
 
     /**
@@ -158,10 +158,10 @@ class Config
     public function isConfigured()
     {
         Logger::log('Checking configuration');
-        $configured = (count(self::$config) > 0);
+        $configured = (count($this->config) > 0);
         if ($configured) {
             foreach (static::$required as $required) {
-                if (!array_key_exists($required, self::$config)) {
+                if (!array_key_exists($required, $this->config)) {
                     $configured = false;
                     break;
                 }
@@ -215,7 +215,7 @@ class Config
      */
     public function get($param, $defaultValue = null)
     {
-        return array_key_exists($param, self::$config) ? self::$config[$param] : $defaultValue;
+        return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
     }
 
     /**
@@ -224,7 +224,7 @@ class Config
      */
     public function dumpConfig()
     {
-        return self::$config ?: [];
+        return $this->config ?: [];
     }
 
     /**
@@ -232,8 +232,8 @@ class Config
      */
     public function loadConfigData()
     {
-        self::$config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
-        $this->debug = array_key_exists('debug', self::$config) ? (bool)self::$config['debug'] : FALSE;
+        $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
+        $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
     }
 
     /**
@@ -241,7 +241,7 @@ class Config
      */
     public function clearConfig()
     {
-        self::$config = [];
+        $this->config = [];
     }
 
     /**
@@ -256,6 +256,7 @@ class Config
         if(null !== $module) {
             return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));
         }
-        return array_key_exists($key, self::$config) ? self::$config[$key] : $defaultValue;
+        $param = self::getInstance()->get($key);
+        return (null !== $param) ? $param : $defaultValue;
     }
 }
