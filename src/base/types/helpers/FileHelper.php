@@ -19,7 +19,7 @@ class FileHelper {
 
     /**
      * @param string $path
-     * @return mixed|bool
+     * @return mixed
      */
     public static function readFile($path) {
         $data = false;

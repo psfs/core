@@ -54,12 +54,12 @@ class DocumentorController extends Controller {
         ini_restore('memory_limit');
 
         if($download && $type === ApiController::SWAGGER_DOC) {
-            return $this->download(\GuzzleHttp\json_encode($doc), 'application/json', 'swagger.json');
-        } elseif($type === ApiController::HTML_DOC) {
-            return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
-        } else {
-            return $this->json($doc, 200);
+            return $this->download(json_encode($doc), 'application/json', 'swagger.json');
         }
+        if($type === ApiController::HTML_DOC) {
+            return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
+        }
+        return $this->json($doc, 200);
     }
 
     /**

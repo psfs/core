@@ -31,7 +31,7 @@ Trait JsonTrait {
             }
         }
 
-        $this->decodeJsonReponse($response);
+        $this->decodeJsonResponse($response);
 
         $mask = JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING;
         if(Config::getParam('output.json.strict_numbers')) {
@@ -61,7 +61,7 @@ Trait JsonTrait {
      * @param $response
      * @return array|string
      */
-    private function decodeJsonReponse(&$response)
+    private function decodeJsonResponse(&$response)
     {
         if (Config::getParam('json.encodeUTF8', false)) {
             $response = I18nHelper::utf8Encode($response);

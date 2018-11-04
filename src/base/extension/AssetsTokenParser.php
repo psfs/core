@@ -22,11 +22,9 @@ class AssetsTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * Método que parsea los nodos de la plantilla
      * @param \Twig_Token $token
-     * @return AssetsNode
+     * @return AssetsNode|\Twig_Node
      * @throws \Twig_Error_Syntax
-     * @throws \Twig_Error_Loader
      */
     public function parse(\Twig_Token $token)
     {
@@ -34,7 +32,7 @@ class AssetsTokenParser extends \Twig_TokenParser
         $name = $token->getValue();
         $this->extractTemplateNodes();
         $node = $this->findTemplateNode();
-        return new AssetsNode($name, array("node" => $node, "hash" => $hash), $token->getLine(), $this->getTag(), $this->type);
+        return new AssetsNode($name, array('node' => $node, 'hash' => $hash), $token->getLine(), $this->getTag(), $this->type);
     }
 
     /**
@@ -56,9 +54,9 @@ class AssetsTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * Método que revisa cada l�nea de la plantilla
      * @param \Twig_TokenStream $stream
      * @return \Twig_TokenStream
+     * @throws \Twig_Error_Syntax
      */
     protected function checkTemplateLine(\Twig_TokenStream $stream)
     {
@@ -79,7 +77,6 @@ class AssetsTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * Método que procesa cada l�nea de la plantilla para extraer los nodos
      * @throws \Twig_Error_Syntax
      */
     protected function extractTemplateNodes()
@@ -95,8 +92,7 @@ class AssetsTokenParser extends \Twig_TokenParser
     }
 
     /**
-     * Método que busca el nodo a parsear
-     * @return \Twig_Node_Expression|null
+     * @return mixed|null
      */
     protected function findTemplateNode()
     {
@@ -105,23 +101,24 @@ class AssetsTokenParser extends \Twig_TokenParser
             /** @var \Twig_Node_Expression|\Twig_Node_Expression_Conditional $value */
             foreach ($this->values as $value) {
                 list($tmp, $node) = $this->extractTmpAttribute($node, $value);
-                $node->setAttribute("value", $tmp);
+                $node->setAttribute('value', $tmp);
             }
         }
         return $node;
     }
 
     /**
-     * Método que extrae el valor del token
-     * @param \Twig_Node_Expression|\Twig_Node_Expression_Conditional|null $node
-     *
+     * @param null $node
      * @return array
      */
     protected function getTmpAttribute($node = null)
     {
-        $tmp = $node->getAttribute("value");
-        if (!is_array($tmp)) {
-            $tmp = array($tmp);
+        $tmp = [];
+        if(null !== $node) {
+            $tmp = $node->getAttribute('value');
+            if (!is_array($tmp)) {
+                $tmp = [$tmp];
+            }
         }
 
         return $tmp;
@@ -136,14 +133,15 @@ class AssetsTokenParser extends \Twig_TokenParser
      */
     protected function extractTmpAttribute($node = null, $value = null)
     {
-        $tmp = array();
-        if (NULL === $node) {
+        $tmp = [];
+        if (null === $node) {
             $node = $value;
         } else {
             $tmp = $this->getTmpAttribute($node);
         }
-        $tmp[] = $value->getAttribute("value");
-
-        return array($tmp, $node);
+        if(null !== $node) {
+            $tmp[] = $value->getAttribute('value');
+        }
+        return [$tmp, $node];
     }
 }

@@ -39,7 +39,7 @@ abstract class Admin extends AuthAdminController
     public static function staticAdminLogon($route = null)
     {
         if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
-            if ('login' !== Config::getInstance()->get('admin_login')) {
+            if ('login' !== Config::getParam('admin.login')) {
                 return AdminServices::getInstance()->setAdminHeaders();
             } else {
                 $form = new LoginForm();

@@ -32,8 +32,6 @@ class DocumentorService extends Service
     const DTO_INTERFACE = '\\PSFS\\base\\dto\\Dto';
     const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
 
-    private $classes = [];
-
     /**
      * @Injectable
      * @var \PSFS\base\Router route
@@ -54,10 +52,10 @@ class DocumentorService extends Service
             foreach ($domains as $module => $info) {
                 try {
                     $module = preg_replace('/(@|\/)/', '', $module);
-                    if (!preg_match('/^ROOT/i', $module) && $module == $requestModule) {
+                    if ($module === $requestModule && 0 === stripos($module, 'ROOT')) {
                         $modules = [
                             'name' => $module,
-                            'path' => realpath($info['template'] . DIRECTORY_SEPARATOR . '..'),
+                            'path' => dirname($info['template'] . DIRECTORY_SEPARATOR . '..'),
                         ];
                     }
                 } catch (\Exception $e) {
@@ -78,17 +76,17 @@ class DocumentorService extends Service
      */
     public function extractApiEndpoints(array $module)
     {
-        $module_path = $module['path'] . DIRECTORY_SEPARATOR . 'Api';
-        $module_name = $module['name'];
+        $modulePath = $module['path'] . DIRECTORY_SEPARATOR . 'Api';
+        $moduleName = $module['name'];
         $endpoints = [];
-        if (file_exists($module_path)) {
+        if (file_exists($modulePath)) {
             $finder = new Finder();
-            $finder->files()->in($module_path)->depth(0)->name('*.php');
+            $finder->files()->in($modulePath)->depth(0)->name('*.php');
             if (count($finder)) {
                 /** @var \SplFileInfo $file */
                 foreach ($finder as $file) {
-                    $namespace = "\\{$module_name}\\Api\\" . str_replace('.php', '', $file->getFilename());
-                    $info = $this->extractApiInfo($namespace, $module_name);
+                    $namespace = "\\{$moduleName}\\Api\\" . str_replace('.php', '', $file->getFilename());
+                    $info = $this->extractApiInfo($namespace, $moduleName);
                     if (!empty($info)) {
                         $endpoints[$namespace] = $info;
                     }
@@ -99,11 +97,10 @@ class DocumentorService extends Service
     }
 
     /**
-     * Method that extract all the endpoit information by reflection
-     *
-     * @param string $namespace
-     * @param string $module
+     * @param $namespace
+     * @param $module
      * @return array
+     * @throws \ReflectionException
      */
     public function extractApiInfo($namespace, $module)
     {
@@ -166,7 +163,7 @@ class DocumentorService extends Service
      */
     protected function checkDeprecated($comments = '')
     {
-        return false != preg_match('/@deprecated\n/i', $comments);
+        return false !== preg_match('/@deprecated\n/i', $comments);
     }
 
     /**
@@ -181,7 +178,7 @@ class DocumentorService extends Service
         $visible = TRUE;
         preg_match('/@visible\ (true|false)\n/i', $comments, $visibility);
         if (count($visibility)) {
-            $visible = !('false' == $visibility[1]);
+            $visible = !('false' === $visibility[1]);
         }
 
         return $visible;
@@ -200,7 +197,7 @@ class DocumentorService extends Service
         $docs = explode("\n", $comments);
         if (count($docs)) {
             foreach ($docs as &$doc) {
-                if (!preg_match('/(\*\*|\@)/i', $doc) && preg_match('/\*\ /i', $doc)) {
+                if (!preg_match('/(\*\*|\@)/', $doc) && preg_match('/\*\ /', $doc)) {
                     $doc = explode('* ', $doc);
                     $description = $doc[1];
                 }
@@ -283,7 +280,7 @@ class DocumentorService extends Service
      * @param string $model
      * @param string $comments
      *
-     * @return string
+     * @return array
      */
     protected function extractReturn($model, $comments = '')
     {
@@ -305,7 +302,7 @@ class DocumentorService extends Service
                             $isArray = true;
                         }
                         $dto = $this->extractModelFields($dtoName);
-                        $modelDto[$field] = ($isArray) ? [$dto] : $dto;
+                        $modelDto[$field] = $isArray ? [$dto] : $dto;
                         $modelDto['objects'][$dtoName] = $dto;
                         $modelDto = $this->checkDtoAttributes($dto, $modelDto, $dtoName);
                     }
@@ -390,20 +387,20 @@ class DocumentorService extends Service
         $methodInfo = NULL;
         $docComments = $method->getDocComment();
         if (FALSE !== $docComments && preg_match('/\@route\ /i', $docComments)) {
-            $api = self::extractApi($reflection->getDocComment());
+            $api = $this->extractApi($reflection->getDocComment());
             list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
             $route = explode('#|#', $route);
             $modelNamespace = str_replace('Api', 'Models', $namespace);
-            if ($info['visible'] && !self::checkDeprecated($docComments)) {
+            if ($info['visible'] && !$this->checkDeprecated($docComments)) {
                 try {
                     $return = $this->extractReturn($modelNamespace, $docComments);
                     $url = array_pop($route);
                     $methodInfo = [
-                        'url' => str_replace("/" . $module . "/api", '', $url),
+                        'url' => str_replace('/' . $module . '/api', '', $url),
                         'method' => $info['http'],
                         'description' => $info['label'],
                         'return' => $return,
-                        'objects' => $return['objects'],
+                        'objects' => array_key_exists('objects', $return) ? $return['objects'] : [],
                         'class' => $reflection->getShortName(),
                     ];
                     unset($methodInfo['return']['objects']);
@@ -430,16 +427,16 @@ class DocumentorService extends Service
             switch ($code) {
                 default:
                 case 200:
-                    $message = _('Successful response');
+                    $message = t('Successful response');
                     break;
                 case 400:
-                    $message = _('Client error in request');
+                    $message = t('Client error in request');
                     break;
                 case 404:
-                    $message = _('Service not found');
+                    $message = t('Service not found');
                     break;
                 case 500:
-                    $message = _('Server error');
+                    $message = t('Server error');
                     break;
             }
             $responses[$code] = [
@@ -480,9 +477,9 @@ class DocumentorService extends Service
             "swagger" => "2.0",
             "host" => preg_replace('/^(http|https)\:\/\/(.*)\/$/i', '$2', Router::getInstance()->getRoute('', true)),
             "basePath" => '/' . $module['name'] . '/api',
-            "schemes" => [Request::getInstance()->getServer('HTTPS') == 'on' ? "https" : "http"],
+            "schemes" => [Request::getInstance()->getServer('HTTPS') === 'on' ? 'https' : 'http'],
             "info" => [
-                "title" => _('Documentación API módulo ') . $module['name'],
+                "title" => t('Documentación API módulo ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0.0'),
                 "contact" => [
                     "name" => Config::getParam("author", "Fran López"),
@@ -575,21 +572,21 @@ class DocumentorService extends Service
             $methodInfo['query'][] = [
                 "name" => "__limit",
                 "in" => "query",
-                "description" => _("Límite de registros a devolver, -1 para devolver todos los registros"),
+                "description" => t("Límite de registros a devolver, -1 para devolver todos los registros"),
                 "required" => false,
                 "type" => "integer",
             ];
             $methodInfo['query'][] = [
                 "name" => "__page",
                 "in" => "query",
-                "description" => _("Página a devolver"),
+                "description" => t("Página a devolver"),
                 "required" => false,
                 "type" => "integer",
             ];
             $methodInfo['query'][] = [
                 "name" => "__fields",
                 "in" => "query",
-                "description" => _("Campos a devolver"),
+                "description" => t("Campos a devolver"),
                 "required" => false,
                 "type" => "array",
                 "items" => [
@@ -655,7 +652,7 @@ class DocumentorService extends Service
                 $parameterName = $parameter->getName();
                 $types = [];
                 preg_match_all('/\@param\ (.*)\ \$' . $parameterName . '$/im', $docComments, $types);
-                if (count($types) > 1) {
+                if (count($types) > 1 && count($types[1]) > 0) {
                     $methodInfo['parameters'][$parameterName] = $types[1][0];
                 }
             }

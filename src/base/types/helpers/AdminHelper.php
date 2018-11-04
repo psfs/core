@@ -17,7 +17,7 @@ class AdminHelper
     {
         $labelA = array_key_exists('label', $elementA) ? $elementA['label'] : '';
         $labelB = array_key_exists('label', $elementB) ? $elementB['label'] : '';
-        if ($labelA == $labelB) {
+        if ($labelA === $labelB) {
             return 0;
         }
         return $labelA < $labelB ? -1 : 1;
@@ -30,23 +30,23 @@ class AdminHelper
     public static function getAdminRoutes(array $systemRoutes)
     {
         $routes = [];
-        foreach ($systemRoutes as $route => $params) {
+        foreach ($systemRoutes as $params) {
             if(isset($params['http']) && 'GET' === $params['http'] && preg_match('/^\/admin(\/|$)/', $params['default'])) {
                 $module = strtoupper($params['module']);
-                $mode = $params["visible"] ? 'visible' : 'hidden';
+                $mode = $params['visible'] ? 'visible' : 'hidden';
                 $routes[$module][$mode][] = [
-                    'slug' => $params["slug"],
-                    'label' => $params["label"] ?: $params["slug"],
+                    'slug' => $params['slug'],
+                    'label' => $params['label'] ?: $params['slug'],
                     'icon' => $params['icon'],
                 ];
             }
         }
         foreach($routes as $module => &$route) {
             if(array_key_exists('visible', $route)) {
-                uasort($route["visible"], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
+                uasort($route['visible'], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
             }
             if(array_key_exists('hidden', $route)) {
-                uasort($route["hidden"], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
+                uasort($route['hidden'], '\PSFS\base\types\helpers\AdminHelper::sortByLabel');
             }
         }
         return $routes;

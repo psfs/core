@@ -120,10 +120,11 @@ class AdminServices extends Service
         $monthOpen = null;
         $files = new Finder();
         $files->files()->in(LOG_DIR)->name($selectedLog);
-        $file = null;
+        $file = $match = null;
         $log = array();
-        foreach($files as $match) {
-            $file = $match;
+        foreach($files as $item) {
+            $file = $item;
+            $match = $item;
             break;
         }
         /** @var \SplFileInfo $file */
@@ -135,7 +136,7 @@ class AdminServices extends Service
             krsort($content);
             $detailLog = array();
             foreach ($content as &$line) {
-                list($line, $detail) = $this->parseLogLine($line, $file);
+                list($line, $detail) = $this->parseLogLine($line, $match);
                 $detailLog[] = array_merge([
                     'log' => $line,
                 ], $detail);

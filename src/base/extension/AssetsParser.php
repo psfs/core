@@ -145,10 +145,10 @@ class AssetsParser
                 ini_set('memory_limit', -1);
                 GeneratorHelper::createDir($base);
                 $minifier->minify($base . $this->hash . ".css");
-                unset($cssMinifier);
                 ini_restore('memory_limit');
                 ini_restore('max_execution_time');
             }
+            unset($minifier);
         }
         return $this;
     }

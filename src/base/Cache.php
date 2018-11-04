@@ -90,7 +90,7 @@ class Cache
     }
 
     /**
-     * @param string $data
+     * @param mixed $data
      * @param int $transform
      * @return mixed
      */
@@ -158,7 +158,7 @@ class Cache
     /**
      * @param string $path
      * @param int $expires
-     * @param null $function
+     * @param callable $function
      * @param int $transform
      * @return mixed|null
      * @throws GeneratorException

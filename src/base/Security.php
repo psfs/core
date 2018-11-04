@@ -397,8 +397,8 @@ class Security
         $_SESSION[self::ADMIN_ID_TOKEN] = serialize($this->admin);
         if ($closeSession) {
             Logger::log('Close session');
-            @session_write_close();
-            @session_start();
+            /** @scrutinizer ignore-unhandled */ @session_write_close();
+            /** @scrutinizer ignore-unhandled */ @session_start();
         }
         Logger::log('Session updated');
         return $this;
@@ -407,9 +407,9 @@ class Security
     public function closeSession()
     {
         unset($_SESSION);
-        @session_destroy();
-        @session_regenerate_id(TRUE);
-        @session_start();
+        /** @scrutinizer ignore-unhandled */ @session_destroy();
+        /** @scrutinizer ignore-unhandled */ @session_regenerate_id(TRUE);
+        /** @scrutinizer ignore-unhandled */ @session_start();
     }
 
 }

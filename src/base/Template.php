@@ -105,12 +105,12 @@ class Template
      */
     public function dump($tpl, array $vars = array())
     {
-        $vars["__user__"] = Security::getInstance()->getUser();
-        $vars["__admin__"] = Security::getInstance()->getAdmin();
-        $vars["__profiles__"] = Security::getCleanProfiles();
-        $vars["__flash__"] = Security::getInstance()->getFlashes();
-        $vars["__get__"] = Request::getInstance()->getQueryParams();
-        $vars["__post__"] = Request::getInstance()->getData();
+        $vars['__user__'] = Security::getInstance()->getUser();
+        $vars['__admin__'] = Security::getInstance()->getAdmin();
+        $vars['__profiles__'] = Security::getCleanProfiles();
+        $vars['__flash__'] = Security::getInstance()->getFlashes();
+        $vars['__get__'] = Request::getInstance()->getQueryParams();
+        $vars['__post__'] = Request::getInstance()->getData();
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
@@ -141,12 +141,12 @@ class Template
     public function regenerateTemplates()
     {
         $this->generateTemplatesCache();
-        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . "domains.json", Cache::JSON, true);
+        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
         $translations = [];
         if (is_array($domains)) {
             $translations = $this->parsePathTranslations($domains);
         }
-        $translations[] = _("Plantillas regeneradas correctamente");
+        $translations[] = t('Plantillas regeneradas correctamente');
         return $translations;
     }
 
@@ -169,7 +169,7 @@ class Template
                 }
             }
         }
-        return str_replace("%d", $domain, str_replace("%s", $tplDir, _("Generando plantillas en path '%s' para el dominio '%d'")));
+        return str_replace('%d', $domain, str_replace('%s', $tplDir, t('Generando plantillas en path "%s" para el dominio "%d"')));
     }
 
     /**
@@ -272,8 +272,8 @@ class Template
     private function addTemplateTokens()
     {
         //Añadimos las extensiones de los tags
-        $this->tpl->addTokenParser(new AssetsTokenParser("css"));
-        $this->tpl->addTokenParser(new AssetsTokenParser("js"));
+        $this->tpl->addTokenParser(new AssetsTokenParser('css'));
+        $this->tpl->addTokenParser(new AssetsTokenParser('js'));
     }
 
     /**
@@ -296,9 +296,9 @@ class Template
         $translations = array();
         if (!empty($domains)) {
             foreach ($domains as $domain => $paths) {
-                if (strlen($domain) && array_key_exists("template", $paths)) {
-                    $this->addPath($paths["template"], $domain);
-                    $translations[] = $this->generateTemplate($paths["template"], $domain);
+                if (strlen($domain) && array_key_exists('template', $paths)) {
+                    $this->addPath($paths['template'], $domain);
+                    $translations[] = $this->generateTemplate($paths['template'], $domain);
                 }
             }
         }

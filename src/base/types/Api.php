@@ -386,7 +386,7 @@ abstract class Api extends Singleton
         $this->action = self::API_ACTION_BULK;
         $saved = FALSE;
         $status = 400;
-        $model = NULL;
+        $model = null;
         $message = null;
         try {
             $this->hydrateBulkRequest();

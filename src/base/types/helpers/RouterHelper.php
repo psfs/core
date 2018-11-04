@@ -57,7 +57,7 @@ class RouterHelper
     public static function extractComponents($route, $pattern)
     {
         Logger::log('Extracting parts for the request to execute');
-        $url = parse_url(preg_replace('//', '/', $route));
+        $url = parse_url(preg_replace("/\/\//", '/', $route));
         $partialRoute = explode('/', $url['path']);
         $partialPattern = explode('/', $pattern);
         $get = [];
@@ -187,7 +187,7 @@ class RouterHelper
     {
         preg_match('/@(GET|POST|PUT|DELETE)(\n|\r)/i', $docComments, $routeMethod);
 
-        return (count($routeMethod) > 0) ? $routeMethod[1] : "ALL";
+        return (count($routeMethod) > 0) ? $routeMethod[1] : 'ALL';
     }
 
     /**
@@ -213,7 +213,7 @@ class RouterHelper
     public static function extractReflectionVisibility($docComments)
     {
         preg_match('/@visible\ (.*)(\n|\r)/i', $docComments, $visible);
-        return !(array_key_exists(1, $visible) && false !== strpos($visible[1], '/false/i'));
+        return !(array_key_exists(1, $visible) && false !== strpos($visible[1], 'false'));
     }
 
     /**
