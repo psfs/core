@@ -1,16 +1,10 @@
 <?php
 namespace PSFS\Services;
 
-use Propel\Common\Config\ConfigurationManager;
 use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\AbstractManager;
-use Propel\Generator\Manager\MigrationManager;
 use Propel\Generator\Manager\ModelManager;
 use Propel\Generator\Manager\SqlManager;
-use Propel\Generator\Model\Database;
-use Propel\Generator\Model\Diff\DatabaseComparator;
-use Propel\Generator\Model\IdMethod;
-use Propel\Generator\Model\Schema;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;

@@ -1,8 +1,6 @@
 <?php
 namespace PSFS\base\dto;
 
-use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
-use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;

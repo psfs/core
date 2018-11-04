@@ -124,7 +124,7 @@ class Request
 
     public function getTs($formatted = false)
     {
-        return ($formatted) ? date('Y-m-d H:i:s', $this->server['REQUEST_TIME_FLOAT']) : $this->server['REQUEST_TIME_FLOAT'];
+        return $formatted ? date('Y-m-d H:i:s', $this->server['REQUEST_TIME_FLOAT']) : $this->server['REQUEST_TIME_FLOAT'];
     }
 
     /**
@@ -210,7 +210,7 @@ class Request
      */
     public function getQuery($queryParams)
     {
-        return (array_key_exists($queryParams, $this->query)) ? $this->query[$queryParams] : null;
+        return array_key_exists($queryParams, $this->query) ? $this->query[$queryParams] : null;
     }
 
     /**
@@ -256,12 +256,14 @@ class Request
      */
     public function redirect($url = null)
     {
-        if (null === $url) $url = $this->getServer('HTTP_ORIGIN');
+        if (null === $url) {
+            $url = $this->getServer('HTTP_ORIGIN');
+        }
         ob_start();
         header('Location: ' . $url);
         ob_end_clean();
         Security::getInstance()->updateSession();
-        exit(_('Redireccionando...'));
+        exit(t('Redireccionando...'));
     }
 
     /**
@@ -295,14 +297,16 @@ class Request
 
     /**
      * Devuelve la url completa de base
-     * @param boolean $protocol
+     * @param boolean $hasProtocol
      * @return string
      */
-    public function getRootUrl($protocol = true)
+    public function getRootUrl($hasProtocol = true)
     {
         $url = $this->getServerName();
-        $protocol = $protocol ? $this->getProtocol() : '';
-        if (!empty($protocol)) $url = $protocol . $url;
+        $protocol = $hasProtocol ? $this->getProtocol() : '';
+        if (!empty($protocol)) {
+            $url = $protocol . $url;
+        }
         if (!in_array($this->getServer('SERVER_PORT'), [80, 443], true)) {
             $url .= ':' . $this->getServer('SERVER_PORT');
         }

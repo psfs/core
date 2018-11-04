@@ -14,21 +14,23 @@ class AdminForm extends Form
 {
 
     /**
-     * @throws \PSFS\base\exception\RouterException
+     * AdminForm constructor.
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public function __construct()
     {
+        parent::__construct();
         $this->setAction(Router::getInstance()->getRoute('admin-setup'));
         $this->add('username', array(
-            'label' => _('User Alias'),
+            'label' => t('User Alias'),
             'autocomplete' => 'off',
         ))->add('password', array(
             'type' => 'password',
-            'label' => _('Password'),
+            'label' => t('Password'),
             'autocomplete' => 'off',
         ))->add('profile', array(
             'type' => 'select',
-            'label' => _("Role"),
+            'label' => t("Role"),
             'value' => sha1('superadmin'),
             'autocomplete' => 'off',
             'data' => Security::getProfiles(),
@@ -48,7 +50,7 @@ class AdminForm extends Form
      */
     public function getTitle()
     {
-        return _("Admin user control panel");
+        return t("Admin user control panel");
     }
 
     /**

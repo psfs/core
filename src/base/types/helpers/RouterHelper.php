@@ -38,7 +38,7 @@ class RouterHelper
     {
         $httpMethod = 'ALL';
         $routePattern = $pattern;
-        if (FALSE !== strpos($pattern, '#|#')) {
+        if (false !== strpos($pattern, '#|#')) {
             list($httpMethod, $routePattern) = explode('#|#', $pattern, 2);
         }
 
@@ -57,15 +57,17 @@ class RouterHelper
     public static function extractComponents($route, $pattern)
     {
         Logger::log('Extracting parts for the request to execute');
-        $url = parse_url($route);
-        $_route = explode("/", $url['path']);
-        $_pattern = explode("/", $pattern);
-        $get = array();
-        if (!empty($_pattern)) foreach ($_pattern as $index => $component) {
-            $_get = array();
-            preg_match_all('/^\{(.*)\}$/i', $component, $_get);
-            if (!empty($_get[1]) && isset($_route[$index])) {
-                $get[array_pop($_get[1])] = $_route[$index];
+        $url = parse_url(preg_replace('//', '/', $route));
+        $partialRoute = explode('/', $url['path']);
+        $partialPattern = explode('/', $pattern);
+        $get = [];
+        if (!empty($partialPattern)) {
+            foreach ($partialPattern as $index => $component) {
+                $query = [];
+                preg_match_all('/^\{(.*)\}$/', $component, $query);
+                if (!empty($query[1]) && isset($partialRoute[$index])) {
+                    $get[array_pop($query[1])] = $partialRoute[$index];
+                }
             }
         }
 
@@ -80,20 +82,20 @@ class RouterHelper
      */
     public static function compareSlashes($routePattern, $path)
     {
-        $pattern_sep = count(explode('/', $routePattern));
+        $patternSeparator = count(explode('/', $routePattern));
         if (preg_match('/\/$/', $routePattern)) {
-            $pattern_sep--;
+            $patternSeparator--;
         }
         $routePattern = preg_replace('/\/\{.*\}$/', '', $routePattern);
-        $pattern_sep_clean = count(explode('/', $routePattern));
+        $cleanPatternSeparator = count(explode('/', $routePattern));
         if (preg_match('/\/$/', $routePattern)) {
-            $pattern_sep_clean--;
+            $cleanPatternSeparator--;
         }
         $path_sep = count(explode('/', $path));
         if (preg_match('/\/$/', $path)) {
             $path_sep--;
         }
-        return abs($pattern_sep - $path_sep) < 1 || abs($pattern_sep_clean - $path_sep) < 1;
+        return abs($patternSeparator - $path_sep) < 1 || abs($cleanPatternSeparator - $path_sep) < 1;
     }
 
     /**
@@ -123,22 +125,22 @@ class RouterHelper
     {
         $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
         $path = realpath($path) . DIRECTORY_SEPARATOR;
-        $tpl_path = "templates";
-        $public_path = "public";
-        $model_path = "models";
-        if (!preg_match("/ROOT/", $domain)) {
-            $tpl_path = ucfirst($tpl_path);
-            $public_path = ucfirst($public_path);
-            $model_path = ucfirst($model_path);
+        $templatesPath = 'templates';
+        $publicPath = 'public';
+        $modelsPath = 'models';
+        if (false === strpos($domain, 'ROOT')) {
+            $templatesPath = ucfirst($templatesPath);
+            $publicPath = ucfirst($publicPath);
+            $modelsPath = ucfirst($modelsPath);
         }
-        if ($class->hasConstant("TPL")) {
-            $tpl_path .= DIRECTORY_SEPARATOR . $class->getConstant("TPL");
+        if ($class->hasConstant('TPL')) {
+            $templatesPath .= DIRECTORY_SEPARATOR . $class->getConstant('TPL');
         }
         return [
             'base' => $path,
-            'template' => $path . $tpl_path,
-            'model' => $path . $model_path,
-            'public' => $path . $public_path,
+            'template' => $path . $templatesPath,
+            'model' => $path . $modelsPath,
+            'public' => $path . $publicPath,
         ];
     }
 
@@ -211,7 +213,7 @@ class RouterHelper
     public static function extractReflectionVisibility($docComments)
     {
         preg_match('/@visible\ (.*)(\n|\r)/i', $docComments, $visible);
-        return !(array_key_exists(1, $visible) && preg_match('/false/i', $visible[1]));
+        return !(array_key_exists(1, $visible) && false !== strpos($visible[1], '/false/i'));
     }
 
     /**
@@ -277,7 +279,7 @@ class RouterHelper
         $default = null;
         if (FALSE !== preg_match('/\/$/', $route)) {
             $default = Config::getInstance()->get('home.action');
-        } elseif (false !== preg_match('/admin/', $route)) {
+        } elseif (false !== strpos($route, '/admin/')) {
             $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
 
         }
@@ -304,7 +306,7 @@ class RouterHelper
         $text = trim($text, '-');
 
         // transliterate
-        if (function_exists('iconv')) {
+        if (function_exists('iconv') && extension_loaded('iconv')) {
             $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
         }
 

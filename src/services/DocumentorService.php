@@ -10,7 +10,6 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
 use PSFS\base\types\helpers\DocumentorHelper;
-use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;

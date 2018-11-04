@@ -1,8 +1,6 @@
 <?php
 namespace PSFS\test\base;
 use PHPUnit\Framework\TestCase;
-use PSFS\base\config\Config;
-use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
 

@@ -4,7 +4,6 @@ namespace PSFS\controller\base;
 
 use PSFS\base\config\Config;
 use PSFS\base\config\LoginForm;
-use PSFS\base\Router;
 use PSFS\base\Template;
 use PSFS\base\types\AuthAdminController;
 use PSFS\controller\UserController;

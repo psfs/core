@@ -57,7 +57,7 @@ trait ApiTrait {
     public function getDomain()
     {
         $model = explode("\\", $this->getModelNamespace());
-        return (strlen($model[0]) || 1 === count($model)) ? $model[0] : $model[1];
+        return strlen($model[0]) || 1 === count($model) ? $model[0] : $model[1];
     }
 
     /**
@@ -104,7 +104,7 @@ trait ApiTrait {
                     $this->hydrateModelFromRequest($model, $item);
                     $this->list[] = $model;
                 } else {
-                    Logger::log(_('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . _('items'));
+                    Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . t('items'));
                 }
             }
         }
@@ -151,21 +151,23 @@ trait ApiTrait {
 
     /**
      * @param ModelCriteria $query
-     * @param string $pk
+     * @param string $primaryKey
      * @return ActiveRecordInterface|null
      * @throws ApiException
      */
-    protected function findPk(ModelCriteria $query, $pk) {
-        $pks = explode(Api::API_PK_SEPARATOR, urldecode($pk));
+    protected function findPk(ModelCriteria $query, $primaryKey) {
+        $pks = explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
         if(count($pks) === 1 && !empty($pks[0])) {
             $query->filterByPrimaryKey($pks[0]);
         } else {
-            $i = 0;
-            foreach($this->getPkDbName() as $key => $phpName) {
+            $item = 0;
+            foreach($this->getPkDbName() as $phpName) {
                 try {
-                    $query->filterBy($phpName, $pks[$i]);
-                    $i++;
-                    if($i >= count($pks)) break;
+                    $query->filterBy($phpName, $pks[$item]);
+                    $item++;
+                    if($item >= count($pks)) {
+                        break;
+                    }
                 } catch(\Exception $e) {
                     Logger::log($e->getMessage(), LOG_DEBUG);
                 }
@@ -189,13 +191,13 @@ trait ApiTrait {
     /**
      * Hydrate model from pk
      *
-     * @param string $pk
+     * @param string $primaryKey
      */
-    protected function hydrateModel($pk)
+    protected function hydrateModel($primaryKey)
     {
         try {
             $query = $this->prepareQuery();
-            $this->model = $this->findPk($query, $pk);
+            $this->model = $this->findPk($query, $primaryKey);
         } catch (\Exception $e) {
             Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
         }
@@ -204,13 +206,13 @@ trait ApiTrait {
     /**
      * Extract specific entity
      *
-     * @param integer $pk
+     * @param integer $primaryKey
      *
      * @return null|ActiveRecordInterface
      */
-    protected function _get($pk)
+    protected function _get($primaryKey)
     {
-        $this->hydrateModel($pk);
+        $this->hydrateModel($primaryKey);
 
         return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : NULL;
     }

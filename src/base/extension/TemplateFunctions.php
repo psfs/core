@@ -14,17 +14,17 @@ use Symfony\Component\Translation\Tests\StringClass;
 class TemplateFunctions
 {
 
-    const ASSETS_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::asset";
-    const ROUTE_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::route";
-    const CONFIG_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::config";
-    const BUTTON_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::button";
-    const WIDGET_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::widget";
-    const FORM_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::form";
-    const RESOURCE_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::resource";
-    const SESSION_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::session";
-    const EXISTS_FLASH_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::existsFlash";
-    const GET_FLASH_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::getFlash";
-    const GET_QUERY_FUNCTION = "\\PSFS\\base\\extension\\TemplateFunctions::query";
+    const ASSETS_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::asset';
+    const ROUTE_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::route';
+    const CONFIG_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::config';
+    const BUTTON_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::button';
+    const WIDGET_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::widget';
+    const FORM_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::form';
+    const RESOURCE_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::resource';
+    const SESSION_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::session';
+    const EXISTS_FLASH_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::existsFlash';
+    const GET_FLASH_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::getFlash';
+    const GET_QUERY_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::query';
 
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
@@ -37,16 +37,16 @@ class TemplateFunctions
     public static function asset($string, $name = null, $return = true)
     {
 
-        $file_path = "";
-        if (!file_exists($file_path)) {
-            $file_path = BASE_DIR . $string;
+        $filePath = '';
+        if (!file_exists($filePath)) {
+            $filePath = BASE_DIR . $string;
         }
-        $filename_path = AssetsParser::findDomainPath($string, $file_path);
+        $filenamePath = AssetsParser::findDomainPath($string, $filePath);
 
-        $file_path = self::processAsset($string, $name, $return, $filename_path);
-        $base_path = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
-        $return_path = (empty($name)) ? $base_path . '/' . $file_path : $name;
-        return ($return) ? $return_path : '';
+        $filePath = self::processAsset($string, $name, $return, $filenamePath);
+        $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
+        $returnPath = empty($name) ? $basePath . '/' . $filePath : $name;
+        return $return ? $returnPath : '';
     }
 
     /**
@@ -91,8 +91,10 @@ class TemplateFunctions
     }
 
     /**
-     * Método que devuelve un botón en html para la plantilla de formularios
      * @param array $button
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public static function button(array $button)
     {
@@ -102,20 +104,23 @@ class TemplateFunctions
     }
 
     /**
-     * Función que pinta parte de un formulario
      * @param array $field
-     * @param StringClass $label
+     * @param StringClass|null $label
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     public static function widget(array $field, StringClass $label = null)
     {
-        if (!empty($label)) {
-            $field["label"] = $label;
+        if (null !== $label) {
+            $field['label'] = $label;
         }
         //Limpiamos los campos obligatorios
-        if (!isset($field["required"])) {
-            $field["required"] = true;
-        } elseif (isset($field["required"]) && (bool)$field["required"] === false) {
-            unset($field["required"]);
+        if (!isset($field['required'])) {
+            $field['required'] = true;
+        } 
+        if (isset($field['required']) && (bool)$field['required'] === false) {
+            unset($field['required']);
         }
         Template::getInstance()->getTemplateEngine()->display('forms/field.html.twig', array(
             'field' => $field,
@@ -146,8 +151,8 @@ class TemplateFunctions
     {
         $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
-        $filename_path = self::extractPathname($path, $domains);
-        \PSFS\Services\GeneratorService::copyResources($dest, $force, $filename_path, $debug);
+        $filenamePath = self::extractPathname($path, $domains);
+        \PSFS\Services\GeneratorService::copyResources($dest, $force, $filenamePath, $debug);
         return '';
     }
 
@@ -160,30 +165,30 @@ class TemplateFunctions
      */
     private static function extractPathname($path, $domains)
     {
-        $filename_path = $path;
-        if (!file_exists($path) && !empty($domains)) {
+        $filenamePath = $path;
+        if (!empty($domains) && !file_exists($path)) {
             foreach ($domains as $domain => $paths) {
-                $domain_filename = str_replace($domain, $paths["public"], $path);
-                if (file_exists($domain_filename)) {
-                    $filename_path = $domain_filename;
+                $domainFilename = str_replace($domain, $paths['public'], $path);
+                if (file_exists($domainFilename)) {
+                    $filenamePath = $domainFilename;
                     continue;
                 }
             }
 
         }
 
-        return $filename_path;
+        return $filenamePath;
     }
 
     /**
-     * @param string $filename_path
+     * @param string $filenamePath
      */
-    private static function processCssLines($filename_path)
+    private static function processCssLines($filenamePath)
     {
-        $handle = @fopen($filename_path, 'r');
+        $handle = @fopen($filenamePath, 'r');
         if ($handle) {
             while (!feof($handle)) {
-                AssetsParser::extractCssLineResource($handle, $filename_path);
+                AssetsParser::extractCssLineResource($handle, $filenamePath);
             }
             fclose($handle);
         }
@@ -192,15 +197,18 @@ class TemplateFunctions
     /**
      * Método que copia el contenido de un recurso en su destino correspondiente
      * @param string $name
-     * @param string $filename_path
+     * @param string $filenamePath
      * @param string $base
-     * @param string $file_path
+     * @param string $filePath
      */
-    private static function putResourceContent($name, $filename_path, $base, $file_path)
+    private static function putResourceContent($name, $filenamePath, $base, $filePath)
     {
-        $data = file_get_contents($filename_path);
-        if (!empty($name)) file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
-        else file_put_contents($base . $file_path, $data);
+        $data = file_get_contents($filenamePath);
+        if (!empty($name)) {
+            file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
+        }else {
+            file_put_contents($base . $filePath, $data);
+        }
     }
 
     /**
@@ -208,27 +216,27 @@ class TemplateFunctions
      * @param string $string
      * @param string $name
      * @param boolean $return
-     * @param string $filename_path
+     * @param string $filenamePath
      *
      * @return string
      */
-    private static function processAsset($string, $name, $return, $filename_path)
+    private static function processAsset($string, $name, $return, $filenamePath)
     {
-        $file_path = $filename_path;
-        if (file_exists($filename_path)) {
-            list($base, $html_base, $file_path) = AssetsParser::calculateAssetPath($string, $name, $return, $filename_path);
+        $filePath = $filenamePath;
+        if (file_exists($filenamePath)) {
+            list($base, $htmlBase, $filePath) = AssetsParser::calculateAssetPath($string, $name, $return, $filenamePath);
             //Creamos el directorio si no existe
-            GeneratorHelper::createDir($base . $html_base);
+            GeneratorHelper::createDir($base . $htmlBase);
             //Si se ha modificado
-            if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($filename_path)) {
-                if ($html_base == 'css') {
-                    self::processCssLines($filename_path);
+            if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($filenamePath)) {
+                if ($htmlBase === 'css') {
+                    self::processCssLines($filenamePath);
                 }
-                self::putResourceContent($name, $filename_path, $base, $file_path);
+                self::putResourceContent($name, $filenamePath, $base, $filePath);
             }
         }
 
-        return $file_path;
+        return $filePath;
     }
 
     /**

@@ -1,15 +1,12 @@
 <?php
 namespace PSFS\Test\base;
 
-use http\Exception\UnexpectedValueException;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
-use PSFS\base\exception\ConfigException;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\test\base\type\helper\GeneratorHelperTest;
 
 /**
  * Class CacheTest

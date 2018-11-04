@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <database name="{{ namespace }}" defaultIdMethod="native" namespace="{{ namespace }}\Models" tablePrefix="{{ prefix }}_">
-    <vendor type="mysql">
+    <vendor type="{{ get_config('db.vendor', 'mysql') }}">
         <parameter name="Engine" value="InnoDB"/>
         <parameter name="Charset" value="utf8"/>
         <parameter name="Collate" value="utf8_unicode_ci"/>

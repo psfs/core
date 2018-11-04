@@ -12,7 +12,6 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
-use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RequestHelper;

@@ -27,8 +27,8 @@ class RequestHelper
             'X-API-LANG',
             'api_key',
         ];
-        $extra_headers = Config::getParam('cors.headers', '');
-        $headers = array_merge($headers, explode(',', $extra_headers));
+        $extraHeaders = Config::getParam('cors.headers', '');
+        $headers = array_merge($headers, explode(',', $extraHeaders));
         return array_unique($headers);
     }
 
@@ -43,17 +43,16 @@ class RequestHelper
         if (NULL !== $corsEnabled) {
             if ($corsEnabled === '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
                 if (!headers_sent()) {
-
                     // TODO include this headers in Template class output method
-                    header("Access-Control-Allow-Credentials: true");
-                    header("Access-Control-Allow-Origin: " . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
-                    header("Vary: Origin");
-                    header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS");
-                    header("Access-Control-Allow-Headers: " . implode(', ', self::getCorsHeaders()));
+                    header('Access-Control-Allow-Credentials: true');
+                    header('Access-Control-Allow-Origin: ' . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
+                    header('Vary: Origin');
+                    header('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS');
+                    header('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
                 }
                 if (Request::getInstance()->getMethod() === Request::VERB_OPTIONS) {
                     Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
-                    header("HTTP/1.1 200 OK");
+                    header('HTTP/1.1 200 OK');
                     exit();
                 }
             }
@@ -75,22 +74,28 @@ class RequestHelper
             if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',') !== false) {
                 $iplist = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
                 foreach ($iplist as $ip) {
-                    if (self::validateIpAddress($ip))
+                    if (self::validateIpAddress($ip)) {
                         return $ip;
+                    }
                 }
             } else {
-                if (self::validateIpAddress($_SERVER['HTTP_X_FORWARDED_FOR']))
+                if (self::validateIpAddress($_SERVER['HTTP_X_FORWARDED_FOR'])) {
                     return $_SERVER['HTTP_X_FORWARDED_FOR'];
+                }
             }
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_X_FORWARDED']))
+        if (!empty($_SERVER['HTTP_X_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_X_FORWARDED'])) {
             return $_SERVER['HTTP_X_FORWARDED'];
-        if (!empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && self::validateIpAddress($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+        }
+        if (!empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && self::validateIpAddress($_SERVER['HTTP_X_CLUSTER_CLIENT_IP'])) {
             return $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
-        if (!empty($_SERVER['HTTP_FORWARDED_FOR']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED_FOR']))
+        }
+        if (!empty($_SERVER['HTTP_FORWARDED_FOR']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED_FOR'])) {
             return $_SERVER['HTTP_FORWARDED_FOR'];
-        if (!empty($_SERVER['HTTP_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED']))
+        }
+        if (!empty($_SERVER['HTTP_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED'])) {
             return $_SERVER['HTTP_FORWARDED'];
+        }
 
         // return unreliable ip since all else failed
         return $_SERVER['REMOTE_ADDR'];
@@ -100,28 +105,45 @@ class RequestHelper
      * Ensures an ip address is both a valid IP and does not fall within
      * a private network range.
      */
-    public static function validateIpAddress($ip) {
-        if (strtolower($ip) === 'unknown')
+    public static function validateIpAddress($ipAddress) {
+        if (strtolower($ipAddress) === 'unknown') {
             return false;
+        }
 
         // generate ipv4 network address
-        $ip = ip2long($ip);
+        $ipAddress = ip2long($ipAddress);
 
         // if the ip is set and not equivalent to 255.255.255.255
-        if ($ip !== false && $ip !== -1) {
+        if ($ipAddress !== false && $ipAddress !== -1) {
             // make sure to get unsigned long representation of ip
             // due to discrepancies between 32 and 64 bit OSes and
             // signed numbers (ints default to signed in PHP)
-            $ip = sprintf('%u', $ip);
+            $ipAddress = sprintf('%u', $ipAddress);
             // do private network range checking
-            if ($ip >= 0 && $ip <= 50331647) return false;
-            if ($ip >= 167772160 && $ip <= 184549375) return false;
-            if ($ip >= 2130706432 && $ip <= 2147483647) return false;
-            if ($ip >= 2851995648 && $ip <= 2852061183) return false;
-            if ($ip >= 2886729728 && $ip <= 2887778303) return false;
-            if ($ip >= 3221225984 && $ip <= 3221226239) return false;
-            if ($ip >= 3232235520 && $ip <= 3232301055) return false;
-            if ($ip >= 4294967040) return false;
+            if ($ipAddress >= 0 && $ipAddress <= 50331647) {
+                return false;
+            }
+            if ($ipAddress >= 167772160 && $ipAddress <= 184549375) {
+                return false;
+            }
+            if ($ipAddress >= 2130706432 && $ipAddress <= 2147483647) {
+                return false;
+            }
+            if ($ipAddress >= 2851995648 && $ipAddress <= 2852061183) {
+                return false;
+            }
+            if ($ipAddress >= 2886729728 && $ipAddress <= 2887778303) {
+                return false;
+            }
+            if ($ipAddress >= 3221225984 && $ipAddress <= 3221226239) {
+                return false;
+            }
+            if ($ipAddress >= 3232235520 && $ipAddress <= 3232301055) {
+                return false;
+            }
+            if ($ipAddress >= 4294967040) {
+                return false;
+            }
         }
         return true;
     }

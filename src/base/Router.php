@@ -311,6 +311,7 @@ class Router
                 if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
                     $home_params = $params;
                 }
+                unset($method);
             }
             if (NULL !== $home_params) {
                 $this->routing['/'] = $home_params;
@@ -369,7 +370,7 @@ class Router
                 return $routing;
             }
             $reflection = new \ReflectionClass($namespace);
-            if (FALSE === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
+            if (false === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
                 $classComments = $reflection->getDocComment();
                 preg_match('/@api\ (.*)\n/im', $classComments, $apiPath);

@@ -2,15 +2,11 @@
 namespace PSFS\base\types;
 
 use PSFS\base\config\Config;
-use PSFS\base\exception\RouterException;
-use PSFS\base\Request;
-use PSFS\base\Router;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\interfaces\ControllerInterface;
 use PSFS\base\types\traits\JsonTrait;
-use PSFS\base\types\traits\OutputTrait;
 use PSFS\base\types\traits\RouteTrait;
 
 /**

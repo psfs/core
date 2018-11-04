@@ -2,7 +2,6 @@
 
 namespace PSFS\base\config;
 
-use PSFS\base\Security;
 use PSFS\base\types\Form;
 
 /**

@@ -14,7 +14,6 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\ApiHelper;
-use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\Api\ManagerTrait;
 
 /**

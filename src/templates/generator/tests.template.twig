@@ -2,11 +2,13 @@
 
 namespace {{ module }}\test;
 
+use PHPUnit\Framework\TestCase;
+
 /**
 *
 *
 **/
-class {{ module }}Test extends \PHPUnit_Framework_TestCase {
+class {{ module }}Test extends TestCase {
     public function test{{ module }}() {
         assertTrue(true, _("{{ module }} example Test"));
     }

@@ -3,7 +3,6 @@ namespace PSFS\base\types\helpers;
 
 use PSFS\base\Logger;
 use PSFS\base\Router;
-use PSFS\services\DocumentorService;
 
 /**
  * Class InjectorHelper

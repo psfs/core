@@ -3,8 +3,6 @@ namespace PSFS\base\types\traits;
 
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
-use PSFS\base\Request;
-use PSFS\base\Router;
 use PSFS\base\types\helpers\SlackHelper;
 
 /**
