@@ -5,6 +5,8 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\Inspector;
+use PSFS\controller\base\Admin;
 use PSFS\Dispatcher;
 
 /**
@@ -24,6 +26,7 @@ class DispatcherTest extends TestCase
     private function getInstance($config = null, $router = null, $security = null)
     {
         $dispatcher = Dispatcher::getInstance();
+        Security::setTest(false);
         if (null !== $config) {
             $dispatcher->config = $config;
         }
@@ -45,8 +48,8 @@ class DispatcherTest extends TestCase
     private function mockConfiguredDebugConfig($configured = true, $debug = true)
     {
         $config = $this->createMock(Config::class);
-        $config->expects($this->any())->method("isConfigured")->will($this->returnValue($configured));
-        $config->expects($this->any())->method("getDebugMode")->will($this->returnValue($debug));
+        $config->expects($this->any())->method('isConfigured')->will($this->returnValue($configured));
+        $config->expects($this->any())->method('getDebugMode')->will($this->returnValue($debug));
         return $config;
     }
 
@@ -80,9 +83,9 @@ class DispatcherTest extends TestCase
     public function testMem()
     {
         $dispatcher = $this->getInstance();
-        $this->assertNotNull($dispatcher->getMem("Bytes"));
-        $this->assertNotNull($dispatcher->getMem("KBytes"));
-        $this->assertNotNull($dispatcher->getMem("MBytes"));
+        $this->assertNotNull($dispatcher->getMem('Bytes'));
+        $this->assertNotNull($dispatcher->getMem('KBytes'));
+        $this->assertNotNull($dispatcher->getMem('MBytes'));
         $this->assertNotNull($dispatcher->getMem());
     }
 
@@ -120,7 +123,7 @@ class DispatcherTest extends TestCase
         $this->getInstance($this->mockConfiguredDebugConfig());
         try {
             //This throws a warning because file 'test.txt' not exists
-            file_get_contents(__DIR__ . "test.txt");
+            file_get_contents(__DIR__ . 'test.txt');
             $this->fail('Exception has not been thrown');
         } catch (\Exception $e) {
             $this->assertTrue(true);
@@ -130,12 +133,12 @@ class DispatcherTest extends TestCase
     public function testNormalExecution()
     {
         $router = $this->mockDebugRouter();
-        $router->expects($this->any())->method("execute")->willReturn("OK");
+        $router->expects($this->any())->method('execute')->willReturn('OK');
 
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
         $response = $dispatcher->run();
         $this->assertNotNull($response);
-        $this->assertEquals("OK", $response);
+        $this->assertEquals('OK', $response);
     }
 
     /**
@@ -146,10 +149,8 @@ class DispatcherTest extends TestCase
     {
         $config = $this->mockConfiguredDebugConfig(false);
         $router = $this->mockDebugRouter();
-        $router->expects($this->any())->method("httpNotFound")->willThrowException(new \PSFS\base\exception\ConfigException("CONFIG"));
-        $router->expects($this->any())->method("getAdmin")->willThrowException(new \PSFS\base\exception\ConfigException("CONFIG"));
+        $router->expects($this->any())->method('httpNotFound')->willThrowException(new \PSFS\base\exception\ConfigException('CONFIG'));
         $dispatcher = $this->getInstance($config, $router);
-
         $dispatcher->run();
     }
 
@@ -161,10 +162,10 @@ class DispatcherTest extends TestCase
     {
         $config = $this->mockConfiguredDebugConfig();
         $router = $this->mockDebugRouter();
-        $router->expects($this->any())->method("execute")->willThrowException(new \PSFS\base\exception\SecurityException("NOT AUTHORIZED"));
+        $router->expects($this->any())->method('execute')->willThrowException(new \PSFS\base\exception\SecurityException('NOT AUTHORIZED'));
         Security::dropInstance();
         $security = $this->mockDebugSecurity();
-        $security->expects($this->any())->method("notAuthorized")->willThrowException(new \PSFS\base\exception\SecurityException("NOT AUTHORIZED"));
+        $security->expects($this->any())->method('notAuthorized')->willThrowException(new \PSFS\base\exception\SecurityException('NOT AUTHORIZED'));
         $dispatcher = $this->getInstance($config, $router, $security);
 
         $dispatcher->run();
@@ -178,8 +179,8 @@ class DispatcherTest extends TestCase
     {
         $config = $this->mockConfiguredDebugConfig();
         $router = $this->mockDebugRouter();
-        $router->expects($this->any())->method("execute")->willThrowException(new \PSFS\base\exception\RouterException("NOT FOUND"));
-        $router->expects($this->any())->method("httpNotFound")->willThrowException(new \PSFS\base\exception\RouterException("NOT FOUND"));
+        $router->expects($this->any())->method('execute')->willThrowException(new \PSFS\base\exception\RouterException('NOT FOUND'));
+        $router->expects($this->any())->method('httpNotFound')->willThrowException(new \PSFS\base\exception\RouterException('NOT FOUND'));
         $dispatcher = $this->getInstance($config, $router);
 
         $dispatcher->run();
@@ -192,9 +193,20 @@ class DispatcherTest extends TestCase
     public function testCatchException()
     {
         $router = $this->mockDebugRouter();
-        $router->expects($this->any())->method("execute")->willThrowException(new \Exception("CATCH EXCEPTION"));
-        $router->expects($this->any())->method("httpNotFound")->willThrowException(new \Exception("CATCH EXCEPTION"));
+        $router->expects($this->any())->method('execute')->willThrowException(new \Exception('CATCH EXCEPTION'));
+        $router->expects($this->any())->method('httpNotFound')->willThrowException(new \Exception('CATCH EXCEPTION'));
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
         $dispatcher->run();
+    }
+
+    public function testStats() {
+        Inspector::stats('test1');
+        $stats = Inspector::getStats();
+        $this->assertNotEmpty($stats, 'Empty stats');
+        Inspector::stats('test2');
+        $secondStats = Inspector::getStats();
+        $this->assertNotEmpty($secondStats, 'Empty stats');
+        $this->assertNotEquals($stats, $secondStats, 'Stats are similar');
+
     }
 }

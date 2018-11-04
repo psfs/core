@@ -52,11 +52,10 @@ class Logger
      */
     public function __construct()
     {
-        $config = Config::getInstance();
         $args = func_get_args();
-        list($logger, $debug, $path) = $this->setup($config, $args);
+        list($logger, $debug, $path) = $this->setup($args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'a+');
-        $this->addPushLogger($logger, $debug, $config);
+        $this->addPushLogger($logger, $debug);
         $this->logLevel = Config::getParam('log.level', 'NOTICE');
     }
 
@@ -68,19 +67,18 @@ class Logger
     /**
      * @param string $logger
      * @param boolean $debug
-     * @param Config $config
      * @throws \Exception
      */
-    private function addPushLogger($logger, $debug, Config $config)
+    private function addPushLogger($logger, $debug)
     {
         $this->logger = new Monolog(strtoupper($logger));
         $this->logger->pushHandler($this->addDefaultStreamHandler($debug));
         if ($debug) {
-            $phpFireLog = $config->get('logger.phpFire');
+            $phpFireLog = Config::getParam('logger.phpFire');
             if (!empty($phpFireLog)) {
                 $this->logger->pushHandler(new FirePHPHandler());
             }
-            $memoryLog = $config->get('logger.memory');
+            $memoryLog = Config::getParam('logger.memory');
             if (!empty($memoryLog)) {
                 $this->logger->pushProcessor(new MemoryUsageProcessor());
             }
@@ -90,32 +88,29 @@ class Logger
     }
 
     /**
-     * @param Config $config
      * @param array $args
      * @return array
      * @throws exception\GeneratorException
      */
-    private function setup(Config $config, array $args = [])
+    private function setup(array $args = [])
     {
         $args = $args ?? [];
-        $debug = $config->getDebugMode();
+        $debug = Config::getParam('debug');
         $namespace = self::DEFAULT_NAMESPACE;
         if (0 !== count($args)) {
             $namespace = $args[0][0] ?? 'PSFS';
             $debug = $args[0][1] ?? true;
         }
-        $path = $this->createLoggerPath($config);
+        $path = $this->createLoggerPath();
         return array($this->cleanLoggerName($namespace), $debug, $path);
     }
 
     /**
-     * @param Config $config
-     *
      * @return string
      */
-    private function setLoggerName(Config $config)
+    private function setLoggerName()
     {
-        $logger = $config->get('platform.name') ?: self::DEFAULT_NAMESPACE;
+        $logger = Config::getParam('platform.name', self::DEFAULT_NAMESPACE);
         $logger = $this->cleanLoggerName($logger);
 
         return $logger;
@@ -135,13 +130,12 @@ class Logger
     }
 
     /**
-     * @param Config $config
      * @return string
      * @throws exception\GeneratorException
      */
-    private function createLoggerPath(Config $config)
+    private function createLoggerPath()
     {
-        $logger = $this->setLoggerName($config);
+        $logger = $this->setLoggerName();
         $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
         GeneratorHelper::createDir($path);
 
@@ -152,10 +146,11 @@ class Logger
      * @param string $msg
      * @param int $type
      * @param array $context
+     * @param boolean $force
      * @return bool
      */
-    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = []) {
-        return $this->checkLogLevel($type) ? $this->logger->addRecord($type, $msg, $this->addMinimalContext($context)) : true;
+    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = [], $force = false) {
+        return $this->checkLogLevel($type) || $force ? $this->logger->addRecord($type, $msg, $this->addMinimalContext($context)) : true;
     }
 
     /**
@@ -179,8 +174,9 @@ class Logger
      * @param string $msg
      * @param int $type
      * @param array $context
+     * @param bool $force
      */
-    public static function log($msg, $type = LOG_DEBUG, array $context = null)
+    public static function log($msg, $type = LOG_DEBUG, array $context = null, $force = false)
     {
         if(null === $context) {
             $context = [];
@@ -190,25 +186,25 @@ class Logger
         }
         switch ($type) {
             case LOG_DEBUG:
-                self::getInstance()->addLog($msg, \Monolog\Logger::DEBUG, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::DEBUG, $context, $force);
                 break;
             case LOG_WARNING:
-                self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context, $force);
                 break;
             case LOG_CRIT:
                 if(Config::getParam('log.slack.hook')) {
-                    SlackHelper::getInstance()->trace($msg, '', '', $context);
+                    SlackHelper::getInstance()->trace($msg, '', '', $context, $force);
                 }
-                self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context, $force);
                 break;
             case LOG_ERR:
-                self::getInstance()->addLog($msg, \Monolog\Logger::ERROR, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::ERROR, $context, $force);
                 break;
             case LOG_INFO:
-                self::getInstance()->addLog($msg, \Monolog\Logger::INFO, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::INFO, $context, $force);
                 break;
             default:
-                self::getInstance()->addLog($msg, \Monolog\Logger::NOTICE, $context);
+                self::getInstance()->addLog($msg, \Monolog\Logger::NOTICE, $context, $force);
                 break;
         }
     }

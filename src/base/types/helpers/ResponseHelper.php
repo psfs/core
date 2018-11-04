@@ -4,18 +4,19 @@ namespace PSFS\base\types\helpers;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\types\traits\TestTrait;
 use PSFS\Dispatcher;
 
 class ResponseHelper
 {
-
+    use TestTrait;
     /**
      * Method that sets the cookie headers
      * @param $cookies
      */
     public static function setCookieHeaders($cookies)
     {
-        if (!empty($cookies) && is_array($cookies) && false === headers_sent()) {
+        if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
             foreach ($cookies as $cookie) {
                 setcookie($cookie["name"],
                     $cookie["value"],
@@ -39,19 +40,19 @@ class ResponseHelper
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        } else {
+        } elseif(!self::isTest()) {
             header('Authorization:');
         }
     }
 
     /**
      * Método que establece el status code
-     * @param string $status_code
+     * @param string $statusCode
      */
-    public static function setStatusHeader($status_code = null)
+    public static function setStatusHeader($statusCode = null)
     {
-        if (NULL !== $status_code) {
-            header($status_code);
+        if (NULL !== $statusCode && !self::isTest()) {
+            header($statusCode);
         }
     }
 
@@ -63,7 +64,7 @@ class ResponseHelper
      */
     public static function setDebugHeaders(array $vars)
     {
-        if (Config::getParam('debug', true)) {
+        if (Config::getParam('debug', true) && !self::isTest()) {
             Logger::log('Adding debug headers to render response');
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);

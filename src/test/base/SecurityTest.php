@@ -17,10 +17,12 @@ class SecurityTest extends TestCase
      */
     public function getInstance()
     {
+        global $_SESSION;
         if(null === $_SESSION) {
             $_SESSION = [];
         }
         $instance = Security::getInstance(true);
+        Security::setTest(false);
 
         $this->assertNotNull($instance, 'Security instance is null');
         $this->assertInstanceOf(Security::class, $instance, 'Instance is different than expected');

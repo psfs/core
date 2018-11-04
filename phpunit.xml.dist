@@ -28,4 +28,7 @@
             </exclude>
         </whitelist>
     </filter>
+    <php>
+        <const name="PSFS_UNIT_TESTING_EXECUTION" value="true" />
+    </php>
 </phpunit>

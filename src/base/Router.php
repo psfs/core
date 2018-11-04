@@ -98,31 +98,31 @@ class Router
     }
 
     /**
-     * @param \Exception|NULL $e
+     * @param \Exception|NULL $exception
      * @param bool $isJson
      * @return string
      * @throws RouterException
      */
-    public function httpNotFound(\Exception $e = NULL, $isJson = false)
+    public function httpNotFound(\Exception $exception = NULL, $isJson = false)
     {
         Logger::log('Throw not found exception');
-        if (NULL === $e) {
+        if (NULL === $exception) {
             Logger::log('Not found page thrown without previous exception', LOG_WARNING);
-            $e = new \Exception(_('Page not found'), 404);
+            $exception = new \Exception(_('Page not found'), 404);
         }
-        $template = Template::getInstance()->setStatus($e->getCode());
+        $template = Template::getInstance()->setStatus($exception->getCode());
         if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
-            $response = new JsonResponse(null, false, 0, 0, $e->getMessage());
+            $response = new JsonResponse(null, false, 0, 0, $exception->getMessage());
             return $template->output(json_encode($response), 'application/json');
         }
 
-        $not_found_route = Config::getParam('route.404');
-        if(null !== $not_found_route) {
-            Request::getInstance()->redirect($this->getRoute($not_found_route, true));
+        $notFoundRoute = Config::getParam('route.404');
+        if(null !== $notFoundRoute) {
+            Request::getInstance()->redirect($this->getRoute($notFoundRoute, true));
         } else {
             return $template->render('error.html.twig', array(
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
+                'exception' => $exception,
+                'trace' => $exception->getTraceAsString(),
                 'error_page' => TRUE,
             ));
         }
@@ -169,7 +169,7 @@ class Router
         Logger::log('Executing the request');
         try {
             //Search action and execute
-            $this->searchAction($route);
+            return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
             Logger::log(_('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon($route);
@@ -184,7 +184,8 @@ class Router
     }
 
     /**
-     * @param $route
+     * @param string $route
+     * @return mixed
      * @throws AccessDeniedException
      * @throws AdminCredentialsException
      * @throws RouterException
@@ -208,7 +209,7 @@ class Router
                 $class = RouterHelper::getClassToCall($action);
                 try {
                     if($this->checkRequirements($action, $get)) {
-                        $this->executeCachedRoute($route, $action, $class, $get);
+                        return $this->executeCachedRoute($route, $action, $class, $get);
                     } else {
                         throw new RouterException(_('La ruta no es válida'), 400);
                     }
@@ -462,24 +463,6 @@ class Router
     }
 
     /**
-     * @deprecated
-     * @return array
-     */
-    public function getAdminRoutes()
-    {
-        return AdminHelper::getAdminRoutes($this->routing);
-    }
-
-    /**
-     * @deprecated
-     * @return Admin
-     */
-    public function getAdmin()
-    {
-        return Admin::getInstance();
-    }
-
-    /**
      * @return array
      */
     public function getDomains()
@@ -511,6 +494,7 @@ class Router
      * @param array $action
      * @param string $class
      * @param array $params
+     * @return mixed
      * @throws exception\GeneratorException
      * @throws ConfigException
      */
@@ -521,6 +505,7 @@ class Router
         Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, $action);
         $cache = Cache::needCache();
         $execute = TRUE;
+        $return = null;
         if (FALSE !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === FALSE) {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
             $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $cache);
@@ -533,10 +518,12 @@ class Router
         if ($execute) {
             Logger::log(_('Start executing action'));
             $this->checkPreActions($class, $action['method']);
-            if (false === call_user_func_array([$class, $action['method']], $params)) {
+            $return = call_user_func_array([$class, $action['method']], $params);
+            if (false === $return) {
                 Logger::log(_('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
             }
         }
+        return $return;
     }
 
     /**

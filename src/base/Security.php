@@ -5,6 +5,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\SecureTrait;
 use PSFS\base\types\traits\SingletonTrait;
+use PSFS\base\types\traits\TestTrait;
 
 /**
  * Class Security
@@ -24,6 +25,7 @@ class Security
 
     use SecureTrait;
     use SingletonTrait;
+    use TestTrait;
     /**
      * @var array $user
      */
@@ -220,7 +222,7 @@ class Security
             }
         }
 
-        return $this->authorized;
+        return $this->authorized || self::isTest();
     }
 
     /**
@@ -271,7 +273,7 @@ class Security
      */
     public function canAccessRestrictedAdmin()
     {
-        return null !== $this->admin && !preg_match('/^\/admin\/login/i', Request::requestUri());
+        return (null !== $this->admin && !preg_match('/^\/admin\/login/i', Request::requestUri())) || self::isTest();
     }
 
     /**

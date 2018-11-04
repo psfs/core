@@ -20,7 +20,7 @@ class ConfigController extends Admin
      * Servicio que devuelve los parámetros disponibles
      * @GET
      * @route /admin/config/params
-     * @label Parámetros de configuración de PSGS
+     * @label Parámetros de configuración de PSFS
      * @visible false
      * @return mixed
      */

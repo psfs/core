@@ -5,17 +5,26 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 
-##Framework Php Simple Fast & Secure
+## Framework Php Simple Fast & Secure
 
-Needed components to execute PSFS:
+Requirements:
 
-    * "propel/propel": "^2.0",
-    * "symfony/console": "3.0.x-dev",
-    * "symfony/finder": "3.0.x-dev",
-    * "twig/twig": "1.x-dev",
-    * "twig/extensions": "dev-master",
-    * "monolog/monolog": "1.x-dev",
-    * "matthiasmullie/minify": "^1.3"
+* php 5.6+, 7.0+
+* ext-gettext
+* ext-json
+* ext-curl
+
+Components that PSFS install:
+
+```
+"propel/propel": "^2.0"
+"symfony/console": "@stable"
+"symfony/finder": "@stable"
+"twig/twig": "@stable"
+"twig/extensions": "@stable"
+"monolog/monolog": "@stable"
+"matthiasmullie/minify": "@stable"
+```
 
 How to install using composer:
 
@@ -24,6 +33,7 @@ Install composer via: [GetComposer](https://getcomposer.org/download/)
 ```
 php composer.phar require psfs/core
 ./vendor/bin/psfs psfs:create:root
+php -S localhost:8080 -t ./html
 ```
 
 RoadMap:
@@ -41,6 +51,9 @@ RoadMap:
     * Framework documentation
         - Self documentation for apis(swagger and postman outputs)
         - PhpDoc for all files
-    * Code coverage
+    * Testing
         - 100% tests coverage
+    * Containers
+        - Docker
+        - Kubernetes
 

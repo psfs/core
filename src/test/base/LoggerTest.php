@@ -29,9 +29,12 @@ class LoggerTest extends TestCase
     public function testSingletonLoggerInstance()
     {
         $instance1 = $this->getInstance();
+        $uid1 = Logger::getUid();
         $instance2 = $this->getInstance();
+        $uid2 = $instance2->getLogUid();
 
         $this->assertEquals($instance1, $instance2, 'Singleton instances are not equals');
+        $this->assertEquals($uid1, $uid2, 'Singleton instances are not equals');
     }
 
     /**
@@ -43,17 +46,17 @@ class LoggerTest extends TestCase
             // Basic log
             Logger::log('Test normal log');
             // Warning log
-            Logger::log('Test warning log', LOG_WARNING);
+            Logger::log('Test warning log', LOG_WARNING, [], true);
             // Info log
-            Logger::log('Test info log', LOG_INFO);
+            Logger::log('Test info log', LOG_INFO, [], true);
             // Error log
-            Logger::log('Test error log', LOG_ERR);
+            Logger::log('Test error log', LOG_ERR, [], true);
             // Critical log
-            Logger::log('Test critical log', LOG_CRIT);
+            Logger::log('Test critical log', LOG_CRIT, [], true);
             // Debug log
-            Logger::log('Test debug logs', LOG_DEBUG);
+            Logger::log('Test debug logs', LOG_DEBUG, [], true);
             // Other logs
-            Logger::log('Test other logs', LOG_CRON);
+            Logger::log('Test other logs', LOG_CRON, [], true);
         } catch(\Exception $e) {
             $this->assertFalse(true, $e->getMessage());
         } finally {
