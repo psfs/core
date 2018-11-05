@@ -50,7 +50,7 @@ class I18nController extends Admin
         $translations = array_merge($translations, GeneratorService::findTranslations(CORE_DIR, $locale));
         $translations = array_merge($translations, GeneratorService::findTranslations(CACHE_DIR, $locale));
 
-        $translations[] = 'msgfmt {$locale_path}translations.po -o {$locale_path}translations.mo';
+        $translations[] = "msgfmt {$localePath}translations.po -o {$localePath}translations.mo";
         $translations[] = shell_exec('export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt '. $localePath . 'translations.po -o ' . $localePath . 'translations.mo');
         return $this->render('translations.html.twig', array(
             'translations' => $translations,

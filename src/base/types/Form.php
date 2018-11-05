@@ -69,7 +69,7 @@ abstract class Form extends Singleton implements FormType
     public function add($name, array $value = array())
     {
         $this->fields[$name] = $value;
-        $this->fields[$name]['name'] = $this->getName() . '[{$name}]';
+        $this->fields[$name]['name'] = $this->getName() . '['.$name.']';
         $this->fields[$name]['id'] = $this->getName() . '_' . $name;
         $this->fields[$name]['placeholder'] = array_key_exists('placeholder', $value) ? $value['placeholder'] : $name;
         $this->fields[$name]['hasLabel'] = array_key_exists('hasLabel', $value) ? $value['hasLabel'] : true;
@@ -431,7 +431,7 @@ abstract class Form extends Singleton implements FormType
         //Verificamos si es obligatorio
         $valid = true;
         if ((!array_key_exists('required', $field) || false !== (bool)$field['required']) && $this->checkEmpty($field['value'])) {
-            $this->setError($key, str_replace('%s', '<strong>{$key}</strong>', t('El campo %s es oligatorio')));
+            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('El campo %s es oligatorio')));
             $field['error'] = $this->getError($key);
             $valid = false;
         }
@@ -442,7 +442,7 @@ abstract class Form extends Singleton implements FormType
             && !empty($field['value'])
             && preg_match('/' . $field['pattern'] . '/', $field['value']) === 0
         ) {
-            $this->setError($key, str_replace('%s', '<strong>{$key}</strong>', t('El campo %s no tiene un formato válido')));
+            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('El campo %s no tiene un formato válido')));
             $field['error'] = $this->getError($key);
             $valid = false;
         }

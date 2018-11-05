@@ -22,17 +22,18 @@ class ConfigForm extends Form
      */
     public function __construct($route, array $required, array $optional = [], array $data = [])
     {
+        parent::__construct();
         $this->setAction($route);
         //Añadimos los campos obligatorios
         foreach ($required as $field) {
-            $type = (in_array($field, Config::$encrypted)) ? "password" : "text";
-            $value = (isset(Config::$defaults[$field])) ? Config::$defaults[$field] : null;
+            $type = in_array($field, Config::$encrypted) ? 'password' : 'text';
+            $value = isset(Config::$defaults[$field]) ? Config::$defaults[$field] : null;
             $this->add($field, array(
-                "label" => _($field),
-                "class" => "col-md-6",
-                "required" => true,
-                "type" => $type,
-                "value" => $value,
+                'label' => _($field),
+                'class' => 'col-md-6',
+                'required' => true,
+                'type' => $type,
+                'value' => $value,
             ));
         }
         $this->add(Form::SEPARATOR);
@@ -41,11 +42,11 @@ class ConfigForm extends Form
                 if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
                     $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($field, array(
-                        "label" => _($field),
-                        "class" => "col-md-6",
-                        "required" => false,
-                        "value" => $data[$field],
-                        "type" => $type,
+                        'label' => _($field),
+                        'class' => 'col-md-6',
+                        'required' => false,
+                        'value' => $data[$field],
+                        'type' => $type,
                     ));
                 }
             }
@@ -61,11 +62,11 @@ class ConfigForm extends Form
                 if (strlen($data[$field]) > 0) {
                     $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($extraKeys[$key], array(
-                        "label" => $field,
-                        "class" => "col-md-6",
-                        "required" => false,
-                        "value" => $data[$field],
-                        "type" => $type,
+                        'label' => $field,
+                        'class' => 'col-md-6',
+                        'required' => false,
+                        'value' => $data[$field],
+                        'type' => $type,
                     ));
                 }
             }
@@ -73,23 +74,23 @@ class ConfigForm extends Form
         $this->add(Form::SEPARATOR);
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
-            "class" => "form-horizontal",
+            'class' => 'form-horizontal',
         ));
         //Hidratamos el formulario
         $this->setData($data);
         //Añadimos las acciones del formulario
         $add = [
-            "class" => "btn-warning md-default",
-            "icon" => "fa-plus",
+            'class' => 'btn-warning md-default',
+            'icon' => 'fa-plus',
         ];
         if(Config::getParam('admin.version', 'v1') === 'v1') {
-            $add["onclick"] = "javascript:addNewField(document.getElementById('" . $this->getName() . "'));";
+            $add['onclick'] = 'javascript:addNewField(document.getElementById("' . $this->getName() . '"));';
         } else {
-            $add["ng-click"] = "addNewField()";
+            $add['ng-click'] = 'addNewField()';
         }
-        $this->addButton('submit', _("Guardar configuración"), "submit", array(
-                "class" => "btn-success col-md-offset-2 md-primary",
-                "icon" => "fa-save",
+        $this->addButton('submit', _('Guardar configuración'), 'submit', array(
+                'class' => 'btn-success col-md-offset-2 md-primary',
+                'icon' => 'fa-save',
             ))
             ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', $add);
     }
@@ -100,7 +101,7 @@ class ConfigForm extends Form
      */
     public function getName()
     {
-        return "config";
+        return 'config';
     }
 
     /**
@@ -109,6 +110,6 @@ class ConfigForm extends Form
      */
     public function getTitle()
     {
-        return _("Parámetros necesarios para la ejecución de PSFS");
+        return t('Parámetros necesarios para la ejecución de PSFS');
     }
 }

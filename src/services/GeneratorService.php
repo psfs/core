@@ -39,21 +39,21 @@ class GeneratorService extends Service
      */
     public static function findTranslations($path, $locale)
     {
-        $locale_path = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
-        $locale_path .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
+        $localePath = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
+        $localePath .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
         $translations = array();
         if (file_exists($path)) {
             $d = dir($path);
             while (false !== ($dir = $d->read())) {
-                GeneratorHelper::createDir($locale_path);
-                if (!file_exists($locale_path . 'translations.po')) {
-                    file_put_contents($locale_path . 'translations.po', '');
+                GeneratorHelper::createDir($localePath);
+                if (!file_exists($localePath . 'translations.po')) {
+                    file_put_contents($localePath . 'translations.po', '');
                 }
                 $inspect_path = realpath($path . DIRECTORY_SEPARATOR . $dir);
                 $cmd_php = "export PATH=\$PATH:/opt/local/bin; xgettext " .
                     $inspect_path . DIRECTORY_SEPARATOR .
-                    "*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$locale_path}translations.po";
+                    "*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$localePath}translations.po";
                 if (is_dir($path . DIRECTORY_SEPARATOR . $dir) && preg_match('/^\./', $dir) == 0) {
                     $res = _('Revisando directorio: ') . $inspect_path;
                     $res .= _('Comando ejecutado: ') . $cmd_php;
