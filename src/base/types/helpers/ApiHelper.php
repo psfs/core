@@ -187,7 +187,7 @@ class ApiHelper
         try {
             foreach($tableMap->getColumns() as $tableMapColumn) {
                 $columnName = $tableMapColumn->getPhpName();
-                if(preg_match('/'.$field.'/i', $columnName)) {
+                if(preg_match('/'.$field.'/i', $columnName) && strlen($field) === strlen($columnName)) {
                     $column = $tableMapColumn;
                     break;
                 }
