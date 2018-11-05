@@ -251,9 +251,9 @@
          * @returns {*}
          * @private
          */
-        function __download($method, $url, $data) {
+        function __download($method, $url, $data, contentType) {
             var config = __prepare($method, $url, $data);
-            config.headers['Content-Type'] = 'blob';
+            config.headers['Content-Type'] = contentType || 'blob';
             config.headers['Accept'] = 'blob';
             config.headers['Access-Control-Expose-Headers'] = 'Filename';
             config.responseType = "blob";
@@ -314,16 +314,16 @@
             $upload: function(url, data) {
                 return __upload(url, data);
             },
-            $download: function(method, url, queryData) {
+            $download: function(method, url, queryData, contentType) {
                 method = method || 'GET';
                 var promise;
                 switch(method.toUpperCase()) {
                     default:
                     case 'GET':
-                        promise = __download('GET', url, queryData);
+                        promise = __download('GET', url, queryData, contentType);
                         break;
                     case 'POST':
-                        promise = __download('POST', url, queryData);
+                        promise = __download('POST', url, queryData, contentType);
                         break;
                 }
                 return promise;
