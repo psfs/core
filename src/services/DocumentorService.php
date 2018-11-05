@@ -52,10 +52,10 @@ class DocumentorService extends Service
             foreach ($domains as $module => $info) {
                 try {
                     $module = preg_replace('/(@|\/)/', '', $module);
-                    if ($module === $requestModule && 0 === stripos($module, 'ROOT')) {
+                    if ($module === $requestModule && !preg_match('/^ROOT/i', $module)) {
                         $modules = [
                             'name' => $module,
-                            'path' => dirname($info['template'] . DIRECTORY_SEPARATOR . '..'),
+                            'path' => dirname($info['base'] . DIRECTORY_SEPARATOR . '..'),
                         ];
                     }
                 } catch (\Exception $e) {
@@ -163,7 +163,7 @@ class DocumentorService extends Service
      */
     protected function checkDeprecated($comments = '')
     {
-        return false !== preg_match('/@deprecated\n/i', $comments);
+        return false != preg_match('/@deprecated\n/i', $comments);
     }
 
     /**
