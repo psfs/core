@@ -121,8 +121,8 @@
      * Message Service
      * @type {*[]}
      */
-    var httpService = ['$rootScope', '$log', '$http', '$msgSrv',
-        function($rootScope, $log, $http, $msgSrv) {
+    var httpService = ['$rootScope', '$log', '$http', '$msgSrv', '$httpParamSerializer',
+        function($rootScope, $log, $http, $msgSrv, $httpParamSerializer) {
         var srvConfig = {
             psfsToken: null,
             psfsTokenUrl: null,
@@ -248,6 +248,7 @@
          * @param $method
          * @param $url
          * @param $data
+         * @param contentType
          * @returns {*}
          * @private
          */
@@ -259,6 +260,15 @@
             config.responseType = "blob";
             config.transformRequest = angular.identity;
             config.transformResponse = angular.identity;
+
+            switch(contentType) {
+                case 'application/json':
+                    config.data = JSON.stringify(config.data);
+                    break;
+                case 'text/html':
+                    config.data = $httpParamSerializer(config.data);
+                    break;
+            }
 
             $msgSrv.$config({
                 debug: srvConfig.debug
