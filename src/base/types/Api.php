@@ -157,8 +157,9 @@ abstract class Api extends Singleton
             }
         }
         if (!$orderAdded) {
-            foreach($this->getPkDbName() as $pk => $phpName) {
-                $query->addAscendingOrderByColumn($pk);
+            $pks = $this->getPkDbName();
+            foreach(array_keys($pks) as $key) {
+                $query->addAscendingOrderByColumn($key);
             }
         }
         Logger::log(static::class . ' extract orders end', LOG_DEBUG);
@@ -195,7 +196,7 @@ abstract class Api extends Singleton
             $this->checkReturnFields($query);
             $this->addOrders($query);
             list($page, $limit) = $this->extractPagination();
-            if ($limit == -1) {
+            if ($limit === -1) {
                 $this->list = $query->find($this->con);
             } else {
                 $this->list = $query->paginate($page, $limit, $this->con);
@@ -223,7 +224,7 @@ abstract class Api extends Singleton
             $message = i18n::_('No se han encontrado elementos para la búsqueda');
         }
 
-        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
+        return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
     }
 
     /**
@@ -249,7 +250,7 @@ abstract class Api extends Singleton
             $message = i18n::_('No se ha encontrado el elemento solicitado');
         }
 
-        return $this->json(new JsonResponse($return, ($code === 200), $total, $pages, $message), $code);
+        return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
     }
 
     /**
@@ -386,7 +387,6 @@ abstract class Api extends Singleton
         $this->action = self::API_ACTION_BULK;
         $saved = FALSE;
         $status = 400;
-        $model = null;
         $message = null;
         try {
             $this->hydrateBulkRequest();

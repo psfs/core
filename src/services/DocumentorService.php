@@ -9,6 +9,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
@@ -343,24 +344,7 @@ class DocumentorService extends Service
                     if(null !== $field->getDefaultValue()) {
                         $info['default'] = $field->getDefaultValue();
                     }
-                    switch(Config::getParam('api.field.type', TableMap::TYPE_PHPNAME)) {
-                        case 'UpperCamelCase':
-                        case TableMap::TYPE_PHPNAME:
-                            $payload[$field->getPhpName()] = $info;
-                            break;
-                        case 'camelCase':
-                        case 'lowerCamelCase':
-                        case TableMap::TYPE_CAMELNAME:
-                            $payload[lcfirst($field->getPhpName())] = $info;
-                            break;
-                        case 'dbColumn':
-                        case TableMap::TYPE_COLNAME:
-                            $payload[$field->getFullyQualifiedName()] = $info;
-                            break;
-                        case TableMap::TYPE_FIELDNAME:
-                            $payload[$field->getName()] = $info;
-                            break;
-                    }
+                    $payload[ApiHelper::getColumnMapName($field)] = $info;
                 }
             } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
                 $payload = $this->extractDtoProperties($namespace);

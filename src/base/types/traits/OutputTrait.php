@@ -135,7 +135,7 @@ trait OutputTrait {
     private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
     {
         $powered = Config::getParam('poweredBy', 'PSFS');
-        header('X-Powered-By: $powered');
+        header('X-Powered-By: ' . $powered);
         ResponseHelper::setStatusHeader($this->getStatusCode());
         ResponseHelper::setAuthHeaders($this->isPublicZone());
         ResponseHelper::setCookieHeaders($cookies);

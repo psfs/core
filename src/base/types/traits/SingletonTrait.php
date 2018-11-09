@@ -64,7 +64,7 @@ Trait SingletonTrait
     /**
      * Try to initiate the class only once
      * @param mixed $instance
-     * @param mixe $args
+     * @param mixed $args
      */
     private static function _init($instance, $args = null)
     {
@@ -72,7 +72,7 @@ Trait SingletonTrait
         if (method_exists($instance, 'isLoaded')) {
             $loaded = $instance->isLoaded();
         }
-        if (false === $loaded && method_exists($instance, "init")) {
+        if (false === $loaded && method_exists($instance, 'init')) {
             $instance->init($args);
         }
     }

@@ -11,6 +11,7 @@ use PSFS\base\exception\ApiException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\Api;
+use PSFS\base\types\helpers\ApiHelper;
 
 /**
  * Trait MutationTrait
@@ -67,17 +68,22 @@ trait MutationTrait
         return (null !== $tableMapClass) ? $tableMapClass::getTableMap() : null;
     }
 
+    /**
+     * @return array
+     * @throws ApiException
+     */
     protected function getPkDbName()
     {
         /** @var TableMap $tableMap */
         $tableMap = $this->getTableMap();
         $pks = $tableMap->getPrimaryKeys();
-        if (count($pks) == 1) {
+        if (count($pks) === 1) {
             $pks = array_keys($pks);
             return [
                 $tableMap::TABLE_NAME . '.' . $pks[0] => Api::API_MODEL_KEY_FIELD
             ];
-        } elseif (count($pks) > 1) {
+        }
+        if (count($pks) > 1) {
             $apiPks = [];
             $principal = '';
             $sep = 'CONCAT(';
@@ -89,9 +95,8 @@ trait MutationTrait
             $principal .= ')';
             $apiPks[$principal] = Api::API_MODEL_KEY_FIELD;
             return $apiPks;
-        } else {
-            throw new ApiException(_('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
         }
+        throw new ApiException(t('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
     }
 
     /**
@@ -204,9 +209,9 @@ trait MutationTrait
             $modelI18nTableMap = $modelI18nTableMapClass::getTableMap();
             foreach($modelI18nTableMap->getColumns() as $columnMap) {
                 if(!$columnMap->isPrimaryKey()) {
-                    $query->withColumn($modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName(), $columnMap->getPhpName());
+                    $query->withColumn($columnMap->getFullyQualifiedName(), ApiHelper::getColumnMapName($columnMap));
                 } elseif(!$columnMap->isForeignKey()) {
-                    $query->withColumn('IFNULL(' . $modelI18nTableMapClass::TABLE_NAME . '.' . $columnMap->getName() . ', "'.$this->lang.'")', $columnMap->getPhpName());
+                    $query->withColumn('IFNULL(' . $columnMap->getFullyQualifiedName() . ', "'.$this->lang.'")', ApiHelper::getColumnMapName($columnMap));
                 }
             }
         }
@@ -217,7 +222,7 @@ trait MutationTrait
      * @param array $data
      */
     protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = []) {
-        $model->fromArray($data);
+        $model->fromArray($data, ApiHelper::getFieldTypes());
         $tableMap = $this->getTableMap();
         try {
             if($tableMap->hasRelation($tableMap->getPhpName() . 'I18n'))
@@ -226,10 +231,11 @@ trait MutationTrait
                 $i18NTableMap = $relateI18n->getLocalTable();
                 foreach($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
-                    if(!($columnMap->isPrimaryKey() && $columnMap->isForeignKey())
-                        &&array_key_exists($columnMap->getPhpName(), $data)
-                        && method_exists($model, $method)) {
-                        $model->$method($data[$columnMap->getPhpName()]);
+                    $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
+                    if(array_key_exists($dtoColumnName, $data)
+                        && method_exists($model, $method)
+                        && !($columnMap->isPrimaryKey() && $columnMap->isForeignKey())) {
+                        $model->$method($data[$dtoColumnName]);
                     }
                 }
             }
@@ -242,27 +248,6 @@ trait MutationTrait
      * Check and change the fieldType for API dto
      */
     protected function checkFieldType() {
-        $configType = Config::getParam('api.field.type');
-        switch($configType) {
-            case 'UpperCamelCase':
-            case TableMap::TYPE_PHPNAME:
-                $this->fieldType = TableMap::TYPE_PHPNAME;
-                break;
-            case 'camelCase':
-            case 'lowerCamelCase':
-            case TableMap::TYPE_CAMELNAME:
-                $this->fieldType = TableMap::TYPE_CAMELNAME;
-                break;
-            case 'dbColumn':
-            case TableMap::TYPE_COLNAME:
-                $this->fieldType = TableMap::TYPE_COLNAME;
-                break;
-            case TableMap::TYPE_FIELDNAME:
-                $this->fieldType = TableMap::TYPE_FIELDNAME;
-                break;
-            case TableMap::TYPE_NUM:
-                $this->fieldType = TableMap::TYPE_NUM;
-                break;
-        }
+        $this->fieldType = ApiHelper::getFieldTypes();
     }
 }

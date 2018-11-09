@@ -47,7 +47,8 @@ class ApiHelper
             if(null !== $relateI18n) {
                 $i18NTableMap = $relateI18n->getLocalTable();
                 foreach($i18NTableMap->getColumns() as $columnMap) {
-                    if(!$form->fieldExists($columnMap->getPhpName())) {
+                    $columnName = self::getColumnMapName($columnMap);
+                    if(!$form->fieldExists($columnName)) {
                         $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
                         if(null !== $fDto) {
                             $fDto->pk = false;
@@ -343,7 +344,7 @@ class ApiHelper
                 $fDto->pk = true;
             }
         }
-        switch(Config::getParam('api.field.type', TableMap::TYPE_PHPNAME)) {
+        switch(Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
             default:
             case TableMap::TYPE_PHPNAME:
                 $fDto->name = $mappedColumn->getPhpName();
@@ -412,5 +413,57 @@ class ApiHelper
             unset($result[$modelPk->getPhpName()]);
         }
         return $result;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getFieldTypes() {
+        $configType = Config::getParam('api.field.case');
+        switch($configType) {
+            case 'UpperCamelCase':
+            case TableMap::TYPE_PHPNAME:
+                $fieldType = TableMap::TYPE_PHPNAME;
+                break;
+            case 'camelCase':
+            case 'lowerCamelCase':
+            case TableMap::TYPE_CAMELNAME:
+                $fieldType = TableMap::TYPE_CAMELNAME;
+                break;
+            case 'dbColumn':
+            case TableMap::TYPE_COLNAME:
+                $fieldType = TableMap::TYPE_COLNAME;
+                break;
+            case TableMap::TYPE_FIELDNAME:
+                $fieldType = TableMap::TYPE_FIELDNAME;
+                break;
+            case TableMap::TYPE_NUM:
+                $fieldType = TableMap::TYPE_NUM;
+                break;
+        }
+        return $fieldType;
+    }
+
+    public static function getColumnMapName(ColumnMap $field) {
+        switch(self::getFieldTypes()) {
+            default:
+            case 'UpperCamelCase':
+            case TableMap::TYPE_PHPNAME:
+                $columnName =$field->getPhpName();
+                break;
+            case 'camelCase':
+            case 'lowerCamelCase':
+            case TableMap::TYPE_CAMELNAME:
+                $columnName = lcfirst($field->getPhpName());
+                break;
+            case 'dbColumn':
+            case TableMap::TYPE_COLNAME:
+                $columnName = $field->getFullyQualifiedName();
+                break;
+            case TableMap::TYPE_FIELDNAME:
+                $columnName = $field->getName();
+                break;
+        }
+        return $columnName;
     }
 }

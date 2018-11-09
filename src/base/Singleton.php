@@ -103,14 +103,14 @@ class Singleton
     {
         if (!$this->isLoaded()) {
             $filename = sha1(get_class($this));
-            $cacheFilename = 'reflections' . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . ".json";
+            $cacheFilename = 'reflections' . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . '.json';
             /** @var \PSFS\base\Cache $cacheService */
             $cacheService = Cache::getInstance();
             /** @var \PSFS\base\config\Config $configService */
             $configService = Config::getInstance();
             $cache = Cache::canUseMemcache() ? Cache::MEMCACHE : Cache::JSON;
             $properties = $cacheService->getDataFromFile($cacheFilename, $cache);
-            if (true === $configService->getDebugMode() || !$properties) {
+            if (!$properties || true === $configService->getDebugMode()) {
                 $properties = InjectorHelper::getClassProperties(get_class($this));
                 $cacheService->storeData($cacheFilename, $properties, $cache);
             }
