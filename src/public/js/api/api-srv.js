@@ -128,7 +128,7 @@
             psfsTokenUrl: null,
             userToken: null,
             debug: true,
-            lang: document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es',
+            lang: defaultLocale || document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es_ES',
             useQueryLang: document.getElementsByTagName('HTML')[0].getAttribute('data-query-header') || false
         };
 

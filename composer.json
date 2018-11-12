@@ -4,7 +4,7 @@
     "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "homepage": "https://github.com/psfs/core",
     "require": {
-        "php" : "^5.6 || ^7.0",
+        "php" : "^7.0",
         "ext-gettext": "*",
         "ext-json": "*",
         "ext-curl": "*",
