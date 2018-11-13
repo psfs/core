@@ -421,6 +421,7 @@ class ApiHelper
     public static function getFieldTypes() {
         $configType = Config::getParam('api.field.case');
         switch($configType) {
+            default:
             case 'UpperCamelCase':
             case TableMap::TYPE_PHPNAME:
                 $fieldType = TableMap::TYPE_PHPNAME;
