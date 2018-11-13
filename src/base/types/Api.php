@@ -133,7 +133,7 @@ abstract class Api extends Singleton
         $page = array_key_exists(self::API_PAGE_FIELD, $this->query) ? $this->query[self::API_PAGE_FIELD] : 1;
         $limit = array_key_exists(self::API_LIMIT_FIELD, $this->query) ? $this->query[self::API_LIMIT_FIELD] : 100;
         Logger::log(static::class . ' extract pagination end', LOG_DEBUG);
-        return array($page, $limit);
+        return array($page, (int)$limit);
     }
 
     /**
