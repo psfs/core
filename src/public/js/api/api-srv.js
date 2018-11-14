@@ -123,12 +123,18 @@
      */
     var httpService = ['$rootScope', '$log', '$http', '$msgSrv', '$httpParamSerializer',
         function($rootScope, $log, $http, $msgSrv, $httpParamSerializer) {
+        var locale = document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es_ES';
+        try {
+            locale = defaultLocale || locale;
+        } catch(e) {
+            // defaultLocale variable does not exists
+        }
         var srvConfig = {
             psfsToken: null,
             psfsTokenUrl: null,
             userToken: null,
             debug: true,
-            lang: defaultLocale || document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es_ES',
+            lang: locale,
             useQueryLang: document.getElementsByTagName('HTML')[0].getAttribute('data-query-header') || false
         };
 
