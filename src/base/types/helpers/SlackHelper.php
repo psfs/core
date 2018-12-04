@@ -28,8 +28,9 @@ class SlackHelper extends Service {
             'text' => 'PSFS Error notifier',
             'attachments' => [
                 [
+                    "author_name" => $request->getRootUrl(true),
                     "text" => $file . (strlen($line) ? ' [' . $line . ']' : ''),
-                    "color" => "danger",
+                    "color" => Config::getParam('debug', true) ? 'warning' : "danger",
                     "title" => $message,
                     'fallback' => 'PSFS Error notifier',
                     "fields" => [
