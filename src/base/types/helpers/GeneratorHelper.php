@@ -57,7 +57,7 @@ class GeneratorHelper
     {
         try {
             if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
-                throw new \Exception(_('Can\'t create directory ') . $dir);
+                throw new \Exception(t('Can\'t create directory ') . $dir);
             }
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_WARNING);
@@ -95,12 +95,12 @@ class GeneratorHelper
             if(class_exists($namespace)) {
                 $reflector = new \ReflectionClass($namespace);
                 if(!$reflector->isSubclassOf(\PSFS\base\types\Api::class)) {
-                    throw new GeneratorException(_('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
+                    throw new GeneratorException(t('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
                 } elseif(!$reflector->isAbstract()) {
-                    throw new GeneratorException(_('La clase definida debe ser abstracta'), 501);
+                    throw new GeneratorException(t('La clase definida debe ser abstracta'), 501);
                 }
             } else {
-                throw new GeneratorException(_('La clase definida para extender la API no existe'), 501);
+                throw new GeneratorException(t('La clase definida para extender la API no existe'), 501);
             }
         }
     }

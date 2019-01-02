@@ -19,7 +19,7 @@ abstract class AuthApi extends Api
     {
         parent::init();
         if (!$this->checkAuth()) {
-            return $this->json(new JsonResponse(_('Not authorized'), FALSE), 401);
+            return $this->json(new JsonResponse(t('Not authorized'), FALSE), 401);
         }
     }
 

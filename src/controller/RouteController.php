@@ -53,11 +53,11 @@ class RouteController extends Admin
         try {
             $router->hydrateRouting();
             $router->simpatize();
-            Security::getInstance()->setFlash("callback_message", _("Rutas generadas correctamente"));
+            Security::getInstance()->setFlash("callback_message", t("Rutas generadas correctamente"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
-            Security::getInstance()->setFlash("callback_message", _("Algo no ha salido bien, revisa los logs"));
+            Security::getInstance()->setFlash("callback_message", t("Algo no ha salido bien, revisa los logs"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
         }
         return $this->redirect('admin-routes');

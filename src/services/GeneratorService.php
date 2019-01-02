@@ -55,8 +55,8 @@ class GeneratorService extends Service
                     $inspect_path . DIRECTORY_SEPARATOR .
                     "*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$localePath}translations.po";
                 if (is_dir($path . DIRECTORY_SEPARATOR . $dir) && preg_match('/^\./', $dir) == 0) {
-                    $res = _('Revisando directorio: ') . $inspect_path;
-                    $res .= _('Comando ejecutado: ') . $cmd_php;
+                    $res = t('Revisando directorio: ') . $inspect_path;
+                    $res .= t('Comando ejecutado: ') . $cmd_php;
                     $res .= shell_exec($cmd_php);
                     usleep(10);
                     $translations[] = $res;
@@ -402,7 +402,7 @@ class GeneratorService extends Service
                 Logger::log($e->getMessage(), LOG_ERR);
             }
         } else {
-            Logger::log($filename . _(' not exists or cant write'), LOG_ERR);
+            Logger::log($filename . t(' not exists or cant write'), LOG_ERR);
         }
         return $created;
     }

@@ -37,7 +37,7 @@ class AssetsParser
         $this->type = $type;
         $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
-        $this->debug = Config::getParam('debug');
+        $this->debug = Config::getParam('debug', true);
         $this->cdnPath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
     }
 
@@ -202,7 +202,7 @@ class AssetsParser
     {
         GeneratorHelper::createDir(dirname($path));
         if ("" !== $content && false === file_put_contents($path, $content)) {
-            throw new ConfigException(_('No se tienen permisos para escribir en ' . $path));
+            throw new ConfigException(t('No se tienen permisos para escribir en ' . $path));
         }
     }
 

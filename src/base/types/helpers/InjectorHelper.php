@@ -124,7 +124,7 @@ class InjectorHelper
         $label = null;
         preg_match('/@label\ (.*)\n/i', $doc, $matches);
         if(count($matches)) {
-            $label = _($matches[1]);
+            $label = t($matches[1]);
         }
         return $label;
     }

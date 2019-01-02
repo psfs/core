@@ -29,21 +29,21 @@ class ModuleForm extends Form
             ->setAttrs(array());
 
         $controllerTypes = array(
-            "Normal" => _("Normal"),
-            "Auth" => _("Requiere autenticación de usuario"),
-            "AuthAdmin" => _("Requiere autenticación de administrador"),
+            "Normal" => t("Normal"),
+            "Auth" => t("Requiere autenticación de usuario"),
+            "AuthAdmin" => t("Requiere autenticación de administrador"),
         );
         $this->add('module', array(
-            'label' => _('Nombre del Módulo'),
+            'label' => t('Nombre del Módulo'),
         ))->add('controllerType', array(
-            'label' => _('Tipo de controlador'),
+            'label' => t('Tipo de controlador'),
             'type' => 'select',
             'data' => $controllerTypes,
             'required' => false
         ))->add('api', array(
-            'label' => _('Clase personalizada para API'),
+            'label' => t('Clase personalizada para API'),
             'required' => false,
-            'placeholder' => _('Namespace de la clase completo'),
+            'placeholder' => t('Namespace de la clase completo'),
         ));
         //Aplicamos estilo al formulario
         $this->setAttrs(array(
@@ -58,7 +58,7 @@ class ModuleForm extends Form
      */
     public function getTitle()
     {
-        return _('Gestión de Módulos');
+        return t('Gestión de Módulos');
     }
 
     /**

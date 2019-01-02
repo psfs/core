@@ -283,7 +283,8 @@ class Request
      */
     public function getServerName()
     {
-        return $this->getServer('SERVER_NAME');
+        $serverName = $this->getServer('SERVER_NAME', 'localhost');
+        return strlen($serverName) ? $serverName : $this->getServer('HTTP_HOST', 'localhost');
     }
 
     /**
@@ -307,7 +308,7 @@ class Request
         if (!empty($protocol)) {
             $url = $protocol . $url;
         }
-        if (!in_array($this->getServer('SERVER_PORT'), [80, 443], true)) {
+        if (!in_array((integer)$this->getServer('SERVER_PORT'), [80, 443], true)) {
             $url .= ':' . $this->getServer('SERVER_PORT');
         }
         return $url;

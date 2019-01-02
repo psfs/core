@@ -61,10 +61,10 @@ class UserController extends Admin
         if ($form->isValid()) {
             if (Security::save($form->getData())) {
                 Logger::log('Configuration saved successful');
-                Security::getInstance()->setFlash("callback_message", _("Usuario agregado correctamente"));
+                Security::getInstance()->setFlash("callback_message", t("Usuario agregado correctamente"));
                 Security::getInstance()->setFlash("callback_route", Router::getInstance()->getRoute("admin", true));
             } else {
-                throw new ConfigException(_('Error al guardar los administradores, prueba a cambiar los permisos'));
+                throw new ConfigException(t('Error al guardar los administradores, prueba a cambiar los permisos'));
             }
         }
         return Template::getInstance()->render('admin.html.twig', array(
@@ -139,11 +139,11 @@ class UserController extends Admin
                 $template = "redirect.html.twig";
                 $params = array(
                     'route' => $form->getFieldValue("route"),
-                    'status_message' => _("Acceso permitido... redirigiendo!!"),
+                    'status_message' => t("Acceso permitido... redirigiendo!!"),
                     'delay' => 1,
                 );
             } else {
-                $form->setError("user", _("El usuario no tiene acceso a la web"));
+                $form->setError("user", t("El usuario no tiene acceso a la web"));
             }
         }
         return $tpl->render($template, $params, $cookies);

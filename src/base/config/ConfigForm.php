@@ -29,7 +29,7 @@ class ConfigForm extends Form
             $type = in_array($field, Config::$encrypted) ? 'password' : 'text';
             $value = isset(Config::$defaults[$field]) ? Config::$defaults[$field] : null;
             $this->add($field, array(
-                'label' => _($field),
+                'label' => t($field),
                 'class' => 'col-md-6',
                 'required' => true,
                 'type' => $type,
@@ -42,7 +42,7 @@ class ConfigForm extends Form
                 if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
                     $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($field, array(
-                        'label' => _($field),
+                        'label' => t($field),
                         'class' => 'col-md-6',
                         'required' => false,
                         'value' => $data[$field],
@@ -88,11 +88,11 @@ class ConfigForm extends Form
         } else {
             $add['ng-click'] = 'addNewField()';
         }
-        $this->addButton('submit', _('Guardar configuración'), 'submit', array(
+        $this->addButton('submit', t('Guardar configuración'), 'submit', array(
                 'class' => 'btn-success col-md-offset-2 md-primary',
                 'icon' => 'fa-save',
             ))
-            ->addButton('add_field', _('Añadir nuevo parámetro'), 'button', $add);
+            ->addButton('add_field', t('Añadir nuevo parámetro'), 'button', $add);
     }
 
     /**

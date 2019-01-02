@@ -22,7 +22,7 @@ abstract class AuthController extends Controller implements AuthInterface
     {
         parent::init();
         if (!$this->isLogged()) {
-            throw new UserAuthException(_("User not logged in"));
+            throw new UserAuthException(t("User not logged in"));
         }
     }
 

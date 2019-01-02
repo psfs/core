@@ -12,6 +12,6 @@ class SecurityException extends \Exception
      */
     public function __construct($message = null)
     {
-        parent::__construct($message ?: _("Not authorized"), 401);
+        parent::__construct($message ?: t("Not authorized"), 401);
     }
 }

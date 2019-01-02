@@ -19,7 +19,7 @@ class LogController extends Admin
      */
     public function logs()
     {
-        $log = _("Selecciona un fichero de log");
+        $log = t("Selecciona un fichero de log");
         $logs = $this->srv->getLogFiles();
 
         asort($logs);

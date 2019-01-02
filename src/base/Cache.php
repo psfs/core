@@ -54,7 +54,7 @@ class Cache
     {
         GeneratorHelper::createDir(dirname($path));
         if (false === FileHelper::writeFile($path, $data)) {
-            throw new ConfigException(_('No se tienen los permisos suficientes para escribir en el fichero ') . $path);
+            throw new ConfigException(t('No se tienen los permisos suficientes para escribir en el fichero ') . $path);
         }
     }
 

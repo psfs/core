@@ -7,7 +7,6 @@ use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
-use PSFS\base\types\helpers\AdminHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RouterHelper;
@@ -76,7 +75,7 @@ class Router
     public function init()
     {
         list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, TRUE);
-        if (empty($this->routing) || Config::getInstance()->getDebugMode()) {
+        if (empty($this->routing) || Config::getParam('debug', true)) {
             $this->debugLoad();
         } else {
             $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, TRUE);
@@ -108,7 +107,7 @@ class Router
         Logger::log('Throw not found exception');
         if (NULL === $exception) {
             Logger::log('Not found page thrown without previous exception', LOG_WARNING);
-            $exception = new \Exception(_('Page not found'), 404);
+            $exception = new \Exception(t('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($exception->getCode());
         if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
@@ -171,7 +170,7 @@ class Router
             //Search action and execute
             return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
-            Logger::log(_('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
+            Logger::log(t('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
             Logger::log($r->getMessage(), LOG_WARNING);
@@ -180,7 +179,7 @@ class Router
             throw $e;
         }
 
-        throw new RouterException(_('Página no encontrada'), 404);
+        throw new RouterException(t('Página no encontrada'), 404);
     }
 
     /**
@@ -211,7 +210,7 @@ class Router
                     if($this->checkRequirements($action, $get)) {
                         return $this->executeCachedRoute($route, $action, $class, $get);
                     } else {
-                        throw new RouterException(_('La ruta no es válida'), 400);
+                        throw new RouterException(t('La ruta no es válida'), 400);
                     }
                 } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
@@ -219,7 +218,7 @@ class Router
                 }
             }
         }
-        throw new RouterException(_('Ruta no encontrada'));
+        throw new RouterException(t('Ruta no encontrada'));
     }
 
     /**
@@ -448,7 +447,7 @@ class Router
             return $absolute ? Request::getInstance()->getRootUrl() . '/' : '/';
         }
         if (!is_array($this->slugs) || !array_key_exists($slug, $this->slugs)) {
-            throw new RouterException(_('No existe la ruta especificada'));
+            throw new RouterException(t('No existe la ruta especificada'));
         }
         $url = $absolute ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
         if (!empty($params)) {
@@ -477,10 +476,10 @@ class Router
     private function checkPreActions($class, $method) {
         $preAction = 'pre' . ucfirst($method);
         if(method_exists($class, $preAction)) {
-            Logger::log(_('Pre action invoked'));
+            Logger::log(t('Pre action invoked'));
             try {
                 if(false === call_user_func_array([$class, $preAction])) {
-                    Logger::log(_('Pre action failed'), LOG_ERR, [error_get_last()]);
+                    Logger::log(t('Pre action failed'), LOG_ERR, [error_get_last()]);
                     error_clear_last();
                 }
             } catch (\Exception $e) {
@@ -516,11 +515,11 @@ class Router
             }
         }
         if ($execute) {
-            Logger::log(_('Start executing action'));
+            Logger::log(t('Start executing action'));
             $this->checkPreActions($class, $action['method']);
             $return = call_user_func_array([$class, $action['method']], $params);
             if (false === $return) {
-                Logger::log(_('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
+                Logger::log(t('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
             }
         }
         return $return;
@@ -540,7 +539,7 @@ class Router
             $slug = RouterHelper::slugify($keyParts);
             if (NULL !== $slug && !array_key_exists($slug, $translations)) {
                 $translations[$slug] = $info['label'];
-                file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = _(\"{$info['label']}\");\n", FILE_APPEND);
+                file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = t(\"{$info['label']}\");\n", FILE_APPEND);
             }
             $this->slugs[$slug] = $key;
             $info['slug'] = $slug;

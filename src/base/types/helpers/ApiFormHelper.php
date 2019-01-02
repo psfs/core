@@ -25,7 +25,7 @@ class ApiFormHelper {
                     list($route, $info) = RouterHelper::extractRouteInfo($apiAction, $api, $domain);
                     list($method, $cleanRoute) = RouterHelper::extractHttpRoute($route);
                     $formAction = new FormAction();
-                    $formAction->label = _($info['label']);
+                    $formAction->label = t($info['label']);
                     $formAction->method = $method;
                     $formAction->url = $cleanRoute;
                     $actions[] = $formAction;

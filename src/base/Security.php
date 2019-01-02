@@ -86,9 +86,9 @@ class Security
     public static function getProfiles()
     {
         return array(
-            self::ADMIN_ID_TOKEN => _('Administrador'),
-            self::MANAGER_ID_TOKEN => _('Gestor'),
-            self::USER_ID_TOKEN => _('Usuario'),
+            self::ADMIN_ID_TOKEN => t('Administrador'),
+            self::MANAGER_ID_TOKEN => t('Gestor'),
+            self::USER_ID_TOKEN => t('Usuario'),
         );
     }
 

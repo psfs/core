@@ -20,13 +20,13 @@ class LoginForm extends Form
     {
         $this->setAction(Router::getInstance()->getRoute('admin-login'));
         $this->add("user", array(
-            "label" => _("Usuario"),
+            "label" => t("Usuario"),
             "required" => true,
             "pattern" => Form::VALID_ALPHANUMERIC,
             "ng-model" => "username",
         ))
             ->add("pass", array(
-                "label" => _("Contraseña"),
+                "label" => t("Contraseña"),
                 "required" => true,
                 "type" => "password",
             ))
@@ -35,8 +35,8 @@ class LoginForm extends Form
                 "required" => false,
                 "type" => "hidden",
             ))
-            ->addButton('submit', _("Acceder como {{username}}"))
-            ->addButton("cancel", _("Cancelar"), "button", array(
+            ->addButton('submit', t("Acceder como {{username}}"))
+            ->addButton("cancel", t("Cancelar"), "button", array(
                 "onclick" => "javacript:location.href = \"" . Router::getInstance()->getRoute('') . "\";",
                 "class" => "btn-link",
             ));

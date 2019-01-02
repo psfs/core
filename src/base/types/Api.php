@@ -9,7 +9,6 @@ use Propel\Runtime\Util\PropelModelPager;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\Order;
-use PSFS\base\extension\CustomTranslateExtension as i18n;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
@@ -221,7 +220,7 @@ abstract class Api extends Singleton
         list($return, $total, $pages) = $this->getList();
         $message = null;
         if(!$total) {
-            $message = i18n::_('No se han encontrado elementos para la búsqueda');
+            $message = t('No se han encontrado elementos para la búsqueda');
         }
 
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
@@ -247,7 +246,7 @@ abstract class Api extends Singleton
         $message = null;
         list($code, $return) = $this->getSingleResult($pk);
         if($code !== 200) {
-            $message = i18n::_('No se ha encontrado el elemento solicitado');
+            $message = t('No se ha encontrado el elemento solicitado');
         }
 
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
@@ -276,10 +275,10 @@ abstract class Api extends Singleton
                 $saved = TRUE;
                 $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
             } else {
-                $message = i18n::_('No se ha podido guardar el modelo seleccionado');
+                $message = t('No se ha podido guardar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $message = i18n::_('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
+            $message = t('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
             $context = [];
             if(null !== $e->getPrevious()) {
                 $context[] = $e->getPrevious()->getMessage();
@@ -318,10 +317,10 @@ abstract class Api extends Singleton
                     $status = 200;
                     $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
                 } else {
-                    $message = i18n::_('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                    $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
             } catch (\Exception $e) {
-                $message = i18n::_('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 $context = [];
                 if(null !== $e->getPrevious()) {
                     $context[] = $e->getPrevious()->getMessage();
@@ -329,7 +328,7 @@ abstract class Api extends Singleton
                 Logger::log($e->getMessage(), LOG_CRIT, $context);
             }
         } else {
-            $message = i18n::_('No se ha encontrado el modelo al que se hace referencia para actualizar');
+            $message = t('No se ha encontrado el modelo al que se hace referencia para actualizar');
         }
 
         return $this->json(new JsonResponse($model, $updated, $updated, 0, $message), $status);
@@ -395,7 +394,7 @@ abstract class Api extends Singleton
             $status = 200;
         } catch(\Exception $e) {
             Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
-            $message = i18n::_('Bulk insert rolled back');
+            $message = t('Bulk insert rolled back');
         }
         return $this->json(new JsonResponse($this->exportList(), $saved, count($this->list), 1, $message), $status);
     }
