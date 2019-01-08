@@ -10,9 +10,8 @@ use PSFS\base\types\helpers\InjectorHelper;
  * Class Dto
  * @package PSFS\base\dto
  */
-class Dto extends Singleton
+class Dto extends Singleton implements \JsonSerializable
 {
-
     public function __construct($hydrate = true)
     {
         parent::__construct();
@@ -134,5 +133,13 @@ class Dto extends Singleton
                 }
             }
         }
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 }

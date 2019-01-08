@@ -25,6 +25,7 @@ class InjectorHelper
             if (null !== $instanceType) {
                 $isRequired = self::checkIsRequired($property->getDocComment());
                 $label = self::getLabel($property->getDocComment());
+                $values = self::getValues($property->getDocComment());
                 $isArray = (bool)preg_match('/\[\]$/', $instanceType);
                 if($isArray) {
                     $instanceType = str_replace('[]', '', $instanceType);
@@ -45,6 +46,9 @@ class InjectorHelper
                         'type' => $instance->getShortName(),
                         'properties' => self::extractVariables($instance),
                     ];
+                }
+                if(!empty($values)){
+                    $variables[$property->getName()]['enum'] = $values;
                 }
             }
         }
@@ -109,7 +113,7 @@ class InjectorHelper
     public static function checkIsVisible($doc)
     {
         $visible = false;
-        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches)) {
+        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches) && count($matches) > 1) {
             $visible = 'false' !== strtolower($matches[1]);
         }
         return $visible;
@@ -123,10 +127,24 @@ class InjectorHelper
         // Extract description
         $label = null;
         preg_match('/@label\ (.*)\n/i', $doc, $matches);
-        if(count($matches)) {
+        if(count($matches) > 1) {
             $label = t($matches[1]);
         }
         return $label;
+    }
+
+    /**
+     * @param $doc
+     * @return null|string
+     */
+    public static function getValues($doc) {
+        // Extract description
+        $label = null;
+        preg_match('/@values\ (.*)\n/i', $doc, $matches);
+        if(count($matches) > 1) {
+            $label = t($matches[1]);
+        }
+        return false !== strpos($label, '|') ? explode('|', $label) : $label;
     }
 
     /**
@@ -136,7 +154,7 @@ class InjectorHelper
     public static function getDefaultValue($doc) {
         $default = null;
         preg_match('/@default\ (.*)\n/i', $doc, $matches);
-        if(count($matches)) {
+        if(count($matches) > 1) {
             $default = $matches[1];
         }
         return $default;

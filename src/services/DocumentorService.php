@@ -334,7 +334,6 @@ class DocumentorService extends Service
                 foreach ($tableMap->getColumns() as $field) {
                     list($type, $format) = DocumentorHelper::translateSwaggerFormats($field->getType());
                     $info = [
-                        "type" => $type,
                         "required" => $field->isNotNull(),
                         'format' => $format,
                     ];

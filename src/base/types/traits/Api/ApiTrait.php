@@ -247,7 +247,7 @@ trait ApiTrait {
      * @param \PSFS\base\dto\JsonResponse $response
      * @param int $status
      *
-     * @return string
+     * @return mixed
      */
     public function json($response, $status = 200)
     {

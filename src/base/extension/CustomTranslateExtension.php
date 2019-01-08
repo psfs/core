@@ -27,7 +27,9 @@ class CustomTranslateExtension extends \Twig_Extension {
      * @param bool $use_base
      */
     protected static function checkLoad($custom_key = null, $force_reload = false, $use_base = false) {
-        if($force_reload) self::dropInstance();
+        if($force_reload) {
+            self::dropInstance();
+        }
         self::$locale = I18nHelper::extractLocale(Security::getInstance()->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
         self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
         if(!$use_base) {
