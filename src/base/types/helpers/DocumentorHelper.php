@@ -163,9 +163,9 @@ class DocumentorHelper {
             ],
         ];
         foreach ($fields as $field => $info) {
-            if(array_key_exists('type', $info) || in_array($info['type'], ['array', 'object'])) {
+            if(array_key_exists('type', $info) && in_array($info['type'], ['array', 'object'])) {
                 $definition[$name]['properties'][$field] = $info;
-            } else {
+            } elseif(array_key_exists('type', $info)) {
                 list($type, $format) = self::translateSwaggerFormats($info['type']);
                 $fieldData = [
                     "type" => $type,

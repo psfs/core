@@ -113,8 +113,8 @@ class InjectorHelper
     public static function checkIsVisible($doc)
     {
         $visible = false;
-        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches) && count($matches) > 1) {
-            $visible = 'false' !== strtolower($matches[1]);
+        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches)) {
+            $visible =  count($matches) < 2 || 'false' !== strtolower($matches[1]);
         }
         return $visible;
     }
