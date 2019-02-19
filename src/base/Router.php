@@ -254,7 +254,7 @@ class Router
      */
     private function getExternalModules() {
         $externalModules = Config::getParam('modules.extend', '');
-        $externalModules .= ',psfs/auth';
+        $externalModules .= ',psfs/auth,psfs/nosql';
         return $externalModules;
     }
 
