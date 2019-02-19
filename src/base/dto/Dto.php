@@ -45,6 +45,13 @@ class Dto extends Singleton implements \JsonSerializable
                     $value = $property->getValue($this);
                     if(is_object($value) && method_exists($value, 'toArray')) {
                         $dto[$property->getName()] = $value->toArray();
+                    } elseif(is_array($value)) {
+                        foreach($value as &$arrValue) {
+                            if($arrValue instanceof Dto) {
+                                $arrValue = $arrValue->toArray();
+                            }
+                        }
+                        $dto[$property->getName()] = $value;
                     } else {
                         $dto[$property->getName()] = $property->getValue($this);
                     }

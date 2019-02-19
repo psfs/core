@@ -1,8 +1,10 @@
 <?php
 namespace PSFS\base\types\traits;
 use PSFS\base\config\Config;
+use PSFS\base\dto\Dto;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\ProfilingJsonResponse;
+use PSFS\base\Logger;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
@@ -33,12 +35,16 @@ Trait JsonTrait {
 
         $this->decodeJsonResponse($response);
 
-        $mask = JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING;
+        $mask = JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING;
         if(Config::getParam('output.json.strict_numbers')) {
-            $mask = JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING | JSON_NUMERIC_CHECK;
+            $mask = JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_BIGINT_AS_STRING | JSON_NUMERIC_CHECK;
         }
 
         $data = json_encode($response, $mask);
+        if(json_last_error() !== JSON_ERROR_NONE) {
+            Logger::log(json_last_error_msg(), LOG_CRIT);
+        }
+
         if(Config::getParam('angular.protection', false)) {
             $data = ")]}',\n" . $data;
         }
@@ -56,7 +62,7 @@ Trait JsonTrait {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
         $this->output($data, "application/javascript");
     }
-
+    
     /**
      * @param $response
      * @return array|string
