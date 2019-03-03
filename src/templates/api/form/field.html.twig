@@ -1,0 +1,77 @@
+<div class="form-group"
+     ng-repeat="field in form.fields | filter:{required:{{ required ? 'true' : 'false' }}} | orderBy:['type', 'name']"
+     ng-class="{'has-error':fieldCheckError(entity, field), 'has-success':fieldCheckSuccess(entity, field)}"
+     ng-if="field.type !== 'hidden'"
+>
+    <label for="id_{{ "{{ entity + '_' + field.name }}" }}" class="control-label"
+           ng-bind-html="(field.required ? '* ' : '') + field.label"></label>
+    <!-- INPUT TYPE TEXT, URL OR PHONE -->
+    <input class="form-control"
+           type="{{ "{{ field.type }}" }}" name="{{ "{{ entity + '_' + field.name }}" }}"
+           id="id_{{ "{{ entity + '_' + field.name }}" }}"
+           ng-model="model[field.name]" ng-if="isInputField(field)"
+           ng-required="field.required" ng-readonly="field.readonly || extraActionExecution"
+        tabindex="{{ required ? '' : '10' }}{{ "{{ $index + 1 }}" }}">
+    <!-- DATE -->
+    <div class="input-group date" ng-if="isDateField(field)" >
+        <input class="form-control"
+               type="{{ "{{ field.type }}" }}" name="{{ "{{ entity + '_' + field.name }}" }}"
+               id="id_{{ "{{ entity + '_' + field.name }}" }}"
+               ng-model="model[field.name]" autocomplete="off"
+               ng-required="field.required" ng-readonly="field.readonly || extraActionExecution"
+            tabindex="{{ required ? '' : '10' }}{{ "{{ $index + 1 }}" }}">
+        <div class="input-group-addon">
+            <i class="fa fa-calendar-alt"></i>
+        </div>
+    </div>
+    <!-- SWITCH -->
+    <div class="btn-group col-xs-12" ng-if="field.type == 'switch'" role="group">
+        <button class="btn"
+                ng-class="{'btn-primary':model[field.name], 'btn-default': !model[field.name]}"
+                ng-click="model[field.name] = true;" ng-disabled="field.readonly || extraActionExecution">
+            <i class="fa fa-check"></i>
+        </button>
+        <input type="hidden" ng-model="model[field.name]" />
+        <button class="btn"
+                ng-class="{'btn-primary':!model[field.name], 'btn-default': model[field.name]}"
+                ng-click="model[field.name] = false;" ng-disabled="field.readonly || extraActionExecution">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+    <!-- TEXTAREA -->
+    <textarea id="id_{{ "{{ entity + '_' + field.name }}" }}"
+              class="form-control" ng-model="model[field.name]"
+              name="{{ "{{ entity + '_' + field.name }}" }}"
+              ng-required="field.required" ng-maxlength="field.size" rows="5"
+               ng-readonly="field.readonly || extraActionExecution" ng-if="isTextField(field)"
+        tabindex="{{ required ? '' : '10' }}{{ "{{ $index + 1 }}" }}"></textarea>
+    <!-- COMBO -->
+    <md-autocomplete
+            ng-if="isRelatedield(field)"
+            md-no-cache="true"
+            md-selected-item="combos[field.name].item"
+            md-search-text="combos[field.name].search"
+            md-selected-item-change="setComboField(item, field)"
+            md-items="item in querySearch(combos[field.name].search, field)"
+            md-item-text="getLabel(item)"
+            md-min-length="2"
+            md-delay="500"
+            ng-init="populateCombo(field)"
+            placeholder="{{ "Escribe algo para empezar a buscar %s"|trans|replace({'%s':'{{field.label}}'}) }}">
+        <md-item-template>
+            <span md-highlight-text="combos[field.name].search" md-highlight-flags="^i">{{ "{{ getLabel(item) }}" }}</span>
+        </md-item-template>
+        <md-not-found>
+            {{ "No se han encontrado elementos para %s"|trans|replace({'%':'{{ combos[field.name].search }}'}) }}
+        </md-not-found>
+    </md-autocomplete>
+    <select ng-model="model[field.name]" ng-if="isComboField(field)"
+            id="id_{{ "{{ entity + '_' + field.name }}" }}"
+            class="form-control" name="{{ "{{ entity + '_' + field.name }}" }}"
+            ng-readonly="field.readonly || extraActionExecution"
+        tabindex="{{ required ? '' : '10' }}{{ "{{ $index + 1 }}" }}">
+        <option ng-if="!field.required">{{ "Selecciona un valor"|trans }}</option>
+        <option ng-repeat="element in field.data" ng-value="element[field.name]" ng-bind="element.Label">
+        </option>
+    </select>
+</div>

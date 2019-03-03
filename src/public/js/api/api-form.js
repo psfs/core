@@ -26,12 +26,24 @@
                     $log.debug('Entity form loaded');
                     $scope.form = response.data.data || {};
                     $scope.itemLoading = false;
+                    $timeout(function() {
+                        $('.date').datepicker({
+                            todayBtn: "linked",
+                            clearBtn: true,
+                            language: "es",
+                            autoclose: true,
+                            todayHighlight: true,
+                            format: 'yyyy-mm-dd',
+                            forceParse: false,
+                            keyboardNavigation: false
+                        });
+                    }, 250);
                 });
             }
 
             function isInputField(field) {
                 var type = (field.type || 'text').toUpperCase();
-                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD' || type === 'TIMESTAMP');
+                return (type === 'TEXT' || type === 'TEL' || type === 'URL' || type === 'NUMBER' || type === 'PASSWORD');
             }
 
             function isTextField(field) {
@@ -41,7 +53,7 @@
 
             function isDateField(field) {
                 var type = (field.type || 'text').toUpperCase();
-                return  (type === 'DATE' || type === 'DATETIME');
+                return  (type === 'DATE' || type === 'DATETIME' || type === 'TIMESTAMP');
             }
 
             function isRelatedield(field) {
@@ -83,6 +95,14 @@
                 $scope.itemLoading = false;
             }
 
+            function clearAutocomplete() {
+                if($("md-autocomplete-wrap button").length) {
+                    $timeout(function() {
+                        $("md-autocomplete-wrap button").click();
+                    }, 10);
+                }
+            }
+
 
             function clearForm() {
                 $scope.itemLoading = false;
@@ -93,8 +113,8 @@
                     combo.item = null;
                     combo.search = null;
                 }
-                $scope.entity_form.$setPristine(true);
-                $scope.entity_form.$setDirty(false);
+                $scope.entity_form.$setPristine();
+                clearAutocomplete();
                 for(var i in $scope.entity_form) {
                     if(!i.match(/^\$/)) {
                         $scope.cleanFormStatus($scope.entity_form[i]);
@@ -176,6 +196,7 @@
             }
 
             function populateCombo(field) {
+                clearAutocomplete();
                 if(undefined !== $scope.model[field.name] && null !== $scope.model[field.name]) {
                     if(angular.isArray(field.data) && field.data.length) {
                         for(var i in field.data) {
@@ -216,9 +237,9 @@
             $scope.$on('populate_combos', function() {
                 for(var f in $scope.form.fields) {
                     var field = $scope.form.fields[f];
-                    if(field.type == 'select') {
+                    if(field.type === 'select') {
                         populateCombo(field);
-                    } else if(field.type == 'date') {
+                    } else if(field.type === 'date') {
                         initDates(field.name);
                     }
                 }
@@ -241,13 +262,6 @@
             function isSaved() {
                 var pk = getPk();
                 return pk.length !== 0;
-            }
-
-            function watchDates(newValue, oldValue) {
-                for(var d in newValue) {
-                    var _date = newValue[d];
-                    $scope.model[d] = _date.toISOString().slice(0, 10);
-                }
             }
 
             function executeAction(action) {
@@ -381,6 +395,21 @@
                 return actions;
             }
 
+            $scope.fieldCheckSuccess = function(entity, field) {
+                var check = false, form = $scope.entity_form, name = entity + '_' + field.name;
+                if(field.required && name in form && !form[name].$pristine) {
+                    check = form[name].$valid;
+                }
+                return check;
+            };
+            $scope.fieldCheckError = function(entity, field) {
+                var check = false, form = $scope.entity_form, name = entity + '_' + field.name;
+                if(name in form && !form[name].$pristine) {
+                    check = form[name].$invalid;
+                }
+                return check;
+            };
+
             $scope.isInputField = isInputField;
             $scope.loadSelect = loadSelect;
             $scope.isTextField = isTextField;
@@ -399,8 +428,6 @@
             $scope.formActions = formActions;
             $scope.executeAction = executeAction;
 
-            $scope.$watch('dates', watchDates, true);
-
             loadFormFields();
         }];
 
@@ -409,7 +436,7 @@
             return {
                 restrict: 'E',
                 replace: true,
-                templateUrl: '/js/templates/api-form.html',
+                templateUrl: '/js/api.form.html',
                 controller: formCtrl
             };
         });

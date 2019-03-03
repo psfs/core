@@ -1,0 +1,35 @@
+<div class="form-actions" role="group" ng-class="{'btn-group':formActions().length || isSaved()}">
+    <button type="button" class="btn btn-primary"
+            ng-click="submitForm()" aria-label="Save"
+            ng-disabled="extraActionExecution || entity_form.$invalid">
+        <i class="fa" ng-class="{'fa-cog fa-spin':itemLoading, 'fa-save':!itemLoading}"></i>&nbsp;
+        {{ "Guardar"|trans }}
+    </button>
+    <button type="button" class="btn btn-primary dropdown-toggle"
+            ng-show="formActions().length || isSaved()"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fa fa-caret-down" ng-class="{'fa-caret-down':!extraActionExecution, 'fa-cog fa-spin':extraActionExecution}"></i>
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <a href="javascript:void(0);" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
+                <i class="fa fa-trash-alt"></i>&nbsp;
+                <span ng-bind="i18N['delete']"></span>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0);" ng-click="addNewItem()" aria-label="New">
+                <i class="fa fa-plus-circle"></i>&nbsp;
+                <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
+            </a>
+        </li>
+        <li role="separator" class="divider" ng-show="formActions().length"></li>
+        <li>
+            <a href="javascript:void(0);" ng-repeat="action in formActions()"
+               ng-click="executeAction(action)">
+                <i class="fa fa-cog"></i>&nbsp;
+                <span ng-bind="action.label"></span>
+            </a>
+        </li>
+    </ul>
+</div>

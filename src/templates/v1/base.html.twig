@@ -14,10 +14,13 @@
     '@ROOT/css/normalize.css'
     '@ROOT/css/angular-materials.css'
     '@ROOT/css/bootstrap.min.css'
-    '@ROOT/css/font-awesome.css'
+    '@ROOT/css/fontawesome/all.min.css'
     '@ROOT/css/typeahead.css'
+    '@ROOT/css/chosen.css'
+    '@ROOT/css/bootstrap-datepicker3.css'
     '@ROOT/css/v1/styles.css' %}{% endstyles %}
     {{ resource('@ROOT/font', '') }}
+    {{ resource('@ROOT/image', '') }}
     {% block styles %}{% endblock styles %}
     {% block head %}
         {% block seo %}
@@ -26,14 +29,14 @@
         {% endblock seo %}
     {% endblock head %}
 </head>
-<body>
+<body class="container-fluid">
 {% block menu %}
     {% include 'v1/top.menu.html.twig' %}
 {% endblock menu %}
-<header role="banner">{% block header %}{% endblock header %}</header>
-<section class="container-fluid">
+    <header class="row" role="banner">{% block header %}{% endblock header %}</header>
+    <section class="row">
     {% block body %}
-        <article class="container">
+        <article class="container-fluid">
             {% block body_header %}
             {% endblock body_header %}
             {% block body_content %}
@@ -42,14 +45,16 @@
             {% endblock body_footer %}
         </article>
     {% endblock body %}
-</section>
-<footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
-<a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button" title="Click to return on the top page"
-   data-toggle="tooltip" data-placement="left"><span class="fa fa-chevron-up"></span></a>
+    </section>
+    <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+    <a id="back-to-top" href="#" class="btn btn-default back-to-top" role="button"
+       data-toggle="tooltip" data-placement="left"><span class="fa fa-chevron-up"></span></a>
 {% block base_scripts %}
     {% scripts
     "@ROOT/js/jquery.min.js"
     "@ROOT/js/bootstrap.min.js"
+    "@ROOT/js/bootstrap-datepicker.js"
+    "@ROOT/js/chosen.jquery.js"
     "@ROOT/js/angular.js"
     "@ROOT/js/angular/animate.js"
     "@ROOT/js/angular/aria.js"
@@ -79,7 +84,7 @@
         function showCallbackMessage() {
             try {
                 bootbox.dialog({
-                    title: "{{ get_config("platform_name") | default("PSFS") }}",
+                    title: "{{ get_config("platform.name") | default("PSFS") }}",
                     message: "{{ getFlash("callback_message") | raw }}",
                     buttons: {
                         success: {

@@ -1,13 +1,17 @@
 {% set base_version = get_config('admin.version', 'v1') %}
 {% extends base_version ~ '/base.html.twig' %}
-{% block body_header %}
-    <md-subheader class="md-primary">
-        <h2>{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h2>
-    </md-subheader>
-{% endblock body_header %}
+{% block header %}
+    <div class="page-header col-xs-12">
+      <h1>{{ "Admin %s% site"|trans|replace({'%s%':api}) }}</h1>
+    </div>
+{% endblock header %}
 {% block body_content %}
     {{ resource('@ROOT/js/templates', '/js') }}
-    <section class="row" layout="row" layout-padding ng-controller="apiCtrl" layout-xs="column">
+    {% if base_version == 'v1' %}
+    <div class="row" ng-controller="apiCtrl">
+    {% else %}
+    <div class="row" layout="row" layout-padding ng-controller="apiCtrl" layout-xs="column">
+    {% endif %}
         <input type="hidden" ng-model="entity" ng-init="entity = '{{ api }}'"/>
         <input type="hidden" ng-model="api" ng-init="api = '{{ api }}'"/>
         <input type="hidden" ng-model="url" ng-init="url = '{{ url }}'"/>
@@ -17,9 +21,11 @@
         <input type="hidden" ng-model="modelId" ng-init="modelId = '{{ modelId }}'"/>
         <api-lists></api-lists>
         <api-form></api-form>
-    </section>
+    </div>
 {% endblock body_content %}
 {% block scripts %}
+    <script type="text/ng-template" id="/js/api.form.html">{% include ['@ROOT/' ~ base_version ~ '/api/form.html.twig', '@ROOT/api/form.html.twig'] %}</script>
+    <script type="text/ng-template" id="/js/api.list.html">{% include ['@ROOT/' ~ base_version ~ '/api/list.html.twig', '@ROOT/api/list.html.twig'] %}</script>
     <script type="text/javascript">
         var module = module || '{{ app_name|default('psfs') }}';
         var i18N = {

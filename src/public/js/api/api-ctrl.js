@@ -14,9 +14,8 @@
             $scope.i18N = i18N || {};
 
             $scope.cleanFormStatus = function(element) {
-                if(typeof element === 'object' && '$setDirty' in element) {
-                    element.$setDirty(false);
-                    element.$setPristine(true);
+                if(typeof element === 'object' && '$setPristine' in element) {
+                    element.$setPristine();
                 }
             };
 

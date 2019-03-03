@@ -1,0 +1,23 @@
+<div class="col-xs-12 col-md-8 api-form">
+    <form class="form" id="{{ "{{ entity }}" }}_form"
+          action="{{ "{{ url }}" }}"
+          method="{{ "{{ method }}" }}"
+          onsubmit="return false;" novalidate
+          name="entity_form">
+        <div class="panel panel-default ">
+            <div class="panel-heading content-fluid">
+                {% include '@ROOT/api/form/actions.html.twig' %}
+                <h2 ng-show="isSaved()" ng-bind="entity + ' #' + getPk()"></h2>
+                <h2 ng-hide="isSaved()" ng-bind="i18N['new'] + ' ' + entity"></h2>
+            </div>
+            <div class="panel-body">
+                {% include '@ROOT/api/form/field.html.twig' with {'required':true} %}
+                {% include '@ROOT/api/form/field.html.twig' with {'required':false} %}
+            </div>
+            <div class="panel-footer">
+                {% include '@ROOT/api/form/actions.html.twig' %}
+                <span class="action-cleaner"></span>
+            </div>
+        </div>
+    </form>
+</div>

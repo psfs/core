@@ -1,0 +1,43 @@
+<div class="col-xs-12 col-md-4 api-list">
+    <div class="panel panel-default" ng-cloack>
+        <div class="panel-heading">
+            <p ng-bind="'[' + count + ' {{ "elementos"|trans }} ' + api + ']'"></p>
+            <div class="form-group">
+                <input id="search" type="search" class="form-control" ng-model="listSearch" placeholder="{{ "Buscar"|trans }} {{ "{{ api }}" }}">
+            </div>
+            <div data-ng-hide="loading"
+                 paging
+                 page="actualPage"
+                 page-size="limit"
+                 total="count"
+                 paging-action="paginate(page)"
+                 data-ng-if="count > limit">
+            </div>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li class="list-group-item btn-group"
+                    data-ng-repeat="item in list"
+                >
+                    <button class="btn btn-link col-xs-10" data-ng-bind="getLabel(item)" ng-click="loadItem(item, $event)"></button>
+                    <button aria-label="Delete" data-ng-click="deleteItem(item, $event)" class="btn btn-danger col-xs-2">
+                        <i class="fa fa-trash-o fa-trash-alt"></i>
+                    </button>
+                </li>
+                <li class="list-group-item text-center" ng-show="list.length === 0">
+                    <span>{{ "No existen registros"|trans }}</span>
+                </li>
+            </ul>
+        </div>
+        <div class="panel-footer" data-ng-if="count > limit">
+            <div data-ng-hide="loading"
+                 paging
+                 page="actualPage"
+                 page-size="limit"
+                 total="count"
+                 paging-action="paginate(page)"
+            >
+            </div>
+        </div>
+    </div>
+</div>

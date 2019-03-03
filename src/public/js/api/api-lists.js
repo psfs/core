@@ -53,7 +53,7 @@
 
         $scope.$watch('listSearch', function(_new, _old) {
             if(_old === _new) return;
-            if(_new.replace(/\ /g, '').length == 0) {
+            if(_new.replace(/\ /g, '').length === 0) {
                 $scope.actualPage = 1;
             }
             search();
@@ -77,7 +77,7 @@
         return {
             restrict: 'E',
             replace: true,
-            templateUrl: '/js/templates/api-list.html',
+            templateUrl: '/js/api.list.html',
             controller: listCtrl
         };
     });

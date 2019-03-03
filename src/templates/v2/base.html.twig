@@ -1,3 +1,4 @@
+{% set base_version = get_config('admin.version', 'v1') %}
 <!DOCTYPE html>
 {% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
 <html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
@@ -27,6 +28,7 @@
 {% block menu %}
     {% include 'v2/top.menu.html.twig' %}
 {% endblock menu %}
+{% if base_version == 'v2' %}
     <md-toolbar flex="100" id="admin-principal-nav">
         <div class="md-toolbar-tools">
             <md-button data-ng-click="toggleMenu()" aria-label="Toggle menu" class="md-icon-button">
@@ -41,7 +43,8 @@
     <md-content flex layout="column" layout-fill layout-padding  layout-align="center center" ng-show="loadingPage">
         <md-progress-circular md-mode="indeterminate" md-diameter="100"></md-progress-circular>
     </md-content>
-    <md-content flex="100" layout-fill ng-hide="loadingPage">
+{% endif %}
+    <div class="container-fluid" flex="100" layout-fill ng-hide="loadingPage">
     {% block body %}
         {% block body_header %}
         {% endblock body_header %}
@@ -50,8 +53,8 @@
         {% block body_footer %}
         {% endblock body_footer %}
     {% endblock body %}
-    </md-content>
-    <footer role="contentinfo">{% block footer %}{% endblock footer %}</footer>
+    </div>
+    <footer class="container-fluid" role="contentinfo">{% block footer %}{% endblock footer %}</footer>
 <script src="{{ asset("@ROOT/js/angular.js") }}"></script>
 <script type="application/javascript">
     var app,

@@ -1,0 +1,125 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Nunito Regular'), local('Nunito-Regular'), url('../font/Nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Nunito Regular'), local('Nunito-Regular'), url('../font/Nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+html {
+  body {
+    padding-top: 50px;
+    * {
+      font-family: "Nunito", Verdana;
+    }
+    .form-group {
+      .form-control, .input-group-addon, .btn {
+        border: 1px solid #FAFAFA;
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+      }
+      &.has-error .form-control {
+        border: 1px solid #F5A9A9;
+        box-shadow: 0 1px 3px 0 rgba(180, 4, 4,.2), 0 1px 1px 0 rgba(180, 4, 4,.14), 0 2px 1px -1px rgba(180, 4, 4,.12);
+      }
+      &.has-success .form-control {
+        border: 1px solid #5FB404;
+        box-shadow: 0 1px 3px 0 rgba(33, 97, 11,.2), 0 1px 1px 0 rgba(33, 97, 11,.14), 0 2px 1px -1px rgba(33, 97, 11,.12);
+      }
+    }
+    md-dialog {
+      padding: 20px;
+    }
+    header {
+      .page-header {
+        margin: 10px 0;
+      }
+    }
+    .navbar .dropdown .dropdown-menu {
+      max-height: 300px;
+      overflow: auto;
+    }
+    .api-list, .api-form {
+      background: white;
+      padding-bottom: 50px;
+      .panel {
+        padding: 0;
+        border: 0;
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+        .panel-heading {
+          .form-actions {
+            margin-top: 15px;
+          }
+        }
+        .panel-body {
+          .form-group {
+            textarea {
+              resize: none;
+            }
+            .btn-group {
+              padding: 0 0 10px;
+              .btn {
+                min-width: 50px;
+                &:focus {
+                  outline: none;
+                }
+              }
+            }
+            md-autocomplete {
+              md-autocomplete-wrap {
+                border-radius: 4px;
+              }
+            }
+          }
+        }
+        ul.list-group {
+          li.btn-group {
+            padding: 0;
+            min-height: 36px;
+            .btn {
+              text-decoration: none;
+              &:hover {
+                font-weight: bolder;
+                &.btn-link {
+                  background: #DFDFDF;
+                  border: 1px solid #AFAFAF;
+                }
+              }
+            }
+          }
+        }
+        .form-actions {
+          float: right;
+        }
+        .action-cleaner {
+          clear: both;
+          display: block;
+        }
+      }
+    }
+    .pagination {
+      margin: 0;
+    }
+    #back-to-top {
+      border: 0;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+      position: fixed;
+      bottom: 2%;
+      right: 1%;
+    }
+    .md-autocomplete-suggestions-container {
+      .md-autocomplete-suggestions {
+        * {
+          color: black;
+        }
+      }
+    }
+  }
+}

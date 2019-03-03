@@ -2,12 +2,12 @@
     <md-card>
         <md-card-title>
             <md-card-title-text layout="column">
-                <p>[{{ count }} {{ i18N['elements'] }}]</p>
+                <p ng-bind="'[' + count + ' {{ "elementos"|trans }} ' + api + ']'"></p>
             </md-card-title-text>
         </md-card-title>
         <md-card-content layout="column" layout-align="space-between">
             <md-input-container>
-                <input type="search" class="form-control" ng-model="listSearch" placeholder="{{ i18N['search'] + ' ' + api }}">
+                <input type="search" class="form-control" ng-model="listSearch" placeholder="{{ "Buscar"|trans }} {{ "{{ api }}" }}">
             </md-input-container>
         </md-card-content>
     </md-card>
@@ -26,16 +26,16 @@
             <md-progress-circular flex="100" md-mode="indeterminate" data-ng-show="loading"></md-progress-circular>
             <md-list layout-fill layout="column" data-ng-hide="loading">
                 <md-list-item
-                              ng-click="loadItem(item, $event)"
-                              data-ng-repeat="item in list"
-                              aria-label="{{ api }} element {{getLabel(item)}}"
-                              layout="row">
+                        ng-click="loadItem(item, $event)"
+                        data-ng-repeat="item in list"
+                        aria-label="{{ "{{ api }}" }} element {{ "{{ getLabel(item) }}" }}"
+                        layout="row">
                     <p data-ng-bind="getLabel(item)" flex="80"></p>
                     <md-button aria-label="Delete" data-ng-click="deleteItem(item, $event)" class="md-fab md-warn md-mini">
                         <i class="fa fa-trash-o"></i>
                     </md-button>
                 </md-list-item>
-                <md-list-item ng-show="list.length == 0">
+                <md-list-item ng-show="list.length === 0">
                     <p ng-bind="i18N['no_records']"></p>
                 </md-list-item>
             </md-list>

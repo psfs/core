@@ -52,6 +52,7 @@ class ApiHelper
                         $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
                         if(null !== $fDto) {
                             $fDto->pk = false;
+                            $fDto->required = true;
                             $form->addField($fDto);
                         }
                     }
@@ -332,8 +333,20 @@ class ApiHelper
         } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
             $fDto = self::generateEnumField($field, $required);
             foreach ($mappedColumn->getValueSet() as $value) {
+                switch(Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
+                    default:
+                    case TableMap::TYPE_PHPNAME:
+                        $fieldName = $mappedColumn->getPhpName();
+                        break;
+                    case TableMap::TYPE_CAMELNAME:
+                        $fieldName = lcfirst($mappedColumn->getPhpName());
+                        break;
+                    case TableMap::TYPE_COLNAME:
+                        $fieldName = $mappedColumn->getFullyQualifiedName();
+                        break;
+                }
                 $fDto->data[] = [
-                    $field => $value,
+                    $fieldName => $value,
                     "Label" => t($value),
                 ];
             }

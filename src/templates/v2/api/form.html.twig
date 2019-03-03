@@ -2,14 +2,14 @@
     <md-card>
         <md-card-title>
             <md-card-title-text>
-                <h2 flex ng-show="isSaved()">{{ entity }} #{{ getPk() }}</h2>
+                <h2 flex ng-show="isSaved()" ng-bind="entity + ' #' + getPk()"></h2>
                 <h2 flex ng-hide="isSaved()" ng-bind="i18N['new'] + ' ' + entity"></h2>
             </md-card-title-text>
         </md-card-title>
         <md-card-actions layout="row" layout-align="end center">
             <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save" ng-disabled="extraActionExecution">
                 <i class="fa fa-save"></i>&nbsp;
-                <span ng-bind="i18N['save']"></span>
+                <span>{{ "Guardar"|trans }}</span>
             </md-button>
             <md-menu ng-show="formActions().length || isSaved()" md-offset="0 45">
                 <md-button aria-label="Open phone interactions menu" class="md-raised" ng-click="$mdMenu.open()" ng-disabled="extraActionExecution">
@@ -26,7 +26,7 @@
                     <md-menu-item ng-show="isSaved()">
                         <md-button ng-click="addNewItem()" aria-label="New">
                             <i class="fa fa-plus-circle"></i>&nbsp;
-                            <span ng-bind="i18N['new'] + ' ' + entity"></span>
+                            <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-divider ng-show="isSaved() && formActions().length"></md-menu-divider>
@@ -43,10 +43,10 @@
             <md-progress-circular md-mode="indeterminate" flex="100" data-ng-show="itemLoading"></md-progress-circular>
             <div layout-fill layout="column">
                 <form name="entity_form"
-                      id="{{ entity }}_form"
+                      id="{{ "{{ entity }}" }}_form"
                       onsubmit="return false;"
-                      action="{{ url }}"
-                      method="{{ method }}"
+                      action="{{ "{{ url }}" }}"
+                      method="{{ "{{ method }}" }}"
                       data-ng-hide="itemLoading"
                       layout="column"
                       flex="100"
@@ -54,9 +54,9 @@
                     <md-input-container data-ng-repeat="field in form.fields" flex="100" data-ng-if="field.type !== 'hidden'">
                         <label data-ng-bind-html="field.label" ng-hide="field.type == 'switch'"></label>
                         <!-- INPUT TYPE TEXT, URL OR PHONE -->
-                        <input type="{{ field.type }}" name="{{ entity + '_' + field.name }}" ng-model="model[field.name]" ng-if="isInputField(field)" ng-required="field.required" ng-readonly="field.readonly">
+                        <input type="{{ field.type }}" name="{{ "{{ entity + '_' + field.name }}" }}" ng-model="model[field.name]" ng-if="isInputField(field)" ng-required="field.required" ng-readonly="field.readonly">
                         <!-- DATE -->
-                        <md-datepicker ng-if="isDateField(field)" name="{{ entity + '_' + field.name }}"
+                        <md-datepicker ng-if="isDateField(field)" name="{{ "{{ entity + '_' + field.name }}" }}"
                                        ng-model="dates[field.name]" ng-required="field.required"
                                        ng-readonly="field.readonly"
                                        md-hide-icons="calendar"
@@ -67,7 +67,7 @@
                                    ng-required="field.required"
                                    ng-disabled="field.readonly"
                                    class="md-primary"
-                                   name="{{ entity + '_' + field.name }}">{{ field.label }}</md-switch>
+                                   name="{{ "{{ entity + '_' + field.name }}" }}">{{ "{{ field.label }}" }}</md-switch>
                         <!-- COMBO -->
                         <md-autocomplete
                                 ng-if="isRelatedield(field)"
@@ -80,18 +80,18 @@
                                 md-min-length="2"
                                 md-delay="500"
                                 ng-init="populateCombo(field)"
-                                placeholder="Type something to search any {{field.label}}">
+                                placeholder="Type something to search any {{ "{{field.label}}" }}">
                             <md-item-template>
-                                <span md-highlight-text="combos[field.name].search" md-highlight-flags="^i">{{getLabel(item)}}</span>
+                                <span md-highlight-text="combos[field.name].search" md-highlight-flags="^i" ng-bind="getLabel(item)"></span>
                             </md-item-template>
                             <md-not-found>
-                                No states matching "{{combos[field.name].search}}" were found.
+                                No states matching "{{ "{{ combos[field.name].search }}" }}" were found.
                             </md-not-found>
                         </md-autocomplete>
                         <md-select ng-model="model[field.name]" ng-if="isComboField(field)">
-                            <md-option ng-if="!field.required"><em>{{i18N['choose_one']}}</em></md-option>
+                            <md-option ng-if="!field.required"><em>{{ "Selecciona un valor"|trans }}</em></md-option>
                             <md-option ng-repeat="element in field.data" ng-value="element[field.name]">
-                                {{element.Label}}
+                                {{ "{{ element.Label }}" }}
                             </md-option>
                         </md-select>
                         <textarea  ng-model="model[field.name]" ng-required="field.required" md-maxlength="field.size" rows="5" md-select-on-focus
@@ -114,13 +114,13 @@
                     <md-menu-item ng-show="isSaved()">
                         <md-button class="md-warn" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
                             <i class="fa fa-trash-o"></i>&nbsp;
-                            <span ng-bind="i18N['delete']"></span>
+                            <span ng-bind="{{ "Eliminar"|trans }}"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-item ng-show="isSaved()">
                         <md-button ng-click="addNewItem()" aria-label="New">
                             <i class="fa fa-plus-circle"></i>&nbsp;
-                            <span ng-bind="i18N['new'] + ' ' + entity"></span>
+                            <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-divider ng-show="isSaved()"></md-menu-divider>
