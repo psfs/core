@@ -34,20 +34,28 @@ class Form extends Dto
      */
     public function __toArray()
     {
-        $array = array();
-        $array['fields'] = array();
+        $array = [
+            'fields' => [],
+            'actions' => [],
+        ];
         foreach ($this->fields as $field) {
             $array['fields'][] = $field->__toArray();
         }
         usort($array['fields'], function($fA, $fB) {
+            if((bool)$fA['required'] !== (bool)$fB['required']) {
+                if((bool)$fa['required']) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
             $aOrder = Form::fieldsOrder($fA);
             $bOrder = Form::fieldsOrder($fB);
-            if ($aOrder == $bOrder) {
+            if ($aOrder === $bOrder) {
                 return strcmp($fA['name'], $fB['name']);
             }
             return ($aOrder < $bOrder) ? -1 : 1;
         });
-        $array['actions'] = [];
         foreach($this->actions as $action) {
             $array['actions'][] = $action->__toArray();
         }

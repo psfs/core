@@ -135,7 +135,7 @@ class InjectorHelper
 
     /**
      * @param $doc
-     * @return null|string
+     * @return null|array
      */
     public static function getValues($doc) {
         // Extract description
