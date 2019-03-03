@@ -31,7 +31,7 @@
                         </li>
                     {% endfor %}
                     {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ and routes.hidden|length > 0 %}
-                        <li><hr></li>
+                        <li role="separator" class="divider">&nbsp;</li>
                         {% for route in routes.hidden %}
                         <li>
                             <a href="{{ path(route.slug) }}">

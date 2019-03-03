@@ -197,6 +197,19 @@ class RouterHelper
      *
      * @return string
      */
+    public static function extractDocIcon($docComments)
+    {
+        preg_match('/@icon\ (.*)(\n|\r)/i', $docComments, $icon);
+        return (count($icon) > 0) ? $icon[1] : '';
+    }
+
+    /**
+     * Método que extrae el método http
+     *
+     * @param string $docComments
+     *
+     * @return string
+     */
     public static function extractReflectionLabel($docComments)
     {
         preg_match('/@label\ (.*)(\n|\r)/i', $docComments, $label);
@@ -250,6 +263,7 @@ class RouterHelper
             $regex = str_replace('{__DOMAIN__}', $module, $regex);
             $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = self::extractReflectionHttpMethod($docComments);
+            $icon = self::extractDocIcon($docComments);
             $label = self::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
@@ -258,7 +272,7 @@ class RouterHelper
                 'params' => $params,
                 'default' => $default,
                 'label' => $label,
-                'icon' => strlen($api) > 0 ? 'fa-database' : '',
+                'icon' => strlen($icon) > 0 ? $icon : (strlen($api) ? 'fa-database' : ''),
                 'module' => preg_replace('/(\\\|\\/)/', '', $module),
                 'visible' => self::extractReflectionVisibility($docComments),
                 'http' => $httpMethod,
