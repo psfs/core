@@ -86,6 +86,11 @@ html {
             min-height: 36px;
             .btn {
               text-decoration: none;
+              &.btn-link {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
               &:hover {
                 font-weight: bolder;
                 &.btn-link {

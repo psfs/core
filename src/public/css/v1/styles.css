@@ -79,6 +79,11 @@ html body .api-list .panel ul.list-group li.btn-group, html body .api-form .pane
 html body .api-list .panel ul.list-group li.btn-group .btn, html body .api-form .panel ul.list-group li.btn-group .btn {
   text-decoration: none;
 }
+html body .api-list .panel ul.list-group li.btn-group .btn.btn-link, html body .api-form .panel ul.list-group li.btn-group .btn.btn-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 html body .api-list .panel ul.list-group li.btn-group .btn:hover, html body .api-form .panel ul.list-group li.btn-group .btn:hover {
   font-weight: bolder;
 }
