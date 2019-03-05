@@ -6,12 +6,13 @@ use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\traits\SingletonTrait;
+use Twig\Extension\AbstractExtension;
 
 /**
  * Class CustomTranslateExtension
  * @package PSFS\base\extension
  */
-class CustomTranslateExtension extends \Twig_Extension {
+class CustomTranslateExtension extends AbstractExtension {
     use SingletonTrait;
 
     const CUSTOM_LOCALE_SESSION_KEY = '__PSFS_CUSTOM_LOCALE_KEY__';

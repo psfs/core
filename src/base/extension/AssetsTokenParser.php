@@ -2,11 +2,13 @@
 
 namespace PSFS\base\extension;
 
+use Twig\TokenParser\AbstractTokenParser;
+
 /**
  * Class AssetsTokenParser
  * @package PSFS\base\extension
  */
-class AssetsTokenParser extends \Twig_TokenParser
+class AssetsTokenParser extends AbstractTokenParser
 {
 
     protected $type;
