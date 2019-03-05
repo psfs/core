@@ -10,6 +10,9 @@ use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\OutputTrait;
 use PSFS\base\types\traits\RouteTrait;
 use PSFS\base\types\traits\SingletonTrait;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+use Twig\TwigFunction;
 
 /**
  * Class Template
@@ -129,7 +132,7 @@ class Template
      */
     protected function addTemplateFunction($templateFunction, $functionName)
     {
-        $function = new \Twig_SimpleFunction($templateFunction, $functionName);
+        $function = new TwigFunction($templateFunction, $functionName);
         $this->tpl->addFunction($function);
         return $this;
     }
@@ -257,8 +260,8 @@ class Template
      */
     private function setup()
     {
-        $loader = new \Twig_Loader_Filesystem(GeneratorHelper::getTemplatePath());
-        $this->tpl = new \Twig_Environment($loader, array(
+        $loader = new FilesystemLoader(GeneratorHelper::getTemplatePath());
+        $this->tpl = new Environment($loader, array(
             'cache' => CACHE_DIR . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
             'auto_reload' => Config::getParam('twig.autoreload', TRUE),

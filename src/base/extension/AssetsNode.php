@@ -1,11 +1,13 @@
 <?php
 
 namespace PSFS\base\extension;
+use Twig\Node\Node;
+
 /**
  * Class AssetsNode
  * @package PSFS\base\extension
  */
-class AssetsNode extends \Twig_Node
+class AssetsNode extends Node
 {
 
     protected $hash;

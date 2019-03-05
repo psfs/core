@@ -3,8 +3,8 @@
 {% else %}
     <div class="form-group{% if field.error %} has-error{% endif %} {{ field.class }}">
         {% if not field.type or field.type not in ['hidden', 'select', 'textarea'] %}
-            {% if field.hasLabel %}<label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>{% endif %}
-            <div class="{% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}required-field-block {% endif %}{% if field.class and field.hasLabel %} col-md-8{% endif %}">
+            {% if field.hasLabel %}<label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}{% if field.required %} *{% endif %}</label>{% endif %}
+            <div class="{% if field.class and field.hasLabel %} col-md-8{% endif %}">
                 <input
                 {% for name, value in field %}
                     {% if name not in ['required', 'label', 'class', 'value'] and value|length > 0 %}
@@ -20,14 +20,9 @@
                 {% endif %}
                 value="{{ field.value }}"
                 >
-                {% if field.required and field.type not in ['checkbox', 'radio', 'range'] %}
-                    <div class="required-icon" data-toggle="tooltip" data-original-title="Required" title="Required">
-                        <div class="text">*</div>
-                    </div>
-                {% endif %}
             </div>
         {% elseif field.type == 'textarea' %}
-            {% if field.hasLabel %}<label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>{% endif %}
+            {% if field.hasLabel %}<label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}{% if field.required %} *{% endif %}</label>{% endif %}
             <div {% if field.hasLabel %}class="{{ field.class }}"{% endif %}>
         <textarea id="{{ field.id }}"
                   name="{{ field.name }}"

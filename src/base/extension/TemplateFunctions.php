@@ -105,12 +105,12 @@ class TemplateFunctions
 
     /**
      * @param array $field
-     * @param StringClass|null $label
+     * @param string $label
      * @throws \Twig_Error_Loader
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      */
-    public static function widget(array $field, StringClass $label = null)
+    public static function widget(array $field, $label = null)
     {
         if (null !== $label) {
             $field['label'] = $label;

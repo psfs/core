@@ -2,7 +2,9 @@
 
 namespace PSFS\base\extension;
 
+use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
+use Twig\TokenStream;
 
 /**
  * Class AssetsTokenParser
@@ -56,18 +58,18 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @param \Twig_TokenStream $stream
-     * @return \Twig_TokenStream
+     * @param TokenStream $stream
+     * @return TokenStream
      * @throws \Twig_Error_Syntax
      */
-    protected function checkTemplateLine(\Twig_TokenStream $stream)
+    protected function checkTemplateLine(TokenStream $stream)
     {
         $value = $stream->getCurrent();
         switch ($value->getType()) {
-            case \Twig_Token::STRING_TYPE:
+            case Token::STRING_TYPE:
                 $this->values[] = $this->parser->getExpressionParser()->parseExpression();
                 break;
-            case \Twig_Token::BLOCK_END_TYPE:
+            case Token::BLOCK_END_TYPE:
                 $this->end = true;
                 $stream->next();
                 break;
@@ -88,9 +90,9 @@ class AssetsTokenParser extends AbstractTokenParser
             $stream = $this->checkTemplateLine($stream);
         }
 
-        $stream->expect(\Twig_Token::BLOCK_START_TYPE);
-        $stream->expect(\Twig_Token::NAME_TYPE);
-        $stream->expect(\Twig_Token::BLOCK_END_TYPE);
+        $stream->expect(Token::BLOCK_START_TYPE);
+        $stream->expect(Token::NAME_TYPE);
+        $stream->expect(Token::BLOCK_END_TYPE);
     }
 
     /**

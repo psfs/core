@@ -55,7 +55,7 @@ class CustomTranslateExtension extends AbstractExtension {
      */
     public function getTokenParsers()
     {
-        return array(new \Twig_Extensions_TokenParser_Trans());
+        return array(new  \Twig_Extensions_TokenParser_Trans());
     }
 
     /**

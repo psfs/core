@@ -23,7 +23,16 @@ html body {
 html body * {
   font-family: "Nunito", Verdana;
 }
-html body .form-group .form-control, html body .form-group .input-group-addon, html body .form-group .btn {
+html body .tt-menu {
+  width: 100%;
+  background: white;
+  border: 0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.12);
+}
+html body .form-group .twitter-typeahead {
+  width: 100% !important;
+}
+html body .form-group .form-control, html body .form-group .input-group-addon, html body .form-group .input-group-addon .btn {
   border: 1px solid #FAFAFA;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.12);
 }

@@ -21,8 +21,17 @@ html {
     * {
       font-family: "Nunito", Verdana;
     }
+    .tt-menu {
+      width: 100%;
+      background: white;
+      border: 0;
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+    }
     .form-group {
-      .form-control, .input-group-addon, .btn {
+      .twitter-typeahead {
+        width: 100% !important;
+      }
+      .form-control, .input-group-addon, .input-group-addon .btn {
         border: 1px solid #FAFAFA;
         box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
       }
