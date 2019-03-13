@@ -43,22 +43,22 @@ class AssetsParser
 
     /**
      * Método que calcula el path completo a copiar un recurso
-     * @param string $filename_path
+     * @param string $filenamePath
      * @param string[] $source
      * @return string
      */
-    protected static function calculateResourcePathname($filename_path, $source)
+    protected static function calculateResourcePathname($filenamePath, $source)
     {
-        $source_file = preg_replace("/'/", "", $source[1]);
-        if (preg_match('/\#/', $source_file)) {
-            $source_file = explode("#", $source_file);
-            $source_file = $source_file[0];
+        $sourceFile = preg_replace("/'/", "", $source[1]);
+        if (preg_match('/\#/', $sourceFile)) {
+            $sourceFile = explode("#", $sourceFile);
+            $sourceFile = $sourceFile[0];
         }
-        if (preg_match('/\?/', $source_file)) {
-            $source_file = explode("?", $source_file);
-            $source_file = $source_file[0];
+        if (preg_match('/\?/', $sourceFile)) {
+            $sourceFile = explode("?", $sourceFile);
+            $sourceFile = $sourceFile[0];
         }
-        $orig = realpath(dirname($filename_path) . DIRECTORY_SEPARATOR . $source_file);
+        $orig = realpath(dirname($filenamePath) . DIRECTORY_SEPARATOR . $sourceFile);
         return $orig;
     }
 
@@ -75,9 +75,9 @@ class AssetsParser
             $this->files[] = $filename;
         } elseif (!empty($this->domains)) {
             foreach ($this->domains as $domain => $paths) {
-                $domain_filename = str_replace($domain, $paths["public"], $filename);
-                if (file_exists($domain_filename) && preg_match('/\.' . $this->type . '$/i', $domain_filename)) {
-                    $this->files[] = $domain_filename;
+                $domainFilename = str_replace($domain, $paths["public"], $filename);
+                if (file_exists($domainFilename) && preg_match('/\.' . $this->type . '$/i', $domainFilename)) {
+                    $this->files[] = $domainFilename;
                 }
             }
         }
@@ -122,8 +122,8 @@ class AssetsParser
 
     /**
      * Método que compila los ficheros css y los procesa en función del modo de ejecución
-     * @return AssetsParser
-     * @throws ConfigException
+     * @return $this
+     * @throws \PSFS\base\exception\GeneratorException
      */
     protected function compileCss()
     {
@@ -156,7 +156,7 @@ class AssetsParser
     /**
      * Método que compila los ficheros javascript en función del modo de ejecución
      * @return $this
-     * @throws ConfigException
+     * @throws \PSFS\base\exception\GeneratorException
      */
     protected function compileJs()
     {
@@ -166,10 +166,10 @@ class AssetsParser
             if (0 < count($this->files)) {
                 $minifier = new JS();
                 foreach ($this->files as $file) {
-                    $path_parts = explode("/", $file);
+                    $pathParts = explode("/", $file);
                     if (file_exists($file)) {
                         if ($this->debug) {
-                            $data = $this->putDebugJs($path_parts, $base, $file);
+                            $data = $this->putDebugJs($pathParts, $base, $file);
                         } elseif (!file_exists($base . $this->hash . ".js")) {
                             $minifier->add($file);
                             //$data = $this->putProductionJs($base, $file, $data);
@@ -196,7 +196,7 @@ class AssetsParser
      * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
      * @param string $path
      * @param string $content
-     * @throws ConfigException
+     * @throws \PSFS\base\exception\GeneratorException
      */
     private function storeContents($path, $content = "")
     {
@@ -258,12 +258,12 @@ class AssetsParser
      */
     protected function extractCssResources($source, $file)
     {
-        $source_file = $this->extractSourceFilename($source);
-        $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $source_file);
-        $orig_part = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
+        $sourceFile = $this->extractSourceFilename($source);
+        $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $sourceFile);
+        $origPart = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
         try {
-            if (count($source) > 1 && array_key_exists(1, $orig_part)) {
-                $dest = $this->path . $orig_part[1];
+            if (count($source) > 1 && array_key_exists(1, $origPart)) {
+                $dest = $this->path . $origPart[1];
                 GeneratorHelper::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
                     if (@copy($orig, $dest) === FALSE) {
@@ -282,15 +282,15 @@ class AssetsParser
      * @param string $file
      * @param string $base
      * @param string $data
-     * @return string
-     * @throws ConfigException
+     * @return false|string
+     * @throws \PSFS\base\exception\GeneratorException
      */
     protected function processCssLine($file, $base, $data)
     {
         if (file_exists($file)) {
-            $path_parts = explode("/", $file);
-            $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-            if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file) || $this->debug) {
+            $pathParts = explode("/", $file);
+            $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
+            if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file) || $this->debug) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
                 if (file_exists($base . $this->hash . ".css") && @unlink($base . $this->hash . ".css") === false) {
                     throw new ConfigException("Can't unlink file " . $base . $this->hash . ".css");
@@ -299,31 +299,31 @@ class AssetsParser
             }
             if ($this->debug) {
                 $data = file_get_contents($file);
-                $this->storeContents($base . $file_path, $data);
+                $this->storeContents($base . $filePath, $data);
             } else {
                 $data .= file_get_contents($file);
             }
-            $this->compiled_files[] = "/css/" . $file_path;
+            $this->compiled_files[] = "/css/" . $filePath;
         }
 
         return $data;
     }
 
     /**
-     * @param $path_parts
+     * @param $pathParts
      * @param string $base
      * @param $file
-     * @return string
-     * @throws ConfigException
+     * @return false|string
+     * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function putDebugJs($path_parts, $base, $file)
+    protected function putDebugJs($pathParts, $base, $file)
     {
-        $file_path = $this->hash . "_" . $path_parts[count($path_parts) - 1];
-        $this->compiled_files[] = "/js/" . $file_path;
+        $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
+        $this->compiled_files[] = "/js/" . $filePath;
         $data = "";
-        if (!file_exists($base . $file_path) || filemtime($base . $file_path) < filemtime($file)) {
+        if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file)) {
             $data = file_get_contents($file);
-            $this->storeContents($base . $file_path, $data);
+            $this->storeContents($base . $filePath, $data);
         }
         return $data;
     }
@@ -331,25 +331,25 @@ class AssetsParser
     /**
      * Servicio que busca el path para un dominio dado
      * @param $string
-     * @param string $file_path
+     * @param string $filePath
      *
      * @return string
      */
-    public static function findDomainPath($string, $file_path)
+    public static function findDomainPath($string, $filePath)
     {
         $domains = Template::getDomains(TRUE);
-        $filename_path = null;
-        if (!file_exists($file_path) && 0 < count($domains)) {
+        $filenamePath = null;
+        if (!file_exists($filePath) && 0 < count($domains)) {
             foreach ($domains as $domain => $paths) {
-                $domain_filename = str_replace($domain, $paths["public"], $string);
-                if (file_exists($domain_filename)) {
-                    $filename_path = $domain_filename;
+                $domainFilename = str_replace($domain, $paths["public"], $string);
+                if (file_exists($domainFilename)) {
+                    $filenamePath = $domainFilename;
                     continue;
                 }
             }
         }
 
-        return $filename_path;
+        return $filenamePath;
     }
 
     /**
@@ -357,94 +357,94 @@ class AssetsParser
      * @param string $string
      * @param string $name
      * @param boolean $return
-     * @param string $filename_path
+     * @param string $filenamePath
      *
      * @return string[]
      */
-    public static function calculateAssetPath($string, $name, $return, $filename_path)
+    public static function calculateAssetPath($string, $name, $return, $filenamePath)
     {
         $ppath = explode("/", $string);
-        $original_filename = $ppath[count($ppath) - 1];
+        $originalFilename = $ppath[count($ppath) - 1];
         $base = WEB_DIR . DIRECTORY_SEPARATOR;
         $file = "";
-        $html_base = "";
+        $htmlBase = "";
         $debug = Config::getInstance()->getDebugMode();
         $cache = Config::getInstance()->get('cache.var');
         $cache = $cache ? '.' . $cache : '';
         $finfo = finfo_open(FILEINFO_MIME_TYPE); // devuelve el tipo mime de su extensión
-        $mime = finfo_file($finfo, $filename_path);
+        $mime = finfo_file($finfo, $filenamePath);
         finfo_close($finfo);
         if (preg_match('/\.css$/i', $string)) {
             $file = "/" . substr(md5($string), 0, 8) . "$cache.css";
-            $html_base = "css";
+            $htmlBase = "css";
             if ($debug) {
-                $file = str_replace(".css", "_" . $original_filename, $file);
+                $file = str_replace(".css", "_" . $originalFilename, $file);
             }
         } elseif (preg_match('/\.js$/i', $string)) {
             $file = "/" . substr(md5($string), 0, 8) . "$cache.js";
-            $html_base = "js";
+            $htmlBase = "js";
             if ($debug) {
-                $file = str_replace(".js", "_" . $original_filename, $file);
+                $file = str_replace(".js", "_" . $originalFilename, $file);
             }
         } elseif (preg_match("/image/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-            $html_base = "img";
+            $htmlBase = "img";
             if ($debug) {
-                $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                $file = str_replace("." . $ext[count($ext) - 1], "_" . $originalFilename, $file);
             }
         } elseif (preg_match("/(doc|pdf)/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-            $html_base = "docs";
+            $htmlBase = "docs";
             if ($debug) {
-                $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                $file = str_replace("." . $ext[count($ext) - 1], "_" . $originalFilename, $file);
             }
         } elseif (preg_match("/(video|audio|ogg)/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-            $html_base = "media";
+            $htmlBase = "media";
             if ($debug) {
-                $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                $file = str_replace("." . $ext[count($ext) - 1], "_" . $originalFilename, $file);
             }
         } elseif (preg_match("/(text|html)/i", $mime)) {
             $ext = explode(".", $string);
             $file = "/" . substr(md5($string), 0, 8) . "." . $ext[count($ext) - 1];
-            $html_base = "templates";
+            $htmlBase = "templates";
             if ($debug) {
-                $file = str_replace("." . $ext[count($ext) - 1], "_" . $original_filename, $file);
+                $file = str_replace("." . $ext[count($ext) - 1], "_" . $originalFilename, $file);
             }
         } elseif (!$return && !is_null($name)) {
-            $html_base = '';
+            $htmlBase = '';
             $file = $name;
         }
-        $file_path = $html_base . $file;
+        $filePath = $htmlBase . $file;
 
-        return array($base, $html_base, $file_path);
+        return array($base, $htmlBase, $filePath);
     }
 
     /**
      * Método que extrae el recurso css de una línea de estilos css
      * @param $handle
-     * @param string $filename_path
-     * @throws ConfigException
+     * @param string $filenamePath
+     * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function extractCssLineResource($handle, $filename_path)
+    public static function extractCssLineResource($handle, $filenamePath)
     {
         $line = fgets($handle);
         $urls = array();
         if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
             foreach ($urls as $source) {
-                $orig = self::calculateResourcePathname($filename_path, $source);
+                $orig = self::calculateResourcePathname($filenamePath, $source);
                 if(!empty($orig)) {
-                    $orig_part = preg_split("/Public/i", $orig);
-                    $dest = WEB_DIR . $orig_part[1];
+                    $origPart = preg_split("/Public/i", $orig);
+                    $dest = WEB_DIR . $origPart[1];
                     GeneratorHelper::createDir(dirname($dest));
                     if (@copy($orig, $dest) === false) {
                         throw new ConfigException("Can't copy " . $orig . " to " . $dest);
                     }
                 } else {
-                    Logger::log($filename_path . ' has an empty origin with the url ' . $source, LOG_WARNING);
+                    Logger::log($filenamePath . ' has an empty origin with the url ' . $source, LOG_WARNING);
                 }
             }
         }
@@ -457,17 +457,17 @@ class AssetsParser
      */
     protected function extractSourceFilename($source)
     {
-        $source_file = preg_replace("/'/", "", $source[1]);
-        if (preg_match('/\#/', $source_file)) {
-            $source_file = explode("#", $source_file);
-            $source_file = $source_file[0];
+        $sourceFIle = preg_replace("/'/", "", $source[1]);
+        if (preg_match('/\#/', $sourceFIle)) {
+            $sourceFIle = explode("#", $sourceFIle);
+            $sourceFIle = $sourceFIle[0];
         }
-        if (preg_match('/\?/', $source_file)) {
-            $source_file = explode("?", $source_file);
-            $source_file = $source_file[0];
-            return $source_file;
+        if (preg_match('/\?/', $sourceFIle)) {
+            $sourceFIle = explode("?", $sourceFIle);
+            $sourceFIle = $sourceFIle[0];
+            return $sourceFIle;
         }
-        return $source_file;
+        return $sourceFIle;
     }
 
     /**

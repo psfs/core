@@ -7,6 +7,7 @@ use PSFS\base\Security;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\traits\SingletonTrait;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 /**
  * Class CustomTranslateExtension
@@ -23,30 +24,30 @@ class CustomTranslateExtension extends AbstractExtension {
     protected static $filename = '';
 
     /**
-     * @param string $custom_key
-     * @param bool $force_reload
-     * @param bool $use_base
+     * @param string $customKey
+     * @param bool $forceReload
+     * @param bool $useBase
      */
-    protected static function checkLoad($custom_key = null, $force_reload = false, $use_base = false) {
-        if($force_reload) {
+    protected static function checkLoad($customKey = null, $forceReload = false, $useBase = false) {
+        if($forceReload) {
             self::dropInstance();
         }
         self::$locale = I18nHelper::extractLocale(Security::getInstance()->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
         self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
-        if(!$use_base) {
-            $custom_key = $custom_key ?: Security::getInstance()->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
+        if(!$useBase) {
+            $customKey = $customKey ?: Security::getInstance()->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
         }
-        if(null !== $custom_key) {
-            Logger::log('[' . self::class . '] Custom key detected: ' . $custom_key, LOG_INFO);
-            self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $custom_key, self::$locale . '.json']);
+        if(null !== $customKey) {
+            Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
+            self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $customKey, self::$locale . '.json']);
         } else {
             self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', self::$locale . '.json']);
         }
         if(file_exists(self::$filename)) {
-            Logger::log('[' . self::class . '] Custom locale detected: ' . $custom_key . ' [' . self::$locale . ']', LOG_INFO);
+            Logger::log('[' . self::class . '] Custom locale detected: ' . $customKey . ' [' . self::$locale . ']', LOG_INFO);
             self::$translations = json_decode(file_get_contents(self::$filename), true);
-        } elseif(null !== $custom_key) {
-            self::checkLoad(null, $force_reload, true);
+        } elseif(null !== $customKey) {
+            self::checkLoad(null, $forceReload, true);
         }
     }
 
@@ -64,7 +65,7 @@ class CustomTranslateExtension extends AbstractExtension {
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('trans', function($message) {
+            new TwigFilter('trans', function($message) {
                 return self::_($message);
             }),
         );
@@ -80,12 +81,12 @@ class CustomTranslateExtension extends AbstractExtension {
 
     /**
      * @param $message
-     * @param string $custom_key
-     * @param bool $force_reload
+     * @param string $customKey
+     * @param bool $forceReload
      * @return mixed|string
      */
-    public static function _($message, $custom_key = null, $force_reload = false) {
-        self::checkLoad($custom_key, $force_reload);
+    public static function _($message, $customKey = null, $forceReload = false) {
+        self::checkLoad($customKey, $forceReload);
         if(array_key_exists($message, self::$translations)) {
             $translation =  self::$translations[$message];
         } else {

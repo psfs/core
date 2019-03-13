@@ -1,6 +1,7 @@
 <?php
 
 namespace PSFS\base\extension;
+use Twig\Compiler;
 use Twig\Node\Node;
 
 /**
@@ -27,7 +28,7 @@ class AssetsNode extends Node
         $this->type = $type;
     }
 
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $scripts = $this->getNode("scripts");
 

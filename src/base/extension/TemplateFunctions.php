@@ -9,7 +9,6 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\GeneratorHelper;
-use Symfony\Component\Translation\Tests\StringClass;
 
 class TemplateFunctions
 {
@@ -92,9 +91,9 @@ class TemplateFunctions
 
     /**
      * @param array $button
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public static function button(array $button)
     {
@@ -105,10 +104,10 @@ class TemplateFunctions
 
     /**
      * @param array $field
-     * @param string $label
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
+     * @param null $label
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public static function widget(array $field, $label = null)
     {
@@ -130,6 +129,9 @@ class TemplateFunctions
     /**
      * Función que deveulve un formulario en html
      * @param Form $form
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public static function form(Form $form)
     {
@@ -181,7 +183,8 @@ class TemplateFunctions
     }
 
     /**
-     * @param string $filenamePath
+     * @param $filenamePath
+     * @throws \PSFS\base\exception\GeneratorException
      */
     private static function processCssLines($filenamePath)
     {
@@ -217,8 +220,8 @@ class TemplateFunctions
      * @param string $name
      * @param boolean $return
      * @param string $filenamePath
-     *
-     * @return string
+     * @return mixed
+     * @throws \PSFS\base\exception\GeneratorException
      */
     private static function processAsset($string, $name, $return, $filenamePath)
     {

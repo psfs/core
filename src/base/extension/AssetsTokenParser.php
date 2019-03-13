@@ -26,11 +26,11 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @param \Twig_Token $token
-     * @return AssetsNode|\Twig_Node
-     * @throws \Twig_Error_Syntax
+     * @param Token $token
+     * @return AssetsNode|\Twig\Node\Node
+     * @throws \Twig\Error\SyntaxError
      */
-    public function parse(\Twig_Token $token)
+    public function parse(Token $token)
     {
         $hash = substr(md5($this->parser->getStream()->getSourceContext()->getPath()), 0, 8);
         $name = $token->getValue();
@@ -60,7 +60,7 @@ class AssetsTokenParser extends AbstractTokenParser
     /**
      * @param TokenStream $stream
      * @return TokenStream
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig\Error\SyntaxError
      */
     protected function checkTemplateLine(TokenStream $stream)
     {
@@ -81,7 +81,7 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig\Error\SyntaxError
      */
     protected function extractTemplateNodes()
     {
