@@ -1,4 +1,4 @@
-{% spaceless %}
+{% filter spaceless %}
     <md-button
             {% for name,value in button %}
                 {% if name not in ['class', 'value'] %}
@@ -19,4 +19,4 @@
             {% endif %}
         {% endif %}
     </md-button>
-{% endspaceless %}
+{% endfilter %}
