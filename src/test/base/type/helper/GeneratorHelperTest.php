@@ -8,7 +8,7 @@ class GeneratorHelperTest extends TestCase
 {
 
     /**
-     * Test that checks structure function in config
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public function testStructureFunctions()
     {

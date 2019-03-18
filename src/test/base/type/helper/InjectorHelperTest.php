@@ -10,12 +10,16 @@ class InjectorHelperTest extends TestCase
 
     /**
      * @return \ReflectionClass
+     * @throws \ReflectionException
      */
     private function getExampleReflector()
     {
         return new \ReflectionClass(SingletonClassTest::class);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testInjector()
     {
         $reflector = $this->getExampleReflector();

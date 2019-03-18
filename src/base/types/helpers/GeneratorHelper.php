@@ -116,7 +116,7 @@ class GeneratorHelper
         if(null !== $domains) {
             $keyDomains = array_keys($domains);
             foreach($keyDomains as $keyDomain) {
-                $key = strtoupper(str_replace('@', '', $keyDomain));
+                $key = strtoupper(str_replace(['@', '/'], '', $keyDomain));
                 if(strtoupper($domain) === $key) {
                     $paths = $domains[$keyDomain];
                     break;
