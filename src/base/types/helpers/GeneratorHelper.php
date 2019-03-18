@@ -89,6 +89,7 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @throws GeneratorException
+     * @throws \ReflectionException
      */
     public static function checkCustomNamespaceApi($namespace) {
         if(!empty($namespace)) {
@@ -103,5 +104,25 @@ class GeneratorHelper
                 throw new GeneratorException(t('La clase definida para extender la API no existe'), 501);
             }
         }
+    }
+
+    /**
+     * @param $domain
+     * @return array
+     */
+    public static function getDomainPaths($domain) {
+        $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json'), true);
+        $paths = [];
+        if(null !== $domains) {
+            $keyDomains = array_keys($domains);
+            foreach($keyDomains as $keyDomain) {
+                $key = strtoupper(str_replace('@', '', $keyDomain));
+                if(strtoupper($domain) === $key) {
+                    $paths = $domains[$keyDomain];
+                    break;
+                }
+            }
+        }
+        return $paths;
     }
 }
