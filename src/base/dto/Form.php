@@ -41,18 +41,18 @@ class Form extends Dto
         foreach ($this->fields as $field) {
             $array['fields'][] = $field->__toArray();
         }
-        usort($array['fields'], function($fA, $fB) {
-            if((bool)$fA['required'] !== (bool)$fB['required']) {
-                if((bool)$fa['required']) {
+        usort($array['fields'], function($fieldA, $fieldB) {
+            if((bool)$fieldA['required'] !== (bool)$fieldB['required']) {
+                if((bool)$fieldA['required']) {
                     return -1;
                 } else {
                     return 1;
                 }
             }
-            $aOrder = Form::fieldsOrder($fA);
-            $bOrder = Form::fieldsOrder($fB);
+            $aOrder = Form::fieldsOrder($fieldA);
+            $bOrder = Form::fieldsOrder($fieldB);
             if ($aOrder === $bOrder) {
-                return strcmp($fA['name'], $fB['name']);
+                return strcmp($fieldA['name'], $fieldB['name']);
             }
             return ($aOrder < $bOrder) ? -1 : 1;
         });

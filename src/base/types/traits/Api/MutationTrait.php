@@ -149,10 +149,9 @@ trait MutationTrait
     }
 
     /**
-     * Add extra columns to pagination query
-     *
      * @param ModelCriteria $query
-     * @param string $action
+     * @param $action
+     * @throws ApiException
      */
     private function addExtraColumns(ModelCriteria &$query, $action)
     {
@@ -182,16 +181,15 @@ trait MutationTrait
     protected function parseExtraColumns()
     {
         $columns = [];
-        foreach ($this->extraColumns as $key => $columnName) {
+        foreach ($this->extraColumns as $columnName) {
             $columns[$columnName] = strtolower($columnName);
         }
         return $columns;
     }
 
-
     protected function extractApiLang() {
-        $default_language = explode('_', Config::getParam('default.language', 'es_ES'));
-        $this->lang = Request::header(APi::HEADER_API_LANG, $default_language[0]);
+        $defaultLanguage = explode('_', Config::getParam('default.language', 'es_ES'));
+        $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage[0]);
     }
 
     /**
@@ -204,9 +202,9 @@ trait MutationTrait
         $modelI18n = $model . 'I18n';
         if (method_exists($query, 'useI18nQuery')) {
             $query->useI18nQuery($this->lang);
-            $modelI18nTableMapClass = str_replace('\\Models\\', '\\Models\\Map\\', $modelI18n) . 'TableMap';
+            $i18nMapClass = str_replace('\\Models\\', '\\Models\\Map\\', $modelI18n) . 'TableMap';
             /** @var TableMap $modelI18nTableMap */
-            $modelI18nTableMap = $modelI18nTableMapClass::getTableMap();
+            $modelI18nTableMap = $i18nMapClass::getTableMap();
             foreach($modelI18nTableMap->getColumns() as $columnMap) {
                 if(!$columnMap->isPrimaryKey()) {
                     $query->withColumn($columnMap->getFullyQualifiedName(), ApiHelper::getColumnMapName($columnMap));
