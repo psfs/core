@@ -55,5 +55,11 @@
         "branch-alias": {
             "dev-master": "1.x-dev"
         }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clearCache"
+        ],
+        "clearCache": "rm -rf cache/*"
     }
 }

@@ -98,7 +98,6 @@
                     var confirm = $mdDialog.confirm()
                         .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
                         .content($scope.i18N['confirm_delete_message'])
-                        .ariaLabel('Delete Element')
                         .ok($scope.i18N['delete'])
                         .cancel($scope.i18N['cancel']);
                     $mdDialog.show(confirm).then(function() {

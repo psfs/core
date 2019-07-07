@@ -3,6 +3,7 @@ namespace PSFS\base\types\traits;
 
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\SlackHelper;
 
 /**
@@ -59,7 +60,7 @@ Trait SystemTrait {
      */
     protected function bindWarningAsExceptions()
     {
-        Logger::log('Added handlers for errors');
+        Inspector::stats('[SystemTrait] Added handlers for errors');
         if(Config::getParam('debug')) {
             Logger::log('Setting error_reporting as E_ALL');
             ini_set('error_reporting', E_ALL);
@@ -99,7 +100,7 @@ Trait SystemTrait {
      */
     protected function initiateStats()
     {
-        Logger::log('Initializing stats (mem + ts)');
+        Inspector::stats('[SystemTrait] Initializing stats (mem + ts)');
         if (null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
             $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
         } else {

@@ -4,6 +4,7 @@ namespace PSFS\base\config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\base\types\traits\TestTrait;
 
@@ -71,7 +72,8 @@ class Config
         'log.slack.hook', // Hook for slack traces
         'i18n.autogenerate', // Set PSFS auto generate i18n mode
         'resources.cdn.url', // CDN URL base path
-        'api.field.case', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap calss
+        'api.field.case', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap class
+        'route.404', // Set route for 404 pages
     ];
     protected $debug = false;
 
@@ -122,16 +124,16 @@ class Config
      */
     protected static function saveExtraParams(array $data)
     {
-        $final_data = array();
+        $finalData = array();
         if (count($data) > 0) {
             Logger::log('Saving extra configuration parameters');
             foreach ($data as $key => $value) {
                 if (null !== $value || $value !== '') {
-                    $final_data[$key] = $value;
+                    $finalData[$key] = $value;
                 }
             }
         }
-        return $final_data;
+        return $finalData;
     }
 
     /**
@@ -157,7 +159,7 @@ class Config
      */
     public function isConfigured()
     {
-        Logger::log('Checking configuration');
+        Inspector::stats('[Config] Checking configuration');
         $configured = (count($this->config) > 0);
         if ($configured) {
             foreach (static::$required as $required) {
@@ -191,13 +193,13 @@ class Config
     public static function save(array $data, array $extra = null)
     {
         $data = self::saveConfigParams($data, $extra);
-        $final_data = self::saveExtraParams($data);
+        $finalData = self::saveExtraParams($data);
         $saved = false;
         try {
-            $final_data = array_filter($final_data, function($key, $value) {
+            $finalData = array_filter($finalData, function($key, $value) {
                 return in_array($key, self::$required, true) || !empty($value);
             }, ARRAY_FILTER_USE_BOTH);
-            $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($final_data, JSON_PRETTY_PRINT)));
+            $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($finalData, JSON_PRETTY_PRINT)));
             self::getInstance()->loadConfigData();
             $saved = true;
         } catch (ConfigException $e) {

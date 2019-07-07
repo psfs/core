@@ -35,8 +35,8 @@ angular.module("ngLocale", [], ["$provide", function($provide) {
                 "sabato"
             ],
             "ERANAMES": [
-                "a.C.",
-                "d.C."
+                "avanti Cristo",
+                "dopo Cristo"
             ],
             "ERAS": [
                 "a.C.",
@@ -81,18 +81,18 @@ angular.module("ngLocale", [], ["$provide", function($provide) {
                 "dic"
             ],
             "STANDALONEMONTH": [
-                "Gennaio",
-                "Febbraio",
-                "Marzo",
-                "Aprile",
-                "Maggio",
-                "Giugno",
-                "Luglio",
-                "Agosto",
-                "Settembre",
-                "Ottobre",
-                "Novembre",
-                "Dicembre"
+                "gennaio",
+                "febbraio",
+                "marzo",
+                "aprile",
+                "maggio",
+                "giugno",
+                "luglio",
+                "agosto",
+                "settembre",
+                "ottobre",
+                "novembre",
+                "dicembre"
             ],
             "WEEKENDRANGE": [
                 5,
@@ -136,8 +136,8 @@ angular.module("ngLocale", [], ["$provide", function($provide) {
                 }
             ]
         },
-        "id": "it-it",
-        "localeID": "it_IT",
+        "id": "it",
+        "localeID": "it",
         "pluralCat": function(n, opt_precision) {  var i = n | 0;  var vf = getVF(n, opt_precision);  if (i == 1 && vf.v == 0) {    return PLURAL_CATEGORY.ONE;  }  return PLURAL_CATEGORY.OTHER;}
     });
 }]);

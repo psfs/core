@@ -6,7 +6,7 @@ class Order extends Dto
     const ASC = 'ASC';
     const DESC = 'DESC';
     /**
-     * FIelds to use to order
+     * Fields to use to order
      * @var array fields
      */
     protected $fields = array();
@@ -17,7 +17,7 @@ class Order extends Dto
      * @param string $field
      * @param string $direction
      */
-    public function addOrder($field, $direction = Order::ASC)
+    public function addOrder($field, $direction = self::ASC)
     {
         $this->fields[$field] = $direction;
     }
@@ -47,9 +47,9 @@ class Order extends Dto
      * @param string $field
      * @param string $direction
      */
-    public function setOrder($field, $direction = Order::ASC)
+    public function setOrder($field, $direction = self::ASC)
     {
-        $this->fields = array($field => $direction);
+        $this->fields = [$field => $direction];
     }
 
     /**
@@ -58,12 +58,12 @@ class Order extends Dto
      *
      * @return string
      */
-    public static function parseDirection($direction = Order::ASC)
+    public static function parseDirection($direction = self::ASC)
     {
         if (preg_match('/^asc$/i', $direction)) {
-            return Order::ASC;
+            return self::ASC;
         } else {
-            return Order::DESC;
+            return self::DESC;
         }
     }
 
@@ -72,6 +72,24 @@ class Order extends Dto
      * @return array
      */
     public function getOrders()
+    {
+        return $this->fields;
+    }
+
+    /**
+     * @param array $object
+     */
+    public function fromArray(array $object = array())
+    {
+        foreach($object as $field => $order) {
+            $this->addOrder($field, $order);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
     {
         return $this->fields;
     }

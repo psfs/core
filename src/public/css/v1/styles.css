@@ -20,6 +20,19 @@ html {
 html body {
   padding-top: 50px;
 }
+html body.container {
+  position: relative !important;
+}
+@media (min-width: 1200px) {
+  html body.container {
+    width: 1170px !important;
+  }
+}
+@media (min-width: 992px) {
+  html body.container {
+    width: 970px !important;
+  }
+}
 html body * {
   font-family: "Nunito", Verdana;
 }

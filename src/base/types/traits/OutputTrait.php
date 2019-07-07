@@ -7,6 +7,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 
 /**
@@ -203,6 +204,7 @@ trait OutputTrait {
      */
     public function renderCache($data, $headers = array())
     {
+        Inspector::stats('[OutputTrait] Rendering cache');
         ob_start();
         for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
             header($headers[$i]);

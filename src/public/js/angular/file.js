@@ -20,7 +20,7 @@
                                     data: loadEvent.target.result
                                 };
                             });
-                        }
+                        };
                         reader.readAsDataURL(changeEvent.target.files[0]);
                     });
                 }

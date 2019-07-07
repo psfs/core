@@ -51,4 +51,18 @@
     '@ROOT/js/api/api-form.js'
     %}{% endscripts %}
     {% endif %}
+    {# web worker prototype
+    <script type="text/javascript" defer>
+        function loadWorker() {
+            try {
+                $workerSrv.subscribe('{{ api }}', '{{ asset('@ROOT/js/api/workers/http.js') }}', [
+                    "{{ asset('@ROOT/js/angular.js') }}"
+                ]);
+            }catch(err) {
+                setTimeout(loadWorker, 100);
+            }
+        }
+        (() => loadWorker())();
+    </script>
+    #}
 {% endblock scripts %}

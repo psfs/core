@@ -14,6 +14,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\RequestHelper;
 use PSFS\base\types\traits\SystemTrait;
 use PSFS\controller\ConfigController;
@@ -49,13 +50,13 @@ class Dispatcher extends Singleton
      */
     public function init()
     {
-        Logger::log('Dispatcher init');
+        Inspector::stats('[Dispatcher] Dispatcher init');
         parent::init();
         $this->initiateStats();
         I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
         $this->actualUri = Request::getInstance()->getServer('REQUEST_URI');
-        Logger::log('End dispatcher init');
+        Inspector::stats('[Dispatcher] Dispatcher init end');
     }
 
     /**
@@ -65,7 +66,7 @@ class Dispatcher extends Singleton
      */
     public function run($uri = null)
     {
-        Logger::log('Begin runner');
+        Inspector::stats('[Dispatcher] Begin runner');
         try {
             if ($this->config->isConfigured()) {
                 //Check CORS for requests
@@ -92,23 +93,23 @@ class Dispatcher extends Singleton
     /**
      * Method that convert an exception to html
      *
-     * @param \Exception $e
+     * @param \Exception $exception
      *
      * @return string HTML
      */
-    protected function dumpException(\Exception $e)
+    protected function dumpException(\Exception $exception)
     {
-        Logger::log('Starting dump exception');
-        $ex = (NULL !== $e->getPrevious()) ? $e->getPrevious() : $e;
+        Inspector::stats('[Dispatcher] Starting dump exception');
+        $exception = (NULL !== $exception->getPrevious()) ? $exception->getPrevious() : $exception;
         $error = array(
-            "error" => $ex->getMessage(),
-            "file" => $ex->getFile(),
-            "line" => $ex->getLine(),
+            "error" => $exception->getMessage(),
+            "file" => $exception->getFile(),
+            "line" => $exception->getLine(),
         );
         Logger::log('Throwing exception', LOG_ERR, $error);
         unset($error);
 
-        return $this->router->httpNotFound($ex);
+        return $this->router->httpNotFound($exception);
     }
 
 }

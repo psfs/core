@@ -18,6 +18,7 @@ class RouterHelper
      */
     public static function getClassToCall(array $action)
     {
+        Inspector::stats('[RouterHelper] Getting class to call for executing the request action');
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
         $actionClass = class_exists($action['class']) ? $action['class'] : "\\" . $action['class'];
         $reflectionClass = new \ReflectionClass($actionClass);
@@ -56,7 +57,7 @@ class RouterHelper
      */
     public static function extractComponents($route, $pattern)
     {
-        Logger::log('Extracting parts for the request to execute');
+        Inspector::stats('[RouterHelper] Extracting parts for the request to execute');
         $url = parse_url(preg_replace("/\/\//", '/', $route));
         $partialRoute = explode('/', $url['path']);
         $partialPattern = explode('/', $pattern);

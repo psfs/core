@@ -9,6 +9,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SingletonTrait;
@@ -104,7 +105,7 @@ class Router
      */
     public function httpNotFound(\Exception $exception = NULL, $isJson = false)
     {
-        Logger::log('Throw not found exception');
+        Inspector::stats('[Router] Throw not found exception');
         if (NULL === $exception) {
             Logger::log('Not found page thrown without previous exception', LOG_WARNING);
             $exception = new \Exception(t('Page not found'), 404);
@@ -165,7 +166,7 @@ class Router
      */
     public function execute($route)
     {
-        Logger::log('Executing the request');
+        Inspector::stats('[Router] Executing the request');
         try {
             //Search action and execute
             return $this->searchAction($route);
@@ -192,7 +193,7 @@ class Router
      */
     protected function searchAction($route)
     {
-        Logger::log('Searching action to execute: ' . $route, LOG_INFO);
+        Inspector::stats('[Router] Searching action to execute: ' . $route);
         //Revisamos si tenemos la ruta registrada
         $parts = parse_url($route);
         $path = array_key_exists('path', $parts) ? $parts['path'] : $route;
@@ -227,6 +228,7 @@ class Router
      * @return bool
      */
     private function checkRequirements(array $action, $params = []) {
+        Inspector::stats('[Router] Checking request requirements');
         if(!empty($params) && !empty($action['requirements'])) {
             $checked = 0;
             foreach(array_keys($params) as $key) {
@@ -476,7 +478,7 @@ class Router
     private function checkPreActions($class, $method) {
         $preAction = 'pre' . ucfirst($method);
         if(method_exists($class, $preAction)) {
-            Logger::log(t('Pre action invoked'));
+            Inspector::stats('[Router] Pre action invoked ');
             try {
                 if(false === call_user_func_array([$class, $preAction])) {
                     Logger::log(t('Pre action failed'), LOG_ERR, [error_get_last()]);
@@ -499,7 +501,7 @@ class Router
      */
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
     {
-        Logger::log('Executing route ' . $route, LOG_INFO);
+        Inspector::stats('[Router] Executing route ' . $route);
         $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
         Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, $action);
         $cache = Cache::needCache();
@@ -515,7 +517,7 @@ class Router
             }
         }
         if ($execute) {
-            Logger::log(t('Start executing action'));
+            Inspector::stats('[Router] Start executing action ' . $route);
             $this->checkPreActions($class, $action['method']);
             $return = call_user_func_array([$class, $action['method']], $params);
             if (false === $return) {

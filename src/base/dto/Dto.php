@@ -12,6 +12,10 @@ use PSFS\base\types\helpers\InjectorHelper;
  */
 class Dto extends Singleton implements \JsonSerializable
 {
+    /**
+     * @var array
+     */
+    protected $__cache = [];
     public function __construct($hydrate = true)
     {
         parent::__construct();
@@ -74,59 +78,41 @@ class Dto extends Singleton implements \JsonSerializable
 
     /**
      * @param array $properties
-     * @param string $key
-     * @param mixed $value
+     * @param $key
+     * @param null $value
+     * @throws \ReflectionException
      */
     protected function parseDtoField(array $properties, $key, $value = null) {
-        $type = 'string';
-        $is_array = false;
-        if(array_key_exists($key, $properties)) {
-            $type = $properties[$key];
-            if(preg_match('/(\[\]|Array)/i', $type)) {
-                $type = preg_replace('/(\[\]|Array)/i', '', $type);
-                $is_array = true;
-            }
-        }
+        list($type, $isArray) = $this->extractTypes($properties, $key);
         $reflector = (class_exists($type)) ? new \ReflectionClass($type) : null;
         if(null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
             if(null !== $value && is_array($value)) {
-                if($is_array) {
+                if(!array_key_exists($type, $this->__cache)) {
+                    $this->__cache[$type] = new $type(false);
+                }
+                if($isArray) {
                     $this->$key = [];
                     foreach($value as $data) {
                         if(null !== $data && is_array($data)) {
-                            $dto = new $type(false);
+                            $dto = clone $this->__cache[$type];
                             $dto->fromArray($data);
                             array_push($this->$key, $dto);
                         }
                     }
                 } else {
-                    $this->$key = new $type(false);
+                    $this->$key = clone $this->__cache[$type];
                     $this->$key->fromArray($value);
                 }
             }
         } else {
-            switch($type) {
-                default:
-                case 'string':
-                    $this->$key = $value;
-                    break;
-                case 'integer':
-                    $this->$key = (integer)$value;
-                    break;
-                case 'float':
-                    $this->$key = (float)$value;
-                    break;
-                case 'boolean':
-                case 'bool':
-                    $this->$key = (bool)$value;
-                    break;
-            }
+            $this->castValue($key, $value, $type);
         }
     }
 
     /**
      * Hydrate object from array
      * @param array $object
+     * @throws \ReflectionException
      */
     public function fromArray(array $object = array())
     {
@@ -148,5 +134,51 @@ class Dto extends Singleton implements \JsonSerializable
     public function jsonSerialize()
     {
         return $this->toArray();
+    }
+
+    /**
+     * @param array $properties
+     * @param $key
+     * @return array
+     */
+    protected function extractTypes(array $properties, $key)
+    {
+        $type = 'string';
+        $isArray = false;
+        if (array_key_exists($key, $properties)) {
+            $type = $properties[$key];
+            if (preg_match('/(\[\]|Array)/i', $type)) {
+                $type = preg_replace('/(\[\]|Array)/i', '', $type);
+                $isArray = true;
+            }
+        }
+        return array($type, $isArray);
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param $type
+     */
+    protected function castValue($key, $value, $type)
+    {
+        switch ($type) {
+            default:
+            case 'string':
+                $this->$key = (string)$value;
+                break;
+            case 'integer':
+            case 'int':
+                $this->$key = (integer)$value;
+                break;
+            case 'float':
+            case 'double':
+                $this->$key = (float)$value;
+                break;
+            case 'boolean':
+            case 'bool':
+                $this->$key = (bool)$value;
+                break;
+        }
     }
 }

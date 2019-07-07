@@ -17,6 +17,15 @@
 html {
   background: white;
   body {
+    &.container {
+      position: relative !important;
+      @media(min-width: 1200px) {
+        width: 1170px !important;
+      }
+      @media(min-width: 992px) {
+        width: 970px !important;
+      }
+    }
     padding-top: 50px;
     * {
       font-family: "Nunito", Verdana;

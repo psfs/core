@@ -81,15 +81,15 @@ class I18nHelper
     public static function setLocale($default = null)
     {
         $locale = self::extractLocale($default);
-        Logger::log('Set locale to project [' . $locale . ']');
+        Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']');
         // Load translations
         putenv("LC_ALL=" . $locale);
         setlocale(LC_ALL, $locale);
         // Load the locale path
-        $locale_path = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
-        Logger::log('Set locale dir ' . $locale_path);
-        GeneratorHelper::createDir($locale_path);
-        bindtextdomain('translations', $locale_path);
+        $localePath = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
+        Logger::log('Set locale dir ' . $localePath);
+        GeneratorHelper::createDir($localePath);
+        bindtextdomain('translations', $localePath);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));

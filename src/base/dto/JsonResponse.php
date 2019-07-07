@@ -30,15 +30,17 @@ class JsonResponse extends Dto
     public $pages = 1;
 
     /**
+     * JsonResponse constructor.
      * @param array $data
-     * @param bool|FALSE $result
-     * @param int $total
+     * @param bool $result
+     * @param null $total
      * @param int $pages
-     * @param string $message
+     * @param null $message
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public function __construct($data = array(), $result = false, $total = null, $pages = 1, $message = null)
     {
-        parent::__construct();
+        parent::__construct(false);
         $this->data = $data;
         $this->success = $result;
         $this->total = $total ?: (is_array($data) ? count($data) : 0);

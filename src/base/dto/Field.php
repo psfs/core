@@ -71,7 +71,7 @@ class Field extends Dto
      */
     public $size;
 
-    public function __construct($name, $label, $type = Field::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)
+    public function __construct($name, $label, $type = self::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)
     {
         $this->name = $name;
         $this->label = $label;

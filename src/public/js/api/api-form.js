@@ -289,7 +289,6 @@
                         .clickOutsideToClose(true)
                         .title(label)
                         .content(message)
-                        .ariaLabel('Execution ok')
                         .ok('Close')
                 );
             }
@@ -307,7 +306,6 @@
                         .clickOutsideToClose(true)
                         .title(label)
                         .content(message)
-                        .ariaLabel('Execution ko')
                         .ok('Close')
                 );
             }
@@ -354,7 +352,6 @@
                         var confirm = $mdDialog.confirm()
                             .title(label)
                             .content('La acción implica un borrado, ¿estás seguro?')
-                            .ariaLabel('Delete Element')
                             .ok($scope.i18N['delete'])
                             .cancel($scope.i18N['cancel']);
                         $mdDialog.show(confirm).then(function() {
