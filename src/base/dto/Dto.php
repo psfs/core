@@ -165,7 +165,7 @@ class Dto extends Singleton implements \JsonSerializable
         switch ($type) {
             default:
             case 'string':
-                $this->$key = (string)$value;
+                $this->$key = $value;
                 break;
             case 'integer':
             case 'int':
