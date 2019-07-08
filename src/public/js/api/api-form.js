@@ -159,7 +159,7 @@
             }
 
             function querySearch(search, field) {
-                deferred = $q.defer();
+                let deferred = $q.defer();
                 if(angular.isArray(field.data) && field.data.length) {
                     deferred.resolve(field.data);
                 } else {
