@@ -1,4 +1,4 @@
-{% filter spaceless %}
+{% apply spaceless %}
     <button
             {% for name,value in button %}
                 {% if name not in ['class', 'value'] %}
@@ -20,4 +20,4 @@
             {% endif %}
         {% endif %}
     </button>
-{% endfilter %}
+{% endapply %}
