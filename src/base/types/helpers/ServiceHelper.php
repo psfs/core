@@ -14,7 +14,7 @@ class ServiceHelper {
 
     }
 
-    public static function parseRawData($type, array $params = []) {
+    public static function parseRawData($type, $params) {
         switch($type) {
             default:
             case self::TYPE_HTTP:
