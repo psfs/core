@@ -240,7 +240,6 @@ class Service extends Singleton
 
     /**
      * @return bool
-     *
      */
     public function getIsJson() {
         return $this->isJson;
@@ -390,7 +389,7 @@ class Service extends Singleton
             curl_setopt($this->con, CURLOPT_STDERR, $verbose);
         }
         $result = curl_exec($this->con);
-        $this->result = $this->isJson ? json_decode($result, true) : $result;
+        $this->setResult($this->isJson ? json_decode($result, true) : $result);
         if('debug' === Config::getParam('log.level')) {
             rewind($verbose);
             $verboseLog = stream_get_contents($verbose);

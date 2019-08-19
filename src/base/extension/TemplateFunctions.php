@@ -9,7 +9,12 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\Services\GeneratorService;
 
+/**
+ * Class TemplateFunctions
+ * @package PSFS\base\extension
+ */
 class TemplateFunctions
 {
 
@@ -29,9 +34,9 @@ class TemplateFunctions
      * Función que copia los recursos de las carpetas Public al DocumentRoot
      * @param $string
      * @param null $name
-     * @param bool|TRUE $return
-     *
-     * @return string
+     * @param bool $return
+     * @return string|null
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public static function asset($string, $name = null, $return = true)
     {
@@ -154,7 +159,7 @@ class TemplateFunctions
         $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
         $filenamePath = self::extractPathname($path, $domains);
-        \PSFS\Services\GeneratorService::copyResources($dest, $force, $filenamePath, $debug);
+        GeneratorService::copyResources($dest, $force, $filenamePath, $debug);
         return '';
     }
 

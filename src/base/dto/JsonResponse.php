@@ -33,9 +33,9 @@ class JsonResponse extends Dto
      * JsonResponse constructor.
      * @param array $data
      * @param bool $result
-     * @param null $total
+     * @param integer $total
      * @param int $pages
-     * @param null $message
+     * @param string $message
      * @throws \PSFS\base\exception\GeneratorException
      */
     public function __construct($data = array(), $result = false, $total = null, $pages = 1, $message = null)

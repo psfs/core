@@ -149,7 +149,8 @@ trait OutputTrait {
      * @param string $output
      * @param string $contentType
      * @param array $cookies
-     * @return string HTML
+     * @return string
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public function output($output = '', $contentType = 'text/html', array $cookies = array())
     {
@@ -246,7 +247,7 @@ trait OutputTrait {
         echo $data;
         ob_flush();
         ob_end_clean();
-        exit;
+        $this->closeRender();
     }
 
     /**

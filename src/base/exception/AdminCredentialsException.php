@@ -1,10 +1,11 @@
 <?php
+
 namespace PSFS\base\exception;
 
 /**
  * Class AdminCredentialsException
  * @package PSFS\base\exception
  */
-class AdminCredentialsException extends ConfigException {
-
+class AdminCredentialsException extends ConfigException
+{
 }

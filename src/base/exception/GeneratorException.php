@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\exception;
 
 /**
@@ -7,5 +8,4 @@ namespace PSFS\base\exception;
  */
 class GeneratorException extends \Exception
 {
-
 }

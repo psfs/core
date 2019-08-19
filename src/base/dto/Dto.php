@@ -79,7 +79,7 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @param array $properties
      * @param $key
-     * @param null $value
+     * @param mixed $value
      * @throws \ReflectionException
      */
     protected function parseDtoField(array $properties, $key, $value = null) {

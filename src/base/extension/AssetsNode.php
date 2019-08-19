@@ -1,6 +1,7 @@
 <?php
 
 namespace PSFS\base\extension;
+
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -18,7 +19,7 @@ class AssetsNode extends Node
      * @param string $name
      * @param array $values
      * @param int $line
-     * @param null $tag
+     * @param string $tag
      * @param string $type
      */
     public function __construct($name, $values, $line, $tag = null, $type = 'js')

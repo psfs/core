@@ -9,7 +9,8 @@ namespace PSFS\base\exception;
 class ConfigException extends \RuntimeException
 {
     /**
-     * @param null $message
+     * @param string $message
+     * @param integer $code
      */
     public function __construct($message = null, $code = 500)
     {

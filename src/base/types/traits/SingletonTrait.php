@@ -17,7 +17,7 @@ Trait SingletonTrait
     /**
      * @var array Singleton cached reference to singleton instance
      */
-    protected static $instance = [];
+    private static $instance = [];
 
     /**
      * gets the instance via lazy initialization (created on first usage)

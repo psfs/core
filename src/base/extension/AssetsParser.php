@@ -17,14 +17,37 @@ use PSFS\base\types\helpers\GeneratorHelper;
  */
 class AssetsParser
 {
-
+    /**
+     * @var array
+     */
     protected $files = [];
+    /**
+     * @var array
+     */
     protected $hash = [];
+    /**
+     * @var string
+     */
     protected $compiled_files;
+    /**
+     * @var string
+     */
     protected $type;
+    /**
+     * @var string
+     */
     protected $path;
+    /**
+     * @var array
+     */
     protected $domains = [];
+    /**
+     * @var bool
+     */
     private $debug = false;
+    /**
+     * @var string
+     */
     private $cdnPath = null;
 
     /**
@@ -102,6 +125,7 @@ class AssetsParser
      * @return AssetsParser
      * @internal param string $type
      * @throws ConfigException
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public function compile()
     {

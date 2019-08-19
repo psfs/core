@@ -2,6 +2,7 @@
 
 namespace PSFS\base\extension;
 
+use Twig\Node\Expression\ConstantExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
@@ -112,13 +113,13 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @param null $node
+     * @param ConstantExpression $node
      * @return array
      */
     protected function getTmpAttribute($node = null)
     {
         $tmp = [];
-        if(null !== $node) {
+        if (null !== $node) {
             $tmp = $node->getAttribute('value');
             if (!is_array($tmp)) {
                 $tmp = [$tmp];
@@ -143,7 +144,7 @@ class AssetsTokenParser extends AbstractTokenParser
         } else {
             $tmp = $this->getTmpAttribute($node);
         }
-        if(null !== $node) {
+        if (null !== $node) {
             $tmp[] = $value->getAttribute('value');
         }
         return [$tmp, $node];

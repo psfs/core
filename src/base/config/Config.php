@@ -102,11 +102,11 @@ class Config
      * @param array $extra
      * @return array
      */
-    protected static function saveConfigParams(array $data, array $extra)
+    protected static function saveConfigParams(array $data, $extra = null)
     {
         Logger::log('Saving required config parameters');
         //En caso de tener parámetros nuevos los guardamos
-        if (array_key_exists('label', $extra) && is_array($extra['label'])) {
+        if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
                 if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
                     /** @var $data array */
@@ -190,7 +190,7 @@ class Config
      * @param array|null $extra
      * @return boolean
      */
-    public static function save(array $data, array $extra = null)
+    public static function save(array $data, $extra = null)
     {
         $data = self::saveConfigParams($data, $extra);
         $finalData = self::saveExtraParams($data);

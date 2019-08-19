@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\exception;
 
 /**
@@ -8,12 +9,12 @@ namespace PSFS\base\exception;
 class RouterException extends \RuntimeException
 {
     /**
-     * @param null $message
+     * @param string $message
      * @param integer $code
-     * @param \Exception $e
+     * @param \Exception $exception
      */
-    public function __construct($message = null, $code = 404, \Exception $e = null)
+    public function __construct($message = null, $code = 404, \Exception $exception = null)
     {
-        parent::__construct($message ?: t("Página no encontrada"), $code, $e);
+        parent::__construct($message ?: t("Página no encontrada"), $code, $exception);
     }
 }
