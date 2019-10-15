@@ -64,8 +64,16 @@ class GeneratorHelperTest extends TestCase
      * @throws \Exception
      */
     public function testDeployNewVersion() {
+        $configPrevious = Config::getInstance()->dumpConfig();
         $version = DeployHelper::updateCacheVar();
         $config = Config::getInstance()->dumpConfig();
         $this->assertEquals($config[DeployHelper::CACHE_VAR_TAG], $version, 'Cache version are not equals');
+        foreach($config as $key => $value) {
+            if($key !== DeployHelper::CACHE_VAR_TAG) {
+                $this->assertTrue(array_key_exists($key, $configPrevious), 'Missing key in previous config');
+                $this->assertEquals($value, $configPrevious[$key], 'Config values are not the same');
+            }
+        }
+        $this->assertTrue(abs(count(array_keys($configPrevious)) - count(array_keys($config))) < 2, 'There are more than 1 key different in the config');
     }
 }
