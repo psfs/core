@@ -1,11 +1,15 @@
 <?php
 namespace PSFS\Command;
 
+use Composer\Console\Application;
+use PSFS\base\types\helpers\GeneratorHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-if (!isset($console)) $console = new \Symfony\Component\Console\Application();
+if (!isset($console)) {
+    $console = new Application();
+}
 $console
     ->register('psfs:create:root')
     ->setDefinition(array(
@@ -17,7 +21,7 @@ $console
         $path = $input->getArgument('path');
         if (empty($path)) $path = WEB_DIR;
 
-        \PSFS\controller\GeneratorController::createRoot($path, $output);
+        GeneratorHelper::createRoot($path, $output);
 
         $output->writeln("Document root generado en " . $path);
     });

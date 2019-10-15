@@ -305,7 +305,7 @@ class Router
     public function hydrateRouting()
     {
         $this->generateRouting();
-        $home = Config::getParam('home.action');
+        $home = Config::getParam('home.action', 'admin');
         if (NULL !== $home || $home !== '') {
             $home_params = NULL;
             foreach ($this->routing as $pattern => $params) {
