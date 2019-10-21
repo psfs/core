@@ -23,7 +23,8 @@ class GeneratorController extends Admin
     /**
      * @label Método que genera un nuevo módulo
      * @GET
-     * @route /admin/module* @return string
+     * @route /admin/module
+     * @return string
      * @throws \PSFS\base\exception\FormException
      */
     public function generateModule()
