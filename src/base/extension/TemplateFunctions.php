@@ -9,7 +9,7 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\Services\GeneratorService;
+use PSFS\services\GeneratorService;
 
 /**
  * Class TemplateFunctions
