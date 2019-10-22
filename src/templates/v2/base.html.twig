@@ -26,7 +26,7 @@
 </head>
 <body data-ng-controller="AdminCtrl" data-layout="column" data-ng-cloak md-swipe-right="toggleMenu()" md-swipe-left="toogleActions()">
 {% block menu %}
-    {% include 'v2/top.menu.html.twig' %}
+    {% include '@ROOT/v2/top.menu.html.twig' %}
 {% endblock menu %}
 {% if base_version == 'v2' %}
     <md-toolbar flex="100" id="admin-principal-nav">
@@ -93,6 +93,6 @@
         })();
     </script>
 {% endif %}
-{% include 'debug.html.twig' %}
+{% include '@ROOT/debug.html.twig' %}
 </body>
 </html>

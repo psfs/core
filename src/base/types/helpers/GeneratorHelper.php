@@ -46,7 +46,7 @@ class GeneratorHelper
                 try {
                     self::deleteDir(WEB_DIR . DIRECTORY_SEPARATOR . $dir);
                 } catch (\Exception $e) {
-                    Logger::log($e->getMessage());
+                    syslog(LOG_INFO, $e->getMessage());
                 }
             }
         }
@@ -64,7 +64,7 @@ class GeneratorHelper
                 throw new \Exception(t('Can\'t create directory ') . $dir);
             }
         } catch (\Exception $e) {
-            Logger::log($e->getMessage(), LOG_WARNING);
+            syslog(LOG_WARNING, $e->getMessage());
             if (!file_exists(dirname($dir))) {
                 throw new GeneratorException($e->getMessage() . $dir);
             }

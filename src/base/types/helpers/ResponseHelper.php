@@ -64,7 +64,7 @@ class ResponseHelper
      */
     public static function setDebugHeaders(array $vars)
     {
-        if (Config::getParam('debug', true) && !self::isTest()) {
+        if ((Config::getParam('debug', true) || Config::getParam('profiling.enable', false)) && !self::isTest()) {
             Logger::log('Adding debug headers to render response');
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);

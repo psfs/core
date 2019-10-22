@@ -4,6 +4,10 @@ namespace PSFS;
 defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage());
 defined('PSFS_START_TS') or define('PSFS_START_TS', microtime(true));
 
+if(defined('PSFS_PHAR_DIR') && file_exists(PSFS_PHAR_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'environment.php')) {
+    @require_once PSFS_PHAR_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'environment.php';
+}
+
 defined('SOURCE_DIR') or define('SOURCE_DIR', __DIR__);
 if (preg_match('/vendor/', SOURCE_DIR)) {
     defined('BASE_DIR') or define('BASE_DIR', SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..');

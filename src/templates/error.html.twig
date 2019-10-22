@@ -1,5 +1,5 @@
 {% set base_version = get_config('admin.version', 'v1') %}
-{% extends base_version ~ '/base.html.twig' %}
+{% extends '@ROOT/' ~ base_version ~ '/base.html.twig' %}
 {% block body_header %}
     <md-subheader class="page-header md-primary">
         <h2>{{ "Opps, esto no era lo que me esperaba..."|trans }}</h2>

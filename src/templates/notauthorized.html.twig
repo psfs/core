@@ -1,5 +1,5 @@
 {% set base_version = get_config('admin.version', 'v1') %}
-{% extends base_version ~ '/base.html.twig' %}
+{% extends '@ROOT/' ~ base_version ~ '/base.html.twig' %}
 {% block body_header %}
     <div class="page-header">
         <h1>{{ "No tienes privilegios para acceder"|trans }}</h1>

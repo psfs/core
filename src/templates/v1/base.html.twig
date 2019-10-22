@@ -32,7 +32,7 @@
 </head>
 <body class="container">
 {% block menu %}
-    {% include 'v1/top.menu.html.twig' %}
+    {% include '@ROOT/v1/top.menu.html.twig' %}
 {% endblock menu %}
     <header class="row" role="banner">{% block header %}{% endblock header %}</header>
     <section class="row">
@@ -109,6 +109,6 @@
         })();
     </script>
 {% endif %}
-{% include 'debug.html.twig' %}
+{% include '@ROOT/debug.html.twig' %}
 </body>
 </html>

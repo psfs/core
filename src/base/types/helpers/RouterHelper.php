@@ -125,7 +125,6 @@ class RouterHelper
     public static function extractDomainInfo(\ReflectionClass $class, $domain)
     {
         $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-        $path = realpath($path) . DIRECTORY_SEPARATOR;
         $templatesPath = 'templates';
         $publicPath = 'public';
         $modelsPath = 'models';

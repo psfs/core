@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\Services;
+namespace PSFS\services;
 
 use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\AbstractManager;

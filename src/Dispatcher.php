@@ -6,6 +6,7 @@
 
 namespace PSFS;
 
+use PSFS\base\config\Config;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
@@ -47,9 +48,11 @@ class Dispatcher extends Singleton
 
     /**
      * Initializer method
+     * @throws base\exception\GeneratorException
      */
     public function init()
     {
+        Config::getInstance();
         Inspector::stats('[Dispatcher] Dispatcher init');
         parent::init();
         $this->initiateStats();
@@ -113,3 +116,5 @@ class Dispatcher extends Singleton
     }
 
 }
+
+Config::initialize();

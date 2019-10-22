@@ -262,4 +262,9 @@ class Config
         $param = self::getInstance()->get($key);
         return (null !== $param) ? $param : $defaultValue;
     }
+
+    public static function initialize() {
+        Config::getInstance();
+        Logger::getInstance();
+    }
 }

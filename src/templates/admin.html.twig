@@ -1,5 +1,5 @@
 {% set base_version = get_config('admin.version', 'v1') %}
-{% extends base_version ~ '/base.html.twig' %}
+{% extends '@ROOT/' ~base_version ~ '/base.html.twig' %}
 {% block header %}
     <div class="page-header col-xs-12">
         <h2>{{ "Herramienta de Gestión de Administradores PSFS"|trans }}</h2>

@@ -23,7 +23,7 @@ abstract class Controller extends Singleton implements ControllerInterface
      * @var \PSFS\base\Template $tpl
      */
     protected $tpl;
-    protected $domain = '';
+    protected $domain = 'ROOT';
 
     /**
      * Método que renderiza una plantilla
