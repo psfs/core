@@ -3,12 +3,18 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:5
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:6
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:8
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:10
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:16
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:23
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-29 17:15+0200\n"
+"POT-Creation-Date: 2019-03-05 20:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2470,4 +2476,67 @@ msgstr ""
 
 #: /Users/c15k0/Development/psfs/core/cache/twig/49/49d1befb65b7e24745e8463226935efab3a5f5267c5a637969a59bc43b263c37.php:80
 msgid "Menus ocultos %s%"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:2
+msgid "Visor de rutas del sistema"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:3
+msgid "Servicio de rutas del sistema"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:4
+msgid "Regenerar rutas"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:7
+msgid "Gestor de usuarios PSFS"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:9
+msgid "Parámetros de configuración de PSFS"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:11
+msgid "Documentación api"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:12
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:13
+msgid "Generador de locales"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:14
+msgid "VIsor de logs del sistema"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:15
+msgid "Generador de documentación API"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:17
+msgid " test"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:18
+msgid "Get list of Test elements filtered"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:19
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:24
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:25
+msgid "Get unique element for Test"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:20
+msgid "Bulk insert for Test model"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:21
+msgid "Test Manager"
+msgstr ""
+
+#: /Users/c15k0/Development/psfs/core/cache/translations/routes_translations.php:22
+msgid "Returns form data for any entity"
 msgstr ""

@@ -71,7 +71,11 @@ class Service extends Singleton
 
     private function closeConnection() {
         if(null !== $this->con) {
-            curl_close($this->con);
+            if(is_resource($this->con)) {
+                @curl_close($this->con);
+            } else {
+                $this->con = null;
+            }
         }
     }
 
