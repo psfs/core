@@ -27,7 +27,7 @@ class SecurityHelper
      */
     public static function checkRestrictedAccess($route)
     {
-        Inspector::stats('[SecurityHelper] Checking admin zone');
+        Inspector::stats('[SecurityHelper] Checking admin zone', Inspector::SCOPE_DEBUG);
         //Chequeamos si entramos en el admin
         if (!Config::getInstance()->checkTryToSaveConfig()
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || Config::getParam('restricted', false))
@@ -39,7 +39,7 @@ class SecurityHelper
             if (!Security::getInstance()->checkAdmin()) {
                 throw new AccessDeniedException();
             }
-            Inspector::stats('[SecurityHelper] Admin access granted');
+            Inspector::stats('[SecurityHelper] Admin access granted', Inspector::SCOPE_DEBUG);
         }
     }
 

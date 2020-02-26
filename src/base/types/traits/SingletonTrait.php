@@ -22,6 +22,7 @@ Trait SingletonTrait
     /**
      * gets the instance via lazy initialization (created on first usage)
      *
+     * @param array $args
      * @return $this
      */
     public static function getInstance(...$args)
@@ -29,14 +30,13 @@ Trait SingletonTrait
         $class = static::class;
         if (!array_key_exists($class, self::$instance) || !self::$instance[$class] instanceof $class) {
             self::$instance[$class] = new $class($args[0] ?? null);
-            self::_init(self::$instance[$class]);
+            self::initiate(self::$instance[$class]);
         }
         return self::$instance[$class];
     }
 
     /**
      * drop the instance
-     * @return mixed
      */
     public static function dropInstance() {
         $class = static::class;
@@ -66,7 +66,7 @@ Trait SingletonTrait
      * @param mixed $instance
      * @param mixed $args
      */
-    private static function _init($instance, $args = null)
+    private static function initiate($instance, $args = null)
     {
         $loaded = false;
         if (method_exists($instance, 'isLoaded')) {

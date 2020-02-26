@@ -81,7 +81,7 @@ class I18nHelper
     public static function setLocale($default = null)
     {
         $locale = self::extractLocale($default);
-        Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']');
+        Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']', Inspector::SCOPE_DEBUG);
         // Load translations
         putenv("LC_ALL=" . $locale);
         setlocale(LC_ALL, $locale);

@@ -205,7 +205,7 @@ trait OutputTrait {
      */
     public function renderCache($data, $headers = array())
     {
-        Inspector::stats('[OutputTrait] Rendering cache');
+        Inspector::stats('[OutputTrait] Rendering cache', Inspector::SCOPE_DEBUG);
         ob_start();
         for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
             header($headers[$i]);

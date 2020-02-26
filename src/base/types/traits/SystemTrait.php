@@ -60,7 +60,7 @@ Trait SystemTrait {
      */
     protected function bindWarningAsExceptions()
     {
-        Inspector::stats('[SystemTrait] Added handlers for errors');
+        Inspector::stats('[SystemTrait] Added handlers for errors', Inspector::SCOPE_DEBUG);
         if(Config::getParam('debug')) {
             Logger::log('Setting error_reporting as E_ALL');
             ini_set('error_reporting', E_ALL);

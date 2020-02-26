@@ -202,11 +202,11 @@ class DispatcherTest extends TestCase
     }
 
     public function testStats() {
-        Inspector::stats('test1');
+        Inspector::stats('test1', Inspector::SCOPE_DEBUG);
         $stats = Inspector::getStats();
         $this->assertNotEmpty($stats, 'Empty stats');
-        Inspector::stats('test2');
-        $secondStats = Inspector::getStats();
+        Inspector::stats('test2', Inspector::SCOPE_DEBUG);
+        $secondStats = Inspector::getStats(Inspector::SCOPE_DEBUG);
         $this->assertNotEmpty($secondStats, 'Empty stats');
         $this->assertNotEquals($stats, $secondStats, 'Stats are similar');
     }

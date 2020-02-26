@@ -7,7 +7,11 @@ namespace PSFS\base\types\helpers;
  */
 class Inspector {
 
+    const SCOPE_PROFILE = 'PROFILE';
+    const SCOPE_DEBUG = 'DEBUG';
+
     protected static $profiling = [];
+    protected static $debug = [];
 
     /**
      * @param string $name
@@ -24,9 +28,13 @@ class Inspector {
 
     /**
      * @param string $name
+     * @param string $scope
      */
-    public static function stats($name = null) {
-        self::$profiling[] = self::collect($name);
+    public static function stats($name = null, $scope = self::SCOPE_PROFILE) {
+        self::$debug[] = self::collect($name);
+        if($scope === self::SCOPE_PROFILE) {
+            self::$profiling[] = self::collect($name);
+        }
     }
 
     /**
@@ -46,24 +54,27 @@ class Inspector {
     }
 
     /**
+     * @param string $scope
      * @return array
      */
-    protected static function processStats() {
+    protected static function processStats($scope = self::SCOPE_PROFILE) {
         self::stats('Profiling collect start');
         $timestamp = defined('PSFS_START_TS') ? PSFS_START_TS : 0;
         $mem = defined('PSFS_START_MEM') ? PSFS_START_MEM : 0;
         $files = 0;
-        foreach(self::$profiling as &$value) {
+        $scopeSelected = $scope === self::SCOPE_DEBUG ? self::$debug : self::$profiling;
+        foreach($scopeSelected as &$value) {
             $value = self::calculateStats($value, $timestamp, $mem, $files);
         }
-        self::$profiling[] = self::calculateStats(self::collect('Profiling collect ends'), $timestamp, $mem, $files);
-        return self::$profiling;
+        $scopeSelected[] = self::calculateStats(self::collect('Profiling collect ends'), $timestamp, $mem, $files);
+        return $scopeSelected;
     }
 
     /**
+     * @param string $scope
      * @return array
      */
-    public static function getStats() {
-        return self::processStats();
+    public static function getStats($scope = self::SCOPE_PROFILE) {
+        return self::processStats($scope);
     }
 }

@@ -231,10 +231,10 @@ class Security
      */
     protected function getAdminFromCookie()
     {
-        $auth_cookie = Request::getInstance()->getCookie($this->getHash());
+        $authCookie = Request::getInstance()->getCookie($this->getHash());
         $user = $pass = array();
-        if (!empty($auth_cookie)) {
-            list($user, $pass) = explode(':', base64_decode($auth_cookie));
+        if (!empty($authCookie)) {
+            list($user, $pass) = explode(':', base64_decode($authCookie));
         }
 
         return array($user, $pass);

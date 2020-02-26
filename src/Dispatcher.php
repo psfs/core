@@ -53,13 +53,13 @@ class Dispatcher extends Singleton
     public function init()
     {
         Config::getInstance();
-        Inspector::stats('[Dispatcher] Dispatcher init');
+        Inspector::stats('[Dispatcher] Dispatcher init', Inspector::SCOPE_DEBUG);
         parent::init();
         $this->initiateStats();
         I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
         $this->actualUri = Request::getInstance()->getServer('REQUEST_URI');
-        Inspector::stats('[Dispatcher] Dispatcher init end');
+        Inspector::stats('[Dispatcher] Dispatcher init end', Inspector::SCOPE_DEBUG);
     }
 
     /**
@@ -69,7 +69,7 @@ class Dispatcher extends Singleton
      */
     public function run($uri = null)
     {
-        Inspector::stats('[Dispatcher] Begin runner');
+        Inspector::stats('[Dispatcher] Begin runner', Inspector::SCOPE_DEBUG);
         try {
             if ($this->config->isConfigured()) {
                 //Check CORS for requests
@@ -102,7 +102,7 @@ class Dispatcher extends Singleton
      */
     protected function dumpException(\Exception $exception)
     {
-        Inspector::stats('[Dispatcher] Starting dump exception');
+        Inspector::stats('[Dispatcher] Starting dump exception', Inspector::SCOPE_DEBUG);
         $exception = (NULL !== $exception->getPrevious()) ? $exception->getPrevious() : $exception;
         $error = array(
             "error" => $exception->getMessage(),

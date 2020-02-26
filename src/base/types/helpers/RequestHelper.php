@@ -36,7 +36,7 @@ class RequestHelper
      */
     public static function checkCORS()
     {
-        Inspector::stats('[RequestHelper] Checking CORS');
+        Inspector::stats('[RequestHelper] Checking CORS', Inspector::SCOPE_DEBUG);
         $corsEnabled = Config::getParam('cors.enabled');
         $request = Request::getInstance();
         if (NULL !== $corsEnabled) {

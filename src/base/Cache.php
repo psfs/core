@@ -67,7 +67,7 @@ class Cache
      */
     public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false)
     {
-        Inspector::stats('[Cache] Gathering data from cache');
+        Inspector::stats('[Cache] Gathering data from cache', Inspector::SCOPE_DEBUG);
         $data = null;
         $absolutePath = $absolute ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         if (file_exists($absolutePath)) {
@@ -84,7 +84,7 @@ class Cache
      */
     private function hasExpiredCache($path, $expires = 300, $absolute = false)
     {
-        Inspector::stats('[Cache] Checking expiration');
+        Inspector::stats('[Cache] Checking expiration', Inspector::SCOPE_DEBUG);
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $lasModificationDate = filemtime($absolutePath);
         return ($lasModificationDate + $expires <= time());
@@ -97,7 +97,7 @@ class Cache
      */
     public static function extractDataWithFormat($data = null, $transform = Cache::TEXT)
     {
-        Inspector::stats('[Cache] Extracting data from cache');
+        Inspector::stats('[Cache] Extracting data from cache', Inspector::SCOPE_DEBUG);
         switch ($transform) {
             case self::JSON:
                 $data = json_decode($data, true);
@@ -150,7 +150,7 @@ class Cache
      */
     public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false)
     {
-        Inspector::stats('[Cache] Store data in cache');
+        Inspector::stats('[Cache] Store data in cache', Inspector::SCOPE_DEBUG);
         $data = self::transformData($data, $transform);
         $absolutePath = $absolute ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
         $this->saveTextToFile($data, $absolutePath);
@@ -168,7 +168,7 @@ class Cache
     public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT)
     {
         $data = null;
-        Inspector::stats('[Cache] Reading data from cache: ' . json_encode(['path' => $path]));
+        Inspector::stats('[Cache] Reading data from cache: ' . json_encode(['path' => $path]), Inspector::SCOPE_DEBUG);
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
             if (is_callable($function) && $this->hasExpiredCache($path, $expires)) {
                 $data = $function();
@@ -213,13 +213,13 @@ class Cache
         $hashPath = null;
         $filename = null;
         $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
-        Inspector::stats('[Cache] Gathering cache hash for request');
+        Inspector::stats('[Cache] Gathering cache hash for request', Inspector::SCOPE_DEBUG);
         if (null !== $action && $action['cache'] > 0) {
             $query = $action['params'];
             $query[Api::HEADER_API_LANG] = Request::header(Api::HEADER_API_LANG, 'es');
             $filename = FileHelper::generateHashFilename($action['http'], $action['slug'], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
-            Inspector::stats('[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]));
+            Inspector::stats('[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]), Inspector::SCOPE_DEBUG);
             Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath]);
         }
         return [$hashPath, $filename];
@@ -227,7 +227,7 @@ class Cache
 
     public function flushCache() {
         if(Config::getParam('cache.data.enable', false)) {
-            Inspector::stats('[Cache] Flushing cache');
+            Inspector::stats('[Cache] Flushing cache', Inspector::SCOPE_DEBUG);
             $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
             if(is_array($action)) {
                 $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;

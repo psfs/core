@@ -4,6 +4,7 @@ namespace PSFS\base\config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\base\types\traits\TestTrait;
@@ -160,7 +161,7 @@ class Config
      */
     public function isConfigured()
     {
-        Inspector::stats('[Config] Checking configuration');
+        Inspector::stats('[Config] Checking configuration', Inspector::SCOPE_DEBUG);
         $configured = (count($this->config) > 0);
         if ($configured) {
             foreach (static::$required as $required) {
@@ -237,6 +238,9 @@ class Config
     {
         $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
         $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
+        if(array_key_exists('cache.var', $this->config)) {
+            Security::getInstance()->setSessionKey('config.cache.var', $this->config['cache.var']);
+        }
     }
 
     /**
