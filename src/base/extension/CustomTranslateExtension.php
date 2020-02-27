@@ -49,41 +49,43 @@ class CustomTranslateExtension extends AbstractExtension
     {
         $session = Security::getInstance();
         self::$locale = I18nHelper::extractLocale($session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
-        $version = self::$locale . '_' . $session->getSessionKey(self::LOCALE_CACHED_VERSION);
-        $configVersion = self::$locale . '_' . $session->getSessionKey('config.cache.var');
+        $version = $session->getSessionKey(self::LOCALE_CACHED_VERSION);
+        $configVersion = self::$locale . '_' . Config::getParam('cache.var', 'v1');
         if ($forceReload) {
             self::dropInstance();
             $version = null;
+            self::$translations = [];
         }
-        self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
-        if(null !== $version && $version !== $configVersion) {
-            self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG);
-        } else {
-            if (!$useBase) {
-                $customKey = $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
-            }
-            // Gather always the base translations
-            $standardTranslations = [];
-            self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', self::$locale . '.json']);
-            if(file_exists(self::$filename)) {
-                $standardTranslations = json_decode(file_get_contents(self::$filename), true);
-            }
-            // If the project has custom translations, gather them
-            if (null !== $customKey) {
-                Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
-                self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $customKey, self::$locale . '.json']);
-            }
-            // Finally we merge base and custom translations to complete all the i18n set
-            if (file_exists(self::$filename)) {
-                Logger::log('[' . self::class . '] Custom locale detected: ' . $customKey . ' [' . self::$locale . ']', LOG_INFO);
-                self::$translations = array_merge($standardTranslations, json_decode(file_get_contents(self::$filename), true));
-                $session->setSessionKey(self::LOCALE_CACHED_TAG, self::$translations);
-                $session->setSessionKey(self::LOCALE_CACHED_VERSION, $configVersion);
-            } elseif (null !== $customKey) {
-                self::checkLoad(null, $forceReload, true);
+        if(count(self::$translations) === 0) {
+            self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
+            if(null !== $version && $version === $configVersion) {
+                self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG);
+            } else {
+                if (!$useBase) {
+                    $customKey = $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
+                }
+                // Gather always the base translations
+                $standardTranslations = [];
+                self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', self::$locale . '.json']);
+                if(file_exists(self::$filename)) {
+                    $standardTranslations = json_decode(file_get_contents(self::$filename), true);
+                }
+                // If the project has custom translations, gather them
+                if (null !== $customKey) {
+                    Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
+                    self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $customKey, self::$locale . '.json']);
+                }
+                // Finally we merge base and custom translations to complete all the i18n set
+                if (file_exists(self::$filename)) {
+                    Logger::log('[' . self::class . '] Custom locale detected: ' . $customKey . ' [' . self::$locale . ']', LOG_INFO);
+                    self::$translations = array_merge($standardTranslations, json_decode(file_get_contents(self::$filename), true));
+                    $session->setSessionKey(self::LOCALE_CACHED_TAG, self::$translations);
+                    $session->setSessionKey(self::LOCALE_CACHED_VERSION, $configVersion);
+                } elseif (null !== $customKey) {
+                    self::checkLoad(null, $forceReload, true);
+                }
             }
         }
-
     }
 
     /**
