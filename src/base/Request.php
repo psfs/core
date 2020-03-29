@@ -348,7 +348,7 @@ class Request
         if(!empty($host)) {
             $parts = explode(':', $host);
             $hostPort = (integer)end($parts);
-            if($hostPort !== $port) {
+            if(count($parts) > 1 && $hostPort !== $port) {
                 $port = $hostPort;
             }
         }
