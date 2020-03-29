@@ -353,7 +353,7 @@ class Request
             }
         }
         if (!in_array($port, [80, 443], true)) {
-            $url .= ':' . $this->getServer('SERVER_PORT');
+            $url .= ':' . $port;
         }
         return $url;
     }
