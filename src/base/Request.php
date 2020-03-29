@@ -65,13 +65,6 @@ class Request
     }
 
     /**
-     * @return bool
-     */
-    public function isLoaded() {
-        return $this->isLoaded;
-    }
-
-    /**
      * Método que devuelve las cabeceras de la petición
      * @return array
      */
@@ -117,9 +110,9 @@ class Request
      *
      * @return string
      */
-    public static function ts($formatted = false)
+    public static function getTimestamp($formatted = false)
     {
-        return self::getInstance()->getTs($formatted);
+        return self::getTs($formatted);
     }
 
     public function getTs($formatted = false)
@@ -308,9 +301,7 @@ class Request
         if (!empty($protocol)) {
             $url = $protocol . $url;
         }
-        if (!in_array((integer)$this->getServer('SERVER_PORT'), [80, 443], true)) {
-            $url .= ':' . $this->getServer('SERVER_PORT');
-        }
+        $url = $this->checkServerPort($url);
         return $url;
     }
 
@@ -344,6 +335,27 @@ class Request
     {
         $requested = $this->getServer('HTTP_X_REQUESTED_WITH');
         return (null !== $requested && strtolower($requested) === 'xmlhttprequest');
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    protected function checkServerPort(string $url): string
+    {
+        $port = (integer)$this->getServer('SERVER_PORT');
+        $host = $this->getServer('HTTP_HOST');
+        if(!empty($host)) {
+            $parts = explode(':', $host);
+            $hostPort = (integer)end($parts);
+            if($hostPort !== $port) {
+                $port = $hostPort;
+            }
+        }
+        if (!in_array($port, [80, 443], true)) {
+            $url .= ':' . $this->getServer('SERVER_PORT');
+        }
+        return $url;
     }
 
 }

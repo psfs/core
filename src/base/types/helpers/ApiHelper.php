@@ -28,62 +28,27 @@ class ApiHelper
      * @return Field|null
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected static function parseFormField($domain, $tableMap, $field, array $behaviors = [])
+    protected static function parseFormField($domain, TableMap $tableMap, $field, array $behaviors = [])
     {
         $fDto = null;
         /** @var ColumnMap $mappedColumn */
         $mappedColumn = $tableMap->getColumnByPhpName($field);
         $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
-        if ($mappedColumn->isForeignKey()) {
-            $fDto = self::extractForeignModelsField($mappedColumn, $field, $domain);
-        } elseif ($mappedColumn->isPrimaryKey() && $required) {
-            $fDto = self::generatePrimaryKeyField($field, $required);
-        } elseif ($mappedColumn->isNumeric()) {
-            $fDto = self::generateNumericField($field, $required);
-        } elseif ($mappedColumn->isText()) {
-            if ($mappedColumn->getSize() > 100) {
-                $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
-            } else {
-                $fDto = self::generateStringField($field, $required);
-            }
-        } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
-            $fDto = self::generateBooleanField($field, $required);
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
-            $fDto = self::generatePasswordField($field, $required);
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
-            $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
-            if (array_key_exists('timestampable', $behaviors) && false !== array_search($mappedColumn->getName(), $behaviors['timestampable'])) {
-                $fDto->required = false;
-                $fDto->type = Field::TIMESTAMP;
-            }
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
-            $fDto = self::generateEnumField($field, $required);
-            foreach ($mappedColumn->getValueSet() as $value) {
-                switch(Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
-                    default:
-                    case TableMap::TYPE_PHPNAME:
-                        $fieldName = $mappedColumn->getPhpName();
-                        break;
-                    case TableMap::TYPE_CAMELNAME:
-                        $fieldName = lcfirst($mappedColumn->getPhpName());
-                        break;
-                    case TableMap::TYPE_COLNAME:
-                        $fieldName = $mappedColumn->getFullyQualifiedName();
-                        break;
-                }
-                $fDto->data[] = [
-                    $fieldName => $value,
-                    "Label" => t($value),
-                ];
-            }
+        $fDto = self::parseFieldType($domain, $field, $behaviors, $mappedColumn, $required);
+        if(null !== $fDto) {
+            self::checkPrimaryKey($fDto, $mappedColumn);
+            self::applyCaseToNames($fDto, $mappedColumn);
         }
-        if (null !== $fDto) {
-            $fDto->size = $mappedColumn->getSize();
-            if ($mappedColumn->isPrimaryKey()) {
-                $fDto->pk = true;
-            }
-        }
-        switch(Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
+        return $fDto;
+    }
+
+    /**
+     * @param ColumnMap $mappedColumn
+     * @param Field|null $fDto
+     */
+    protected static function applyCaseToNames(Field $fDto, ColumnMap $mappedColumn)
+    {
+        switch (Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
             default:
             case TableMap::TYPE_PHPNAME:
                 $fDto->name = $mappedColumn->getPhpName();
@@ -97,6 +62,115 @@ class ApiHelper
                 $fDto->name = $mappedColumn->getFullyQualifiedName();
                 $fDto->label = t($mappedColumn->getFullyQualifiedName());
                 break;
+        }
+    }
+
+    /**
+     * @param Field|null $fDto
+     * @param ColumnMap $mappedColumn
+     */
+    protected static function checkPrimaryKey(Field $fDto, ColumnMap $mappedColumn)
+    {
+        $fDto->size = $mappedColumn->getSize();
+        if ($mappedColumn->isPrimaryKey()) {
+            $fDto->pk = true;
+        }
+    }
+
+    /**
+     * @param $field
+     * @param bool $required
+     * @param ColumnMap $mappedColumn
+     * @return Field
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    protected static function parseEnumField($field, bool $required, ColumnMap $mappedColumn)
+    {
+        $fDto = self::generateEnumField($field, $required);
+        foreach ($mappedColumn->getValueSet() as $value) {
+            switch (Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
+                default:
+                case TableMap::TYPE_PHPNAME:
+                    $fieldName = $mappedColumn->getPhpName();
+                    break;
+                case TableMap::TYPE_CAMELNAME:
+                    $fieldName = lcfirst($mappedColumn->getPhpName());
+                    break;
+                case TableMap::TYPE_COLNAME:
+                    $fieldName = $mappedColumn->getFullyQualifiedName();
+                    break;
+            }
+            $fDto->data[] = [
+                $fieldName => $value,
+                "Label" => t($value),
+            ];
+        }
+        return $fDto;
+    }
+
+    /**
+     * @param $domain
+     * @param $field
+     * @param array $behaviors
+     * @param ColumnMap $mappedColumn
+     * @param bool $required
+     * @return Field
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    protected static function parseFieldType($domain, $field, array $behaviors, ColumnMap $mappedColumn, bool $required)
+    {
+        $fDto = null;
+        if ($mappedColumn->isForeignKey()) {
+            $fDto = self::extractForeignModelsField($mappedColumn, $field, $domain);
+        } elseif ($mappedColumn->isPrimaryKey() && $required) {
+            $fDto = self::generatePrimaryKeyField($field, $required);
+        } elseif ($mappedColumn->isNumeric()) {
+            $fDto = self::generateNumericField($field, $required);
+        } elseif ($mappedColumn->isText()) {
+            $fDto = self::generateTextField($field, $mappedColumn, $required);
+        } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
+            $fDto = self::generateBooleanField($field, $required);
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
+            $fDto = self::generatePasswordField($field, $required);
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
+            $fDto = self::generateTimestampField($field, $behaviors, $mappedColumn, $required);
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
+            $fDto = self::parseEnumField($field, $required, $mappedColumn);
+        }
+        return $fDto;
+    }
+
+    /**
+     * @param $field
+     * @param ColumnMap $mappedColumn
+     * @param bool $required
+     * @return Field
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    protected static function generateTextField($field, ColumnMap $mappedColumn, bool $required): Field
+    {
+        if ($mappedColumn->getSize() > 100) {
+            $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
+        } else {
+            $fDto = self::generateStringField($field, $required);
+        }
+        return $fDto;
+    }
+
+    /**
+     * @param $field
+     * @param array $behaviors
+     * @param ColumnMap $mappedColumn
+     * @param bool $required
+     * @return Field
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required): Field
+    {
+        $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
+        if (array_key_exists('timestampable', $behaviors) && false !== array_search($mappedColumn->getName(), $behaviors['timestampable'])) {
+            $fDto->required = false;
+            $fDto->type = Field::TIMESTAMP;
         }
         return $fDto;
     }
