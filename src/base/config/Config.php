@@ -76,6 +76,10 @@ class Config
         'api.field.case', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap class
         'route.404', // Set route for 404 pages
         'project.timezone', // Set the timezone for the timestamps in PSFS(Europe/madrid by default)
+        'curl.returnTransfer', // Curl option CURLOPT_RETURNTRANSFER
+        'curl.followLocation', // Curl option CURLOPT_FOLLOWLOCATION
+        'curl.sslVerifyHost', // Curl option CURLOPT_SSL_VERIFYHOST
+        'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER
     ];
     protected $debug = false;
 

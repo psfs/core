@@ -21,7 +21,7 @@ class ServiceTest extends TestCase {
         return false;
     }
 
-    public function testServiceBasics() {
+    protected function getServiceInstance() {
         $srv = Service::getInstance();
         // Check instance
         $this->assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
@@ -33,6 +33,39 @@ class ServiceTest extends TestCase {
         $this->assertNotEmpty($srv->getUrl(), 'Service has empty url');
         $srv->setUrl('www.google.com');
         $this->assertNotEquals('www.example.com', $srv->getUrl(), 'Service does not update url');
+        return $srv;
+    }
+
+    protected function checkParams(Service $srv) {
+        $this->assertEmpty($srv->getParams(), 'Service has params');
+        $srv->addParam('test', true);
+        $this->assertNotEmpty($srv->getParams(), 'Service params are empty');
+    }
+
+    protected function checkOptions(Service $srv) {
+        $srv->addOption(CURLOPT_CONNECTTIMEOUT, 30);
+        $this->assertNotEmpty($srv->getParams(), 'Service options are empty');
+    }
+
+    public function testServiceTraits() {
+        $srv = $this->getServiceInstance();
+        $this->assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
+        $this->checkParams($srv);
+        $this->checkOptions($srv);
+
+        // Initialize url, with default second param, the service has to clean all variables
+        $srv->setUrl('https://example.com');
+
+        // Tests has to be passed again
+        $this->checkParams($srv);
+        $this->checkOptions($srv);
+
+        // Initialize service without cleaning params and options
+        $srv->setUrl('https://google.com', false);
+        $this->assertNotEquals('https://example.com', $srv->getUrl(), 'Service does not update url');
+        $this->assertEquals('https://google.com', $srv->getUrl(), 'Service does not update url');
+        $this->assertNotEmpty($srv->getParams(), 'Params are empty');
+        $this->assertNotEmpty($srv->getOptions(), 'Options are empty');
 
     }
 

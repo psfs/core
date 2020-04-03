@@ -112,7 +112,7 @@ class GeneratorService extends Service
         //Creamos las carpetas CORE del módulo
         $this->log->addLog("Generamos la estructura");
         $paths = [
-            "Api", "Api/base", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
+            "Api", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
             "Locale", "Locale/" . Config::getParam('default.locale', 'es_ES'), "Locale/" . Config::getParam('default.locale', 'es_ES') . "/LC_MESSAGES"
         ];
         $module_path = $mod_path . $module;
@@ -221,29 +221,19 @@ class GeneratorService extends Service
 
     /**
      * @param string $module
-     * @param string $mod_path
+     * @param string $modPath
      * @param boolean $force
      * @param string $apiClass
      * @return boolean
      */
-    private function generateBaseApiTemplate($module, $mod_path, $force = false, $apiClass = "")
+    private function generateBaseApiTemplate($module, $modPath, $force = false, $apiClass = "")
     {
         $created = true;
-        $modelPath = $mod_path . $module . DIRECTORY_SEPARATOR . 'Models';
-        $api_path = $mod_path . $module . DIRECTORY_SEPARATOR . 'Api';
+        $modelPath = $modPath . $module . DIRECTORY_SEPARATOR . 'Models';
+        $apiPath = $modPath . $module . DIRECTORY_SEPARATOR . 'Api';
         if (file_exists($modelPath)) {
             $dir = dir($modelPath);
-            while ($file = $dir->read()) {
-                if (!in_array($file, array('.', '..'))
-                    && !preg_match('/Query\.php$/i', $file)
-                    && preg_match('/\.php$/i', $file)
-                ) {
-                    $filename = str_replace(".php", "", $file);
-                    $this->log->addLog("Generamos Api BASES para {$filename}");
-                    $this->createApiBaseFile($module, $api_path, $filename, $apiClass);
-                    $this->createApi($module, $api_path, $force, $filename);
-                }
-            }
+            $this->generateApiFiles($module, $force, $apiClass, $dir, $apiPath);
         }
         return $created;
     }
@@ -413,10 +403,11 @@ class GeneratorService extends Service
      * @param string $mod_path
      * @param string $api
      * @param string $apiClass
+     * @param string $package
      *
      * @return bool
      */
-    private function createApiBaseFile($module, $mod_path, $api, $apiClass = '')
+    private function createApiBaseFile($module, $mod_path, $api, $apiClass = '', $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $customClass = GeneratorHelper::extractClassFromNamespace($apiClass);
@@ -428,6 +419,7 @@ class GeneratorService extends Service
             "class" => $class,
             'customClass' => $customClass,
             'customNamespace' => $apiClass,
+            'package' => $package,
         ));
 
         return $this->writeTemplateToFile($controller,
@@ -440,10 +432,11 @@ class GeneratorService extends Service
      * @param string $mod_path
      * @param bool $force
      * @param string $api
+     * @param string $package
      *
      * @return bool
      */
-    private function createApi($module, $mod_path, $force, $api)
+    private function createApi($module, $mod_path, $force, $api, $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $controller = $this->tpl->dump("generator/api.template.twig", array(
@@ -452,6 +445,7 @@ class GeneratorService extends Service
             "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
             "url" => preg_replace('/(\\\|\/)/', '/', $module),
             "class" => $class,
+            "package" => $package,
         ));
 
         return $this->writeTemplateToFile($controller, $mod_path . DIRECTORY_SEPARATOR . "{$api}.php", $force);
@@ -584,5 +578,32 @@ class GeneratorService extends Service
             Logger::log($message, LOG_INFO);
         });
         $manager->setWorkingDirectory($workingDir);
+    }
+
+    /**
+     * @param $module
+     * @param $force
+     * @param $apiClass
+     * @param \Directory|null $dir
+     * @param string $apiPath
+     * @param string $package
+     */
+    private function generateApiFiles($module, $force, $apiClass, \Directory $dir, string $apiPath, $package = null)
+    {
+        $base = $dir->path;
+        while ($file = $dir->read()) {
+            if (!in_array(strtolower($file), ['.', '..', 'base', 'map'])) {
+                if (is_dir($base . DIRECTORY_SEPARATOR . $file)) {
+                    $this->generateApiFiles($module, $force, $apiClass, dir($base . DIRECTORY_SEPARATOR . $file), $apiPath . DIRECTORY_SEPARATOR . $file, $file);
+                } else if (!preg_match('/Query\.php$/i', $file)
+                    && preg_match('/\.php$/i', $file)
+                ) {
+                    $filename = str_replace(".php", "", $file);
+                    $this->log->addLog("Generamos Api BASES para {$filename}");
+                    $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
+                    $this->createApi($module, $apiPath, $force, $filename, $package);
+                }
+            }
+        }
     }
 }

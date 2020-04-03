@@ -10,10 +10,6 @@ class ServiceHelper {
     const TYPE_MULTIPART = 1;
     const TYPE_HTTP = 2;
 
-    public static function parseGetUrl() {
-
-    }
-
     public static function parseRawData($type, $params) {
         switch($type) {
             default:

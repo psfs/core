@@ -1,13 +1,13 @@
 <?php
-namespace {{ namespace }}\Api;
+namespace {{ namespace }}\Api{% if package %}{{ '\\' ~ package }}{% endif %};
 
-use {{ namespace }}\Api\base\{{ api }}BaseApi;
-use {{ namespace }}\Models\{{ api }}Query;
+use {{ namespace }}\Api{% if package %}{{ '\\' ~ package }}{% endif %}\base\{{ api }}BaseApi;
+use {{ namespace }}\Models{% if package %}{{ '\\' ~ package }}{% endif %}\{{ api }}Query;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 
 /**
 * Class {{ class }}
-* @package {{ namespace }}\Api
+* @package {{ namespace }}\Api{% if package %}{{ '\\' ~ package }}{% else %}{{ "\n" }}{% endif %}
 * @author {{ get_config("author", "Fran López") }} <{{ get_config("author.email", "fran.lopez84@hotmail.es") }}>
 * @version {{ get_config("version", "1.0") }}
 * @Api {{ api }}
