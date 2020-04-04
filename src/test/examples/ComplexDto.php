@@ -16,4 +16,16 @@ class ComplexDto extends Dto {
      * @var \PSFS\base\dto\Order
      */
     public $order;
+    /**
+     * @var boolean
+     */
+    public $boolean = true;
+    /**
+     * @var integer
+     */
+    public $number = 0;
+    /**
+     * @var float 
+     */
+    public $decimal = 3.141596;
 }

@@ -12,7 +12,7 @@ Trait SingletonTrait
     /**
      * @var boolean
      */
-    protected $loaded = false;
+    private $loaded = false;
 
     /**
      * @var array Singleton cached reference to singleton instance

@@ -19,7 +19,7 @@ class Order extends Dto
      */
     public function addOrder($field, $direction = self::ASC)
     {
-        $this->fields[$field] = $direction;
+        $this->fields[$field] = self::parseDirection($direction);
     }
 
     /**
@@ -29,9 +29,9 @@ class Order extends Dto
      */
     public function removeOrder($fieldToRemove)
     {
-        $order = array();
-        if (count($order) > 0) {
-            foreach ($this->fields as $field => $direction) {
+        $order = [];
+        if (count($this->fields) > 0) {
+            foreach ($this->getOrders() as $field => $direction) {
                 if (strtolower($fieldToRemove) === strtolower($field)) {
                     continue;
                 }
@@ -49,7 +49,7 @@ class Order extends Dto
      */
     public function setOrder($field, $direction = self::ASC)
     {
-        $this->fields = [$field => $direction];
+        $this->fields = [$field => self::parseDirection($direction)];
     }
 
     /**
@@ -79,7 +79,7 @@ class Order extends Dto
     /**
      * @param array $object
      */
-    public function fromArray(array $object = array())
+    public function fromArray(array $object = [])
     {
         foreach($object as $field => $order) {
             $this->addOrder($field, $order);
@@ -91,6 +91,6 @@ class Order extends Dto
      */
     public function toArray()
     {
-        return $this->fields;
+        return $this->getOrders();
     }
 }

@@ -2,7 +2,6 @@
 namespace PSFS\controller;
 
 use PSFS\base\config\AdminForm;
-use PSFS\base\config\LoginForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
@@ -102,50 +101,5 @@ class UserController extends Admin
         } else {
             return Admin::staticAdminLogon($route);
         }
-    }
-
-    /**
-     * Servicio que valida el login
-     * @param null $route
-     * @POST
-     * @visible false
-     * @route /admin/login
-     * @return string
-     * @throws \PSFS\base\exception\FormException
-     */
-    public function postLogin($route = null)
-    {
-        $form = new LoginForm();
-        $form->setData(array("route" => $route));
-        $form->build();
-        $tpl = Template::getInstance();
-        $tpl->setPublicZone(true);
-        $template = "login.html.twig";
-        $params = array(
-            'form' => $form,
-        );
-        $cookies = array();
-        $form->hydrate();
-        if ($form->isValid()) {
-            if (Security::getInstance()->checkAdmin($form->getFieldValue("user"), $form->getFieldValue("pass"))) {
-                $cookies = array(
-                    array(
-                        "name" => Security::getInstance()->getHash(),
-                        "value" => base64_encode($form->getFieldValue("user") . ":" . $form->getFieldValue("pass")),
-                        "expire" => time() + 3600,
-                        "http" => true,
-                    )
-                );
-                $template = "redirect.html.twig";
-                $params = array(
-                    'route' => $form->getFieldValue("route"),
-                    'status_message' => t("Acceso permitido... redirigiendo!!"),
-                    'delay' => 1,
-                );
-            } else {
-                $form->setError("user", t("El usuario no tiene acceso a la web"));
-            }
-        }
-        return $tpl->render($template, $params, $cookies);
     }
 }

@@ -29,11 +29,11 @@ class Router
     /**
      * @var array
      */
-    protected $routing = [];
+    private $routing = [];
     /**
      * @var array
      */
-    protected $slugs = [];
+    private $slugs = [];
     /**
      * @var array
      */
@@ -331,7 +331,7 @@ class Router
      */
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
-        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth(1)->name('*.php');
+        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
         if($files->hasResults()) {
             foreach ($files->getIterator() as $file) {
                 if($namespace !== 'PSFS' && method_exists($file, 'getRelativePathname')) {

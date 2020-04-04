@@ -8,9 +8,12 @@ namespace PSFS\base\dto;
 class Form extends Dto
 {
     /**
-     * @var array fields
+     * @var \PSFS\base\dto\Field[]
      */
     private $fields = [];
+    /**
+     * @var \PSFS\base\dto\FormAction[]
+     */
     public $actions = [];
 
     /**
@@ -68,21 +71,21 @@ class Form extends Dto
      */
     public static function fieldsOrder(array $field) {
         switch ($field['type']) {
-            case Field::TEXT_TYPE: $order = 1; break;
-            case Field::PHONE_TYPE: $order = 1; break;
-            case Field::URL_TYPE: $order = 1; break;
-            case Field::CHECK_TYPE: $order = 2; break;
-            case Field::RADIO_TYPE: $order = 2; break;
-            case Field::COMBO_TYPE: $order = 2; break;
-            case Field::TEXTAREA_TYPE: $order = 3; break;
-            case Field::SEARCH_TYPE: $order = 1; break;
             case Field::HIDDEN_TYPE: $order = 0; break;
-            case Field::NUMBER_TYPE: $order = 2; break;
+            case Field::TEXT_TYPE:
+            case Field::PHONE_TYPE:
+            case Field::URL_TYPE:
+            case Field::PASSWORD_FIELD:
+            case Field::SEARCH_TYPE: $order = 1; break;
+            case Field::CHECK_TYPE:
+            case Field::RADIO_TYPE:
+            case Field::COMBO_TYPE:
+            case Field::NUMBER_TYPE:
             case Field::SWITCH_TYPE: $order = 2; break;
-            case Field::PASSWORD_FIELD: $order = 1; break;
-            case Field::DATE: $order = 4; break;
+            case Field::TEXTAREA_TYPE: $order = 3; break;
+            default:
+            case Field::DATE:
             case Field::TIMESTAMP: $order = 4; break;
-            default: $order = 5; break;
         }
         return $order;
     }
