@@ -44,20 +44,6 @@ abstract class CurlService extends SimpleService
     }
 
     /**
-     * Add request param
-     *
-     * @param $key
-     * @param null $value
-     *
-     * @return CurlService
-     */
-    public function addOption($key, $value = NULL)
-    {
-        $this->options[$key] = $value;
-        return $this;
-    }
-
-    /**
      * @param $header
      * @param null $content
      *
@@ -112,7 +98,7 @@ abstract class CurlService extends SimpleService
     /**
      * @return int
      */
-    private function parseServiceType()
+    protected function parseServiceType()
     {
         if ($this->isJson()) {
             return ServiceHelper::TYPE_JSON;
@@ -154,14 +140,13 @@ abstract class CurlService extends SimpleService
         $this->setDefaults();
         $this->applyOptions();
         $this->applyHeaders();
-        $logLevel = strtolower(Config::getParam('log.level', 'notice'));
         $verbose = null;
-        if ('debug' === $logLevel) {
+        if ($this->isDebug()) {
             $verbose = $this->initVerboseMode();
         }
         $result = curl_exec($this->getCon());
         $this->setResult($this->isJson() ? json_decode($result, true) : $result);
-        if ('debug' === $logLevel && is_resource($verbose)) {
+        if ($this->isDebug() && is_resource($verbose)) {
             $this->dumpVerboseLogs($verbose);
         }
         Logger::log($this->getUrl() . ' response: ', LOG_DEBUG, is_array($this->result) ? $this->result : [$this->result]);
@@ -187,6 +172,7 @@ abstract class CurlService extends SimpleService
      */
     protected function initVerboseMode()
     {
+        curl_setopt($this->getCon(), CURLINFO_HEADER_OUT, true);
         curl_setopt($this->getCon(), CURLOPT_VERBOSE, true);
         $verbose = fopen('php://temp', 'wb+');
         curl_setopt($this->getCon(), CURLOPT_STDERR, $verbose);

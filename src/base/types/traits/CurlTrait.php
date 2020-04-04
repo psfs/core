@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\types\traits;
 
+use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\types\traits\Helper\OptionTrait;
 use PSFS\base\types\traits\Helper\ParameterTrait;
@@ -16,7 +17,7 @@ trait CurlTrait {
      * Curl resource
      * @var resource $con
      */
-    protected $con;
+    private $con;
     /**
      * Curl destination
      * @var string
@@ -32,6 +33,11 @@ trait CurlTrait {
      * @var string
      */
     private $type;
+    /**
+     * Curl debug
+     * @var bool
+     */
+    private $debug = false;
 
     /**
      * @return resource
@@ -82,17 +88,16 @@ trait CurlTrait {
 
     private function clearContext()
     {
-        $this->url = NULL;
-        $this->params = array();
-        $this->headers = array();
+        $this->params = [];
+        $this->headers = [];
+        $this->debug = 'debug' === strtolower(Config::getParam('log.level', 'notice'));
         Logger::log('Context service for ' . static::class . ' cleared!');
         $this->closeConnection();
     }
 
     private function initialize()
     {
-        $this->closeConnection();
-        $this->params = [];
+        $this->clearContext();
         $con = curl_init($this->url);
         if(is_resource($con)) {
             $this->setCon($con);
@@ -206,5 +211,19 @@ trait CurlTrait {
      */
     public function getIsMultipart() {
         return $this->isMultipart;
+    }
+
+    /**
+     * @param bool $debug
+     */
+    public function setDebug($debug = false) {
+        $this->debug = $debug;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDebug() {
+        return $this->debug;
     }
 }

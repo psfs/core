@@ -9,7 +9,7 @@ trait OptionTrait {
     /**
      * @var array
      */
-    private $options;
+    private $options = [];
 
     /**
      * @return array
@@ -52,6 +52,17 @@ trait OptionTrait {
             unset($this->options[$key]);
         }
         return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return mixed|null
+     */
+    public function getOption($key) {
+        if(array_key_exists($key, $this->options)) {
+            return $this->options[$key];
+        }
+        return null;
     }
 
 }

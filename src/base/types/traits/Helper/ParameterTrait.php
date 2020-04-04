@@ -10,7 +10,7 @@ trait ParameterTrait {
      * Curl query/raw params
      * @var array
      */
-    protected $params;
+    private $params;
 
     /**
      * @return array
@@ -53,6 +53,17 @@ trait ParameterTrait {
             unset($this->params[$key]);
         }
         return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return mixed|null
+     */
+    public function getParam($key) {
+        if(array_key_exists($key, $this->params)) {
+            return $this->params[$key];
+        }
+        return null;
     }
 
 }
