@@ -95,7 +95,7 @@ trait CurlTrait {
         $this->params = [];
         $con = curl_init($this->url);
         if(is_resource($con)) {
-            $this->setCon();
+            $this->setCon($con);
         }
     }
 
