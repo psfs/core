@@ -112,7 +112,7 @@ class Request
      */
     public static function getTimestamp($formatted = false)
     {
-        return self::getTs($formatted);
+        return self::getInstance()->getTs($formatted);
     }
 
     public function getTs($formatted = false)
@@ -263,16 +263,16 @@ class Request
      * Devuelve un parámetro de $_SERVER
      * @param string $param
      * @param $default
-     * @return string|null
+     * @return string
      */
-    public function getServer($param, $default = null)
+    public function getServer($param, $default = 'localhost')
     {
         return array_key_exists($param, $this->server) ? $this->server[$param] : $default;
     }
 
     /**
      * Devuelve el nombre del servidor
-     * @return string|null
+     * @return string
      */
     public function getServerName()
     {

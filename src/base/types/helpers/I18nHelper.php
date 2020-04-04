@@ -21,7 +21,7 @@ class I18nHelper
 
     /**
      * @param string $default
-     * @return array|mixed|string
+     * @return string
      */
     public static function extractLocale($default = null)
     {

@@ -9,7 +9,7 @@ namespace PSFS\base\exception;
 class SecurityException extends \Exception
 {
     /**
-     * @param null $message
+     * @param string|null $message
      */
     public function __construct($message = null)
     {

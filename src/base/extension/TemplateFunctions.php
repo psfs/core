@@ -33,7 +33,7 @@ class TemplateFunctions
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
      * @param $string
-     * @param null $name
+     * @param null|string $name
      * @param bool $return
      * @return string|null
      * @throws \PSFS\base\exception\GeneratorException
@@ -109,7 +109,7 @@ class TemplateFunctions
 
     /**
      * @param array $field
-     * @param null $label
+     * @param string|null $label
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError

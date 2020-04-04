@@ -9,6 +9,8 @@ use Monolog\Logger as Monolog;
 use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\SlackHelper;
@@ -48,15 +50,20 @@ class Logger
 
     /**
      * Logger constructor.
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
+     * @throws ConfigException
      */
     public function __construct()
     {
         $args = func_get_args();
         list($logger, $debug, $path) = $this->setup($args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'a+');
-        $this->addPushLogger($logger, $debug);
-        $this->logLevel = Config::getParam('log.level', 'NOTICE');
+        if (is_resource($this->stream)) {
+            $this->addPushLogger($logger, $debug);
+        } else {
+            throw new ConfigException(t('Error creating logger'));
+        }
+        $this->logLevel = strtoupper(Config::getParam('log.level', 'NOTICE'));
     }
 
     public function __destruct()
@@ -112,7 +119,6 @@ class Logger
     {
         $logger = Config::getParam('platform.name', self::DEFAULT_NAMESPACE);
         $logger = $this->cleanLoggerName($logger);
-
         return $logger;
     }
 
@@ -124,8 +130,7 @@ class Logger
     private function cleanLoggerName($logger)
     {
         $logger = str_replace(' ', '', $logger);
-        $logger = preg_replace('/\\\/', ".", $logger);
-
+        $logger = preg_replace("/\\\\/", ".", $logger);
         return $logger;
     }
 
@@ -138,7 +143,6 @@ class Logger
         $logger = $this->setLoggerName();
         $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
         GeneratorHelper::createDir($path);
-
         return $path;
     }
 
@@ -149,7 +153,8 @@ class Logger
      * @param boolean $force
      * @return bool
      */
-    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = [], $force = false) {
+    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = [], $force = false)
+    {
         return $this->checkLogLevel($type) || $force ? $this->logger->addRecord($type, $msg, $this->addMinimalContext($context)) : true;
     }
 
@@ -157,15 +162,28 @@ class Logger
      * @param int $level
      * @return bool
      */
-    private function checkLogLevel($level = \Monolog\Logger::NOTICE) {
-        switch($this->logLevel) {
-            case 'DEBUG': $logPass = Monolog::DEBUG; break;
-            case 'INFO': $logPass = Monolog::INFO; break;
+    private function checkLogLevel($level = \Monolog\Logger::NOTICE)
+    {
+        switch ($this->logLevel) {
+            case 'DEBUG':
+                $logPass = Monolog::DEBUG;
+                break;
+            case 'INFO':
+                $logPass = Monolog::INFO;
+                break;
             default:
-            case 'NOTICE': $logPass = Monolog::NOTICE; break;
-            case 'WARNING': $logPass = Monolog::WARNING; break;
-            case 'ERROR': $logPass = Monolog::ERROR; break;
-            case 'CRITICAL': $logPass = Monolog::CRITICAL; break;
+            case 'NOTICE':
+                $logPass = Monolog::NOTICE;
+                break;
+            case 'WARNING':
+                $logPass = Monolog::WARNING;
+                break;
+            case 'ERROR':
+                $logPass = Monolog::ERROR;
+                break;
+            case 'CRITICAL':
+                $logPass = Monolog::CRITICAL;
+                break;
         }
         return $logPass <= $level;
     }
@@ -178,10 +196,10 @@ class Logger
      */
     public static function log($msg, $type = LOG_DEBUG, array $context = null, $force = false)
     {
-        if(null === $context) {
+        if (null === $context) {
             $context = [];
         }
-        if(Config::getParam('profiling.enable') && 'DEBUG' === Config::getParam('log.level', 'NOTICE')) {
+        if (Config::getParam('profiling.enable') && 'DEBUG' === Config::getParam('log.level', 'NOTICE')) {
             Inspector::stats($msg, Inspector::SCOPE_DEBUG);
         }
         switch ($type) {
@@ -192,7 +210,7 @@ class Logger
                 self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context, $force);
                 break;
             case LOG_CRIT:
-                if(Config::getParam('log.slack.hook')) {
+                if (Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace($msg, '', '', $context, $force);
                 }
                 self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context, $force);
@@ -235,7 +253,7 @@ class Logger
     {
         $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
         $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
-        if(null !== $_SERVER && array_key_exists('HTTP_X_PSFS_UID', $_SERVER)) {
+        if (null !== $_SERVER && array_key_exists('HTTP_X_PSFS_UID', $_SERVER)) {
             $context['uid'] = $_SERVER['HTTP_X_PSFS_UID'];
         }
         return $context;
@@ -244,14 +262,16 @@ class Logger
     /**
      * @return string
      */
-    public function getLogUid() {
+    public function getLogUid()
+    {
         return $this->uuid->getUid();
     }
 
     /**
      * @return string
      */
-    public static function getUid() {
+    public static function getUid()
+    {
         return self::getInstance()->getLogUid();
     }
 }

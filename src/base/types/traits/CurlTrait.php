@@ -68,7 +68,7 @@ trait CurlTrait {
     protected function closeConnection() {
         if(null !== $this->con) {
             if(is_resource($this->con)) {
-                @curl_close($this->con);
+                curl_close($this->con);
             } else {
                 $this->setCon(null);
             }
@@ -93,7 +93,10 @@ trait CurlTrait {
     {
         $this->closeConnection();
         $this->params = [];
-        $this->setCon(curl_init($this->url));
+        $con = curl_init($this->url);
+        if(is_resource($con)) {
+            $this->setCon();
+        }
     }
 
     /**
