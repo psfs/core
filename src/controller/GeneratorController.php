@@ -9,7 +9,6 @@ use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
-use PSFS\services\GeneratorService;
 
 /**
  * Class GeneratorController
@@ -20,7 +19,7 @@ class GeneratorController extends Admin
 {
     /**
      * @Injectable
-     * @var  GeneratorService Servicio de generación de estructura de directorios
+     * @var \PSFS\services\GeneratorService Servicio de generación de estructura de directorios
      */
     protected $gen;
 

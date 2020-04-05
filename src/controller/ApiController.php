@@ -3,7 +3,6 @@ namespace PSFS\controller;
 
 use PSFS\base\Router;
 use PSFS\base\types\AuthAdminController;
-use PSFS\services\DocumentorService;
 
 /**
  * Class Api
@@ -18,7 +17,7 @@ class ApiController extends AuthAdminController
 
     /**
      * @Injectable
-     * @var DocumentorService $srv
+     * @var \PSFS\services\DocumentorService $srv
      */
     protected $srv;
 

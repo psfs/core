@@ -73,7 +73,7 @@
     var app,
         globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}'),
         __basic_auth = '{{ session('__U_T_L__') }}',
-        defaultLocale = '{{ get_config('default.locale', 'es_ES') }}';
+        defaultLocale = '{{ get_config('default.language', 'es_ES') }}';
     (function () {
         app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging', 'ngSanitize']);
     })();

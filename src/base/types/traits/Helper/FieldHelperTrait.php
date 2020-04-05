@@ -112,7 +112,7 @@ trait FieldHelperTrait {
      * @param string $map
      * @param string $domain
      * @return Form
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws \Exception
      */
     public static function generateFormFields($map, $domain)
     {
@@ -134,10 +134,21 @@ trait FieldHelperTrait {
                 foreach($i18NTableMap->getColumns() as $columnMap) {
                     $columnName = self::getColumnMapName($columnMap);
                     if(!$form->fieldExists($columnName)) {
+                        /** @var Field $fDto */
                         $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
                         if(null !== $fDto) {
                             $fDto->pk = false;
                             $fDto->required = true;
+                            if(strtolower($fDto->name) === 'locale') {
+                                $fDto->type = Field::COMBO_TYPE;
+                                $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'es_ES')));
+                                foreach($languages as $language) {
+                                    $fDto->data[] = [
+                                        'Type' => $language,
+                                        'Label' => t($language),
+                                    ];
+                                }
+                            }
                             $form->addField($fDto);
                         }
                     }

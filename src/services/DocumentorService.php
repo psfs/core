@@ -10,12 +10,12 @@ use PSFS\base\dto\Dto;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
-use PSFS\base\Service;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
+use PSFS\base\types\SimpleService;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -26,7 +26,7 @@ use Symfony\Component\Finder\Finder;
  * Class DocumentorService
  * @package PSFS\services
  */
-class DocumentorService extends Service
+class DocumentorService extends SimpleService
 {
     public static $nativeMethods = [
         'modelList', // Api list
@@ -41,7 +41,7 @@ class DocumentorService extends Service
 
     /**
      * @Injectable
-     * @var Router route
+     * @var \PSFS\base\Router route
      */
     protected $route;
 
