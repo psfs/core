@@ -5,7 +5,6 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\InjectorHelper;
-use PSFS\base\types\helpers\Inspector;
 
 /**
  * Class Dto
