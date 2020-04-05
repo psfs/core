@@ -596,14 +596,37 @@ class GeneratorService extends Service
                 if (is_dir($base . DIRECTORY_SEPARATOR . $file)) {
                     $this->generateApiFiles($module, $force, $apiClass, dir($base . DIRECTORY_SEPARATOR . $file), $apiPath . DIRECTORY_SEPARATOR . $file, $file);
                 } else if (!preg_match('/Query\.php$/i', $file)
+                    && !preg_match('/I18n\.php$/i', $file)
                     && preg_match('/\.php$/i', $file)
                 ) {
                     $filename = str_replace(".php", "", $file);
                     $this->log->addLog("Generamos Api BASES para {$filename}");
-                    $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
-                    $this->createApi($module, $apiPath, $force, $filename, $package);
+                    if($this->checkIfIsModel($module, $filename, $package)) {
+                        $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
+                        $this->createApi($module, $apiPath, $force, $filename, $package);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * @param string $module
+     * @param string $package
+     * @param string $filename
+     * @return bool
+     * @throws \ReflectionException
+     */
+    private function checkIfIsModel($module, $filename, $package = null)
+    {
+        $parts = [$module, 'Models'];
+        if (strlen($package)) {
+            $parts[] = $package;
+        }
+        $parts[] = $filename;
+        $namespace = '\\' . implode('\\', $parts);
+        $reflectorClass = new \ReflectionClass($namespace);
+        $isModel = $reflectorClass->isInstantiable();
+        return $isModel;
     }
 }
