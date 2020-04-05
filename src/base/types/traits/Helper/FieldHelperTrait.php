@@ -144,7 +144,7 @@ trait FieldHelperTrait {
                                 $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'es_ES')));
                                 foreach($languages as $language) {
                                     $fDto->data[] = [
-                                        'Type' => $language,
+                                        $fDto->name => $language,
                                         'Label' => t($language),
                                     ];
                                 }

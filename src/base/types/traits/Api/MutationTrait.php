@@ -229,7 +229,7 @@ trait MutationTrait
             {
                 $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
-                $model->setLocale($this->lang);
+                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, 'es_ES')));
                 foreach($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
                     $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
