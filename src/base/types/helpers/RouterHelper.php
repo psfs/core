@@ -1,9 +1,14 @@
 <?php
 namespace PSFS\base\types\helpers;
 
+use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * Class RouterHelper
@@ -14,14 +19,14 @@ class RouterHelper
     /**
      * @param array $action
      * @return mixed
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function getClassToCall(array $action)
     {
         Inspector::stats('[RouterHelper] Getting class to call for executing the request action', Inspector::SCOPE_DEBUG);
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
         $actionClass = class_exists($action['class']) ? $action['class'] : "\\" . $action['class'];
-        $reflectionClass = new \ReflectionClass($actionClass);
+        $reflectionClass = new ReflectionClass($actionClass);
         if($reflectionClass->hasMethod('getInstance')) {
             $class = $reflectionClass->getMethod('getInstance')->invoke(null, $action['method']);
         } else {
@@ -88,15 +93,15 @@ class RouterHelper
             $patternSeparator--;
         }
         $routePattern = preg_replace('/\/\{.*\}$/', '', $routePattern);
-        $cleanPatternSeparator = count(explode('/', $routePattern));
+        $cleanPatternSep = count(explode('/', $routePattern));
         if (preg_match('/\/$/', $routePattern)) {
-            $cleanPatternSeparator--;
+            $cleanPatternSep--;
         }
-        $path_sep = count(explode('/', $path));
+        $pathSep = count(explode('/', $path));
         if (preg_match('/\/$/', $path)) {
-            $path_sep--;
+            $pathSep--;
         }
-        return abs($patternSeparator - $path_sep) < 1 || abs($cleanPatternSeparator - $path_sep) < 1;
+        return abs($patternSeparator - $pathSep) < 1 || abs($cleanPatternSep - $pathSep) < 1;
     }
 
     /**
@@ -118,11 +123,11 @@ class RouterHelper
     }
 
     /**
-     * @param \ReflectionClass $class
+     * @param ReflectionClass $class
      * @param string $domain
      * @return array
      */
-    public static function extractDomainInfo(\ReflectionClass $class, $domain)
+    public static function extractDomainInfo(ReflectionClass $class, $domain)
     {
         $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
         $templatesPath = 'templates';
@@ -145,21 +150,18 @@ class RouterHelper
     }
 
     /**
-     * Método que extrae los parámetros de una función
-     *
-     * @param array $sr
-     * @param \ReflectionMethod $method
-     *
+     * @param $regex
+     * @param ReflectionMethod $method
      * @return array
+     * @throws ReflectionException
      */
-    public static function extractReflectionParams($sr, \ReflectionMethod $method)
+    public static function extractReflectionParams($regex, ReflectionMethod $method)
     {
-        $regex = $sr[1] ?: $sr[0];
         $default = '';
         $params = [];
         $parameters = $method->getParameters();
         $requirements = [];
-        /** @var \ReflectionParameter $param */
+        /** @var ReflectionParameter $param */
         if (count($parameters) > 0) {
             foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
@@ -177,94 +179,27 @@ class RouterHelper
     }
 
     /**
-     * Método que extrae el método http
-     *
-     * @param string $docComments
-     *
-     * @return string
-     */
-    public static function extractReflectionHttpMethod($docComments)
-    {
-        preg_match('/@(GET|POST|PUT|DELETE)(\n|\r)/i', $docComments, $routeMethod);
-
-        return (count($routeMethod) > 0) ? $routeMethod[1] : 'ALL';
-    }
-
-    /**
-     * Método que extrae el método http
-     *
-     * @param string $docComments
-     *
-     * @return string
-     */
-    public static function extractDocIcon($docComments)
-    {
-        preg_match('/@icon\ (.*)(\n|\r)/i', $docComments, $icon);
-        return (count($icon) > 0) ? $icon[1] : '';
-    }
-
-    /**
-     * Método que extrae el método http
-     *
-     * @param string $docComments
-     *
-     * @return string
-     */
-    public static function extractReflectionLabel($docComments)
-    {
-        preg_match('/@label\ (.*)(\n|\r)/i', $docComments, $label);
-        return (count($label) > 0) ? $label[1] : null;
-    }
-
-    /**
-     * Método que extrae la visibilidad de una ruta
-     *
-     * @param string $docComments
-     *
-     * @return bool
-     */
-    public static function extractReflectionVisibility($docComments)
-    {
-        preg_match('/@visible\ (.*)(\n|\r)/i', $docComments, $visible);
-        return !(array_key_exists(1, $visible) && false !== strpos($visible[1], 'false'));
-    }
-
-    /**
-     * Método que extrae el parámetro de caché
-     *
-     * @param string $docComments
-     *
-     * @return bool
-     */
-    public static function extractReflectionCacheability($docComments)
-    {
-        preg_match('/@cache\ (.*)(\n|\r)/i', $docComments, $cache);
-
-        return (count($cache) > 0) ? $cache[1] : '0';
-    }
-
-    /**
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @param string $api
      * @param string $module
      * @return array
      */
-    public static function extractRouteInfo(\ReflectionMethod $method, $api = '', $module = '')
+    public static function extractRouteInfo(ReflectionMethod $method, $api = '', $module = '')
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
-        preg_match('/@route\ (.*)(\n|\r)/i', $docComments, $sr);
-        if (count($sr)) {
-            list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($sr, $method);
+        $regexpRoute = AnnotationHelper::extractRoute($docComments);
+        if (null !== $regexpRoute) {
+            list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($regexpRoute, $method);
             if ('' !== $api && false !== strpos($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
             }
             $regex = str_replace('{__DOMAIN__}', $module, $regex);
             $default = str_replace('{__DOMAIN__}', $module, $default);
-            $httpMethod = self::extractReflectionHttpMethod($docComments);
-            $icon = self::extractDocIcon($docComments);
-            $label = self::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
+            $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments);
+            $icon = AnnotationHelper::extractDocIcon($docComments);
+            $label = AnnotationHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
@@ -272,11 +207,11 @@ class RouterHelper
                 'params' => $params,
                 'default' => $default,
                 'label' => $label,
-                'icon' => strlen($icon) > 0 ? $icon : (strlen($api) ? 'fa-database' : ''),
+                'icon' => strlen($icon) > 0 ? $icon : '',
                 'module' => preg_replace('/(\\\|\\/)/', '', $module),
-                'visible' => self::extractReflectionVisibility($docComments),
+                'visible' => AnnotationHelper::extractReflectionVisibility($docComments),
                 'http' => $httpMethod,
-                'cache' => self::extractReflectionCacheability($docComments),
+                'cache' => AnnotationHelper::extractReflectionCacheability($docComments),
                 'requirements' => $requirements,
             ];
         }
@@ -286,7 +221,7 @@ class RouterHelper
     /**
      * @param string $route
      * @return null|string
-     * @throws \Exception
+     * @throws Exception
      */
     public static function checkDefaultRoute($route)
     {

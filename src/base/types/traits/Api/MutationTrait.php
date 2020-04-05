@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types\traits\Api;
 
+use Exception;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\ColumnMap;
@@ -202,7 +203,8 @@ trait MutationTrait
         $modelI18n = $model . 'I18n';
         if (method_exists($query, 'useI18nQuery')) {
             $query->useI18nQuery($this->lang);
-            $i18nMapClass = str_replace('\\Models\\', '\\Models\\Map\\', $modelI18n) . 'TableMap';
+            $modelParts = explode('\\', $modelI18n);
+            $i18nMapClass = str_replace(end($modelParts), 'Map\\' . end($modelParts), $modelI18n) . 'TableMap';
             /** @var TableMap $modelI18nTableMap */
             $modelI18nTableMap = $i18nMapClass::getTableMap();
             foreach($modelI18nTableMap->getColumns() as $columnMap) {
@@ -238,7 +240,7 @@ trait MutationTrait
                     }
                 }
             }
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
         }
     }

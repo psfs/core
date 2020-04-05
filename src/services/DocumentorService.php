@@ -2,9 +2,11 @@
 
 namespace PSFS\services;
 
+use Exception;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\ColumnMap;
-use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
+use PSFS\base\dto\Dto;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -14,6 +16,10 @@ use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -30,12 +36,12 @@ class DocumentorService extends Service
         'delete', // Api delete
     ];
 
-    const DTO_INTERFACE = '\\PSFS\\base\\dto\\Dto';
-    const MODEL_INTERFACE = '\\Propel\\Runtime\\ActiveRecord\\ActiveRecordInterface';
+    const DTO_INTERFACE = Dto::class;
+    const MODEL_INTERFACE = ActiveRecordInterface::class;
 
     /**
      * @Injectable
-     * @var \PSFS\base\Router route
+     * @var Router route
      */
     protected $route;
 
@@ -56,10 +62,10 @@ class DocumentorService extends Service
                     if ($module === $requestModule && !preg_match('/^ROOT/i', $module)) {
                         $modules = [
                             'name' => $module,
-                            'path' => dirname($info['base'] . DIRECTORY_SEPARATOR . '..'),
+                            'path' => realpath(dirname($info['base'] . DIRECTORY_SEPARATOR . '..')),
                         ];
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $modules[] = $e->getMessage();
                 }
             }
@@ -82,11 +88,12 @@ class DocumentorService extends Service
         $endpoints = [];
         if (file_exists($modulePath)) {
             $finder = new Finder();
-            $finder->files()->in($modulePath)->depth(0)->name('*.php');
+            $finder->files()->in($modulePath)->depth('< 2')->name('*.php');
             if (count($finder)) {
-                /** @var \SplFileInfo $file */
+                /** @var SplFileInfo $file */
                 foreach ($finder as $file) {
-                    $namespace = "\\{$moduleName}\\Api\\" . str_replace('.php', '', $file->getFilename());
+                    $filename = str_replace([$modulePath, '/'], ['', '\\'], $file->getPathname());
+                    $namespace = "\\{$moduleName}\\Api" . str_replace('.php', '', $filename);
                     $info = $this->extractApiInfo($namespace, $moduleName);
                     if (!empty($info)) {
                         $endpoints[$namespace] = $info;
@@ -101,43 +108,28 @@ class DocumentorService extends Service
      * @param $namespace
      * @param $module
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function extractApiInfo($namespace, $module)
     {
         $info = [];
         if (Router::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
-            $reflection = new \ReflectionClass($namespace);
+            $reflection = new ReflectionClass($namespace);
             $visible = InjectorHelper::checkIsVisible($reflection->getDocComment());
-            if($visible) {
-                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($visible) {
+                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                     try {
                         $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
                         if (NULL !== $mInfo) {
                             $info[] = $mInfo;
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Logger::log($e->getMessage(), LOG_ERR);
                     }
                 }
             }
         }
         return $info;
-    }
-
-    /**
-     * Extract route from doc comments
-     *
-     * @param string $comments
-     *
-     * @return string
-     */
-    protected function extractRoute($comments = '')
-    {
-        $route = '';
-        preg_match('/@route\ (.*)\n/i', $comments, $route);
-
-        return $route[1];
     }
 
     /**
@@ -247,7 +239,7 @@ class DocumentorService extends Service
                 $isArray = true;
             }
             $payload = $this->extractModelFields($namespace);
-            $reflector = new \ReflectionClass($namespace);
+            $reflector = new ReflectionClass($namespace);
             $shortName = $reflector->getShortName();
         } else {
             $namespace = $model;
@@ -267,7 +259,7 @@ class DocumentorService extends Service
     protected function extractDtoProperties($class)
     {
         $properties = [];
-        $reflector = new \ReflectionClass($class);
+        $reflector = new ReflectionClass($class);
         if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
             $properties = array_merge($properties, InjectorHelper::extractVariables($reflector));
         }
@@ -325,7 +317,7 @@ class DocumentorService extends Service
     {
         $payload = [];
         try {
-            $reflector = new \ReflectionClass($namespace);
+            $reflector = new ReflectionClass($namespace);
             // Checks if reflector is a subclass of propel ActiveRecords
             if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                 $tableMap = $namespace::TABLE_MAP;
@@ -334,13 +326,14 @@ class DocumentorService extends Service
                 foreach ($tableMap->getColumns() as $field) {
                     list($type, $format) = DocumentorHelper::translateSwaggerFormats($field->getType());
                     $info = [
+                        "type" => $type,
                         "required" => $field->isNotNull(),
                         'format' => $format,
                     ];
-                    if(count($field->getValueSet())) {
+                    if (count($field->getValueSet())) {
                         $info['enum'] = array_values($field->getValueSet());
                     }
-                    if(null !== $field->getDefaultValue()) {
+                    if (null !== $field->getDefaultValue()) {
                         $info['default'] = $field->getDefaultValue();
                     }
                     $payload[ApiHelper::getColumnMapName($field)] = $info;
@@ -348,7 +341,7 @@ class DocumentorService extends Service
             } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
                 $payload = $this->extractDtoProperties($namespace);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
 
@@ -359,13 +352,13 @@ class DocumentorService extends Service
      * Method that extract all the needed info for each method in each API
      *
      * @param string $namespace
-     * @param \ReflectionMethod $method
-     * @param \ReflectionClass $reflection
+     * @param ReflectionMethod $method
+     * @param ReflectionClass $reflection
      * @param string $module
      *
      * @return array
      */
-    protected function extractMethodInfo($namespace, \ReflectionMethod $method, \ReflectionClass $reflection, $module)
+    protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {
         $methodInfo = NULL;
         $docComments = $method->getDocComment();
@@ -390,7 +383,7 @@ class DocumentorService extends Service
                     $this->setRequestParams($method, $methodInfo, $modelNamespace, $docComments);
                     $this->setQueryParams($method, $methodInfo);
                     $this->setRequestHeaders($reflection, $methodInfo);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                 }
             }
@@ -429,6 +422,9 @@ class DocumentorService extends Service
                     'properties' => [
                         'success' => [
                             'type' => 'boolean'
+                        ],
+                        'message' => [
+                            'type' => 'string'
                         ],
                         'data' => [
                             'type' => 'boolean',
@@ -516,7 +512,7 @@ class DocumentorService extends Service
             }
         }
         ksort($dtos);
-        uasort($paths, function($path1, $path2) {
+        uasort($paths, function ($path1, $path2) {
             $key1 = array_keys($path1)[0];
             $key2 = array_keys($path2)[0];
             return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
@@ -545,10 +541,10 @@ class DocumentorService extends Service
     }
 
     /**
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @param $methodInfo
      */
-    protected function setQueryParams(\ReflectionMethod $method, &$methodInfo)
+    protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
     {
         if (in_array($methodInfo['method'], ['GET']) && in_array($method->getShortName(), self::$nativeMethods)) {
             $methodInfo['query'] = [];
@@ -578,18 +574,19 @@ class DocumentorService extends Service
             ];
         }
     }
+
     /**
-     * @param \ReflectionClass $reflection
+     * @param ReflectionClass $reflection
      * @param $methodInfo
      */
-    protected function setRequestHeaders(\ReflectionClass $reflection, &$methodInfo)
+    protected function setRequestHeaders(ReflectionClass $reflection, &$methodInfo)
     {
 
         $methodInfo['headers'] = [];
-        foreach($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties() as $property) {
             $doc = $property->getDocComment();
             preg_match('/@header\ (.*)\n/i', $doc, $headers);
-            if(count($headers)) {
+            if (count($headers)) {
                 $header = [
                     "name" => $headers[1],
                     "in" => "header",
@@ -611,12 +608,12 @@ class DocumentorService extends Service
     }
 
     /**
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @param array $methodInfo
      * @param string $modelNamespace
      * @param string $docComments
      */
-    protected function setRequestParams(\ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
+    protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
             list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload($modelNamespace, $docComments);
@@ -667,7 +664,7 @@ class DocumentorService extends Service
                 }
                 $modelDto['objects'][$info['class']] = $info['properties'];
                 $paramDto = $this->checkDtoAttributes($info['properties'], $info['properties'], $info['class']);
-                if(array_key_exists('objects', $paramDto)) {
+                if (array_key_exists('objects', $paramDto)) {
                     $modelDto['objects'] = array_merge($modelDto['objects'], $paramDto['objects']);
                 }
             } else {

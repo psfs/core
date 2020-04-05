@@ -1,10 +1,14 @@
 <?php
 namespace PSFS\base;
 
+use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\traits\SingletonTrait;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
 
 /**
  * Class Singleton
@@ -16,7 +20,7 @@ class Singleton
 
     /**
      * Singleton constructor.
-     * @throws \Exception
+     * @throws Exception
      * @throws exception\GeneratorException
      * @throws ConfigException
      */
@@ -61,11 +65,11 @@ class Singleton
 
     /**
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getShortName()
     {
-        $reflector = new \ReflectionClass(get_class($this));
+        $reflector = new ReflectionClass(get_class($this));
         return $reflector->getShortName();
     }
 
@@ -74,20 +78,20 @@ class Singleton
      * @param bool $singleton
      * @param string $classNameSpace
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function load($variable, $singleton = true, $classNameSpace = null)
     {
         $calledClass = static::class;
         try {
-            $instance = InjectorHelper::constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass);
+            $instance = InjectorHelper::constructInjectableInstance($variable, $singleton, $classNameSpace, $calledClass);
             $setter = 'set' . ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
             } else {
                 $this->$variable = $instance;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
             throw $e;
         }
@@ -95,7 +99,7 @@ class Singleton
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * @throws exception\GeneratorException
      * @throws ConfigException
      */
@@ -104,9 +108,9 @@ class Singleton
         if (!$this->isLoaded()) {
             $filename = sha1(get_class($this));
             $cacheFilename = 'reflections' . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . '.json';
-            /** @var \PSFS\base\Cache $cacheService */
+            /** @var Cache $cacheService */
             $cacheService = Cache::getInstance();
-            /** @var \PSFS\base\config\Config $configService */
+            /** @var Config $configService */
             $configService = Config::getInstance();
             $cache = Cache::canUseMemcache() ? Cache::MEMCACHE : Cache::JSON;
             $properties = $cacheService->getDataFromFile($cacheFilename, $cache);
@@ -114,7 +118,7 @@ class Singleton
                 $properties = InjectorHelper::getClassProperties(get_class($this));
                 $cacheService->storeData($cacheFilename, $properties, $cache);
             }
-            /** @var \ReflectionProperty $property */
+            /** @var ReflectionProperty $property */
             if (!empty($properties) && is_array($properties)) {
                 foreach ($properties as $property => $class) {
                     $this->load($property, true, $class);

@@ -2,6 +2,8 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\dto\FormAction;
+use ReflectionClass;
+use ReflectionMethod;
 
 /**
  * Class ApiFormHelper
@@ -16,11 +18,11 @@ class ApiFormHelper {
      */
     public static function checkApiActions($namespace, $domain, $api) {
         $actions = [];
-        $reflector = new \ReflectionClass($namespace);
+        $reflector = new ReflectionClass($namespace);
         if(null !== $reflector) {
-            foreach($reflector->getMethods(\ReflectionMethod::IS_PUBLIC) as $apiAction) {
+            foreach($reflector->getMethods(ReflectionMethod::IS_PUBLIC) as $apiAction) {
                 $docComments = $apiAction->getDocComment();
-                $action = self::extractAction($docComments);
+                $action = AnnotationHelper::extractAction($docComments);
                 if(null !== $action) {
                     list($route, $info) = RouterHelper::extractRouteInfo($apiAction, $api, $domain);
                     list($method, $cleanRoute) = RouterHelper::extractHttpRoute($route);
@@ -33,21 +35,5 @@ class ApiFormHelper {
             }
         }
         return $actions;
-    }
-
-    /**
-     * Method that extract the instance of the class
-     * @param $doc
-     * @return null|string
-     */
-    private static function extractAction($doc)
-    {
-        $action = null;
-        if (false !== preg_match('/@action\s+([^\s]+)/', $doc, $matches)) {
-            if(count($matches) > 1) {
-                list(, $action) = $matches;
-            }
-        }
-        return $action;
     }
 }

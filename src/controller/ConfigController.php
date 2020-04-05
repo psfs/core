@@ -1,8 +1,10 @@
 <?php
 namespace PSFS\controller;
 
+use HttpException;
 use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
+use PSFS\base\dto\JsonResponse;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -22,7 +24,7 @@ class ConfigController extends Admin
      * @route /admin/config/params
      * @label Parámetros de configuración de PSFS
      * @visible false
-     * @return mixed
+     * @return JsonResponse(data=array)
      */
     public function getConfigParams()
     {
@@ -40,13 +42,15 @@ class ConfigController extends Admin
      * Método que gestiona la configuración de las variables
      * @GET
      * @Route /admin/config
-     * @return string|null
-     * @throws \HttpException
+     * @label Configuración general
+     * @icon fa-cogs
+     * @return string HTML
+     * @throws HttpException
      */
     public function config()
     {
         Logger::log("Config loaded executed by " . $this->getRequest()->getRequestUri());
-        /* @var $form \PSFS\base\config\ConfigForm */
+        /* @var $form ConfigForm */
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         return $this->render('welcome.html.twig', array(
@@ -62,12 +66,12 @@ class ConfigController extends Admin
      * @route /admin/config
      * @visible false
      * @return string
-     * @throws \HttpException
+     * @throws HttpException
      */
     public function saveConfig()
     {
         Logger::log(t("Guardando configuración"), LOG_INFO);
-        /* @var $form \PSFS\base\config\ConfigForm */
+        /* @var $form ConfigForm */
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         $form->hydrate();
@@ -83,7 +87,7 @@ class ConfigController extends Admin
                 Security::getInstance()->setFlash("callback_message", t("Configuración actualizada correctamente"));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-config", true));
             } else {
-                throw new \HttpException(t('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
+                throw new HttpException(t('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(

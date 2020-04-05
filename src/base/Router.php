@@ -1,12 +1,16 @@
 <?php
 namespace PSFS\base;
 
+use Exception;
+use InvalidArgumentException;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\RouterException;
+use PSFS\base\types\Controller;
+use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
@@ -15,6 +19,9 @@ use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -43,7 +50,7 @@ class Router
      */
     private $finder;
     /**
-     * @var \PSFS\base\Cache $cache
+     * @var Cache $cache
      */
     private $cache;
     /**
@@ -59,7 +66,8 @@ class Router
      * Router constructor.
      * @throws exception\GeneratorException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function __construct()
     {
@@ -71,7 +79,8 @@ class Router
     /**
      * @throws exception\GeneratorException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function init()
     {
@@ -88,7 +97,8 @@ class Router
     /**
      * @throws exception\GeneratorException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     private function debugLoad() {
         Logger::log('Begin routes load');
@@ -98,17 +108,18 @@ class Router
     }
 
     /**
-     * @param \Exception|NULL $exception
+     * @param Exception|NULL $exception
      * @param bool $isJson
      * @return string
      * @throws RouterException
+     * @throws exception\GeneratorException
      */
-    public function httpNotFound(\Exception $exception = NULL, $isJson = false)
+    public function httpNotFound(Exception $exception = NULL, $isJson = false)
     {
         Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
         if (NULL === $exception) {
             Logger::log('Not found page thrown without previous exception', LOG_WARNING);
-            $exception = new \Exception(t('Page not found'), 404);
+            $exception = new Exception(t('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($exception->getCode());
         if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
@@ -161,7 +172,7 @@ class Router
     /**
      * @param string|null $route
      *
-     * @throws \Exception
+     * @throws Exception
      * @return string HTML
      */
     public function execute($route)
@@ -175,7 +186,7 @@ class Router
             return Admin::staticAdminLogon($route);
         } catch (RouterException $r) {
             Logger::log($r->getMessage(), LOG_WARNING);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }
@@ -189,7 +200,7 @@ class Router
      * @throws AccessDeniedException
      * @throws AdminCredentialsException
      * @throws RouterException
-     * @throws \Exception
+     * @throws Exception
      */
     protected function searchAction($route)
     {
@@ -205,7 +216,7 @@ class Router
                 // Checks restricted access
                 SecurityHelper::checkRestrictedAccess($route);
                 $get = RouterHelper::extractComponents($route, $routePattern);
-                /** @var $class \PSFS\base\types\Controller */
+                /** @var $class Controller */
                 $class = RouterHelper::getClassToCall($action);
                 try {
                     if($this->checkRequirements($action, $get)) {
@@ -213,7 +224,7 @@ class Router
                     } else {
                         throw new RouterException(t('La ruta no es válida'), 400);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                     throw $e;
                 }
@@ -275,9 +286,10 @@ class Router
     }
 
     /**
-     * @throws exception\GeneratorException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
+     * @throws exception\GeneratorException
      */
     private function generateRouting()
     {
@@ -300,23 +312,24 @@ class Router
     /**
      * @throws exception\GeneratorException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function hydrateRouting()
     {
         $this->generateRouting();
         $home = Config::getParam('home.action', 'admin');
         if (NULL !== $home || $home !== '') {
-            $home_params = NULL;
+            $homeParams = NULL;
             foreach ($this->routing as $pattern => $params) {
                 list($method, $route) = RouterHelper::extractHttpRoute($pattern);
                 if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
-                    $home_params = $params;
+                    $homeParams = $params;
                 }
                 unset($method);
             }
-            if (NULL !== $home_params) {
-                $this->routing['/'] = $home_params;
+            if (NULL !== $homeParams) {
+                $this->routing['/'] = $homeParams;
             }
         }
     }
@@ -326,8 +339,9 @@ class Router
      * @param string $namespace
      * @param array $routing
      * @return array
+     * @throws ReflectionException
      * @throws ConfigException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
@@ -357,13 +371,11 @@ class Router
     }
 
     /**
-     *
      * @param string $namespace
      * @param array $routing
      * @param string $module
-     *
      * @return array
-     * @throws ConfigException
+     * @throws ReflectionException
      */
     private function addRouting($namespace, &$routing, $module = 'PSFS')
     {
@@ -371,17 +383,14 @@ class Router
             if(I18nHelper::checkI18Class($namespace)) {
                 return $routing;
             }
-            $reflection = new \ReflectionClass($namespace);
+            $reflection = new ReflectionClass($namespace);
             if (false === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
                 $classComments = $reflection->getDocComment();
-                preg_match('/@api\ (.*)\n/im', $classComments, $apiPath);
-                $api = '';
-                if (count($apiPath)) {
-                    $api = array_key_exists(1, $apiPath) ? $apiPath[1] : $api;
-                }
-                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (preg_match('/@route\ /i', $method->getDocComment())) {
+                $api = AnnotationHelper::extractApi($classComments);
+                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                    $route = AnnotationHelper::extractRoute($method->getDocComment());
+                    if (null !== $route) {
                         list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
 
                         if (null !== $route && null !== $info) {
@@ -398,12 +407,12 @@ class Router
 
     /**
      *
-     * @param \ReflectionClass $class
+     * @param ReflectionClass $class
      *
      * @return Router
      * @throws ConfigException
      */
-    protected function extractDomain(\ReflectionClass $class)
+    protected function extractDomain(ReflectionClass $class)
     {
         //Calculamos los dominios para las plantillas
         if ($class->hasConstant('DOMAIN') && !$class->isAbstract()) {
@@ -484,7 +493,7 @@ class Router
                     Logger::log(t('Pre action failed'), LOG_ERR, [error_get_last()]);
                     error_clear_last();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Logger::log($e->getMessage(), LOG_ERR, [$class, $method]);
             }
         }
@@ -583,7 +592,7 @@ class Router
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_WARNING);
             $module = null;
         }

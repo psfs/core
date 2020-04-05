@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\controller;
 
+use Exception;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -16,6 +17,7 @@ class RouteController extends Admin
      * Método que pinta por pantalla todas las rutas del sistema
      * @GET
      * @label Visor de rutas del sistema
+     * @icon fa-sitemap
      * @route /admin/routes
      */
     public function printRoutes()
@@ -55,7 +57,7 @@ class RouteController extends Admin
             $router->simpatize();
             Security::getInstance()->setFlash("callback_message", t("Rutas generadas correctamente"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             Security::getInstance()->setFlash("callback_message", t("Algo no ha salido bien, revisa los logs"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));

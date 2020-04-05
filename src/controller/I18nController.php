@@ -15,6 +15,7 @@ class I18nController extends Admin
     /**
      * @GET
      * @route /admin/translations
+     * @icon fa-language
      * @label Generador de locales
      * @return string
      */

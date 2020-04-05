@@ -29,6 +29,7 @@ trait ManagerTrait {
     /**
      * @label {__API__} Manager
      * @GET
+     * @icon fa-database
      * @route /admin/{__DOMAIN__}/{__API__}
      * @return string HTML
      */
@@ -48,8 +49,9 @@ trait ManagerTrait {
      * @label Returns form data for any entity
      * @POST
      * @visible false
+     * @cache 3600
      * @route /admin/api/form/{__DOMAIN__}/{__API__}
-     * @return string JSON
+     * @return JsonResponse(data=\PSFS\base\dto\Form)
      */
     public function getForm()
     {

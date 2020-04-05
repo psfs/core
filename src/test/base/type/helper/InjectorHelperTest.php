@@ -4,21 +4,23 @@ namespace PSFS\test\base\type\helper;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\test\examples\SingletonClassTest;
+use ReflectionClass;
+use ReflectionException;
 
 class InjectorHelperTest extends TestCase
 {
 
     /**
-     * @return \ReflectionClass
-     * @throws \ReflectionException
+     * @return ReflectionClass
+     * @throws ReflectionException
      */
     private function getExampleReflector()
     {
-        return new \ReflectionClass(SingletonClassTest::class);
+        return new ReflectionClass(SingletonClassTest::class);
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function testInjector()
     {
@@ -34,7 +36,7 @@ class InjectorHelperTest extends TestCase
         $this->assertTrue(class_exists($properties['security']), 'Injectable class does not exists');
 
         foreach ($properties as $variable => $classNameSpace) {
-            $injector = InjectorHelper::constructInyectableInstance($variable, true, $classNameSpace, $reflector->getName());
+            $injector = InjectorHelper::constructInjectableInstance($variable, true, $classNameSpace, $reflector->getName());
             $this->assertNotNull($injector, 'Injector class is null');
             $this->assertInstanceOf($classNameSpace, $injector, 'Injector has been created a different namespace than expected');
         }

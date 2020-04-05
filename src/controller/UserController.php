@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\controller;
 
+use HttpException;
 use PSFS\base\config\AdminForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
@@ -39,9 +40,10 @@ class UserController extends Admin
      * Método que gestiona los usuarios administradores de la plataforma
      * @GET
      * @route /admin/setup
+     * @icon fa-users
      * @label Gestor de usuarios PSFS
      * @return string|null
-     * @throws \HttpException
+     * @throws HttpException
      */
     public function adminers()
     {
@@ -79,7 +81,7 @@ class UserController extends Admin
      * @route /admin/setup
      * @visible false
      * @return string|void
-     * @throws \HttpException
+     * @throws HttpException
      */
     public function setAdminUsers()
     {

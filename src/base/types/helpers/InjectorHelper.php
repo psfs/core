@@ -3,6 +3,9 @@ namespace PSFS\base\types\helpers;
 
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
 
 /**
  * Class InjectorHelper
@@ -14,13 +17,14 @@ class InjectorHelper
     const VAR_PATTERN = '/@var\s+([^\s]+)/im';
 
     /**
-     * @param \ReflectionClass $reflector
+     * @param ReflectionClass $reflector
      * @return array
+     * @throws ReflectionException
      */
-    public static function extractVariables(\ReflectionClass $reflector)
+    public static function extractVariables(ReflectionClass $reflector)
     {
         $variables = [];
-        foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($reflector->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             $instanceType = self::extractVarType($property->getDocComment());
             if (null !== $instanceType) {
                 $isRequired = self::checkIsRequired($property->getDocComment());
@@ -39,7 +43,7 @@ class InjectorHelper
                         'description' => $label,
                     ];
                 } else {
-                    $instance = new \ReflectionClass($instanceType);
+                    $instance = new ReflectionClass($instanceType);
                     $variables[$property->getName()] = [
                         'is_array' => $isArray,
                         'class' => $instanceType,
@@ -57,12 +61,12 @@ class InjectorHelper
 
     /**
      * Method that extract the properties of a Class
-     * @param \ReflectionClass $reflector
+     * @param ReflectionClass $reflector
      * @param integer $type
      * @param string $pattern
      * @return array
      */
-    public static function extractProperties(\ReflectionClass $reflector, $type = \ReflectionProperty::IS_PROTECTED, $pattern = self::INJECTABLE_PATTERN)
+    public static function extractProperties(ReflectionClass $reflector, $type = ReflectionProperty::IS_PROTECTED, $pattern = self::INJECTABLE_PATTERN)
     {
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
@@ -112,11 +116,7 @@ class InjectorHelper
      */
     public static function checkIsVisible($doc)
     {
-        $visible = false;
-        if (false !== preg_match('/@visible\s+([^\s]+)/', $doc, $matches)) {
-            $visible =  count($matches) < 2 || 'false' !== strtolower($matches[1]);
-        }
-        return $visible;
+        return AnnotationHelper::extractReflectionVisibility($doc);
     }
 
     /**
@@ -124,13 +124,7 @@ class InjectorHelper
      * @return null|string
      */
     public static function getLabel($doc) {
-        // Extract description
-        $label = null;
-        preg_match('/@label\ (.*)\n/i', $doc, $matches);
-        if(count($matches) > 1) {
-            $label = t($matches[1]);
-        }
-        return $label;
+        return t(AnnotationHelper::extractReflectionLabel($doc));
     }
 
     /**
@@ -139,12 +133,8 @@ class InjectorHelper
      */
     public static function getValues($doc) {
         // Extract description
-        $label = null;
-        preg_match('/@values\ (.*)\n/i', $doc, $matches);
-        if(count($matches) > 1) {
-            $label = t($matches[1]);
-        }
-        return false !== strpos($label, '|') ? explode('|', $label) : $label;
+        $values = AnnotationHelper::extractFromDoc('values', $doc, '');
+        return false !== strpos($values, '|') ? explode('|', $values) : $values;
     }
 
     /**
@@ -152,25 +142,21 @@ class InjectorHelper
      * @return null
      */
     public static function getDefaultValue($doc) {
-        $default = null;
-        preg_match('/@default\ (.*)\n/i', $doc, $matches);
-        if(count($matches) > 1) {
-            $default = $matches[1];
-        }
-        return $default;
+        return AnnotationHelper::extractFromDoc('default', $doc);
     }
 
     /**
-     * @param string $variable
-     * @param bool $singleton
-     * @param string $classNameSpace
-     * @param string $calledClass
+     * @param $variable
+     * @param $singleton
+     * @param $classNameSpace
+     * @param $calledClass
      * @return mixed
+     * @throws ReflectionException
      */
-    public static function constructInyectableInstance($variable, $singleton, $classNameSpace, $calledClass)
+    public static function constructInjectableInstance($variable, $singleton, $classNameSpace, $calledClass)
     {
         Logger::log('Create inyectable instance for ' . $classNameSpace);
-        $reflector = new \ReflectionClass($calledClass);
+        $reflector = new ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
         $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType($property->getDocComment()) : $classNameSpace;
         if (true === $singleton && method_exists($varInstanceType, 'getInstance')) {
@@ -182,15 +168,15 @@ class InjectorHelper
     }
 
     /**
-     * Method that extract all the properties of a class
-     * @param string $class
+     * @param $class
      * @return array
+     * @throws ReflectionException
      */
     public static function getClassProperties($class)
     {
         $properties = [];
         Logger::log('Extracting annotations properties from class ' . $class);
-        $selfReflector = new \ReflectionClass($class);
+        $selfReflector = new ReflectionClass($class);
         if (false !== $selfReflector->getParentClass()) {
             $properties = self::getClassProperties($selfReflector->getParentClass()->getName());
         }
