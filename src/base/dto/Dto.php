@@ -5,6 +5,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\Inspector;
 
 /**
  * Class Dto
@@ -57,7 +58,8 @@ class Dto extends Singleton implements \JsonSerializable
                         }
                         $dto[$property->getName()] = $value;
                     } else {
-                        $dto[$property->getName()] = $property->getValue($this);
+                        $type = InjectorHelper::extractVarType($property->getDocComment());
+                        $dto[$property->getName()] = $this->checkCastedValue($property->getValue($this), $type);
                     }
                 }
             }
@@ -156,29 +158,39 @@ class Dto extends Singleton implements \JsonSerializable
     }
 
     /**
-     * @param $key
-     * @param $value
-     * @param $type
+     * @param string $key
+     * @param mixed $value
+     * @param string $type
      */
     protected function castValue($key, $value, $type)
     {
+        $this->$key = $this->checkCastedValue($value, $type);
+    }
+
+    /**
+     * @param mixed $rawValue
+     * @param string $type
+     * @return mixed
+     */
+    protected function checkCastedValue($rawValue, $type) {
         switch ($type) {
             default:
             case 'string':
-                $this->$key = $value;
+                $value = $rawValue;
                 break;
             case 'integer':
             case 'int':
-                $this->$key = (integer)$value;
+                $value = (integer)$rawValue;
                 break;
             case 'float':
             case 'double':
-                $this->$key = (float)$value;
+                $value = (float)$rawValue;
                 break;
             case 'boolean':
             case 'bool':
-                $this->$key = (bool)$value;
+                $value = (bool)$rawValue;
                 break;
         }
+        return $value;
     }
 }

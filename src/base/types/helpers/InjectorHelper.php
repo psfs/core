@@ -11,7 +11,7 @@ use PSFS\base\Router;
 class InjectorHelper
 {
     const INJECTABLE_PATTERN = '/@(Inyectable|Injectable|autoload|autowired)/im';
-    const VAR_PATTERN = '/@var /im';
+    const VAR_PATTERN = '/@var\s+([^\s]+)/im';
 
     /**
      * @param \ReflectionClass $reflector
@@ -85,7 +85,7 @@ class InjectorHelper
     public static function extractVarType($doc)
     {
         $type = null;
-        if (false !== preg_match('/@var\s+([^\s]+)/', $doc, $matches)) {
+        if (false !== preg_match(self::VAR_PATTERN, $doc, $matches)) {
             list(, $type) = $matches;
         }
         return $type;

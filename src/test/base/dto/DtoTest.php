@@ -156,6 +156,9 @@ class DtoTest extends TestCase {
         $emptyOrder->removeOrder('test3');
         $this->assertEquals(2, count($emptyOrder->getOrders()), 'Distinct number or orders removed');
         $complextDto->order = $emptyOrder;
+        $complextDto->boolean = $exampleData['boolean'];
+        $complextDto->number = $exampleData['number'];
+        $complextDto->decimal = $exampleData['decimal'];
         // Creation from import
         $complextDto2->fromArray($exampleData);
         $this->assertEquals($complextDto->jsonSerialize(), $complextDto2->jsonSerialize(), 'Different values on export');
