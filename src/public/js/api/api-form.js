@@ -9,6 +9,8 @@
             $scope.dates = {};
             $scope.limit = globalLimit || 25;
             $scope.extraActionExecution = false;
+            $scope.currentLocale = defaultLocale || 'es';
+            $scope.i18nLocales = [];
             $apiSrv.setEntity($scope.entity);
 
             function getEntityFields(url, callback) {
@@ -25,13 +27,20 @@
                 getEntityFields($scope.formUrl.replace(/\/$/, ''), function (response) {
                     $log.debug('Entity form loaded');
                     $scope.form = response.data.data || {};
+                    for(let i in $scope.form['fields']) {
+                        let field = $scope.form['fields'][i];
+                        if(field.name.toLowerCase() === 'locale') {
+                            $scope.i18nLocales = field.data;
+                            break;
+                        }
+                    }
                     $scope.itemLoading = false;
                     $timeout(function() {
                         $('.date').datepicker({
                             todayBtn: "linked",
                             clearBtn: true,
-                            language: "es",
-                            autoclose: true,
+                            language: defaultLocale || 'es',
+                            autoClose: true,
                             todayHighlight: true,
                             format: 'yyyy-mm-dd',
                             forceParse: false,
@@ -83,7 +92,7 @@
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title($scope.entity + ' Error ' + err.status)
-                        .content(err.data.data)
+                        .content(err.data.message)
                         .ariaLabel('Save error')
                         .ok($scope.i18N['close'])
                 ).finally(function() {
@@ -104,8 +113,9 @@
             }
 
 
-            function clearForm() {
+            function clearForm(edit) {
                 $scope.itemLoading = false;
+
                 $scope.model = {};
                 $scope.modelBackup = {};
                 for(var i in $scope.combos) {
@@ -115,6 +125,11 @@
                 }
                 $scope.entity_form.$setPristine();
                 clearAutocomplete();
+                if(edit) {
+                    $msgSrv.send('psfs.model.reload');
+                } else {
+                    $msgSrv.send('psfs.model.clean');
+                }
                 for(var i in $scope.entity_form) {
                     if(!i.match(/^\$/)) {
                         $scope.cleanFormStatus($scope.entity_form[i]);
@@ -122,7 +137,7 @@
                 }
             }
 
-            function submitForm() {
+            function submitForm(edit) {
                 if ($scope.entity_form.$valid) {
                     $log.debug('Entity form submitted');
                     $scope.itemLoading = true;
@@ -135,8 +150,9 @@
                     } else {
                         promise = $httpSrv.$post($scope.url.replace(/\/$/, ''), model);
                     }
-
-                    promise.then(clearForm, showError)
+                    promise.then(() => {
+                        clearForm(edit);
+                    }, showError)
                     .finally(function() {
                         $msgSrv.send('psfs.list.reload');
                         $scope.loading = false;
@@ -298,8 +314,8 @@
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
                 var message = 'Ha ocurrido un error ejecutando la acción, por favor revisa el log';
-                if(response.message) {
-                    message += ': ' + response.message;
+                if(response.data.message) {
+                    message += ': ' + response.data.message;
                 }
                 $mdDialog.show(
                     $mdDialog.alert()
@@ -392,6 +408,19 @@
                 return actions;
             }
 
+            function changeLocale(locale) {
+                if('Locale' in locale) {
+                    $scope.currentLocale = locale['Locale'];
+                } else {
+                    $scope.currentLocale = locale['locale'];
+                }
+                $httpSrv.$config({
+                    lang: $scope.currentLocale
+                });
+                $msgSrv.send('psfs.list.reload');
+                $msgSrv.send('psfs.model.reload');
+            }
+
             $scope.fieldCheckSuccess = function(entity, field) {
                 var check = false, form = $scope.entity_form, name = entity + '_' + field.name;
                 if(field.required && name in form && !form[name].$pristine) {
@@ -424,6 +453,7 @@
             $scope.initDates = initDates;
             $scope.formActions = formActions;
             $scope.executeAction = executeAction;
+            $scope.changeLocale = changeLocale;
 
             loadFormFields();
         }];

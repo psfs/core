@@ -2,6 +2,7 @@
 namespace PSFS\controller;
 
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\controller\base\Admin;
 use PSFS\Services\GeneratorService;
 
@@ -47,9 +48,9 @@ class I18nController extends Admin
         $localePath .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
         //xgettext localizations
-        $translations = array_merge($translations, GeneratorService::findTranslations(SOURCE_DIR, $locale));
-        $translations = array_merge($translations, GeneratorService::findTranslations(CORE_DIR, $locale));
-        $translations = array_merge($translations, GeneratorService::findTranslations(CACHE_DIR, $locale));
+        $translations = array_merge($translations, I18nHelper::findTranslations(SOURCE_DIR, $locale));
+        $translations = array_merge($translations, I18nHelper::findTranslations(CORE_DIR, $locale));
+        $translations = array_merge($translations, I18nHelper::findTranslations(CACHE_DIR, $locale));
 
         $translations[] = "msgfmt {$localePath}translations.po -o {$localePath}translations.mo";
         $translations[] = shell_exec('export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt '. $localePath . 'translations.po -o ' . $localePath . 'translations.mo');

@@ -8,6 +8,7 @@
         $scope.actualPage = 1;
         $scope.count = 0;
         $scope.listSearch = '';
+        $scope.selectedItem = null;
 
         function paginate(page)
         {
@@ -18,6 +19,7 @@
         function loadItem(item)
         {
             $scope.itemLoading = true;
+            $scope.selectedItem = item;
             $httpSrv.$get($scope.url.replace(/\/$/, '') + "/" + item[$scope.modelId])
                 .then(function(response) {
                     $scope.model = response.data.data;
@@ -65,8 +67,14 @@
         $scope.getId = $apiSrv.getId;
         $scope.isModelSelected = isModelSelected;
 
-        $scope.$on('psfs.list.reload', function(){
-            $scope.loadData();
+        $scope.$on('psfs.list.reload', $scope.loadData);
+        $scope.$on('psfs.model.reload', () => {
+            if(null !== $scope.selectedItem) {
+                loadItem($scope.selectedItem);
+            }
+        });
+        $scope.$on('psfs.model.clean', () => {
+            $scope.selectedItem = null;
         });
 
         $scope.loadData();

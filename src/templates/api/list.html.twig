@@ -2,8 +2,23 @@
     <div class="panel panel-default" ng-cloack>
         <div class="panel-heading">
             <p ng-bind="'[' + count + ' {{ "elementos"|trans }} ' + api + ']'"></p>
-            <div class="form-group">
+            <div class="form-group" role="group" ng-class="{'input-group':i18nLocales.length}">
                 <input id="search" type="search" class="form-control" ng-model="listSearch" placeholder="{{ "Buscar"|trans }} {{ "{{ api }}" }}">
+                <div class="input-group-btn"
+                     ng-show="i18nLocales.length">
+                    <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span ng-bind="currentLocale"></span>&nbsp;
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-repeat="locale in i18nLocales">
+                            <a href="javascript:void(0);" ng-click="changeLocale(locale, $event)"
+                               ng-bind="locale.Label">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div data-ng-hide="loading"
                  paging

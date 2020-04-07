@@ -122,6 +122,7 @@
                             })
                             .finally(function() {
                                 $scope.loading = false;
+                                $msgSrv.send('psfs.model.clean');
                             });
                     }, function() {
                         $scope.loading = false;

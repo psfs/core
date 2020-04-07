@@ -9,7 +9,6 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\services\GeneratorService;
 
 /**
  * Class TemplateFunctions
@@ -159,7 +158,7 @@ class TemplateFunctions
         $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
         $filenamePath = self::extractPathname($path, $domains);
-        GeneratorService::copyResources($dest, $force, $filenamePath, $debug);
+        GeneratorHelper::copyResources($dest, $force, $filenamePath, $debug);
         return '';
     }
 

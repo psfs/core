@@ -1,9 +1,10 @@
 <?php
 namespace PSFS\base\types\helpers;
 
+use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
-use PSFS\base\Logger;
 use PSFS\base\Template;
+use PSFS\base\types\Api;
 use PSFS\Services\GeneratorService;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,7 +18,7 @@ class GeneratorHelper
     /**
      * @param $dir
      */
-    private static function deleteDir($dir)
+    public static function deleteDir($dir)
     {
         if (is_dir($dir)) {
             $objects = scandir($dir);
@@ -99,7 +100,7 @@ class GeneratorHelper
         if(!empty($namespace)) {
             if(class_exists($namespace)) {
                 $reflector = new \ReflectionClass($namespace);
-                if(!$reflector->isSubclassOf(\PSFS\base\types\Api::class)) {
+                if(!$reflector->isSubclassOf(Api::class)) {
                     throw new GeneratorException(t('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
                 } elseif(!$reflector->isAbstract()) {
                     throw new GeneratorException(t('La clase definida debe ser abstracta'), 501);
@@ -168,7 +169,52 @@ class GeneratorHelper
         //Export base locale translations
         if (!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . 'locale')) {
             GeneratorHelper::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
-            GeneratorService::copyr(SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'locale', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
+            self::copyr(SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'locale', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         }
+    }
+
+    /**
+     * Method that copy resources recursively
+     * @param string $dest
+     * @param boolean $force
+     * @param string $filenamePath
+     * @param boolean $debug
+     * @throws GeneratorException
+     */
+    public static function copyResources($dest, $force, $filenamePath, $debug)
+    {
+        if (file_exists($filenamePath)) {
+            $destfolder = basename($filenamePath);
+            if (!file_exists(WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) || $debug || $force) {
+                if (is_dir($filenamePath)) {
+                    self::copyr($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                } else {
+                    if (@copy($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === FALSE) {
+                        throw new ConfigException("Can't copy " . $filenamePath . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Method that copy a resource
+     * @param string $src
+     * @throws GeneratorException
+     */
+    public static function copyr($src, $dst)
+    {
+        $dir = opendir($src);
+        self::createDir($dst);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($src . '/' . $file)) {
+                    self::copyr($src . '/' . $file, $dst . '/' . $file);
+                } elseif (@copy($src . '/' . $file, $dst . '/' . $file) === false) {
+                    throw new ConfigException("Can't copy " . $src . " to " . $dst);
+                }
+            }
+        }
+        closedir($dir);
     }
 }

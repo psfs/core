@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="CLIENT" defaultIdMethod="native" namespace="CLIENT\Models" tablePrefix="CLIENT_">
+    <vendor type="mysql">
+        <parameter name="Engine" value="InnoDB"/>
+        <parameter name="Charset" value="utf8"/>
+        <parameter name="Collate" value="utf8_unicode_ci"/>
+    </vendor>
+    <table name="RELATED" namespace="Related">
+        <column name="ID_RELATED" type="INTEGER" autoIncrement="true" primaryKey="true"/>
+        <column name="TITLE" type="VARCHAR" size="100" required="true" />
+    </table>
+    <table name="TEST" namespace="Test">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true" />
+        <column name="NUMBER" type="INTEGER" required="true" />
+        <column name="NAME" type="VARCHAR" size="100" required="true" />
+        <column name="SUMMARY" type="LONGVARCHAR" size="1000" />
+        <column name="TYPE" type="ENUM" valueSet="DEV,TEST,QA,PRE,PROD" required="true" />
+        <column name="CHECKER" type="BOOLEAN" />
+        <column name="ID_RELATED" type="INTEGER" />
+        <behavior name="i18n">
+            <parameter name="i18n_columns" value="NAME" />
+            <parameter name="default_locale" value="es" />
+        </behavior>
+        <behavior name="timestampable" />
+        <foreign-key name="fk_test" foreignTable="RELATED">
+            <reference local="ID_RELATED" foreign="ID_RELATED" />
+        </foreign-key>
+    </table>
+    <table name="SOLO_TEST" phpName="Solo">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true" />
+    </table>
+</database>

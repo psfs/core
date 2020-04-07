@@ -1,3 +1,10 @@
+<div id="locale-selector" class="form-group col-xs-12 col-sm-1 pull-right" ng-show="hasI18n">
+    <select class="form-control" id="formLocale" name="formLocale">
+        <option value="es">es</option>
+        <option value="en">en</option>
+        <option value="fr">fr</option>
+    </select>
+</div>
 <div class="form-actions" role="group" ng-class="{'btn-group':formActions().length || isSaved()}">
     <button type="button" class="btn btn-primary"
             ng-click="submitForm()" aria-label="Save"
@@ -11,6 +18,12 @@
         <i class="fa fa-caret-down" ng-class="{'fa-caret-down':!extraActionExecution, 'fa-cog fa-spin':extraActionExecution}"></i>
     </button>
     <ul class="dropdown-menu">
+        <li>
+            <a href="javascript:void(0);" ng-click="submitForm(model, $event)" aria-label="Save">
+                <i class="fa fa-save"></i>&nbsp;
+                <span ng-bind="i18N['save_and_edit']"></span>
+            </a>
+        </li>
         <li>
             <a href="javascript:void(0);" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
                 <i class="fa fa-trash-alt"></i>&nbsp;
