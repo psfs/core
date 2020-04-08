@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\test\services;
 
 use PHPUnit\Framework\TestCase;
@@ -10,7 +11,8 @@ use PSFS\services\GeneratorService;
  * Class GeneratorServiceTest
  * @package PSFS\test\services
  */
-class GeneratorServiceTest extends TestCase {
+class GeneratorServiceTest extends TestCase
+{
     use BoostrapTrait;
 
     const MODULE_NAME = 'CLIENT';
@@ -55,29 +57,32 @@ class GeneratorServiceTest extends TestCase {
         DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Test' . DIRECTORY_SEPARATOR . 'Map' . DIRECTORY_SEPARATOR . 'TestTableMap.php',
         DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Test' . DIRECTORY_SEPARATOR . 'Map' . DIRECTORY_SEPARATOR . 'TestI18nTableMap.php',
         // Package related model
-        DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'Related.php',
-        DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . 'RelatedBaseApi.php',
-        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'Related.php',
-        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'RelatedQuery.php',
-        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'Base' . DIRECTORY_SEPARATOR . 'Related.php',
-        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'Base' . DIRECTORY_SEPARATOR . 'RelatedQuery.php',
-        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related'. DIRECTORY_SEPARATOR . 'Map' . DIRECTORY_SEPARATOR . 'RelatedTableMap.php',
+        DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'Related.php',
+        DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . 'RelatedBaseApi.php',
+        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'Related.php',
+        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'RelatedQuery.php',
+        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'Base' . DIRECTORY_SEPARATOR . 'Related.php',
+        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'Base' . DIRECTORY_SEPARATOR . 'RelatedQuery.php',
+        DIRECTORY_SEPARATOR . 'Models' . DIRECTORY_SEPARATOR . 'Related' . DIRECTORY_SEPARATOR . 'Map' . DIRECTORY_SEPARATOR . 'RelatedTableMap.php',
     ];
 
     /**
      * @before
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public function prepareDocumentRoot() {
+    public function prepareDocumentRoot()
+    {
         GeneratorHelper::createRoot();
     }
 
-    public function createNewModule(GeneratorService $generatorService) {
+    public function createNewModule(GeneratorService $generatorService)
+    {
         $generatorService->createStructureModule(self::MODULE_NAME, true);
         $this->checkBasicStructure();
     }
 
-    public function testCreateExistingModule() {
+    public function testCreateExistingModule()
+    {
         $generatorService = GeneratorService::getInstance();
         $this->assertInstanceOf(GeneratorService::class, $generatorService, 'Error getting GeneratorService instance');
         $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . self::MODULE_NAME;
@@ -86,12 +91,13 @@ class GeneratorServiceTest extends TestCase {
 
         GeneratorHelper::copyr(
             dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'examples' . DIRECTORY_SEPARATOR . 'generator' . DIRECTORY_SEPARATOR . 'Config',
-                $modulePath . DIRECTORY_SEPARATOR . 'Config'
+            $modulePath . DIRECTORY_SEPARATOR . 'Config'
         );
+        require_once $modulePath . DIRECTORY_SEPARATOR . 'autoload.php';
         $generatorService->createStructureModule(self::MODULE_NAME, false);
         $this->checkBasicStructure();
 
-        foreach(self::$filesToCheckWithSchema as $fileName) {
+        foreach (self::$filesToCheckWithSchema as $fileName) {
             $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
         }
         GeneratorHelper::deleteDir($modulePath);
