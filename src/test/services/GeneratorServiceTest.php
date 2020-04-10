@@ -67,21 +67,6 @@ abstract class GeneratorServiceTest extends TestCase
     ];
 
     /**
-     * @before
-     * @throws \PSFS\base\exception\GeneratorException
-     */
-    public function prepareDocumentRoot()
-    {
-        GeneratorHelper::createRoot(WEB_DIR, null, true);
-        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
-            unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
-        }
-        $this->assertFileNotExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
-        GeneratorHelper::deleteDir(CACHE_DIR);
-        $this->assertDirectoryNotExists(CACHE_DIR, 'Cache folder already exists with data');
-    }
-
-    /**
      * @param GeneratorService $generatorService
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException

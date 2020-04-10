@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
@@ -23,6 +24,7 @@ class Template
     use SingletonTrait;
     use OutputTrait;
     use RouteTrait;
+
     const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
      * @var \Twig_Environment tpl
@@ -65,18 +67,17 @@ class Template
     /**
      * @return bool
      */
-    public function isPublicZone() {
+    public function isPublicZone()
+    {
         return $this->public_zone;
     }
 
     /**
-     * Método que procesa la plantilla
-     *
      * @param string $tpl
      * @param array $vars
      * @param array $cookies
-     *
      * @return string HTML
+     * @throws exception\GeneratorException
      */
     public function render($tpl, array $vars = array(), array $cookies = array())
     {
@@ -96,7 +97,9 @@ class Template
      */
     public function addPath($path, $domain = '')
     {
-        $this->tpl->getLoader()->addPath($path, $domain);
+        if (file_exists($path)) {
+            $this->tpl->getLoader()->addPath($path, $domain);
+        }
         return $this;
     }
 
@@ -161,6 +164,9 @@ class Template
      */
     protected function generateTemplate($tplDir, $domain = '')
     {
+        if (!file_exists($tplDir)) {
+            return str_replace('%d', $domain, str_replace('%s', $tplDir, t('Path "%s" no existe para el dominio "%d"')));
+        }
         $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
         foreach ($templatesDir as $file) {
             // force compilation
@@ -228,7 +234,7 @@ class Template
             'getFlash' => TemplateFunctions::GET_FLASH_FUNCTION,
             'getQuery' => TemplateFunctions::GET_QUERY_FUNCTION,
         ];
-        foreach($functions as $name => $function) {
+        foreach ($functions as $name => $function) {
             $this->addTemplateFunction($name, $function);
         }
     }

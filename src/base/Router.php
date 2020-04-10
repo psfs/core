@@ -8,6 +8,7 @@ use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\Controller;
 use PSFS\base\types\helpers\AnnotationHelper;
@@ -18,7 +19,6 @@ use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
-use PSFS\services\AdminServices;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -54,17 +54,13 @@ class Router
      */
     private $cache;
     /**
-     * @var bool headersSent
-     */
-    protected $headersSent = false;
-    /**
      * @var int
      */
     protected $cacheType = Cache::JSON;
 
     /**
      * Router constructor.
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -77,7 +73,7 @@ class Router
     }
 
     /**
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -85,17 +81,16 @@ class Router
     public function init()
     {
         list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, TRUE);
+        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, TRUE);
         if (empty($this->routing) || Config::getParam('debug', true)) {
             $this->debugLoad();
-        } else {
-            $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, TRUE);
         }
         $this->checkExternalModules(false);
         $this->setLoaded();
     }
 
     /**
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -112,7 +107,7 @@ class Router
      * @param bool $isJson
      * @return string
      * @throws RouterException
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      */
     public function httpNotFound(Exception $exception = NULL, $isJson = false)
     {
@@ -255,14 +250,6 @@ class Router
     }
 
     /**
-     * @return string HTML
-     */
-    protected function sentAuthHeader()
-    {
-        return AdminServices::getInstance()->setAdminHeaders();
-    }
-
-    /**
      * @return string|null
      */
     private function getExternalModules() {
@@ -277,10 +264,10 @@ class Router
     private function checkExternalModules($hydrateRoute = true)
     {
         $externalModules = $this->getExternalModules();
-        if ('' !== $externalModules) {
-            $externalModules = explode(',', $externalModules);
-            foreach ($externalModules as &$module) {
-                $module = $this->loadExternalModule($hydrateRoute, $module);
+        $externalModules = explode(',', $externalModules);
+        foreach ($externalModules as $module) {
+            if(strlen($module)) {
+                $this->loadExternalModule($hydrateRoute, $module);
             }
         }
     }
@@ -289,7 +276,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      */
     private function generateRouting()
     {
@@ -310,7 +297,7 @@ class Router
     }
 
     /**
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -430,14 +417,11 @@ class Router
 
     /**
      * @return $this
-     * @throws exception\GeneratorException
-     * @throws ConfigException
+     * @throws GeneratorException
      */
     public function simpatize()
     {
-        $translationFileName = 'translations' . DIRECTORY_SEPARATOR . 'routes_translations.php';
-        $absoluteTranslationFileName = CACHE_DIR . DIRECTORY_SEPARATOR . $translationFileName;
-        $this->generateSlugs($absoluteTranslationFileName);
+        $this->generateSlugs();
         GeneratorHelper::createDir(CONFIG_DIR);
         Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', array($this->routing, $this->slugs), Cache::JSON, TRUE);
 
@@ -452,24 +436,25 @@ class Router
      * @return string|null
      * @throws RouterException
      */
-    public function getRoute($slug = '', $absolute = FALSE, array $params = [])
+    public function getRoute($slug = '', $absolute = false, array $params = [])
     {
+        $baseUrl = $absolute ? Request::getInstance()->getRootUrl() : '';
         if ('' === $slug) {
-            return $absolute ? Request::getInstance()->getRootUrl() . '/' : '/';
+            return $baseUrl . '/';
         }
         if (!is_array($this->slugs) || !array_key_exists($slug, $this->slugs)) {
             throw new RouterException(t('No existe la ruta especificada'));
         }
-        $url = $absolute ? Request::getInstance()->getRootUrl() . $this->slugs[$slug] : $this->slugs[$slug];
+        $url = $baseUrl . $this->slugs[$slug];
         if (!empty($params)) {
             foreach ($params as $key => $value) {
                 $url = str_replace('{' . $key . '}', $value, $url);
             }
         } elseif (!empty($this->routing[$this->slugs[$slug]]['default'])) {
-            $url = $absolute ? Request::getInstance()->getRootUrl() . $this->routing[$this->slugs[$slug]]['default'] : $this->routing[$this->slugs[$slug]]['default'];
+            $url = $baseUrl . $this->routing[$this->slugs[$slug]]['default'];
         }
 
-        return preg_replace('/(GET|POST|PUT|DELETE|ALL)\#\|\#/', '', $url);
+        return preg_replace('/(GET|POST|PUT|DELETE|ALL|HEAD|PATCH)\#\|\#/', '', $url);
     }
 
     /**
@@ -538,29 +523,24 @@ class Router
 
     /**
      * Parse slugs to create translations
-     *
-     * @param string $absoluteTranslationFileName
      */
-    private function generateSlugs($absoluteTranslationFileName)
+    private function generateSlugs()
     {
-        $translations = I18nHelper::generateTranslationsFile($absoluteTranslationFileName);
         foreach ($this->routing as $key => &$info) {
             $keyParts = explode('#|#', $key);
             $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : $keyParts[0];
             $slug = RouterHelper::slugify($keyParts);
-            if (NULL !== $slug && !array_key_exists($slug, $translations)) {
-                $translations[$slug] = $info['label'];
-                file_put_contents($absoluteTranslationFileName, "\$translations[\"{$slug}\"] = t(\"{$info['label']}\");\n", FILE_APPEND);
-            }
             $this->slugs[$slug] = $key;
             $info['slug'] = $slug;
+            // TODO add routes to translations JSON
         }
     }
 
     /**
-     * @param bool $hydrateRoute
-     * @param $modulePath
-     * @param $externalModulePath
+     * @param boolean $hydrateRoute
+     * @param SplFileInfo $modulePath
+     * @param string $externalModulePath
+     * @throws ReflectionException
      */
     private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
     {
@@ -594,9 +574,7 @@ class Router
             }
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_WARNING);
-            $module = null;
         }
-        return $module;
     }
 
 }
