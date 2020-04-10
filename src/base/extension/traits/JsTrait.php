@@ -3,7 +3,7 @@ namespace PSFS\base\extension\traits;
 
 use MatthiasMullie\Minify\JS;
 use PSFS\base\config\Config;
-use PSFS\base\exception\ConfigException;
+use PSFS\base\types\helpers\AssetsHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
@@ -12,16 +12,14 @@ use PSFS\base\types\helpers\GeneratorHelper;
  */
 trait JsTrait {
 
-
     /**
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     * @param bool $debug
      */
-    protected function printJs(array $compiledFiles, $baseUrl, $hash, $debug = false)
+    protected function printJs(array $compiledFiles, $baseUrl, $hash)
     {
-        if ($debug && 0 < count($compiledFiles)) {
+        if (Config::getParam('debug') && 0 < count($compiledFiles)) {
             foreach ($compiledFiles as $file) {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
@@ -33,44 +31,37 @@ trait JsTrait {
     /**
      * @param $pathParts
      * @param string $base
-     * @param $file
+     * @param string $file
+     * @param string $hash
+     * @param array $compiledFiles
      * @return false|string
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function putDebugJs($pathParts, $base, $file)
+    protected function putDebugJs($pathParts, $base, $file, $hash, array &$compiledFiles)
     {
-        $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
-        $this->compiled_files[] = "/js/" . $filePath;
+        $filePath = $hash . "_" . $pathParts[count($pathParts) - 1];
+        $compiledFiles[] = "/js/" . $filePath;
         $data = "";
         if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file)) {
             $data = file_get_contents($file);
-            $this->storeContents($base . $filePath, $data);
+            AssetsHelper::storeContents($base . $filePath, $data);
         }
         return $data;
     }
 
     /**
-     * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
-     * @param string $path
-     * @param string $content
-     * @throws \PSFS\base\exception\GeneratorException
-     */
-    private function storeContents($path, $content = "")
-    {
-        GeneratorHelper::createDir(dirname($path));
-        if ("" !== $content && false === file_put_contents($path, $content)) {
-            throw new ConfigException(t('No se tienen permisos para escribir en ' . $path));
-        }
-    }
-
-    /**
      * Método que compila los ficheros javascript en función del modo de ejecución
+     * @param array $files
+     * @param string $basePath
+     * @param string $hash
+     * @param array $compiledFiles
      * @return $this
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function compileJs(array $files, $basePath, $hash, $debug = false)
+    protected function compileJs(array $files, $basePath, $hash, array &$compiledFiles)
     {
         $base = $basePath . "js" . DIRECTORY_SEPARATOR;
+        $debug = Config::getParam('debug');
         if ($debug || !file_exists($base . $hash . ".js")) {
             $data = '';
             if (0 < count($files)) {
@@ -79,7 +70,7 @@ trait JsTrait {
                     $pathParts = explode("/", $file);
                     if (file_exists($file)) {
                         if ($debug) {
-                            $data = $this->putDebugJs($pathParts, $base, $file);
+                            $data = $this->putDebugJs($pathParts, $base, $file, $hash, $compiledFiles);
                         } elseif (!file_exists($base . $hash . ".js")) {
                             $minifier->add($file);
                             //$data = $this->putProductionJs($base, $file, $data);
@@ -87,20 +78,31 @@ trait JsTrait {
                     }
                 }
                 if($debug) {
-                    $this->storeContents($base . $hash . ".js", $data);
+                    AssetsHelper::storeContents($base . $hash . ".js", $data);
                 } else {
-                    ini_set('max_execution_time', -1);
-                    ini_set('memory_limit', -1);
-                    GeneratorHelper::createDir($base);
-                    if(Config::getParam('assets.obfuscate', false)) {
-                        $minifier->gzip($base . $hash . ".js");
-                    } else {
-                        $minifier->minify($base . $hash . ".js");
-                    }
+                    $this->dumpJs($hash, $base, $minifier);
                 }
                 unset($minifier);
             }
         }
         return $this;
+    }
+
+    /**
+     * @param $hash
+     * @param string $base
+     * @param JS $minifier
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    protected function dumpJs($hash, string $base, JS $minifier)
+    {
+        ini_set('max_execution_time', -1);
+        ini_set('memory_limit', -1);
+        GeneratorHelper::createDir($base);
+        if (Config::getParam('assets.obfuscate', false)) {
+            $minifier->gzip($base . $hash . ".js");
+        } else {
+            $minifier->minify($base . $hash . ".js");
+        }
     }
 }

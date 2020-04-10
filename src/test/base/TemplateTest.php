@@ -2,6 +2,7 @@
 namespace PSFS\test;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\config\Config;
 use PSFS\base\Template;
 
 /**
@@ -30,10 +31,17 @@ class TemplateTest extends TestCase {
         $this->assertNotNull($path);
         $this->assertFileExists($path);
 
+        Config::getInstance()->setDebugMode(true);
         $output = $template->dump('index.html.twig');
         $this->assertNotNull($output);
         $this->assertNotEmpty($output);
 
+        Config::getInstance()->setDebugMode(false);
+        $output2 = $template->dump('index.html.twig');
+        $this->assertNotNull($output2);
+        $this->assertNotEmpty($output2);
+        $this->assertNotEquals($output2, $output, 'Production template is the same than development one');
+        Config::getInstance()->setDebugMode(true);
     }
 
     public function testTranslations() {

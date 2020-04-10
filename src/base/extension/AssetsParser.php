@@ -29,7 +29,7 @@ class AssetsParser
     /**
      * @var array
      */
-    protected $compiled_files = [];
+    protected $compiledFiles = [];
     /**
      * @var string
      */
@@ -38,10 +38,6 @@ class AssetsParser
      * @var array
      */
     protected $domains = [];
-    /**
-     * @var bool
-     */
-    private $debug = false;
     /**
      * @var string
      */
@@ -57,7 +53,6 @@ class AssetsParser
         $this->type = $type;
         $this->path = WEB_DIR . DIRECTORY_SEPARATOR;
         $this->domains = Template::getDomains(true);
-        $this->debug = Config::getParam('debug', true);
         $this->cdnPath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
     }
 
@@ -109,10 +104,10 @@ class AssetsParser
         switch ($this->type) {
             default:
             case "js":
-                $this->compileJs($this->files, $this->path, $this->hash, $this->debug);
+                $this->compileJs($this->files, $this->path, $this->hash, $this->compiledFiles);
                 break;
             case "css":
-                $this->compileCss($this->path, $this->hash, $this->debug);
+                $this->compileCss($this->path, $this->hash);
                 break;
         }
 
@@ -128,10 +123,10 @@ class AssetsParser
         switch ($this->type) {
             default:
             case "js":
-                $this->printJs($this->compiled_files, $baseUrl, $this->hash, $this->debug);
+                $this->printJs($this->compiledFiles, $baseUrl, $this->hash);
                 break;
             case "css":
-                $this->printCss($this->compiled_files, $baseUrl, $this->hash, $this->debug);
+                $this->printCss($this->compiledFiles, $baseUrl, $this->hash);
                 break;
         }
     }

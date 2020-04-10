@@ -1,14 +1,17 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\Template;
 
 /**
  * Class AssetsHelper
  * @package PSFS\base\types\helpers
  */
-class AssetsHelper {
+class AssetsHelper
+{
 
     /**
      * @param string $source
@@ -100,5 +103,19 @@ class AssetsHelper {
         $filePath = $htmlBase . $file;
 
         return array($base, $htmlBase, $filePath);
+    }
+
+    /**
+     * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
+     * @param string $path
+     * @param string $content
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    public static function storeContents($path, $content = "")
+    {
+        GeneratorHelper::createDir(dirname($path));
+        if ("" !== $content && false === file_put_contents($path, $content)) {
+            throw new ConfigException(t('No se tienen permisos para escribir en ' . $path));
+        }
     }
 }

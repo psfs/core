@@ -2,6 +2,7 @@
 namespace PSFS\base\extension\traits;
 
 use MatthiasMullie\Minify\CSS;
+use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\AssetsHelper;
@@ -12,6 +13,7 @@ use PSFS\base\types\helpers\GeneratorHelper;
  * @package PSFS\base\extension\traits
  */
 trait CssTrait {
+
     /**
      * @var string
      */
@@ -24,19 +26,20 @@ trait CssTrait {
      * @return $this
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function compileCss($basePath, $hash, $debug = false)
+    protected function compileCss($basePath, $hash)
     {
+        $debug = Config::getParam('debug');
         $base = $basePath . "css" . DIRECTORY_SEPARATOR;
         if ($debug || !file_exists($base . $hash . ".css")) {
             $data = '';
             if (0 < count($this->files)) {
                 $minifier = new CSS();
                 foreach ($this->files as $file) {
-                    $data = $this->processCssLine($file, $base, $data);
+                    $data = $this->processCssLine($file, $base, $data, $hash);
                 }
             }
             if($debug) {
-                $this->storeContents($base . $hash . ".css", $data);
+                AssetsHelper::storeContents($base . $hash . ".css", $data);
             } else {
                 $minifier = new CSS();
                 $minifier->add($data);
@@ -58,25 +61,26 @@ trait CssTrait {
      * @return false|string
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function processCssLine($file, $base, $data)
+    protected function processCssLine($file, $base, $data, $hash)
     {
         if (file_exists($file)) {
+            $debug = Config::getParam('debug');
             $pathParts = explode("/", $file);
             $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
-            if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file) || $this->debug) {
+            if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file) || $debug) {
                 //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
-                if (file_exists($base . $this->hash . ".css") && @unlink($base . $this->hash . ".css") === false) {
-                    throw new ConfigException("Can't unlink file " . $base . $this->hash . ".css");
+                if (file_exists($base . $hash . ".css") && @unlink($base . $hash . ".css") === false) {
+                    throw new ConfigException("Can't unlink file " . $base . $hash . ".css");
                 }
                 $this->loopCssLines($file);
             }
-            if ($this->debug) {
+            if ($debug) {
                 $data = file_get_contents($file);
-                $this->storeContents($base . $filePath, $data);
+                AssetsHelper::storeContents($base . $filePath, $data);
             } else {
                 $data .= file_get_contents($file);
             }
-            $this->compiled_files[] = "/css/" . $filePath;
+            $this->compiledFiles[] = "/css/" . $filePath;
         }
 
         return $data;
@@ -103,7 +107,7 @@ trait CssTrait {
     }
 
     /**
-     * @param string $source
+     * @param string|array $source
      * @param string $file
      */
     protected function extractCssResources($source, $file)
@@ -131,11 +135,10 @@ trait CssTrait {
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     * @param bool $debug
      */
-    protected function printCss(array $compiledFiles, $baseUrl, $hash, $debug = false)
+    protected function printCss(array $compiledFiles, $baseUrl, $hash)
     {
-        if ($debug && 0 < count($compiledFiles)) {
+        if (Config::getParam('debug') && 0 < count($compiledFiles)) {
             foreach ($compiledFiles as $file) {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
