@@ -25,6 +25,7 @@ class RequestHelper
             'X-API-SEC-TOKEN',
             'X-API-USER-TOKEN',
             'X-API-LANG',
+            'X-FIELD-TYPE',
         ];
         $extraHeaders = Config::getParam('cors.headers', '');
         $headers = array_merge($headers, explode(',', $extraHeaders));
@@ -46,7 +47,7 @@ class RequestHelper
                     header('Access-Control-Allow-Credentials: true');
                     header('Access-Control-Allow-Origin: ' . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
                     header('Vary: Origin');
-                    header('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS');
+                    header('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD');
                     header('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
                 }
                 if (Request::getInstance()->getMethod() === Request::VERB_OPTIONS) {

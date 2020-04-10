@@ -6,6 +6,7 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 use Twig\Extension\AbstractExtension;
 use Twig\Extensions\TokenParser\TransTokenParser;
@@ -41,35 +42,48 @@ class CustomTranslateExtension extends AbstractExtension
     protected static $filename = '';
 
     /**
+     * @return array|mixed
+     */
+    protected static function extractBaseTranslations()
+    {
+        // Gather always the base translations
+        $standardTranslations = [];
+        self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', self::$locale . '.json']);
+        if (file_exists(self::$filename)) {
+            $standardTranslations = json_decode(file_get_contents(self::$filename), true);
+        }
+        return $standardTranslations;
+    }
+
+    /**
      * @param string $customKey
      * @param bool $forceReload
      * @param bool $useBase
      */
-    protected static function checkLoad($customKey = null, $forceReload = false, $useBase = false)
+    protected static function translationsCheckLoad($customKey = null, $forceReload = false, $useBase = false)
     {
+        Inspector::stats('[translationsCheckLoad] Start checking translations load', Inspector::SCOPE_DEBUG);
         $session = Security::getInstance();
         self::$locale = I18nHelper::extractLocale($session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
         $version = $session->getSessionKey(self::LOCALE_CACHED_VERSION);
         $configVersion = self::$locale . '_' . Config::getParam('cache.var', 'v1');
         if ($forceReload) {
+            Inspector::stats('[translationsCheckLoad] Force translations reload', Inspector::SCOPE_DEBUG);
             self::dropInstance();
             $version = null;
             self::$translations = [];
         }
         if(count(self::$translations) === 0) {
+            Inspector::stats('[translationsCheckLoad] Extracting translations', Inspector::SCOPE_DEBUG);
             self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
             if(null !== $version && $version === $configVersion) {
+                Inspector::stats('[translationsCheckLoad] Translations loaded from session', Inspector::SCOPE_DEBUG);
                 self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG);
             } else {
                 if (!$useBase) {
                     $customKey = $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
                 }
-                // Gather always the base translations
-                $standardTranslations = [];
-                self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', self::$locale . '.json']);
-                if(file_exists(self::$filename)) {
-                    $standardTranslations = json_decode(file_get_contents(self::$filename), true);
-                }
+                $standardTranslations = self::extractBaseTranslations();
                 // If the project has custom translations, gather them
                 if (null !== $customKey) {
                     Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
@@ -82,10 +96,11 @@ class CustomTranslateExtension extends AbstractExtension
                     $session->setSessionKey(self::LOCALE_CACHED_TAG, self::$translations);
                     $session->setSessionKey(self::LOCALE_CACHED_VERSION, $configVersion);
                 } elseif (null !== $customKey) {
-                    self::checkLoad(null, $forceReload, true);
+                    self::translationsCheckLoad(null, $forceReload, true);
                 }
             }
         }
+        Inspector::stats('[translationsCheckLoad] Translations loaded', Inspector::SCOPE_DEBUG);
     }
 
     /**
@@ -124,7 +139,9 @@ class CustomTranslateExtension extends AbstractExtension
      */
     public static function _($message, $customKey = null, $forceReload = false)
     {
-        self::checkLoad($customKey, $forceReload);
+        if(0 === count(self::$translations) || $forceReload) {
+            self::translationsCheckLoad($customKey, $forceReload);
+        }
         if (is_array(self::$translations) && array_key_exists($message, self::$translations)) {
             $translation = self::$translations[$message];
         } else {

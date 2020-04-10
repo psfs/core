@@ -100,12 +100,12 @@ class I18nHelper
     public static function utf8Encode($data)
     {
         if (is_array($data)) {
-            foreach ($data as $key => &$field) {
+            foreach ($data as &$field) {
                 $field = self::utf8Encode($field);
             }
         } elseif (is_object($data)) {
             $properties = get_class_vars($data);
-            foreach ($properties as $property => $value) {
+            foreach (array_keys($properties) as $property) {
                 $data->$property = self::utf8Encode($data->$property);
             }
 
@@ -164,9 +164,10 @@ class I18nHelper
 
     /**
      * Método que revisa las traducciones directorio a directorio
-     * @param $path
-     * @param $locale
+     * @param string $path
+     * @param string $locale
      * @return array
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public static function findTranslations($path, $locale)
     {

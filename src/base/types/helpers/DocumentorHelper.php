@@ -1,22 +1,25 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 /**
  * Class DocumentorHelper
  * @package PSFS\base\types\helpers
  */
-class DocumentorHelper {
+class DocumentorHelper
+{
 
     /**
      * @param array $params
      * @param string $variable
      * @return bool
      */
-    private static function searchPayloadParam($params, $variable) {
+    private static function searchPayloadParam($params, $variable)
+    {
         $exists = false;
-        if(null !== $params && count($params)) {
-            foreach($params as $param) {
-                if($param['name'] === $variable) {
+        if (null !== $params && count($params)) {
+            foreach ($params as $param) {
+                if ($param['name'] === $variable) {
                     $exists = true;
                     break;
                 }
@@ -45,7 +48,7 @@ class DocumentorHelper {
         } else {
             $schema['$ref'] = '#/definitions/' . $endpoint['payload']['type'];
         }
-        if(!self::searchPayloadParam($paths[$url][$method]['parameters'], $endpoint['payload']['type'])) {
+        if (!self::searchPayloadParam($paths[$url][$method]['parameters'], $endpoint['payload']['type'])) {
             $paths[$url][$method]['parameters'][] = [
                 'in' => 'body',
                 'name' => $endpoint['payload']['type'],
@@ -85,7 +88,7 @@ class DocumentorHelper {
                 ];
             }
 
-            if($paths[$url][$method]['responses'][200]['schema']['properties']['data']['type'] === 'boolean') {
+            if ($paths[$url][$method]['responses'][200]['schema']['properties']['data']['type'] === 'boolean') {
                 $paths[$url][$method]['responses'][200]['schema']['properties']['data'] = $classDefinition;
             }
             $dtos += self::extractSwaggerDefinition($class, $object);
@@ -163,18 +166,18 @@ class DocumentorHelper {
             ],
         ];
         foreach ($fields as $field => $info) {
-            if(array_key_exists('type', $info) && in_array($info['type'], ['array', 'object'])) {
+            if (array_key_exists('type', $info) && in_array($info['type'], ['array', 'object'])) {
                 $definition[$name]['properties'][$field] = $info;
-            } elseif(array_key_exists('type', $info)) {
+            } elseif (array_key_exists('type', $info)) {
                 list($type, $format) = self::translateSwaggerFormats($info['type']);
                 $fieldData = [
                     "type" => $type,
                     "required" => $info['required'],
                 ];
-                if(array_key_exists('description', $info)) {
+                if (array_key_exists('description', $info)) {
                     $fieldData['description'] = $info['description'];
                 }
-                if(array_key_exists('format', $info)) {
+                if (array_key_exists('format', $info)) {
                     $fieldData['format'] = $info['format'];
                 }
                 $dto['properties'][$field] = $fieldData;

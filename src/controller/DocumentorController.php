@@ -1,11 +1,16 @@
 <?php
+
 namespace PSFS\controller;
 
 use PSFS\base\Router;
 use PSFS\base\types\Controller;
-use PSFS\services\DocumentorService;
 
-class DocumentorController extends Controller {
+/**
+ * Class DocumentorController
+ * @package PSFS\controller
+ */
+class DocumentorController extends Controller
+{
     const DOMAIN = 'ROOT';
 
     /**
@@ -19,10 +24,9 @@ class DocumentorController extends Controller {
      * @CACHE 600
      * @label Generador de documentación API
      * @route /{domain}/api/doc
-     *
      * @param string $domain
-     *
-     * @return string JSON
+     * @return mixed|string
+     * @throws \ReflectionException
      */
     public function createApiDocs($domain)
     {
@@ -33,30 +37,23 @@ class DocumentorController extends Controller {
         $download = $this->getRequest()->get('download') ?: false;
 
         $module = $this->srv->getModules($domain);
-        if(empty($module)) {
+        if (empty($module)) {
             return Router::getInstance()->httpNotFound(null, true);
         }
+        $doc = $this->srv->extractApiEndpoints($module);
         switch (strtolower($type)) {
             case ApiController::SWAGGER_DOC:
-                $doc = DocumentorService::swaggerFormatter($module);
+                $doc = $this->srv->swaggerFormatter($module, $doc);
                 break;
             case ApiController::POSTMAN_DOC:
                 $doc = ['Pending...'];
                 break;
-            default:
-            case ApiController::HTML_DOC:
-            case ApiController::PSFS_DOC:
-                $doc = $this->srv->extractApiEndpoints($module);
-                break;
         }
 
-        ini_restore('max_execution_time');
-        ini_restore('memory_limit');
-
-        if($download && $type === ApiController::SWAGGER_DOC) {
+        if ($download && $type === ApiController::SWAGGER_DOC) {
             return $this->download(json_encode($doc), 'application/json', 'swagger.json');
         }
-        if($type === ApiController::HTML_DOC) {
+        if ($type === ApiController::HTML_DOC) {
             return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
         }
         return $this->json($doc, 200);
@@ -68,7 +65,8 @@ class DocumentorController extends Controller {
      * @param string $domain
      * @return string HTML
      */
-    public function swaggerUi($domain) {
+    public function swaggerUi($domain)
+    {
         return $this->render('swagger.html.twig', [
             'domain' => $domain,
         ]);

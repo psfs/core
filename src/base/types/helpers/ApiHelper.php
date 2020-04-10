@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use Propel\Generator\Model\PropelTypes;
@@ -35,7 +36,7 @@ class ApiHelper
         $mappedColumn = $tableMap->getColumnByPhpName($field);
         $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
         $fDto = self::parseFieldType($domain, $field, $behaviors, $mappedColumn, $required);
-        if(null !== $fDto) {
+        if (null !== $fDto) {
             self::checkPrimaryKey($fDto, $mappedColumn);
             self::applyCaseToNames($fDto, $mappedColumn);
         }

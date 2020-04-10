@@ -11,7 +11,7 @@ use PSFS\services\GeneratorService;
  * Class GeneratorServiceTest
  * @package PSFS\test\services
  */
-class GeneratorServiceTest extends TestCase
+abstract class GeneratorServiceTest extends TestCase
 {
     use BoostrapTrait;
 
@@ -72,16 +72,32 @@ class GeneratorServiceTest extends TestCase
      */
     public function prepareDocumentRoot()
     {
-        GeneratorHelper::createRoot();
+        GeneratorHelper::createRoot(WEB_DIR, null, true);
+        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
+            unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
+        }
+        $this->assertFileNotExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
+        GeneratorHelper::deleteDir(CACHE_DIR);
+        $this->assertDirectoryNotExists(CACHE_DIR, 'Cache folder already exists with data');
     }
 
+    /**
+     * @param GeneratorService $generatorService
+     * @throws \PSFS\base\exception\GeneratorException
+     * @throws \ReflectionException
+     */
     public function createNewModule(GeneratorService $generatorService)
     {
         $generatorService->createStructureModule(self::MODULE_NAME, true);
         $this->checkBasicStructure();
     }
 
-    public function testCreateExistingModule()
+    /**
+     * @return string
+     * @throws \PSFS\base\exception\GeneratorException
+     * @throws \ReflectionException
+     */
+    public function checkCreateExistingModule()
     {
         $generatorService = GeneratorService::getInstance();
         $this->assertInstanceOf(GeneratorService::class, $generatorService, 'Error getting GeneratorService instance');
@@ -100,8 +116,7 @@ class GeneratorServiceTest extends TestCase
         foreach (self::$filesToCheckWithSchema as $fileName) {
             $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
         }
-        GeneratorHelper::deleteDir($modulePath);
-        $this->assertDirectoryNotExists($modulePath, 'Error trying to delete the module');
+        return $modulePath;
     }
 
     private function checkBasicStructure()

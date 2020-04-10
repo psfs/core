@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\test\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
@@ -6,6 +7,10 @@ use PSFS\base\config\Config;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
+/**
+ * Class GeneratorHelperTest
+ * @package PSFS\test\base\type\helper
+ */
 class GeneratorHelperTest extends TestCase
 {
 
@@ -38,8 +43,9 @@ class GeneratorHelperTest extends TestCase
     /**
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public function testCreateRootDocument() {
-        GeneratorHelper::createRoot();
+    public function testCreateRootDocument()
+    {
+        GeneratorHelper::createRoot(WEB_DIR, null, true);
         // Checks if exists all the folders
         $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'css', 'css folder not exists');
         $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . 'js', 'js folder not exists');
@@ -55,7 +61,7 @@ class GeneratorHelperTest extends TestCase
             'humans.txt',
             'robots.txt',
         ];
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $this->assertFileExists(WEB_DIR . DIRECTORY_SEPARATOR . $file, $file . ' not exists in html path');
         }
     }
@@ -63,13 +69,14 @@ class GeneratorHelperTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testDeployNewVersion() {
+    public function testDeployNewVersion()
+    {
         $configPrevious = Config::getInstance()->dumpConfig();
         $version = DeployHelper::updateCacheVar();
         $config = Config::getInstance()->dumpConfig();
         $this->assertEquals($config[DeployHelper::CACHE_VAR_TAG], $version, 'Cache version are not equals');
-        foreach($config as $key => $value) {
-            if($key !== DeployHelper::CACHE_VAR_TAG) {
+        foreach ($config as $key => $value) {
+            if ($key !== DeployHelper::CACHE_VAR_TAG) {
                 $this->assertTrue(array_key_exists($key, $configPrevious), 'Missing key in previous config');
                 $this->assertEquals($value, $configPrevious[$key], 'Config values are not the same');
             }

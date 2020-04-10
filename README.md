@@ -9,21 +9,22 @@
 
 Requirements:
 
-* php 5.6+, 7.0+
+* php 7.1+
 * ext-gettext
 * ext-json
 * ext-curl
+* ext-gmp
 
 Components that PSFS install:
 
 ```
 "propel/propel": "^2.0"
-"symfony/console": "@stable"
-"symfony/finder": "@stable"
-"twig/twig": "@stable"
-"twig/extensions": "@stable"
-"monolog/monolog": "@stable"
-"matthiasmullie/minify": "@stable"
+"symfony/console": "@v4.4.7"
+"symfony/finder": "@v4v4v7"
+"twig/twig": "@v2.12.5"
+"twig/extensions": "@v1.5.4"
+"monolog/monolog": "@1.25.3"
+"matthiasmullie/minify": "@1.3.63"
 ```
 
 How to install using composer:
@@ -38,22 +39,10 @@ php -S localhost:8080 -t ./html
 
 RoadMap:
 
-    * Session management
-        - Session engines(mongodb, filesystem, mysql...)
-    * Improve cache(html, php, json)
-        - Serialize business logics
-        - Html buffer
-    * Dynamic site to manage modules
-        - Admin site to manage logic models
-        - Admin site to manage workflows
-        - Admin site to manage web pages
-        - Admin site to manage auto generation for controllers, apis and services
     * Framework documentation
-        - Self documentation for apis(swagger and postman outputs)
         - PhpDoc for all files
     * Testing
         - 100% tests coverage
     * Containers
         - Docker
-        - Kubernetes
 

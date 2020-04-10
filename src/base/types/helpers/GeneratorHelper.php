@@ -134,9 +134,10 @@ class GeneratorHelper
     /**
      * @param string $path
      * @param OutputInterface|null $output
+     * @param boolean $quiet
      * @throws GeneratorException
      */
-    public static function createRoot($path = WEB_DIR, OutputInterface $output = null) {
+    public static function createRoot($path = WEB_DIR, OutputInterface $output = null, $quiet = false) {
 
         if(null === $output) {
             $output = new ConsoleOutput();
@@ -160,9 +161,13 @@ class GeneratorHelper
         foreach ($files as $templates => $filename) {
             $text = Template::getInstance()->dump("generator/html/" . $templates . '.html.twig');
             if (false === file_put_contents($path . DIRECTORY_SEPARATOR . $filename, $text)) {
-                $output->writeln('Can\t create the file ' . $filename);
+                if(!$quiet) {
+                    $output->writeln('Can\t create the file ' . $filename);
+                }
             } else {
-                $output->writeln($filename . ' created successfully');
+                if(!$quiet) {
+                    $output->writeln($filename . ' created successfully');
+                }
             }
         }
 
