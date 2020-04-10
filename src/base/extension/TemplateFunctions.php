@@ -8,6 +8,7 @@ use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
+use PSFS\base\types\helpers\AssetsHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
@@ -44,7 +45,7 @@ class TemplateFunctions
         if (!file_exists($filePath)) {
             $filePath = BASE_DIR . $string;
         }
-        $filenamePath = AssetsParser::findDomainPath($string, $filePath);
+        $filenamePath = AssetsHelper::findDomainPath($string, $filePath);
 
         $filePath = self::processAsset($string, $name, $return, $filenamePath);
         $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
@@ -231,7 +232,7 @@ class TemplateFunctions
     {
         $filePath = $filenamePath;
         if (file_exists($filenamePath)) {
-            list($base, $htmlBase, $filePath) = AssetsParser::calculateAssetPath($string, $name, $return, $filenamePath);
+            list($base, $htmlBase, $filePath) = AssetsHelper::calculateAssetPath($string, $name, $return, $filenamePath);
             //Creamos el directorio si no existe
             GeneratorHelper::createDir($base . $htmlBase);
             //Si se ha modificado

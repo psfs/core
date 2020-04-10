@@ -80,6 +80,7 @@ class Config
         'curl.followLocation', // Curl option CURLOPT_FOLLOWLOCATION
         'curl.sslVerifyHost', // Curl option CURLOPT_SSL_VERIFYHOST
         'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER
+        'assets.obfuscate', // Allow to obfuscate and gzip js and css files
     ];
     protected $debug = false;
 

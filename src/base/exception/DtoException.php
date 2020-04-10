@@ -1,6 +1,6 @@
 <?php
 
-namespace PSFS\baes\exception;
+namespace PSFS\base\exception;
 
 /**
  * Class DtoException

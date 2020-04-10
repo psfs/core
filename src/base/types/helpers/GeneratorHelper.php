@@ -5,7 +5,6 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Template;
 use PSFS\base\types\Api;
-use PSFS\Services\GeneratorService;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -109,26 +108,6 @@ class GeneratorHelper
                 throw new GeneratorException(t('La clase definida para extender la API no existe'), 501);
             }
         }
-    }
-
-    /**
-     * @param $domain
-     * @return array
-     */
-    public static function getDomainPaths($domain) {
-        $domains = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json'), true);
-        $paths = [];
-        if(null !== $domains) {
-            $keyDomains = array_keys($domains);
-            foreach($keyDomains as $keyDomain) {
-                $key = strtoupper(str_replace(['@', '/'], '', $keyDomain));
-                if(strtoupper($domain) === $key) {
-                    $paths = $domains[$keyDomain];
-                    break;
-                }
-            }
-        }
-        return $paths;
     }
 
     /**

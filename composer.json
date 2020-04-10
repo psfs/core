@@ -9,6 +9,7 @@
         "ext-json": "*",
         "ext-curl": "*",
         "ext-gmp": "*",
+        "ext-fileinfo": "*",
         "propel/propel": "2.0.x-dev",
         "symfony/console": "v4.4.7",
         "symfony/finder": "v4.4.7",
