@@ -62,6 +62,7 @@ class RouterTest extends TestCase {
      * @expectedExceptionCode 412
      */
     public function testPreconditions() {
+        Router::dropInstance();
         $router = Router::getInstance();
         SecurityHelper::setTest(true);
         Security::setTest(true);
@@ -76,6 +77,7 @@ class RouterTest extends TestCase {
      * @expectedExceptionCode 404
      */
     public function testPreconditionsNonStrict() {
+        Router::dropInstance();
         $router = Router::getInstance();
         SecurityHelper::setTest(true);
         Security::setTest(true);

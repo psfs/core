@@ -21,6 +21,7 @@ use Symfony\Component\Finder\SplFileInfo;
  * @package PSFS\base\types\traits\Router
  */
 trait ModulesTrait {
+    use SluggerTrait;
     /**
      * @Injectable
      * @var Finder $finder

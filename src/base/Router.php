@@ -31,15 +31,6 @@ class Router
     use ModulesTrait;
 
     const PSFS_BASE_NAMESPACE = 'PSFS';
-
-    /**
-     * @var array
-     */
-    private $routing = [];
-    /**
-     * @var array
-     */
-    private $slugs = [];
     /**
      * @var Cache $cache
      */
@@ -92,37 +83,6 @@ class Router
         $this->hydrateRouting();
         $this->simpatize();
         Logger::log('End routes load');
-    }
-
-    /**
-     * @return array
-     */
-    public function getSlugs()
-    {
-        return $this->slugs;
-    }
-
-    /**
-     * @return array
-     */
-    public function getRoutes()
-    {
-        return $this->routing;
-    }
-
-    /**
-     * Method that extract all routes in the platform
-     * @return array
-     */
-    public function getAllRoutes()
-    {
-        $routes = [];
-        foreach ($this->getRoutes() as $path => $route) {
-            if (array_key_exists('slug', $route)) {
-                $routes[$route['slug']] = $path;
-            }
-        }
-        return $routes;
     }
 
     /**
@@ -272,19 +232,6 @@ class Router
     }
 
     /**
-     * @return $this
-     * @throws GeneratorException
-     */
-    public function simpatize()
-    {
-        $this->generateSlugs();
-        GeneratorHelper::createDir(CONFIG_DIR);
-        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', array($this->routing, $this->slugs), Cache::JSON, TRUE);
-
-        return $this;
-    }
-
-    /**
      * @param string $slug
      * @param boolean $absolute
      * @param array $params
@@ -368,21 +315,6 @@ class Router
             }
         }
         return $return;
-    }
-
-    /**
-     * Parse slugs to create translations
-     */
-    private function generateSlugs()
-    {
-        foreach ($this->routing as $key => &$info) {
-            $keyParts = explode('#|#', $key);
-            $keyParts = array_key_exists(1, $keyParts) ? $keyParts[1] : $keyParts[0];
-            $slug = RouterHelper::slugify($keyParts);
-            $this->slugs[$slug] = $key;
-            $info['slug'] = $slug;
-            // TODO add routes to translations JSON
-        }
     }
 
     /**
