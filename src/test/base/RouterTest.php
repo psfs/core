@@ -46,6 +46,12 @@ class RouterTest extends TestCase {
      * @expectedExceptionCode 401
      */
     public function testCanAccess() {
+        // Creates a default user
+        Security::getInstance()->saveUser([
+            'username' => uniqid('test', true),
+            'password' => uniqid('test', true),
+            'profile' => Security::ADMIN_ID_TOKEN,
+        ]);
         $router = Router::getInstance();
         Admin::setTest(true);
         $router->execute('/admin/config');

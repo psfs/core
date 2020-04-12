@@ -3,6 +3,7 @@ namespace PSFS\base\types\traits\Router;
 
 use Exception;
 use InvalidArgumentException;
+use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
@@ -184,5 +185,29 @@ trait ModulesTrait {
             }
         }
         return $exists;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getExternalModules()
+    {
+        $externalModules = Config::getParam('modules.extend', '');
+        $externalModules .= ',psfs/auth,psfs/nosql';
+        return $externalModules;
+    }
+
+    /**
+     * @param boolean $hydrateRoute
+     */
+    private function checkExternalModules($hydrateRoute = true)
+    {
+        $externalModules = $this->getExternalModules();
+        $externalModules = explode(',', $externalModules);
+        foreach ($externalModules as $module) {
+            if (strlen($module)) {
+                $this->loadExternalModule($hydrateRoute, $module, $this->routing);
+            }
+        }
     }
 }

@@ -214,30 +214,6 @@ class Router
     }
 
     /**
-     * @return string|null
-     */
-    private function getExternalModules()
-    {
-        $externalModules = Config::getParam('modules.extend', '');
-        $externalModules .= ',psfs/auth,psfs/nosql';
-        return $externalModules;
-    }
-
-    /**
-     * @param boolean $hydrateRoute
-     */
-    private function checkExternalModules($hydrateRoute = true)
-    {
-        $externalModules = $this->getExternalModules();
-        $externalModules = explode(',', $externalModules);
-        foreach ($externalModules as $module) {
-            if (strlen($module)) {
-                $this->loadExternalModule($hydrateRoute, $module, $this->routing);
-            }
-        }
-    }
-
-    /**
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
