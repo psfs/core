@@ -17,6 +17,7 @@ use PSFS\base\Singleton;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\RequestHelper;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\SystemTrait;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
@@ -66,6 +67,7 @@ class Dispatcher extends Singleton
      * Run method
      * @param string $uri
      * @return string HTML
+     * @throws base\exception\GeneratorException
      */
     public function run($uri = null)
     {
@@ -94,11 +96,9 @@ class Dispatcher extends Singleton
     }
 
     /**
-     * Method that convert an exception to html
-     *
      * @param \Exception $exception
-     *
      * @return string HTML
+     * @throws base\exception\GeneratorException
      */
     protected function dumpException(\Exception $exception)
     {

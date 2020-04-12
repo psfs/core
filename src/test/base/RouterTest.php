@@ -5,6 +5,9 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
+use PSFS\base\Security;
+use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\controller\base\Admin;
 
 /**
  * Class RouterTest
@@ -33,8 +36,47 @@ class RouterTest extends TestCase {
      * @expectedExceptionCode 404
      */
     public function testNotFound() {
+        Router::dropInstance();
         $router = Router::getInstance();
         $router->execute(uniqid(time(), true));
+    }
+
+    /**
+     * @expectedException \PSFS\base\exception\UserAuthException
+     * @expectedExceptionCode 401
+     */
+    public function testCanAccess() {
+        $router = Router::getInstance();
+        Admin::setTest(true);
+        $router->execute('/admin/config');
+    }
+
+    /**
+     * @expectedException \PSFS\base\exception\RouterException
+     * @expectedExceptionCode 412
+     */
+    public function testPreconditions() {
+        $router = Router::getInstance();
+        SecurityHelper::setTest(true);
+        Security::setTest(true);
+        $config = Config::getInstance()->dumpConfig();
+        $config['allow.double.slashes'] = false;
+        Config::save($config);
+        $router->execute('/admin//swagger-ui');
+    }
+
+    /**
+     * @expectedException \PSFS\base\exception\RouterException
+     * @expectedExceptionCode 404
+     */
+    public function testPreconditionsNonStrict() {
+        $router = Router::getInstance();
+        SecurityHelper::setTest(true);
+        Security::setTest(true);
+        $config = Config::getInstance()->dumpConfig();
+        $config['allow.double.slashes'] = true;
+        Config::save($config);
+        $router->execute('/admin//swagger-ui');
     }
 
     public function testGetRoute() {

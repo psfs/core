@@ -2,8 +2,10 @@
 
 namespace PSFS\controller;
 
+use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 use PSFS\base\types\Controller;
+use PSFS\base\types\helpers\ResponseHelper;
 
 /**
  * Class DocumentorController
@@ -38,7 +40,7 @@ class DocumentorController extends Controller
 
         $module = $this->srv->getModules($domain);
         if (empty($module)) {
-            return Router::getInstance()->httpNotFound(null, true);
+            return ResponseHelper::httpNotFound(null, true);
         }
         $doc = $this->srv->extractApiEndpoints($module);
         switch (strtolower($type)) {
@@ -67,6 +69,9 @@ class DocumentorController extends Controller
      */
     public function swaggerUi($domain)
     {
+        if(!Router::getInstance()->domainExists($domain)) {
+            throw new RouterException('Domains is empty');
+        }
         return $this->render('swagger.html.twig', [
             'domain' => $domain,
         ]);

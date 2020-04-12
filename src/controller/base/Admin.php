@@ -2,6 +2,7 @@
 
 namespace PSFS\controller\base;
 
+use PSFS\base\exception\UserAuthException;
 use PSFS\base\types\AuthAdminController;
 use PSFS\controller\UserController;
 use PSFS\services\AdminServices;
@@ -13,7 +14,6 @@ use PSFS\services\AdminServices;
  */
 abstract class Admin extends AuthAdminController
 {
-
     const DOMAIN = 'ROOT';
 
     /**
@@ -29,12 +29,15 @@ abstract class Admin extends AuthAdminController
 
     /**
      * Método estático de login de administrador
-     * @param string $route
      * @return string HTML
-     * @throws \PSFS\base\exception\FormException
+     * @throws UserAuthException
+     * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function staticAdminLogon($route = null)
+    public static function staticAdminLogon()
     {
+        if (self::isTest()) {
+            throw new UserAuthException();
+        }
         if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json')) {
             return AdminServices::getInstance()->setAdminHeaders();
         } else {

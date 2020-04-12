@@ -1,7 +1,7 @@
 <?php
+
 namespace PSFS\controller;
 
-use HttpException;
 use PSFS\base\config\AdminForm;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
@@ -20,6 +20,7 @@ class UserController extends Admin
 {
     /**
      * @return string
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public static function showAdminManager()
     {
@@ -43,7 +44,6 @@ class UserController extends Admin
      * @icon fa-users
      * @label Gestor de usuarios PSFS
      * @return string|null
-     * @throws HttpException
      */
     public function adminers()
     {
@@ -52,6 +52,7 @@ class UserController extends Admin
 
     /**
      * @return string
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public static function updateAdminUsers()
     {
@@ -81,7 +82,6 @@ class UserController extends Admin
      * @route /admin/setup
      * @visible false
      * @return string|void
-     * @throws HttpException
      */
     public function setAdminUsers()
     {
@@ -90,18 +90,17 @@ class UserController extends Admin
 
     /**
      * Acción que pinta un formulario genérico de login pra la zona restringida
-     * @param string $route
      * @GET
      * @route /admin/login
      * @visible false
      * @return string HTML
      */
-    public function adminLogin($route = null)
+    public function adminLogin()
     {
         if ($this->isAdmin()) {
-            return $this->redirect('admin');
+            $this->redirect('admin');
         } else {
-            return Admin::staticAdminLogon($route);
+            return Admin::staticAdminLogon();
         }
     }
 }

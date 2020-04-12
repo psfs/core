@@ -1,29 +1,25 @@
 <?php
+
 namespace PSFS\base;
 
 use Exception;
 use InvalidArgumentException;
 use PSFS\base\config\Config;
-use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\Controller;
-use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\base\types\traits\Router\ModulesTrait;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
-use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Class Router
@@ -32,6 +28,9 @@ use Symfony\Component\Finder\SplFileInfo;
 class Router
 {
     use SingletonTrait;
+    use ModulesTrait;
+
+    const PSFS_BASE_NAMESPACE = 'PSFS';
 
     /**
      * @var array
@@ -41,14 +40,6 @@ class Router
      * @var array
      */
     private $slugs = [];
-    /**
-     * @var array
-     */
-    private $domains = [];
-    /**
-     * @var Finder $finder
-     */
-    private $finder;
     /**
      * @var Cache $cache
      */
@@ -67,8 +58,8 @@ class Router
      */
     public function __construct()
     {
-        $this->finder = new Finder();
         $this->cache = Cache::getInstance();
+        $this->initializeFinder();
         $this->init();
     }
 
@@ -95,43 +86,12 @@ class Router
      * @throws InvalidArgumentException
      * @throws ReflectionException
      */
-    private function debugLoad() {
+    private function debugLoad()
+    {
         Logger::log('Begin routes load');
         $this->hydrateRouting();
         $this->simpatize();
         Logger::log('End routes load');
-    }
-
-    /**
-     * @param Exception|NULL $exception
-     * @param bool $isJson
-     * @return string
-     * @throws RouterException
-     * @throws GeneratorException
-     */
-    public function httpNotFound(Exception $exception = NULL, $isJson = false)
-    {
-        Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
-        if (NULL === $exception) {
-            Logger::log('Not found page thrown without previous exception', LOG_WARNING);
-            $exception = new Exception(t('Page not found'), 404);
-        }
-        $template = Template::getInstance()->setStatus($exception->getCode());
-        if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
-            $response = new JsonResponse(null, false, 0, 0, $exception->getMessage());
-            return $template->output(json_encode($response), 'application/json');
-        }
-
-        $notFoundRoute = Config::getParam('route.404');
-        if(null !== $notFoundRoute) {
-            Request::getInstance()->redirect($this->getRoute($notFoundRoute, true));
-        } else {
-            return $template->render('error.html.twig', array(
-                'exception' => $exception,
-                'trace' => $exception->getTraceAsString(),
-                'error_page' => TRUE,
-            ));
-        }
     }
 
     /**
@@ -145,7 +105,8 @@ class Router
     /**
      * @return array
      */
-    public function getRoutes() {
+    public function getRoutes()
+    {
         return $this->routing;
     }
 
@@ -167,26 +128,28 @@ class Router
     /**
      * @param string|null $route
      *
-     * @throws Exception
      * @return string HTML
+     * @throws Exception
      */
     public function execute($route)
     {
         Inspector::stats('[Router] Executing the request', Inspector::SCOPE_DEBUG);
+        $code = 404;
         try {
             //Search action and execute
             return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
             Logger::log(t('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
-            return Admin::staticAdminLogon($route);
+            return Admin::staticAdminLogon();
         } catch (RouterException $r) {
             Logger::log($r->getMessage(), LOG_WARNING);
+            $code = $r->getCode();
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }
 
-        throw new RouterException(t('Página no encontrada'), 404);
+        throw new RouterException(t('Página no encontrada'), $code);
     }
 
     /**
@@ -214,10 +177,10 @@ class Router
                 /** @var $class Controller */
                 $class = RouterHelper::getClassToCall($action);
                 try {
-                    if($this->checkRequirements($action, $get)) {
+                    if ($this->checkRequirements($action, $get)) {
                         return $this->executeCachedRoute($route, $action, $class, $get);
                     } else {
-                        throw new RouterException(t('La ruta no es válida'), 400);
+                        throw new RouterException(t('Preconditions failed'), 412);
                     }
                 } catch (Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
@@ -233,12 +196,13 @@ class Router
      * @param array $params
      * @return bool
      */
-    private function checkRequirements(array $action, $params = []) {
+    private function checkRequirements(array $action, $params = [])
+    {
         Inspector::stats('[Router] Checking request requirements', Inspector::SCOPE_DEBUG);
-        if(!empty($params) && !empty($action['requirements'])) {
+        if (!empty($params) && !empty($action['requirements'])) {
             $checked = 0;
-            foreach(array_keys($params) as $key) {
-                if(in_array($key, $action['requirements'], true)) {
+            foreach (array_keys($params) as $key) {
+                if (in_array($key, $action['requirements'], true) && !empty($params[$key])) {
                     $checked++;
                 }
             }
@@ -252,7 +216,8 @@ class Router
     /**
      * @return string|null
      */
-    private function getExternalModules() {
+    private function getExternalModules()
+    {
         $externalModules = Config::getParam('modules.extend', '');
         $externalModules .= ',psfs/auth,psfs/nosql';
         return $externalModules;
@@ -266,8 +231,8 @@ class Router
         $externalModules = $this->getExternalModules();
         $externalModules = explode(',', $externalModules);
         foreach ($externalModules as $module) {
-            if(strlen($module)) {
-                $this->loadExternalModule($hydrateRoute, $module);
+            if (strlen($module)) {
+                $this->loadExternalModule($hydrateRoute, $module, $this->routing);
             }
         }
     }
@@ -286,7 +251,7 @@ class Router
         $this->checkExternalModules();
         if (file_exists($modulesPath)) {
             $modules = $this->finder->directories()->in($modulesPath)->depth(0);
-            if($modules->hasResults()) {
+            if ($modules->hasResults()) {
                 foreach ($modules->getIterator() as $modulePath) {
                     $module = $modulePath->getBasename();
                     $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
@@ -322,97 +287,12 @@ class Router
     }
 
     /**
-     * @param string $origen
-     * @param string $namespace
-     * @param array $routing
-     * @return array
-     * @throws ReflectionException
-     * @throws ConfigException
-     * @throws InvalidArgumentException
-     */
-    private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
-    {
-        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
-        if($files->hasResults()) {
-            foreach ($files->getIterator() as $file) {
-                if($namespace !== 'PSFS' && method_exists($file, 'getRelativePathname')) {
-                    $filename = '\\' . str_replace('/', '\\', str_replace($origen, '', $file->getRelativePathname()));
-                } else {
-                    $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
-                }
-                $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
-            }
-        }
-        $this->finder = new Finder();
-
-        return $routing;
-    }
-
-    /**
      * @param string $namespace
      * @return bool
      */
     public static function exists($namespace)
     {
         return (class_exists($namespace) || interface_exists($namespace) || trait_exists($namespace));
-    }
-
-    /**
-     * @param string $namespace
-     * @param array $routing
-     * @param string $module
-     * @return array
-     * @throws ReflectionException
-     */
-    private function addRouting($namespace, &$routing, $module = 'PSFS')
-    {
-        if (self::exists($namespace)) {
-            if(I18nHelper::checkI18Class($namespace)) {
-                return $routing;
-            }
-            $reflection = new ReflectionClass($namespace);
-            if (false === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
-                $this->extractDomain($reflection);
-                $classComments = $reflection->getDocComment();
-                $api = AnnotationHelper::extractApi($classComments);
-                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    $route = AnnotationHelper::extractRoute($method->getDocComment());
-                    if (null !== $route) {
-                        list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
-
-                        if (null !== $route && null !== $info) {
-                            $info['class'] = $namespace;
-                            $routing[$route] = $info;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $routing;
-    }
-
-    /**
-     *
-     * @param ReflectionClass $class
-     *
-     * @return Router
-     * @throws ConfigException
-     */
-    protected function extractDomain(ReflectionClass $class)
-    {
-        //Calculamos los dominios para las plantillas
-        if ($class->hasConstant('DOMAIN') && !$class->isAbstract()) {
-            if (!$this->domains) {
-                $this->domains = [];
-            }
-            $domain = '@' . $class->getConstant('DOMAIN') . '/';
-            if (!array_key_exists($domain, $this->domains)) {
-                $this->domains[$domain] = RouterHelper::extractDomainInfo($class, $domain);
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -458,23 +338,16 @@ class Router
     }
 
     /**
-     * @return array
-     */
-    public function getDomains()
-    {
-        return $this->domains ?: [];
-    }
-
-    /**
      * @param string $class
      * @param string $method
      */
-    private function checkPreActions($class, $method) {
+    private function checkPreActions($class, $method)
+    {
         $preAction = 'pre' . ucfirst($method);
-        if(method_exists($class, $preAction)) {
+        if (method_exists($class, $preAction)) {
             Inspector::stats('[Router] Pre action invoked', Inspector::SCOPE_DEBUG);
             try {
-                if(false === call_user_func_array([$class, $preAction])) {
+                if (false === call_user_func_array([$class, $preAction])) {
                     Logger::log(t('Pre action failed'), LOG_ERR, [error_get_last()]);
                     error_clear_last();
                 }
@@ -490,7 +363,7 @@ class Router
      * @param string $class
      * @param array $params
      * @return mixed
-     * @throws exception\GeneratorException
+     * @throws GeneratorException
      * @throws ConfigException
      */
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
@@ -537,44 +410,13 @@ class Router
     }
 
     /**
-     * @param boolean $hydrateRoute
-     * @param SplFileInfo $modulePath
-     * @param string $externalModulePath
-     * @throws ReflectionException
+     * @param Exception|null $exception
+     * @param bool $isJson
+     * @return string
+     * @throws GeneratorException
      */
-    private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath)
+    public function httpNotFound(\Exception $exception = null, $isJson = false)
     {
-        $extModule = $modulePath->getBasename();
-        $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
-        if(file_exists($moduleAutoloader)) {
-            include_once $moduleAutoloader;
-            if ($hydrateRoute) {
-                $this->routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $this->routing);
-            }
-        }
+        return ResponseHelper::httpNotFound($exception, $isJson);
     }
-
-    /**
-     * @param $hydrateRoute
-     * @param $module
-     * @return mixed
-     */
-    private function loadExternalModule($hydrateRoute, $module)
-    {
-        try {
-            $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
-            $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
-            if(file_exists($externalModulePath)) {
-                $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
-                if($externalModule->hasResults()) {
-                    foreach ($externalModule->getIterator() as $modulePath) {
-                        $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath);
-                    }
-                }
-            }
-        } catch (Exception $e) {
-            Logger::log($e->getMessage(), LOG_WARNING);
-        }
-    }
-
 }

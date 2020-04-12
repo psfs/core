@@ -1,15 +1,23 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
+use Exception;
 use PSFS\base\config\Config;
+use PSFS\base\dto\JsonResponse;
+use PSFS\base\exception\GeneratorException;
+use PSFS\base\exception\RouterException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Router;
+use PSFS\base\Template;
 use PSFS\base\types\traits\TestTrait;
 use PSFS\Dispatcher;
 
 class ResponseHelper
 {
     use TestTrait;
+
     /**
      * Method that sets the cookie headers
      * @param $cookies
@@ -40,7 +48,7 @@ class ResponseHelper
             unset($_SERVER["PHP_AUTH_USER"]);
             unset($_SERVER["PHP_AUTH_PW"]);
             header_remove("Authorization");
-        } elseif(!self::isTest()) {
+        } elseif (!self::isTest()) {
             header('Authorization:');
         }
     }
@@ -74,5 +82,40 @@ class ResponseHelper
         }
 
         return $vars;
+    }
+
+    /**
+     * @param Exception|NULL $exception
+     * @param bool $isJson
+     * @return string
+     * @throws RouterException
+     * @throws GeneratorException
+     */
+    public static function httpNotFound(Exception $exception = NULL, $isJson = false)
+    {
+        if(self::isTest()) {
+            return 404;
+        }
+        Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
+        if (NULL === $exception) {
+            Logger::log('Not found page thrown without previous exception', LOG_WARNING);
+            $exception = new Exception(t('Page not found'), 404);
+        }
+        $template = Template::getInstance()->setStatus($exception->getCode());
+        if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
+            $response = new JsonResponse(null, false, 0, 0, $exception->getMessage());
+            return $template->output(json_encode($response), 'application/json');
+        }
+
+        $notFoundRoute = Config::getParam('route.404');
+        if(null !== $notFoundRoute) {
+            Request::getInstance()->redirect(Router::getInstance()->getRoute($notFoundRoute, true));
+        } else {
+            return $template->render('error.html.twig', array(
+                'exception' => $exception,
+                'trace' => $exception->getTraceAsString(),
+                'error_page' => TRUE,
+            ));
+        }
     }
 }

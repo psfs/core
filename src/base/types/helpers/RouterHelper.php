@@ -1,10 +1,9 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
-use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
-use PSFS\base\Router;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -27,7 +26,7 @@ class RouterHelper
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
         $actionClass = class_exists($action['class']) ? $action['class'] : "\\" . $action['class'];
         $reflectionClass = new ReflectionClass($actionClass);
-        if($reflectionClass->hasMethod('getInstance')) {
+        if ($reflectionClass->hasMethod('getInstance')) {
             $class = $reflectionClass->getMethod('getInstance')->invoke(null, $action['method']);
         } else {
             $class = new $actionClass;
@@ -63,7 +62,10 @@ class RouterHelper
     public static function extractComponents($route, $pattern)
     {
         Inspector::stats('[RouterHelper] Extracting parts for the request to execute', Inspector::SCOPE_DEBUG);
-        $url = parse_url(preg_replace("/\/\//", '/', $route));
+        if(Config::getParam('allow.double.slashes', true)) {
+            $route = preg_replace("/\/\//", '/', $route);
+        }
+        $url = parse_url($route);
         $partialRoute = explode('/', $url['path']);
         $partialPattern = explode('/', $pattern);
         $get = [];
@@ -167,7 +169,7 @@ class RouterHelper
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                     $params[$param->getName()] = $param->getDefaultValue();
                     $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
-                } elseif(!$param->isOptional()) {
+                } elseif (!$param->isOptional()) {
                     $requirements[] = $param->getName();
                 }
             }
@@ -183,6 +185,7 @@ class RouterHelper
      * @param string $api
      * @param string $module
      * @return array
+     * @throws ReflectionException
      */
     public static function extractRouteInfo(ReflectionMethod $method, $api = '', $module = '')
     {
@@ -217,27 +220,6 @@ class RouterHelper
         }
         return [$route, $info];
     }
-
-    /**
-     * @param string $route
-     * @return null|string
-     * @throws Exception
-     */
-    public static function checkDefaultRoute($route)
-    {
-        $default = null;
-        if (FALSE !== preg_match('/\/$/', $route)) {
-            $default = Config::getInstance()->get('home.action');
-        } elseif (false !== strpos($route, '/admin/')) {
-            $default = Config::getInstance()->get('admin_action') ?: 'admin-login';
-
-        }
-        if (null !== $default) {
-            return Router::getInstance()->execute(Router::getInstance()->getRoute($default));
-        }
-        return null;
-    }
-
 
     /**
      * Método que devuelve el slug de un string dado
