@@ -162,7 +162,7 @@ class Router
         if (!empty($params) && !empty($action['requirements'])) {
             $checked = 0;
             foreach (array_keys($params) as $key) {
-                if (in_array($key, $action['requirements'], true) && !empty($params[$key])) {
+                if (in_array($key, $action['requirements'], true) && strlen($params[$key])) {
                     $checked++;
                 }
             }
