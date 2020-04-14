@@ -179,7 +179,7 @@ trait ModulesTrait {
         $exists = false;
         $domains = array_keys($this->getDomains());
         foreach($domains as $domain) {
-            $cleanDomain = strtolower(str_replace('@', '', $domain));
+            $cleanDomain = strtolower(str_replace(['@', '/', '\\'], '', $domain));
             if($cleanDomain === strtolower($domainToCheck)) {
                 $exists = true;
                 break;
