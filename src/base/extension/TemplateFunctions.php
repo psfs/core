@@ -1,8 +1,8 @@
 <?php
+
 namespace PSFS\base\extension;
 
 use PSFS\base\config\Config;
-use PSFS\base\exception\ConfigException;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -122,7 +122,7 @@ class TemplateFunctions
         //Limpiamos los campos obligatorios
         if (!isset($field['required'])) {
             $field['required'] = true;
-        } 
+        }
         if (isset($field['required']) && (bool)$field['required'] === false) {
             unset($field['required']);
         }
@@ -152,7 +152,7 @@ class TemplateFunctions
      * @param bool|FALSE $force
      *
      * @return string
-     * @throws ConfigException
+     * @throws \PSFS\base\exception\GeneratorException
      */
     public static function resource($path, $dest, $force = false)
     {
@@ -214,7 +214,7 @@ class TemplateFunctions
         $data = file_get_contents($filenamePath);
         if (!empty($name)) {
             file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
-        }else {
+        } else {
             file_put_contents($base . $filePath, $data);
         }
     }

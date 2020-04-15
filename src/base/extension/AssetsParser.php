@@ -6,8 +6,10 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\extension\traits\CssTrait;
 use PSFS\base\extension\traits\JsTrait;
+use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
  * Class AssetsParser
@@ -128,6 +130,54 @@ class AssetsParser
             case "css":
                 $this->printCss($this->compiledFiles, $baseUrl, $this->hash);
                 break;
+        }
+    }
+
+    /**
+     * Método que calcula el path completo a copiar un recurso
+     * @param string $filenamePath
+     * @param string[] $source
+     * @return string
+     */
+    protected static function calculateResourcePathname($filenamePath, $source)
+    {
+        $sourceFile = preg_replace("/'/", "", $source[1]);
+        if (preg_match('/\#/', $sourceFile)) {
+            $sourceFile = explode("#", $sourceFile);
+            $sourceFile = $sourceFile[0];
+        }
+        if (preg_match('/\?/', $sourceFile)) {
+            $sourceFile = explode("?", $sourceFile);
+            $sourceFile = $sourceFile[0];
+        }
+        $orig = realpath(dirname($filenamePath) . DIRECTORY_SEPARATOR . $sourceFile);
+        return $orig;
+    }
+
+    /**
+     * Método que extrae el recurso css de una línea de estilos css
+     * @param $handle
+     * @param string $filenamePath
+     * @throws \PSFS\base\exception\GeneratorException
+     */
+    public static function extractCssLineResource($handle, $filenamePath)
+    {
+        $line = fgets($handle);
+        $urls = array();
+        if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+            foreach ($urls as $source) {
+                $orig = self::calculateResourcePathname($filenamePath, $source);
+                if(!empty($orig)) {
+                    $orig_part = preg_split("/Public/i", $orig);
+                    $dest = WEB_DIR . $orig_part[1];
+                    GeneratorHelper::createDir(dirname($dest));
+                    if (@copy($orig, $dest) === false) {
+                        throw new ConfigException("Can't copy " . $orig . " to " . $dest);
+                    }
+                } else {
+                    Logger::log($filenamePath . ' has an empty origin with the url ' . $source, LOG_WARNING);
+                }
+            }
         }
     }
 
