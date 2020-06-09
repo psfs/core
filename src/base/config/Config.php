@@ -82,6 +82,7 @@ class Config
         'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER
         'assets.obfuscate', // Allow to obfuscate and gzip js and css files
         'allow.double.slashes', // Allow // in url paths, allowed as default
+        'default.log.path', // Default logger path
     ];
     protected $debug = false;
 

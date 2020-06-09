@@ -141,7 +141,7 @@ class Logger
     private function createLoggerPath()
     {
         $logger = $this->setLoggerName();
-        $path = LOG_DIR . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
+        $path = Config::getParam('default.log.path',LOG_DIR) . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
         GeneratorHelper::createDir($path);
         return $path;
     }
