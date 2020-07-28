@@ -20,13 +20,13 @@ class SecurityHelperTest extends TestCase
         $moduleKO = $moduleKO ?: 'testKO';
 
         $token = SecurityHelper::generateToken($secretOK, $moduleOK);
-        $this->assertNotNull($token, 'Something happens trying to generate a new token');
-        $this->assertNotEmpty($token, 'The token is empty');
+        self::assertNotNull($token, 'Something happens trying to generate a new token');
+        self::assertNotEmpty($token, 'The token is empty');
 
-        $this->assertTrue(SecurityHelper::checkToken($token, $secretOK, $moduleOK), 'Verification OK failed');
-        $this->assertFalse(SecurityHelper::checkToken($token, $secretOK, $moduleKO), 'Verification KO with different module failed');
-        $this->assertFalse(SecurityHelper::checkToken($token, $secretKO, $moduleOK), 'Verification KO with different secret failed');
-        $this->assertFalse(SecurityHelper::checkToken($token, $secretKO, $moduleKO), 'Verification KO with different secret and module failed');
+        self::assertTrue(SecurityHelper::checkToken($token, $secretOK, $moduleOK), 'Verification OK failed');
+        self::assertFalse(SecurityHelper::checkToken($token, $secretOK, $moduleKO), 'Verification KO with different module failed');
+        self::assertFalse(SecurityHelper::checkToken($token, $secretKO, $moduleOK), 'Verification KO with different secret failed');
+        self::assertFalse(SecurityHelper::checkToken($token, $secretKO, $moduleKO), 'Verification KO with different secret and module failed');
     }
 
     /**

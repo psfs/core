@@ -5,10 +5,11 @@ namespace PSFS\services;
 use PSFS\base\config\Config;
 use PSFS\base\Security;
 use PSFS\base\Service;
+use PSFS\base\types\traits\TestTrait;
 
 class AdminServices extends Service
 {
-
+    use TestTrait;
     /**
      * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
@@ -46,7 +47,7 @@ class AdminServices extends Service
     {
         $admins = $this->security->getAdmins();
         if (!empty($admins)) {
-            if (!$this->security->checkAdmin()) {
+            if (!$this->security->checkAdmin() && !self::isTest()) {
                 $this->setAdminHeaders();
             }
         }

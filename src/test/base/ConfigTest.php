@@ -24,8 +24,8 @@
         {
             $config = Config::getInstance();
 
-            $this->assertNotNull($config, 'Instance not created');
-            $this->assertInstanceOf(Config::class, $config, 'Instance different than expected');
+            self::assertNotNull($config, 'Instance not created');
+            self::assertInstanceOf(Config::class, $config, 'Instance different than expected');
             Cache::getInstance()->storeData(self::CONFIG_BACKUP_PATH, $config->dumpConfig(), Cache::JSON, true);
             return $config;
         }
@@ -59,14 +59,14 @@
             // Check if config can create the config dir
             $dirtmp = uniqid('test', true);
             GeneratorHelper::createDir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
-            $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp, 'Can\'t create test dir');
+            self::assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp, 'Can\'t create test dir');
             @rmdir(CONFIG_DIR . DIRECTORY_SEPARATOR . $dirtmp);
 
             // Check if platform is configured
-            $this->assertTrue(is_bool($config->getDebugMode()));
+            self::assertTrue(is_bool($config->getDebugMode()));
 
             // Check path getters
-            $this->assertFileExists(GeneratorHelper::getTemplatePath());
+            self::assertFileExists(GeneratorHelper::getTemplatePath());
 
             Config::save([], [
                 'label' => ['test'],
@@ -74,16 +74,16 @@
             ]);
 
             $configData = $config->dumpConfig();
-            $this->assertNotEmpty($configData, 'Empty configuration');
-            $this->assertTrue(is_array($configData), 'Configuration is not an array');
+            self::assertNotEmpty($configData, 'Empty configuration');
+            self::assertTrue(is_array($configData), 'Configuration is not an array');
 
             $configured = $config->isConfigured();
-            $this->assertTrue(is_bool($configured) && false === $configured);
-            $this->assertTrue(is_bool($config->checkTryToSaveConfig()));
+            self::assertTrue(is_bool($configured) && false === $configured);
+            self::assertTrue(is_bool($config->checkTryToSaveConfig()));
 
             $this->simulateRequiredConfig();
             $configured = $config->isConfigured();
-            $this->assertTrue(is_bool($configured) && true === $configured);
+            self::assertTrue(is_bool($configured) && true === $configured);
 
             return $previusConfigData;
         }
@@ -97,14 +97,14 @@
 
             Config::save($original_data, []);
 
-            $this->assertEquals($original_data, $config->dumpConfig(), 'Missmatch configurations');
+            self::assertEquals($original_data, $config->dumpConfig(), 'Missmatch configurations');
 
             Config::save($original_data, [
                 'label' => [uniqid('t', true)],
                 'value' => [microtime(true)],
             ]);
 
-            $this->assertNotEquals($original_data, $config->dumpConfig(), 'The same configuration file');
+            self::assertNotEquals($original_data, $config->dumpConfig(), 'The same configuration file');
 
             Config::save($original_data, []);
             $this->restoreConfig();
@@ -123,9 +123,9 @@
                     'value' => [$test_data],
                 ]);
 
-                $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
-                $this->assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
-                $this->assertEquals(Config::getParam('test', null, 'test'), $test_data, 'The value is not the same without module value');
+                self::assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
+                self::assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
+                self::assertEquals(Config::getParam('test', null, 'test'), $test_data, 'The value is not the same without module value');
 
                 $test_data2 = microtime(true);
                 $original_data = $config->dumpConfig();
@@ -133,11 +133,11 @@
                     'label' => ['test.test'],
                     'value' => [$test_data2],
                 ]);
-                $this->assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
-                $this->assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
-                $this->assertEquals(Config::getParam('test', null, 'test'), $test_data2, 'The value is not the same with module value');
-                $this->assertEquals(Config::getParam('test', null, 'testa'), $test_data, 'The value is not the same with module value and default value');
-                $this->assertEquals(Config::getParam('test', $test_data2, 'testa'), $test_data, 'The value is not the same with module value and default value');
+                self::assertEquals(Config::getParam('test'), $test_data, 'The value is not the same');
+                self::assertEquals(Config::getParam('test' . uniqid('t', true), $test_data), $test_data, 'The value is not the same with default value');
+                self::assertEquals(Config::getParam('test', null, 'test'), $test_data2, 'The value is not the same with module value');
+                self::assertEquals(Config::getParam('test', null, 'testa'), $test_data, 'The value is not the same with module value and default value');
+                self::assertEquals(Config::getParam('test', $test_data2, 'testa'), $test_data, 'The value is not the same with module value and default value');
 
                 $this->restoreConfig();
             }

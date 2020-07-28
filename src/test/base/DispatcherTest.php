@@ -77,27 +77,27 @@ class DispatcherTest extends TestCase
     {
         $dispatcher = $this->getInstance();
 
-        $this->assertNotNull($dispatcher);
-        $this->assertInstanceOf(Dispatcher::class, $dispatcher);
+        self::assertNotNull($dispatcher);
+        self::assertInstanceOf(Dispatcher::class, $dispatcher);
 
     }
 
     public function testMem()
     {
         $dispatcher = $this->getInstance();
-        $this->assertNotNull($dispatcher->getMem('Bytes'));
-        $this->assertNotNull($dispatcher->getMem('KBytes'));
-        $this->assertNotNull($dispatcher->getMem('MBytes'));
-        $this->assertNotNull($dispatcher->getMem());
+        self::assertNotNull($dispatcher->getMem('Bytes'));
+        self::assertNotNull($dispatcher->getMem('KBytes'));
+        self::assertNotNull($dispatcher->getMem('MBytes'));
+        self::assertNotNull($dispatcher->getMem());
     }
 
     public function testTS()
     {
         $dispatcher = $this->getInstance();
         $ts = $dispatcher->getTs();
-        $this->assertNotNull($ts);
+        self::assertNotNull($ts);
         usleep(200);
-        $this->assertGreaterThan($ts, $dispatcher->getTs());
+        self::assertGreaterThan($ts, $dispatcher->getTs());
     }
 
     /**
@@ -113,7 +113,7 @@ class DispatcherTest extends TestCase
             unset($test);
             $this->fail('Exception has not been thrown');
         } catch (\Exception $e) {
-            $this->assertTrue(true);
+            self::assertTrue(true);
         }
     }
 
@@ -128,7 +128,7 @@ class DispatcherTest extends TestCase
             file_get_contents(__DIR__ . 'test.txt');
             $this->fail('Exception has not been thrown');
         } catch (\Exception $e) {
-            $this->assertTrue(true);
+            self::assertTrue(true);
         }
     }
 
@@ -139,8 +139,8 @@ class DispatcherTest extends TestCase
 
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
         $response = $dispatcher->run();
-        $this->assertNotNull($response);
-        $this->assertEquals('OK', $response);
+        self::assertNotNull($response);
+        self::assertEquals('OK', $response);
     }
 
     /**
@@ -204,11 +204,11 @@ class DispatcherTest extends TestCase
     public function testStats() {
         Inspector::stats('test1', Inspector::SCOPE_DEBUG);
         $stats = Inspector::getStats();
-        $this->assertNotEmpty($stats, 'Empty stats');
+        self::assertNotEmpty($stats, 'Empty stats');
         Inspector::stats('test2', Inspector::SCOPE_DEBUG);
         $secondStats = Inspector::getStats(Inspector::SCOPE_DEBUG);
-        $this->assertNotEmpty($secondStats, 'Empty stats');
-        $this->assertNotEquals($stats, $secondStats, 'Stats are similar');
+        self::assertNotEmpty($secondStats, 'Empty stats');
+        self::assertNotEquals($stats, $secondStats, 'Stats are similar');
     }
 
     public function testExecuteRoute() {
@@ -221,10 +221,10 @@ class DispatcherTest extends TestCase
         SecurityHelper::setTest(true);
         Config::setTest(true);
         $result = $dispatcher->run('/admin/config/params');
-        $this->assertNotEmpty($result, 'Empty response');
+        self::assertNotEmpty($result, 'Empty response');
         $jsonDecodedResponse = json_decode($result, true);
-        $this->assertNotNull($jsonDecodedResponse, 'Bad JSON response');
-        $this->assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
+        self::assertNotNull($jsonDecodedResponse, 'Bad JSON response');
+        self::assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
         Admin::setTest(false);
         Security::setTest(false);
         SecurityHelper::setTest(false);

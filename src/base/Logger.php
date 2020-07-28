@@ -57,7 +57,7 @@ class Logger
     {
         $args = func_get_args();
         list($logger, $debug, $path) = $this->setup($args);
-        $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'a+');
+        $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'ab+');
         if (is_resource($this->stream)) {
             $this->addPushLogger($logger, $debug);
         } else {
@@ -211,7 +211,7 @@ class Logger
                 break;
             case LOG_CRIT:
                 if (Config::getParam('log.slack.hook')) {
-                    SlackHelper::getInstance()->trace($msg, '', '', $context, $force);
+                    SlackHelper::getInstance()->trace($msg, '', '', $context);
                 }
                 self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context, $force);
                 break;

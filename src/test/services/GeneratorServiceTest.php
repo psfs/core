@@ -85,7 +85,7 @@ abstract class GeneratorServiceTest extends TestCase
     public function checkCreateExistingModule()
     {
         $generatorService = GeneratorService::getInstance();
-        $this->assertInstanceOf(GeneratorService::class, $generatorService, 'Error getting GeneratorService instance');
+        self::assertInstanceOf(GeneratorService::class, $generatorService, 'Error getting GeneratorService instance');
         $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . self::MODULE_NAME;
 
         $this->createNewModule($generatorService);
@@ -99,7 +99,7 @@ abstract class GeneratorServiceTest extends TestCase
         $this->checkBasicStructure();
 
         foreach (self::$filesToCheckWithSchema as $fileName) {
-            $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
+            self::assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
         }
         return $modulePath;
     }
@@ -107,9 +107,9 @@ abstract class GeneratorServiceTest extends TestCase
     private function checkBasicStructure()
     {
         $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . self::MODULE_NAME;
-        $this->assertDirectoryExists($modulePath, 'Directory not created');
+        self::assertDirectoryExists($modulePath, 'Directory not created');
         foreach (self::$filesToCheckWithoutSchema as $fileName) {
-            $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module from scratch');
+            self::assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module from scratch');
         }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\base\types\helper;
+namespace PSFS\base\types\helpers;
 
 /**
  * Class SwaggerDocHelper

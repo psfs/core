@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\Test;
+namespace PSFS\test\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Service;
@@ -25,15 +25,15 @@ class ServiceTest extends TestCase {
     protected function getServiceInstance() {
         $srv = Service::getInstance();
         // Check instance
-        $this->assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
+        self::assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
         // Check Singleton
-        $this->assertInstanceOf(Singleton::class, $srv, '$srv is not a Singleton class');
+        self::assertInstanceOf(Singleton::class, $srv, '$srv is not a Singleton class');
         // Check initialization
-        $this->assertEmpty($srv->getUrl(), 'Service has previous url set');
+        self::assertEmpty($srv->getUrl(), 'Service has previous url set');
         $srv->setUrl('www.example.com');
-        $this->assertNotEmpty($srv->getUrl(), 'Service has empty url');
+        self::assertNotEmpty($srv->getUrl(), 'Service has empty url');
         $srv->setUrl('www.google.com');
-        $this->assertNotEquals('www.example.com', $srv->getUrl(), 'Service does not update url');
+        self::assertNotEquals('www.example.com', $srv->getUrl(), 'Service does not update url');
         return $srv;
     }
 
@@ -42,21 +42,21 @@ class ServiceTest extends TestCase {
         $paramValue = microtime(true);
         // CHeck when param didn't exists
         $param = $srv->getParam($paramName);
-        $this->assertNull($param, 'Param exists before test');
+        self::assertNull($param, 'Param exists before test');
         // Set params with bulk method
         $srv->setParams([$paramName => $paramValue]);
-        $this->assertNotEmpty($srv->getParams(), 'Service params are empty');
+        self::assertNotEmpty($srv->getParams(), 'Service params are empty');
         $param = $srv->getParam($paramName);
-        $this->assertNotNull($param, 'Param did not exists');
+        self::assertNotNull($param, 'Param did not exists');
         // Check to remove params
         $count = count($srv->getParams());
         $srv->dropParam($paramName);
-        $this->assertNotEquals(count($srv->getParams()), $count, 'Param not dropped');
+        self::assertNotEquals(count($srv->getParams()), $count, 'Param not dropped');
         // Check adding one param
         $srv->addParam($paramName, $paramValue);
         $param = $srv->getParam($paramName);
-        $this->assertNotNull($param, 'Param did not exists');
-        $this->assertEquals($paramValue, $param, 'Different param value');
+        self::assertNotNull($param, 'Param did not exists');
+        self::assertEquals($paramValue, $param, 'Different param value');
     }
 
     protected function checkOptions(Service $srv) {
@@ -64,26 +64,26 @@ class ServiceTest extends TestCase {
         $srv->setOptions([]);
         // CHeck when option didn't exists
         $option = $srv->getOption(CURLOPT_CONNECTTIMEOUT);
-        $this->assertNull($option, 'Option exists before test');
+        self::assertNull($option, 'Option exists before test');
         // Set option with bulk method
         $srv->setOptions([CURLOPT_CONNECTTIMEOUT => 30]);
-        $this->assertNotEmpty($srv->getOptions(), 'Service options are empty');
+        self::assertNotEmpty($srv->getOptions(), 'Service options are empty');
         $option = $srv->getOption(CURLOPT_CONNECTTIMEOUT);
-        $this->assertNotNull($option, 'Option did not exists');
+        self::assertNotNull($option, 'Option did not exists');
         // Check to remove options
         $count = count($srv->getOptions());
         $srv->dropOption(CURLOPT_CONNECTTIMEOUT);
-        $this->assertNotEquals(count($srv->getOptions()), $count, 'Option not dropped');
+        self::assertNotEquals(count($srv->getOptions()), $count, 'Option not dropped');
         // Check adding one option
         $srv->addOption(CURLOPT_CONNECTTIMEOUT, 30);
         $option = $srv->getOption(CURLOPT_CONNECTTIMEOUT);
-        $this->assertNotNull($option, 'Option did not exists');
-        $this->assertEquals(30, $option, 'Different option value');
+        self::assertNotNull($option, 'Option did not exists');
+        self::assertEquals(30, $option, 'Different option value');
     }
 
     public function testServiceTraits() {
         $srv = $this->getServiceInstance();
-        $this->assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
+        self::assertInstanceOf(Service::class, $srv, '$srv is not a Service class');
         $this->checkParams($srv);
         $this->checkOptions($srv);
 
@@ -95,10 +95,10 @@ class ServiceTest extends TestCase {
 
         // Initialize service without cleaning params and options
         $srv->setUrl('https://google.com', false);
-        $this->assertNotEquals('https://example.com', $srv->getUrl(), 'Service does not update url');
-        $this->assertEquals('https://google.com', $srv->getUrl(), 'Service does not update url');
-        $this->assertNotEmpty($srv->getParams(), 'Params are empty');
-        $this->assertNotEmpty($srv->getOptions(), 'Options are empty');
+        self::assertNotEquals('https://example.com', $srv->getUrl(), 'Service does not update url');
+        self::assertEquals('https://google.com', $srv->getUrl(), 'Service does not update url');
+        self::assertNotEmpty($srv->getParams(), 'Params are empty');
+        self::assertNotEmpty($srv->getOptions(), 'Options are empty');
 
     }
 
@@ -106,7 +106,7 @@ class ServiceTest extends TestCase {
         if($this->hasInternet()) {
             $this->markTestIncomplete('Pending make tests');
         } else {
-            $this->assertTrue(true, 'Not connected to internet');
+            self::assertTrue(true, 'Not connected to internet');
         }
     }
 
@@ -120,19 +120,19 @@ class ServiceTest extends TestCase {
         $authSrv->test($user, $password);
         // Check options created into curl resource
         $curl = $authSrv->getCon();
-        $this->assertTrue(is_resource($curl), 'Curl resource was not created');
+        self::assertTrue(is_resource($curl), 'Curl resource was not created');
         $callInfo = $authSrv->getCallInfo();
         $jsonResponse = $authSrv->getResult();
         // Get specific curl options that have to be set
         $authType = $authSrv->getOption(CURLOPT_HTTPAUTH);
-        $this->assertNotNull($authType, 'Auth not set');
-        $this->assertEquals(CURLAUTH_BASIC, $authType, 'Auth basic not set');
+        self::assertNotNull($authType, 'Auth not set');
+        self::assertEquals(CURLAUTH_BASIC, $authType, 'Auth basic not set');
         $authString = $authSrv->getOption(CURLOPT_USERPWD);
-        $this->assertNotNull($authString, 'Basic auth string not set');
-        $this->assertEquals($basicAuth, $authString, 'Different auth string');
+        self::assertNotNull($authString, 'Basic auth string not set');
+        self::assertEquals($basicAuth, $authString, 'Different auth string');
         // Check request response
-        $this->assertIsArray($jsonResponse, 'Bad json decoding');
-        $this->assertArrayHasKey('request_header', $callInfo, 'Verbose mode not activated');
+        self::assertIsArray($jsonResponse, 'Bad json decoding');
+        self::assertArrayHasKey('request_header', $callInfo, 'Verbose mode not activated');
         if(array_key_exists('request_header', $callInfo)) {
             $rawHeaders = explode("\r\n", $callInfo['request_header']);
             $headers = [];
@@ -142,11 +142,11 @@ class ServiceTest extends TestCase {
                     $headers[$data[0]] = $data[1];
                 }
             }
-            $this->assertArrayHasKey('Authorization', $headers, 'Auth header not set');
-            $this->assertArrayHasKey('X-PSFS-SEC-TOKEN', $headers, 'PSFS Security header not set');
+            self::assertArrayHasKey('Authorization', $headers, 'Auth header not set');
+            self::assertArrayHasKey('X-PSFS-SEC-TOKEN', $headers, 'PSFS Security header not set');
             if(array_key_exists('Authorization', $headers)) {
                 $authorization = base64_decode(str_replace('Basic ', '', $headers['Authorization']));
-                $this->assertEquals($basicAuth, $authorization, 'Basic header different than expected');
+                self::assertEquals($basicAuth, $authorization, 'Basic header different than expected');
             }
         }
     }

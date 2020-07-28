@@ -196,6 +196,7 @@ trait SwaggerFormaterTrait
      * @param string $module
      *
      * @return array
+     * @throws \ReflectionException
      */
     protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {

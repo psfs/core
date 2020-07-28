@@ -26,9 +26,9 @@ class DocumentorServiceTest extends GeneratorServiceTest{
         if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
             unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
         }
-        $this->assertFileNotExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
+        self::assertFileNotExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
         GeneratorHelper::deleteDir(CACHE_DIR);
-        $this->assertDirectoryNotExists(CACHE_DIR, 'Cache folder already exists with data');
+        self::assertDirectoryNotExists(CACHE_DIR, 'Cache folder already exists with data');
         GeneratorHelper::createRoot(WEB_DIR, null, true);
     }
 
@@ -37,7 +37,7 @@ class DocumentorServiceTest extends GeneratorServiceTest{
      */
     protected function clearContext($modulePath) {
         GeneratorHelper::deleteDir($modulePath);
-        $this->assertDirectoryNotExists($modulePath, 'Error trying to delete the module');
+        self::assertDirectoryNotExists($modulePath, 'Error trying to delete the module');
     }
 
     /**
@@ -46,15 +46,15 @@ class DocumentorServiceTest extends GeneratorServiceTest{
      */
     public function testApiDocumentation() {
         $modulePath = $this->checkCreateExistingModule();
-        $this->assertDirectoryExists($modulePath, 'Module did not exists');
+        self::assertDirectoryExists($modulePath, 'Module did not exists');
 
         Router::getInstance()->init();
         $documentorService = DocumentorService::getInstance();
         $module = $documentorService->getModules(self::MODULE_NAME);
         $doc = $documentorService->extractApiEndpoints($module);
         foreach($doc as $namespace => $endpoints) {
-            $this->assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
-            $this->assertCount(7, $endpoints, 'Different number of endpoints');
+            self::assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
+            self::assertCount(7, $endpoints, 'Different number of endpoints');
         }
         $this->clearContext($modulePath);
     }

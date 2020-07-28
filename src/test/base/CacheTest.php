@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\Test\base;
+namespace PSFS\test\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
@@ -23,8 +23,8 @@ class CacheTest extends TestCase
         Cache::dropInstance();
         $cache = Cache::getInstance();
 
-        $this->assertNotNull($cache);
-        $this->assertInstanceOf(Cache::class, $cache, 'Instance different than expected');
+        self::assertNotNull($cache);
+        self::assertInstanceOf(Cache::class, $cache, 'Instance different than expected');
 
         return $cache;
     }
@@ -42,23 +42,23 @@ class CacheTest extends TestCase
 
         // TXT cache test
         $cache->storeData('tests' . DIRECTORY_SEPARATOR . $hash, json_encode($data));
-        $this->assertFileExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $hash, 'Cache not stored!!');
+        self::assertFileExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $hash, 'Cache not stored!!');
 
         // Gather cache data from file without transformation
         $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function(){});
-        $this->assertEquals($cachedData, json_encode($data), 'Different data cached!');
+        self::assertEquals($cachedData, json_encode($data), 'Different data cached!');
 
         // Gather cache data from file with JSON transformation
         $cache->storeData('tests' . DIRECTORY_SEPARATOR . $hash, $data, Cache::JSONGZ);
         $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function(){}, Cache::JSONGZ);
-        $this->assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
+        self::assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
 
         // Gather cache data from expired file
         sleep(2);
         $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 1, function() use ($data){
             return $data;
         }, Cache::JSONGZ);
-        $this->assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
+        self::assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
 
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'test');
     }
@@ -85,8 +85,8 @@ class CacheTest extends TestCase
     public function testCacheForRequests()
     {
         list($path, $hash) = $this->prepareTestVariables();
-        $this->assertNotNull($hash, 'Invalid cache hash');
-        $this->assertNotEmpty($path, 'Invalid path to save the cache');
+        self::assertNotNull($hash, 'Invalid cache hash');
+        self::assertNotEmpty($path, 'Invalid path to save the cache');
 
         $config = Config::getInstance()->dumpConfig();
         $cache_data_config = Config::getParam('cache.data.enable');
@@ -95,18 +95,18 @@ class CacheTest extends TestCase
             'value' => [true]
         ]);
         Config::getInstance()->setDebugMode(false);
-        $this->assertNotFalse(Cache::needCache(), 'Test url expired or error checking cache');
+        self::assertNotFalse(Cache::needCache(), 'Test url expired or error checking cache');
 
         // Flushing cache
         Cache::getInstance()->flushCache();
-        $this->assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . $path, 'Cache directory not deleted properly');
+        self::assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . $path, 'Cache directory not deleted properly');
 
         $config['cache.data.enable'] = $cache_data_config;
         Config::save($config, []);
 
         // Cleaning test data
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests');
-        $this->assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
+        self::assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
 
     }
 

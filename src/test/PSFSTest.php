@@ -21,10 +21,10 @@ class PSFSTest extends TestCase {
         $dispatcher = Dispatcher::getInstance();
 
         // Is instance of Dispatcher?
-        $this->assertTrue($dispatcher instanceof Dispatcher);
+        self::assertTrue($dispatcher instanceof Dispatcher);
 
         // Did timestamp generated?
-        $this->assertTrue($dispatcher->getTs() > 0);
+        self::assertTrue($dispatcher->getTs() > 0);
     }
 
     /**
@@ -35,16 +35,16 @@ class PSFSTest extends TestCase {
         $config = Config::getInstance();
 
         // Is config instance?
-        $this->assertTrue($config instanceof Config);
+        self::assertTrue($config instanceof Config);
 
         // Is the platform configured?
-        $this->assertTrue(is_bool($config->isConfigured()));
+        self::assertTrue(is_bool($config->isConfigured()));
 
         // Is the platform in debug mode?
-        $this->assertTrue(is_bool($config->getDebugMode()));
+        self::assertTrue(is_bool($config->getDebugMode()));
 
         // Check the variable extraction
-        $this->assertEmpty($config->get(uniqid()));
+        self::assertEmpty($config->get(uniqid()));
     }
 
     /**
@@ -55,15 +55,15 @@ class PSFSTest extends TestCase {
         $router = Router::getInstance();
 
         // Is ROuter instance?
-        $this->assertTrue($router instanceof Router);
+        self::assertTrue($router instanceof Router);
 
         // Check if route file exists
-        $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
+        self::assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . "urls.json");
 
         // CHecks if we have admin routes as minimal routes
         $adminRoutes = AdminHelper::getAdminRoutes($router->getRoutes());
-        $this->assertNotEmpty($adminRoutes);
-        $this->assertArrayHasKey("PSFS", $adminRoutes);
+        self::assertNotEmpty($adminRoutes);
+        self::assertArrayHasKey("PSFS", $adminRoutes);
     }
 
     /**
@@ -74,7 +74,7 @@ class PSFSTest extends TestCase {
         $security = Security::getInstance();
 
         // Is Security instance?
-        $this->assertTrue($security instanceof Security);
+        self::assertTrue($security instanceof Security);
     }
 
     /**
@@ -85,16 +85,16 @@ class PSFSTest extends TestCase {
         $request = Request::getInstance();
 
         // Is Request instance?
-        $this->assertTrue($request instanceof Request);
+        self::assertTrue($request instanceof Request);
 
         // Check headers, uploads and cookies checkers
-        $this->assertTrue(is_bool($request->hasHeader("session")));
-        $this->assertTrue(is_bool($request->hasUpload()));
-        $this->assertTrue(is_bool($request->hasCookies()));
-        $this->assertTrue(is_bool($request->isAjax()));
+        self::assertTrue(is_bool($request->hasHeader("session")));
+        self::assertTrue(is_bool($request->hasUpload()));
+        self::assertTrue(is_bool($request->hasCookies()));
+        self::assertTrue(is_bool($request->isAjax()));
 
         // Checks if timestamp was generated
-        $this->assertNotNull($request->getTs());
+        self::assertNotNull($request->getTs());
     }
 
 }

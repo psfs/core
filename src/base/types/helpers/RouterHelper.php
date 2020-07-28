@@ -99,6 +99,10 @@ class RouterHelper
         if (preg_match('/\/$/', $routePattern)) {
             $cleanPatternSep--;
         }
+
+        if(Config::getParam('allow.double.slashes', true)) {
+            $path = preg_replace("/\/\//", '/', $path);
+        }
         $pathSep = count(explode('/', $path));
         if (preg_match('/\/$/', $path)) {
             $pathSep--;
@@ -116,9 +120,12 @@ class RouterHelper
      */
     public static function matchRoutePattern($routePattern, $path)
     {
-        $expr = preg_replace('/\{([^}]+)\}/', '###', $routePattern);
+        if(Config::getParam('allow.double.slashes', true)) {
+            $path = preg_replace("/\/\//", '/', $path);
+        }
+        $expr = preg_replace('/\{([^}]+)\}/', '%%%', $routePattern);
         $expr = preg_quote($expr, '/');
-        $expr = str_replace('###', '(.*)', $expr);
+        $expr = str_replace('%%%', '(.*)', $expr);
         $expr2 = preg_replace('/\(\.\*\)$/', '', $expr);
         $matched = preg_match('/^' . $expr . '\/?$/i', $path) || preg_match('/^' . $expr2 . '?$/i', $path);
         return $matched;

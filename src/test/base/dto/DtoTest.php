@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\Test\base\dto;
+namespace PSFS\test\base\dto;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\dto\Field;
@@ -49,18 +49,18 @@ class DtoTest extends TestCase {
     public function testFormDto() {
         $form1 = new Form(true);
         $form2 = new Form();
-        $this->assertEquals($form1->toArray(), $form2->toArray(), 'Error on creation for basic dto');
-        $this->assertEquals($form1->actions, $form2->actions, 'Different actions in dto from scratch');
-        $this->assertEquals($form1->fieldExists('test'), $form2->fieldExists('test'), 'Different check for fields that not exists');
+        self::assertEquals($form1->toArray(), $form2->toArray(), 'Error on creation for basic dto');
+        self::assertEquals($form1->actions, $form2->actions, 'Different actions in dto from scratch');
+        self::assertEquals($form1->fieldExists('test'), $form2->fieldExists('test'), 'Different check for fields that not exists');
 
         $field = new Field('test', 'test');
         $form1->addField($field);
-        $this->assertTrue($form1->fieldExists($field->name), 'Error adding new field to a form');
-        $this->assertNotEquals($form1->toArray(), $form2->toArray(), 'Bad extraction for form data');
+        self::assertTrue($form1->fieldExists($field->name), 'Error adding new field to a form');
+        self::assertNotEquals($form1->toArray(), $form2->toArray(), 'Bad extraction for form data');
 
         $reflection = new \ReflectionClass(Field::class);
         foreach($reflection->getConstants() as $constant) {
-            $this->assertNotNull(Form::fieldsOrder(['type' => $constant]));
+            self::assertNotNull(Form::fieldsOrder(['type' => $constant]));
         }
     }
 
@@ -81,11 +81,11 @@ class DtoTest extends TestCase {
             $field->required = $fieldData['required'];
             $form1->addField($field);
             $form2->addField($field);
-            $this->assertEquals($form1->fieldExists($field->name), $form2->fieldExists($field->name), 'Error adding new field');
+            self::assertEquals($form1->fieldExists($field->name), $form2->fieldExists($field->name), 'Error adding new field');
         }
         $formExportData = $form1->toArray();
-        $this->assertEquals($formExportData, $form2->toArray(), 'Error on export for complex dto');
-        $this->assertEquals($form1->actions, $form2->actions, 'Different actions in dto with populated data');
+        self::assertEquals($formExportData, $form2->toArray(), 'Error on export for complex dto');
+        self::assertEquals($form1->actions, $form2->actions, 'Different actions in dto with populated data');
         /**
          * Checking order
          * First required, then see into Form dto method
@@ -93,13 +93,14 @@ class DtoTest extends TestCase {
          */
         $order = ['1.test6', '2.number', '3.hidden', '4.text', '5.textarea', '6.date'];
         foreach($order as $index => $field) {
-            $this->assertEquals($field, $formExportData['fields'][$index]['name'], 'Order is not right');
+            self::assertEquals($field, $formExportData['fields'][$index]['name'], 'Order is not right');
         }
     }
 
     /**
      * Test Dto basics
      * @throws \PSFS\base\exception\GeneratorException
+     * @throws \ReflectionException
      */
     public function testDtoBasics() {
         // Initialize classes to test
@@ -112,9 +113,9 @@ class DtoTest extends TestCase {
         $complextDto = new ComplexDto(false);
         $complextDto2 = clone $complextDto;
 
-        $this->assertEquals($action, $action2, 'Error cloning dtos');
-        $this->assertEquals($order, $order2, 'Error cloning dtos');
-        $this->assertEquals($complextDto, $complextDto2, 'Error cloning dtos');
+        self::assertEquals($action, $action2, 'Error cloning dtos');
+        self::assertEquals($order, $order2, 'Error cloning dtos');
+        self::assertEquals($complextDto, $complextDto2, 'Error cloning dtos');
 
         // Populate tests
         $exampleData = $this->getExampleData();
@@ -124,18 +125,18 @@ class DtoTest extends TestCase {
         $action2->label = 'test1';
         $action2->url = 'test1';
         $action2->method = 'test1';
-        $this->assertEquals($action, $action2, 'Different values from hydration');
-        $this->assertEquals($action->toArray(), $action2->toArray(), 'Different values on export');
+        self::assertEquals($action, $action2, 'Different values from hydration');
+        self::assertEquals($action->toArray(), $action2->toArray(), 'Different values on export');
 
         $order->fromArray($exampleData['order']);
         foreach($exampleData['order'] as $field => $ord) {
             $order2->addOrder($field, $ord);
         }
-        $this->assertEquals($order, $order2, 'Different values from hydration');
-        $this->assertEquals($order->toArray(), $order2->toArray(), 'Different values on export');
+        self::assertEquals($order, $order2, 'Different values from hydration');
+        self::assertEquals($order->toArray(), $order2->toArray(), 'Different values on export');
         $order2->removeOrder('test');
-        $this->assertNotEquals($order, $order2, 'Remove field order failed in object');
-        $this->assertNotEquals($order->toArray(), $order2->toArray(), 'Remove field order failed as array');
+        self::assertNotEquals($order, $order2, 'Remove field order failed in object');
+        self::assertNotEquals($order->toArray(), $order2->toArray(), 'Remove field order failed as array');
 
         // Multiple creation for dtos from array to create complex dto
         $action1 = clone $emptyAction;
@@ -148,22 +149,22 @@ class DtoTest extends TestCase {
         $action3->fromArray($exampleData['actions'][2]);
         $complextDto->actions[] = $action3;
         $emptyOrder->setOrder('test', Order::ASC);
-        $this->assertEquals(1, count($emptyOrder->getOrders()), 'Distinct number or orders created');
+        self::assertCount(1, $emptyOrder->getOrders(), 'Distinct number or orders created');
         $emptyOrder->addOrder('test2', Order::DESC);
-        $this->assertEquals(2, count($emptyOrder->getOrders()), 'Distinct number or orders added');
+        self::assertCount(2, $emptyOrder->getOrders(), 'Distinct number or orders added');
         $emptyOrder->addOrder('test3', Order::DESC);
-        $this->assertEquals(3, count($emptyOrder->getOrders()), 'Distinct number or orders added');
+        self::assertCount(3, $emptyOrder->getOrders(), 'Distinct number or orders added');
         $emptyOrder->removeOrder('test3');
-        $this->assertEquals(2, count($emptyOrder->getOrders()), 'Distinct number or orders removed');
+        self::assertCount(2, $emptyOrder->getOrders(), 'Distinct number or orders removed');
         $complextDto->order = $emptyOrder;
         $complextDto->boolean = $exampleData['boolean'];
         $complextDto->number = $exampleData['number'];
         $complextDto->decimal = $exampleData['decimal'];
         // Creation from import
         $complextDto2->fromArray($exampleData);
-        $this->assertEquals($complextDto->jsonSerialize(), $complextDto2->jsonSerialize(), 'Different values on export');
-        $this->assertEquals($complextDto->order->jsonSerialize(), $complextDto2->order->jsonSerialize(), 'Different order values on export');
-        $this->assertEquals($complextDto->__toString(), $complextDto2->__toString(), 'Different values fot toString');
+        self::assertEquals($complextDto->jsonSerialize(), $complextDto2->jsonSerialize(), 'Different values on export');
+        self::assertEquals($complextDto->order->jsonSerialize(), $complextDto2->order->jsonSerialize(), 'Different order values on export');
+        self::assertEquals($complextDto->__toString(), $complextDto2->__toString(), 'Different values fot toString');
     }
 
     /**
@@ -172,12 +173,12 @@ class DtoTest extends TestCase {
     public function testJsonResponseDto() {
         $jsonResponse = new JsonResponse();
         $profilling = ProfilingJsonResponse::createFromPrevious($jsonResponse, ['test' => true]);
-        $this->assertNotEquals($jsonResponse->toArray(), $profilling->toArray(), 'Profilling error creation');
-        $this->assertEquals($jsonResponse->data, $profilling->data, 'Error creating profilling dto');
-        $this->assertEquals($jsonResponse->success, $profilling->success, 'Error creating profilling dto');
-        $this->assertEquals($jsonResponse->message, $profilling->message, 'Error creating profilling dto');
-        $this->assertEquals($jsonResponse->total, $profilling->total, 'Error creating profilling dto');
-        $this->assertEquals($jsonResponse->pages, $profilling->pages, 'Error creating profilling dto');
-        $this->assertNotEmpty($profilling->profiling, 'Error creating profilling dto');
+        self::assertNotEquals($jsonResponse->toArray(), $profilling->toArray(), 'Profilling error creation');
+        self::assertEquals($jsonResponse->data, $profilling->data, 'Error creating profilling dto');
+        self::assertEquals($jsonResponse->success, $profilling->success, 'Error creating profilling dto');
+        self::assertEquals($jsonResponse->message, $profilling->message, 'Error creating profilling dto');
+        self::assertEquals($jsonResponse->total, $profilling->total, 'Error creating profilling dto');
+        self::assertEquals($jsonResponse->pages, $profilling->pages, 'Error creating profilling dto');
+        self::assertNotEmpty($profilling->profiling, 'Error creating profilling dto');
     }
 }

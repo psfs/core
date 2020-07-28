@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\test;
+namespace PSFS\test\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
@@ -16,31 +16,31 @@ class TemplateTest extends TestCase {
 
         // Check if the template engine is ok
         $engine = $template->getTemplateEngine();
-        $this->assertNotNull($engine, 'Error at Template creation');
-        $this->assertInstanceOf('\\Twig_Environment', $engine);
+        self::assertNotNull($engine, 'Error at Template creation');
+        self::assertInstanceOf('\\Twig_Environment', $engine);
 
         // Check if the template loader is ok
         $loader = $template->getLoader();
-        $this->assertNotNull($loader, 'Error at Template creation');
-        $this->assertInstanceOf('\\Twig_LoaderInterface', $loader);
+        self::assertNotNull($loader, 'Error at Template creation');
+        self::assertInstanceOf('\\Twig_LoaderInterface', $loader);
 
         $domains = Template::getDomains(true);
-        $this->assertNotNull($domains);
+        self::assertNotNull($domains);
 
         $path = Template::extractPath(__DIR__);
-        $this->assertNotNull($path);
-        $this->assertFileExists($path);
+        self::assertNotNull($path);
+        self::assertFileExists($path);
 
         Config::getInstance()->setDebugMode(true);
         $output = $template->dump('index.html.twig');
-        $this->assertNotNull($output);
-        $this->assertNotEmpty($output);
+        self::assertNotNull($output);
+        self::assertNotEmpty($output);
 
         Config::getInstance()->setDebugMode(false);
         $output2 = $template->dump('index.html.twig');
-        $this->assertNotNull($output2);
-        $this->assertNotEmpty($output2);
-        $this->assertNotEquals($output2, $output, 'Production template is the same than development one');
+        self::assertNotNull($output2);
+        self::assertNotEmpty($output2);
+        self::assertNotEquals($output2, $output, 'Production template is the same than development one');
         Config::getInstance()->setDebugMode(true);
     }
 
@@ -48,12 +48,12 @@ class TemplateTest extends TestCase {
         $template = Template::getInstance();
 
         $template->setPublicZone(true);
-        $this->assertTrue($template->isPublicZone());
+        self::assertTrue($template->isPublicZone());
         $template->setPublicZone(false);
-        $this->assertFalse($template->isPublicZone());
+        self::assertFalse($template->isPublicZone());
 
         $translations = $template->regenerateTemplates();
-        $this->assertNotNull($translations);
-        $this->assertNotEmpty($translations);
+        self::assertNotNull($translations);
+        self::assertNotEmpty($translations);
     }
 }

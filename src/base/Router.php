@@ -139,9 +139,9 @@ class Router
                 try {
                     if ($this->checkRequirements($action, $get)) {
                         return $this->executeCachedRoute($route, $action, $class, $get);
-                    } else {
-                        throw new RouterException(t('Preconditions failed'), 412);
                     }
+
+                    throw new RouterException(t('Preconditions failed'), 412);
                 } catch (Exception $e) {
                     Logger::log($e->getMessage(), LOG_ERR);
                     throw $e;

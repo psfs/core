@@ -17,6 +17,7 @@ class SlackHelper extends Service {
 
     public function __construct() {
         self::$hookUrl = Config::getParam('log.slack.hook');
+        parent::__construct();
     }
 
     public function trace($message, $file, $line, $info = []) {
@@ -29,7 +30,7 @@ class SlackHelper extends Service {
             'attachments' => [
                 [
                     "author_name" => $request->getRootUrl(true),
-                    "text" => $file . (strlen($line) ? ' [' . $line . ']' : ''),
+                    "text" => $file . ($line !== '' ? ' [' . $line . ']' : ''),
                     "color" => Config::getParam('debug', true) ? 'warning' : "danger",
                     "title" => $message,
                     'fallback' => 'PSFS Error notifier',

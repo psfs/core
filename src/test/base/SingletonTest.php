@@ -16,21 +16,21 @@ class SingletonTest extends TestCase {
         $exampleClass = SingletonClassTest::getInstance();
 
         // Basic instance cases
-        $this->assertNotNull($exampleClass, 'Error when instance the class');
-        $this->assertInstanceOf(Singleton::class, $exampleClass, 'Instance not valid');
+        self::assertNotNull($exampleClass, 'Error when instance the class');
+        self::assertInstanceOf(Singleton::class, $exampleClass, 'Instance not valid');
 
         // Singleton pattern cases
         $example2 = SingletonClassTest::getInstance();
-        $this->assertEquals($exampleClass, $example2, 'Singleton pattern not found');
+        self::assertEquals($exampleClass, $example2, 'Singleton pattern not found');
 
         // Extended functionality cases
-        $this->assertEquals('SingletonClassTest', $exampleClass->getShortName(), 'The short name is not equals than expected');
+        self::assertEquals('SingletonClassTest', $exampleClass->getShortName(), 'The short name is not equals than expected');
         $exampleClass->init();
 
         $var = date('Y');
         $exampleClass->fieldTest = $var;
-        $this->assertNotNull($exampleClass->fieldTest, 'Assignation for private var not found');
-        $this->assertEquals($exampleClass->fieldTest, $var, 'Field has not the same value');
+        self::assertNotNull($exampleClass->fieldTest, 'Assignation for private var not found');
+        self::assertEquals($exampleClass->fieldTest, $var, 'Field has not the same value');
 
     }
 }

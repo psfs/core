@@ -27,18 +27,18 @@ class InjectorHelperTest extends TestCase
         $reflector = $this->getExampleReflector();
         $variables = InjectorHelper::extractVariables($reflector);
 
-        $this->assertNotEmpty($variables, 'Reflection class can\'t extract variables');
-        $this->assertArrayHasKey('publicVariable', $variables, 'Public variable does not match');
+        self::assertNotEmpty($variables, 'Reflection class can\'t extract variables');
+        self::assertArrayHasKey('publicVariable', $variables, 'Public variable does not match');
 
         $properties = InjectorHelper::extractProperties($reflector);
-        $this->assertNotEmpty($properties, 'Reflection class can\'t extract properties');
-        $this->assertArrayHasKey('security', $properties, 'Property does not match');
-        $this->assertTrue(class_exists($properties['security']), 'Injectable class does not exists');
+        self::assertNotEmpty($properties, 'Reflection class can\'t extract properties');
+        self::assertArrayHasKey('security', $properties, 'Property does not match');
+        self::assertTrue(class_exists($properties['security']), 'Injectable class does not exists');
 
         foreach ($properties as $variable => $classNameSpace) {
             $injector = InjectorHelper::constructInjectableInstance($variable, true, $classNameSpace, $reflector->getName());
-            $this->assertNotNull($injector, 'Injector class is null');
-            $this->assertInstanceOf($classNameSpace, $injector, 'Injector has been created a different namespace than expected');
+            self::assertNotNull($injector, 'Injector class is null');
+            self::assertInstanceOf($classNameSpace, $injector, 'Injector has been created a different namespace than expected');
         }
     }
 }

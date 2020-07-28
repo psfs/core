@@ -18,8 +18,8 @@ class LoggerTest extends TestCase
     {
         $instance = Logger::getInstance();
 
-        $this->assertNotNull($instance, 'Logger instance is null');
-        $this->assertInstanceOf("\\PSFS\\base\\Logger", $instance, 'Instance is different than expected');
+        self::assertNotNull($instance, 'Logger instance is null');
+        self::assertInstanceOf("\\PSFS\\base\\Logger", $instance, 'Instance is different than expected');
         return $instance;
     }
 
@@ -33,8 +33,8 @@ class LoggerTest extends TestCase
         $instance2 = $this->getInstance();
         $uid2 = $instance2->getLogUid();
 
-        $this->assertEquals($instance1, $instance2, 'Singleton instances are not equals');
-        $this->assertEquals($uid1, $uid2, 'Singleton instances are not equals');
+        self::assertEquals($instance1, $instance2, 'Singleton instances are not equals');
+        self::assertEquals($uid1, $uid2, 'Singleton instances are not equals');
     }
 
     /**
@@ -58,9 +58,9 @@ class LoggerTest extends TestCase
             // Other logs
             Logger::log('Test other logs', LOG_CRON, [], true);
         } catch(\Exception $e) {
-            $this->assertFalse(true, $e->getMessage());
+            self::assertFalse(true, $e->getMessage());
         } finally {
-            $this->assertTrue(true, 'Finished Logger test function');
+            self::assertTrue(true, 'Finished Logger test function');
         }
     }
 
@@ -71,13 +71,13 @@ class LoggerTest extends TestCase
     {
         // Add memory logger to test this functionality
         $config = Config::getInstance();
-        $this->assertInstanceOf(Config::class, $config, 'Config interface');
+        self::assertInstanceOf(Config::class, $config, 'Config interface');
         $defaultConfig = $config->dumpConfig();
         Config::save(array_merge($defaultConfig, ['logger.memory'=>true, 'logger.phpFire'=>true, 'profiling.enable' => true]), []);
 
         // Create a new logger instance
         $logger = new Logger(['test', true]);
-        $this->assertInstanceOf(Logger::class, $logger, 'Logger interface');
+        self::assertInstanceOf(Logger::class, $logger, 'Logger interface');
         $logger->addLog('Test', \Monolog\Logger::DEBUG);
         $logger = null;
         unset($defaultConfig['logger.memory']);
