@@ -58,7 +58,7 @@ class Logger
         $args = func_get_args();
         list($logger, $debug, $path) = $this->setup($args);
         $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'ab+');
-        if (is_resource($this->stream)) {
+        if (false !== $this->stream && is_resource($this->stream)) {
             $this->addPushLogger($logger, $debug);
         } else {
             throw new ConfigException(t('Error creating logger'));

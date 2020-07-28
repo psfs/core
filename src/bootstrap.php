@@ -5,6 +5,7 @@ defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage());
 defined('PSFS_START_TS') or define('PSFS_START_TS', microtime(true));
 // PHP under version 7.3 compatibility
 defined('JSON_THROW_ON_ERROR') or define('JSON_THROW_ON_ERROR', 4194304);
+defined('JSON_INVALID_UTF8_SUBSTITUTE') or define('JSON_INVALID_UTF8_SUBSTITUTE', 2097152);
 
 if(defined('PSFS_PHAR_DIR') && file_exists(PSFS_PHAR_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'environment.php')) {
     @require_once PSFS_PHAR_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'environment.php';
