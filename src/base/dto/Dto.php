@@ -172,23 +172,27 @@ class Dto extends Singleton implements \JsonSerializable
      * @return mixed
      */
     protected function checkCastedValue($rawValue, $type) {
-        switch ($type) {
-            default:
-            case 'string':
-                $value = $rawValue;
-                break;
-            case 'integer':
-            case 'int':
-                $value = (integer)$rawValue;
-                break;
-            case 'float':
-            case 'double':
-                $value = (float)$rawValue;
-                break;
-            case 'boolean':
-            case 'bool':
-                $value = (bool)$rawValue;
-                break;
+        if(null !== $rawValue) {
+            switch ($type) {
+                default:
+                case 'string':
+                    $value = $rawValue;
+                    break;
+                case 'integer':
+                case 'int':
+                    $value = (integer)$rawValue;
+                    break;
+                case 'float':
+                case 'double':
+                    $value = (float)$rawValue;
+                    break;
+                case 'boolean':
+                case 'bool':
+                    $value = (bool)$rawValue;
+                    break;
+            }
+        } else {
+            $value = $rawValue;
         }
         return $value;
     }
