@@ -21,10 +21,10 @@ trait ParameterTrait {
     }
 
     /**
-     * @param array $params
+     * @param array|string $params
      * @return ParameterTrait
      */
-    public function setParams(array $params)
+    public function setParams($params)
     {
         $this->params = $params;
         return $this;
