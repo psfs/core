@@ -144,12 +144,12 @@ abstract class CurlService extends SimpleService
         if ($this->isDebug()) {
             $verbose = $this->initVerboseMode();
         }
-        $result = curl_exec($this->getCon());
-        $this->setResult($this->isJson() ? json_decode($result, true) : $result);
+        $this->setRawResult(curl_exec($this->getCon()));
+        $this->setResult($this->isJson() ? json_decode($this->getRawResult(), true) : $this->getRawResult());
         if ($this->isDebug() && is_resource($verbose)) {
             $this->dumpVerboseLogs($verbose);
         }
-        Logger::log($this->getUrl() . ' response: ', LOG_DEBUG, is_array($this->result) ? $this->result : [$this->result]);
+        Logger::log($this->getUrl() . ' response: ', LOG_DEBUG, is_array($this->getRawResult()) ? $this->getRawResult() : [$this->getRawResult()]);
         $this->info = array_merge($this->info, curl_getinfo($this->con));
     }
 

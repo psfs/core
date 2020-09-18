@@ -58,6 +58,11 @@ trait CurlTrait {
      * @var string $result
      */
     private $result;
+
+    /**
+     * @var string $rawResult
+     */
+    private $rawResult;
     /**
      * @var mixed
      */
@@ -225,5 +230,21 @@ trait CurlTrait {
      */
     public function isDebug() {
         return $this->debug;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRawResult(): string
+    {
+        return $this->rawResult;
+    }
+
+    /**
+     * @param string $rawResult
+     */
+    public function setRawResult(string $rawResult): void
+    {
+        $this->rawResult = $rawResult;
     }
 }
