@@ -15,7 +15,9 @@ use PSFS\base\types\helpers\Inspector;
  */
 trait CssTrait {
 
-    use SRITrait;
+    use SRITrait {
+        getSriHash as getCssSRIHash;
+    }
 
     /**
      * @var string
@@ -148,7 +150,7 @@ trait CssTrait {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
         } else {
-            $sri = $this->getSriHash($hash, 'css');
+            $sri = $this->getCssSRIHash($hash, 'css');
             echo "\t\t<link href='" . $baseUrl . "/css/" . $hash . ".css' rel='stylesheet' " .
             "crossorigin='anonymous' integrity='sha384-" . $sri . "'>";
         }
