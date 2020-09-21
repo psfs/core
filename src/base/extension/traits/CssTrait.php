@@ -15,10 +15,6 @@ use PSFS\base\types\helpers\Inspector;
  */
 trait CssTrait {
 
-    use SRITrait {
-        getSriHash as getCssSRIHash;
-    }
-
     /**
      * @var string
      */
@@ -142,15 +138,15 @@ trait CssTrait {
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
+     * @param string $sri
      */
-    protected function printCss(array $compiledFiles, $baseUrl, $hash)
+    protected function printCss(array $compiledFiles, $baseUrl, $hash, $sri = null)
     {
         if (Config::getParam('debug') && 0 < count($compiledFiles)) {
             foreach ($compiledFiles as $file) {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
         } else {
-            $sri = $this->getCssSRIHash($hash, 'css');
             echo "\t\t<link href='" . $baseUrl . "/css/" . $hash . ".css' rel='stylesheet' " .
             "crossorigin='anonymous' integrity='sha384-" . $sri . "'>";
         }
