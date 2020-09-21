@@ -12,10 +12,13 @@ use PSFS\base\types\helpers\GeneratorHelper;
  */
 trait JsTrait {
 
+    use SRITrait;
+
     /**
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
+     * @throws \PSFS\base\exception\GeneratorException
      */
     protected function printJs(array $compiledFiles, $baseUrl, $hash)
     {
@@ -24,7 +27,9 @@ trait JsTrait {
                 echo "\t\t<script type='text/javascript' src='{$file}'></script>\n";
             }
         } else {
-            echo "\t\t<script type='text/javascript' src='" . $baseUrl . "/js/" . $hash . ".js'></script>\n";
+            $sri = $this->getSriHash($hash, 'js');
+            echo "\t\t<script type='text/javascript' src='" . $baseUrl . "/js/" . $hash . ".js'" .
+                " crossorigin='anonymous' integrity='sha384-" . $sri . "'></script>\n";
         }
     }
 

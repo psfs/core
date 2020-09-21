@@ -10,11 +10,16 @@
     {% if base_version == 'v1' %}
     <div class="panel panel-default">
         <div class="panel-body">
-        {% for user, admin in admins %}
-        <span class="label label-{{ admin.class }}">{{ user }}</span>
-        {% else %}
-        <p class="well">{{ "No hay administradores definidos" }}</p>
-        {% endfor %}
+            {% for user, admin in admins %}
+            <span class="label label-{{ admin.class }}">{{ user }}</span>
+            {% else %}
+            <p class="well">{{ "No hay administradores definidos" }}</p>
+            {% endfor %}
+        </div>
+        <div class="panel-footer">
+            <span class="label label-info">{{ "Administrador"|trans }}</span>&nbsp;
+            <span class="label label-warning">{{ "Gestor"|trans }}</span>&nbsp;
+            <span class="label label-primary">{{ "Usuario"|trans }}</span>&nbsp;
         </div>
     </div>
     {% else %}

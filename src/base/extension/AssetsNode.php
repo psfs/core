@@ -41,6 +41,10 @@ class AssetsNode extends Node
         $compiler->write('$parser->setHash(\'' . $this->hash . '\')')
             ->raw(";\n");
 
+        //Inicializamos SRI
+        $compiler->write('$parser->init(\'' . $this->type . '\')')
+            ->raw(";\n");
+
         //Asociamos los ficheros
         foreach ($scripts->getAttribute("value") as $value) {
             $compiler->write('$parser->addFile(\'' . $value . '\')')->raw(";\n");

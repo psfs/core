@@ -7,12 +7,15 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\AssetsHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\Inspector;
 
 /**
  * Trait CssTrait
  * @package PSFS\base\extension\traits
  */
 trait CssTrait {
+
+    use SRITrait;
 
     /**
      * @var string
@@ -112,6 +115,7 @@ trait CssTrait {
      */
     protected function extractCssResources($source, $file)
     {
+        Inspector::stats('[CssTrait] Start collecting resources from ' . $file, Inspector::SCOPE_DEBUG);
         $sourceFile = AssetsHelper::extractSourceFilename($source);
         $orig = realpath(dirname($file) . DIRECTORY_SEPARATOR . $sourceFile);
         $origPart = preg_split('/(\/|\\\)public(\/|\\\)/i', $orig);
@@ -129,6 +133,7 @@ trait CssTrait {
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
+        Inspector::stats('[CssTrait] End collecting resources from ' . $file, Inspector::SCOPE_DEBUG);
     }
 
     /**
@@ -143,7 +148,9 @@ trait CssTrait {
                 echo "\t\t<link href='{$file}' rel='stylesheet' media='screen, print'>";
             }
         } else {
-            echo "\t\t<link href='" . $baseUrl . "/css/" . $hash . ".css' rel='stylesheet'>";
+            $sri = $this->getSriHash($hash, 'css');
+            echo "\t\t<link href='" . $baseUrl . "/css/" . $hash . ".css' rel='stylesheet' " .
+            "crossorigin='anonymous' integrity='sha384-" . $sri . "'>";
         }
     }
 }
