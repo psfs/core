@@ -26,7 +26,8 @@ trait JsTrait {
             }
         } else {
             echo "\t\t<script type='text/javascript' src='" . $baseUrl . "/js/" . $hash . ".js'" .
-                " crossorigin='anonymous' integrity='sha384-" . $sri . "'></script>\n";
+                //" crossorigin='anonymous' integrity='sha384-" . $sri . "'></script>\n";
+                "></script>\n";
         }
     }
 

@@ -148,7 +148,8 @@ trait CssTrait {
             }
         } else {
             echo "\t\t<link href='" . $baseUrl . "/css/" . $hash . ".css' rel='stylesheet' " .
-            "crossorigin='anonymous' integrity='sha384-" . $sri . "'>";
+                //"crossorigin='anonymous' integrity='sha384-" . $sri . "'>";
+                "media='screen, print'>";
         }
     }
 }

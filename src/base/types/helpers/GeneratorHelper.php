@@ -59,14 +59,16 @@ class GeneratorHelper
      */
     public static function createDir($dir)
     {
-        try {
-            if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
-                throw new \Exception(t('Can\'t create directory ') . $dir);
-            }
-        } catch (\Exception $e) {
-            syslog(LOG_WARNING, $e->getMessage());
-            if (!file_exists(dirname($dir))) {
-                throw new GeneratorException($e->getMessage() . $dir);
+        if(!empty($dir)) {
+            try {
+                if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+                    throw new \Exception(t('Can\'t create directory ') . $dir);
+                }
+            } catch (\Exception $e) {
+                syslog(LOG_WARNING, $e->getMessage());
+                if (!file_exists(dirname($dir))) {
+                    throw new GeneratorException($e->getMessage() . $dir);
+                }
             }
         }
     }

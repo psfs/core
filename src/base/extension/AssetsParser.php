@@ -148,7 +148,7 @@ class AssetsParser
     public function printHtml()
     {
         $baseUrl = $this->cdnPath ?: '';
-        $sri = Config::getParam('debug') ? '' : $this->getSriHash($this->hash, $this->type);
+        $sri = ''; //Config::getParam('debug') ? '' : $this->getSriHash($this->hash, $this->type);
         switch ($this->type) {
             default:
             case "js":
