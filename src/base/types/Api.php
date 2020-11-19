@@ -113,8 +113,9 @@ abstract class Api extends Singleton
         if (count($this->query)) {
             Logger::log(static::class . ' gathering query string', LOG_DEBUG);
             foreach ($this->query as $key => $value) {
-                if ($key === self::API_ORDER_FIELD && is_array($value)) {
-                    foreach ($value as $field => $direction) {
+                if ($key === self::API_ORDER_FIELD) {
+                    $orders = json_decode($value, true);
+                    foreach ($orders as $field => $direction) {
                         $this->order->addOrder($field, $direction);
                     }
                 }
