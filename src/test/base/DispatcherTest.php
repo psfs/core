@@ -143,12 +143,10 @@ class DispatcherTest extends TestCase
         self::assertEquals('OK', $response);
     }
 
-    /**
-     * @expectedException \PSFS\base\exception\ConfigException
-     * @expectedExceptionMessage CONFIG
-     */
     public function testNotConfigured()
     {
+        $this->expectExceptionMessage("CONFIG");
+        $this->expectException(\PSFS\base\exception\ConfigException::class);
         $config = $this->mockConfiguredDebugConfig(false);
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method('httpNotFound')->willThrowException(new \PSFS\base\exception\ConfigException('CONFIG'));
@@ -156,12 +154,10 @@ class DispatcherTest extends TestCase
         $dispatcher->run();
     }
 
-    /**
-     * @expectedException \PSFS\base\exception\SecurityException
-     * @expectedExceptionMessage NOT AUTHORIZED
-     */
     public function testNotAuthorized()
     {
+        $this->expectExceptionMessage("NOT AUTHORIZED");
+        $this->expectException(\PSFS\base\exception\SecurityException::class);
         $config = $this->mockConfiguredDebugConfig();
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method('execute')->willThrowException(new \PSFS\base\exception\SecurityException('NOT AUTHORIZED'));
@@ -173,12 +169,10 @@ class DispatcherTest extends TestCase
         $dispatcher->run();
     }
 
-    /**
-     * @expectedException \PSFS\base\exception\RouterException
-     * @expectedExceptionMessage NOT FOUND
-     */
     public function testNotFound()
     {
+        $this->expectExceptionMessage("NOT FOUND");
+        $this->expectException(\PSFS\base\exception\RouterException::class);
         $config = $this->mockConfiguredDebugConfig();
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method('execute')->willThrowException(new \PSFS\base\exception\RouterException('NOT FOUND'));
@@ -188,12 +182,10 @@ class DispatcherTest extends TestCase
         $dispatcher->run();
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage CATCH EXCEPTION
-     */
     public function testCatchException()
     {
+        $this->expectExceptionMessage("CATCH EXCEPTION");
+        $this->expectException(\Exception::class);
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method('execute')->willThrowException(new \Exception('CATCH EXCEPTION'));
         $router->expects($this->any())->method('httpNotFound')->willThrowException(new \Exception('CATCH EXCEPTION'));

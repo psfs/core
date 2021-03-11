@@ -4,33 +4,30 @@
     "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "homepage": "https://github.com/psfs/core",
     "require": {
-        "php" : "^7.1",
+        "php" : "^7.2",
         "ext-gettext": "*",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-gmp": "*",
         "ext-fileinfo": "*",
-        "propel/propel": "2.0.0-alpha10",
-        "symfony/console": "v4.4.7",
-        "symfony/finder": "v4.4.7",
-        "symfony/translation": "v4.4.7",
-        "twig/twig": "v2.12.5",
+        "propel/propel": "2.0.0-alpha12",
+        "symfony/console": "v4.4.20",
+        "symfony/finder": "v4.4.20",
+        "symfony/translation": "v4.4.20",
+        "twig/twig": "v2.13.1",
         "twig/extensions": "v1.5.4",
         "monolog/monolog": "2.x",
-        "matthiasmullie/minify": "1.3.63"
+        "matthiasmullie/minify": "1.3.66"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7",
-        "phpmd/phpmd": "v2.8.1",
+        "phpunit/phpunit": "8.5.14",
+        "phpmd/phpmd": "v2.9.1",
         "roave/security-advisories": "dev-master"
     },
     "config" : {
         "optimize-autoloader": true,
         "discard-changes": true,
-        "apcu-autoloader": true,
-        "platform": {
-            "php": "7.2"
-        }
+        "apcu-autoloader": true
     },
     "license": "MIT",
     "authors": [
@@ -48,7 +45,8 @@
         "psr-4": {
             "PSFS\\": "src/"
         },
-        "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
+        "files": ["src/autoload.php"],
+        "exclude-from-classmap": ["src/test"]
     },
     "bin": [
         "src/bin/psfs"

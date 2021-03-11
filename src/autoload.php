@@ -4,7 +4,7 @@
  * @author Fran Lopez <fran.lopez84@hotmail.es>
  * @version 0.1
  */
-defined("BASE_DIR") or define("BASE_DIR", dirname(dirname(__DIR__)));
+defined("BASE_DIR") or define("BASE_DIR", dirname(__DIR__));
 \PSFS\bootstrap::load();
 if (!function_exists("PSFSAutoloader")) {
     // autoloader

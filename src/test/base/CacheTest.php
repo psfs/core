@@ -112,9 +112,9 @@ class CacheTest extends TestCase
 
     /**
      * Test privileges in folder
-     * @expectedException \PSFS\base\exception\ConfigException
      */
     public function testPrivileges() {
+        $this->expectException(\PSFS\base\exception\ConfigException::class);
         list($path, $hash) = $this->prepareTestVariables();
         GeneratorHelper::createDir(dirname(CACHE_DIR . DIRECTORY_SEPARATOR . $path));
         GeneratorHelper::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
