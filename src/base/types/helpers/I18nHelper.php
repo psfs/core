@@ -105,10 +105,11 @@ class I18nHelper
             }
         } elseif (is_object($data)) {
             $properties = get_class_vars($data);
-            foreach (array_keys($properties) as $property) {
-                $data->$property = self::utf8Encode($data->$property);
+            if(is_array($properties)) {
+                foreach (array_keys($properties) as $property) {
+                    $data->$property = self::utf8Encode($data->$property);
+                }
             }
-
         } elseif (is_string($data)) {
             $data = utf8_encode($data);
         }
