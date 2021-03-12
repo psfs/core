@@ -10,7 +10,7 @@
         "ext-curl": "*",
         "ext-gmp": "*",
         "ext-fileinfo": "*",
-        "propel/propel": "2.0.0-alpha12",
+        "propel/propel": "2.0.0-alpha10",
         "symfony/console": "v4.4.20",
         "symfony/finder": "v4.4.20",
         "symfony/translation": "v4.4.20",
