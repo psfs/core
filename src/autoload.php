@@ -14,17 +14,12 @@ if (!function_exists("PSFSAutoloader")) {
         if (strpos($class, 'PSFS') !== false) {
 
             // Change order src
-            $class = str_replace('PSFS', '', $class);
+            $class = preg_replace('/^\\\\?PSFS/', '', $class);
             // transform the namespace in path
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class);
 
             // filepath
             $abs_path = SOURCE_DIR . DIRECTORY_SEPARATOR . $path . ".php";
-            if (!file_exists($abs_path)) {
-                pre('&rarr;&nbsp;' . $class);
-                pre('&rarr;&nbsp;' . $path);
-                pre('&rarr;&nbsp;' . $abs_path);
-            }
 
             // require the file
             if (file_exists($abs_path)) {
