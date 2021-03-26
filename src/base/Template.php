@@ -27,7 +27,7 @@ class Template
 
     const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
-     * @var \Twig_Environment tpl
+     * @var \Twig\Environment tpl
      */
     protected $tpl;
     protected $filters = array();
@@ -45,7 +45,7 @@ class Template
 
     /**
      * Método que devuelve el loader del Template
-     * @return \Twig_LoaderInterface
+     * @return \Twig\Loader\LoaderInterface
      */
     public function getLoader()
     {
@@ -165,7 +165,7 @@ class Template
     protected function generateTemplate($tplDir, $domain = '')
     {
         if (!file_exists($tplDir)) {
-            return str_replace('%d', $domain, str_replace('%s', $tplDir, t('Path "%s" no existe para el dominio "%d"')));
+            return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Path "%s" no existe para el dominio "%d"'));
         }
         $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
         foreach ($templatesDir as $file) {
@@ -178,7 +178,7 @@ class Template
                 }
             }
         }
-        return str_replace('%d', $domain, str_replace('%s', $tplDir, t('Generando plantillas en path "%s" para el dominio "%d"')));
+        return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Generando plantillas en path "%s" para el dominio "%d"'));
     }
 
     /**
@@ -241,7 +241,7 @@ class Template
 
     /**
      * Método que devuelve el motod de plantillas
-     * @return \Twig_Environment
+     * @return \Twig\Environment
      */
     public function getTemplateEngine()
     {
@@ -320,7 +320,7 @@ class Template
      */
     private function generateTemplatesCache()
     {
-        /** @var \Twig_Loader_Filesystem $loader */
+        /** @var \Twig\Loader\FilesystemLoader $loader */
         $loader = $this->tpl->getLoader();
         $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {

@@ -17,12 +17,12 @@ class TemplateTest extends TestCase {
         // Check if the template engine is ok
         $engine = $template->getTemplateEngine();
         self::assertNotNull($engine, 'Error at Template creation');
-        self::assertInstanceOf('\\Twig_Environment', $engine);
+        self::assertInstanceOf('\\Twig\\Environment', $engine);
 
         // Check if the template loader is ok
         $loader = $template->getLoader();
         self::assertNotNull($loader, 'Error at Template creation');
-        self::assertInstanceOf('\\Twig_LoaderInterface', $loader);
+        self::assertInstanceOf('\\Twig\\Loader\\LoaderInterface', $loader);
 
         $domains = Template::getDomains(true);
         self::assertNotNull($domains);

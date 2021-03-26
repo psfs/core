@@ -9,7 +9,7 @@ use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 use Twig\Extension\AbstractExtension;
-use Twig\Extensions\TokenParser\TransTokenParser;
+use Twig\TokenParser\BlockTokenParser;
 use Twig\TwigFilter;
 
 /**
@@ -108,7 +108,7 @@ class CustomTranslateExtension extends AbstractExtension
      */
     public function getTokenParsers()
     {
-        return array(new  TransTokenParser());
+        return [new BlockTokenParser()];
     }
 
     /**
