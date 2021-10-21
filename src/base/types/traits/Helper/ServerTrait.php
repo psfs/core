@@ -60,6 +60,9 @@ trait ServerTrait {
      */
     public function getProtocol()
     {
+        if(Config::getParam('force.https', false)) {
+            return 'https://';
+        }
         return ($this->getServer('HTTPS') || $this->getServer('https')) ? 'https://' : 'http://';
     }
 

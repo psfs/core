@@ -83,6 +83,7 @@ class Config
         'assets.obfuscate', // Allow to obfuscate and gzip js and css files
         'allow.double.slashes', // Allow // in url paths, allowed as default
         'default.log.path', // Default logger path
+        'force.https', // Force https protocol for static resources
     ];
     protected $debug = false;
 
