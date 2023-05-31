@@ -9,22 +9,23 @@
 
 Requirements:
 
-* php 7.1+
+* php 8.0+
 * ext-gettext
 * ext-json
 * ext-curl
 * ext-gmp
+* ext-fileinfo
 
 Components that PSFS install:
 
 ```
-"propel/propel": "^2.0"
-"symfony/console": "@v4.4.7"
-"symfony/finder": "@v4v4v7"
-"twig/twig": "@v2.12.5"
-"twig/extensions": "@v1.5.4"
-"monolog/monolog": "@1.25.3"
-"matthiasmullie/minify": "@1.3.63"
+"propel/propel": "2.0.0-beta3",
+"symfony/console": "v6.x",
+"symfony/finder": "v6.x",
+"symfony/translation": "v6.x",
+"twig/twig": "3.6.0",
+"monolog/monolog": "3.x",
+"matthiasmullie/minify": "1.3.70"
 ```
 
 How to install using composer:
@@ -34,7 +35,7 @@ Install composer via: [GetComposer](https://getcomposer.org/download/)
 ```
 php composer.phar require psfs/core
 ./vendor/bin/psfs psfs:create:root
-php -S localhost:8080 -t ./html
+php -S 0.0.0.0:8080 -t ./html
 ```
 
 RoadMap:
