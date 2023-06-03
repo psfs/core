@@ -100,7 +100,7 @@ class Cache
         Inspector::stats('[Cache] Extracting data from cache', Inspector::SCOPE_DEBUG);
         switch ($transform) {
             case self::JSON:
-                $data = json_decode($data, true);
+                $data = json_decode($data ?: '', true);
                 break;
             case self::JSONGZ:
                 $data = self::extractDataWithFormat($data, self::GZIP);

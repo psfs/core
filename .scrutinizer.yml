@@ -3,7 +3,7 @@ checks:
 
 build:
   environment:
-    php: "7.3"
+    php: "8.2"
   tests:
     override:
       - php-scrutinizer-run

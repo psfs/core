@@ -117,7 +117,7 @@ class Security
      * Método que calcula si se está logado o para acceder a administración
      * @return bool
      */
-    public function canAccessRestrictedAdmin()
+    public function canAccessRestrictedAdmin(): bool
     {
         return (null !== $this->admin && !preg_match('/^\/admin\/login/i', Request::requestUri())) || self::isTest();
     }

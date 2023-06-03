@@ -1,4 +1,5 @@
 <?php
+require_once 'bootstrap.php';
 /**
  * Simple, Fast & Secure Framework
  * @author Fran Lopez <fran.lopez84@hotmail.es>

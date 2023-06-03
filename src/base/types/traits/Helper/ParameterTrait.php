@@ -17,14 +17,14 @@ trait ParameterTrait {
      */
     public function getParams()
     {
-        return $this->params;
+        return $this->params?: [];
     }
 
     /**
      * @param array|string $params
      * @return ParameterTrait
      */
-    public function setParams($params)
+    public function setParams($params): static
     {
         $this->params = $params;
         return $this;

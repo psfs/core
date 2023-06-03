@@ -1,13 +1,13 @@
 <?php
-namespace PSFS\test\services;
+namespace PSFS\tests\services;
 
 use PSFS\base\Router;
 use PSFS\base\types\helpers\GeneratorHelper;
-use PSFS\services\DocumentorService;
+use PSFS\services\DocumentorService as Service;
 
 /**
  * Class DocumentorServiceTest
- * @package PSFS\test\services
+ * @package PSFS\tests\services
  */
 class DocumentorServiceTest extends GeneratorServiceTest{
 
@@ -26,9 +26,9 @@ class DocumentorServiceTest extends GeneratorServiceTest{
         if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
             unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
         }
-        self::assertFileNotExists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
+        $this->assertFileDoesNotExist(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
         GeneratorHelper::deleteDir(CACHE_DIR);
-        self::assertDirectoryNotExists(CACHE_DIR, 'Cache folder already exists with data');
+        $this->assertDirectoryDoesNotExist(CACHE_DIR, 'Cache folder already exists with data');
         GeneratorHelper::createRoot(WEB_DIR, null, true);
     }
 
@@ -37,7 +37,7 @@ class DocumentorServiceTest extends GeneratorServiceTest{
      */
     protected function clearContext($modulePath) {
         GeneratorHelper::deleteDir($modulePath);
-        self::assertDirectoryNotExists($modulePath, 'Error trying to delete the module');
+        $this->assertDirectoryDoesNotExist($modulePath, 'Error trying to delete the module');
     }
 
     /**
@@ -46,15 +46,15 @@ class DocumentorServiceTest extends GeneratorServiceTest{
      */
     public function testApiDocumentation() {
         $modulePath = $this->checkCreateExistingModule();
-        self::assertDirectoryExists($modulePath, 'Module did not exists');
+        $this->assertDirectoryExists($modulePath, 'Module did not exists');
 
         Router::getInstance()->init();
-        $documentorService = DocumentorService::getInstance();
+        $documentorService = Service::getInstance();
         $module = $documentorService->getModules(self::MODULE_NAME);
         $doc = $documentorService->extractApiEndpoints($module);
         foreach($doc as $namespace => $endpoints) {
-            self::assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
-            self::assertCount(7, $endpoints, 'Different number of endpoints');
+            $this->assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
+            $this->assertCount(7, $endpoints, 'Different number of endpoints');
         }
         $this->clearContext($modulePath);
     }

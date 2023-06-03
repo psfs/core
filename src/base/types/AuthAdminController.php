@@ -14,7 +14,7 @@ class AuthAdminController extends Controller
 {
     use SecureTrait;
 
-    public function init()
+    public function init(): void
     {
         if (!$this->isAdmin()) {
             Admin::staticAdminLogon();
@@ -22,7 +22,7 @@ class AuthAdminController extends Controller
         parent::init();
     }
 
-    protected function getMenu()
+    protected function getMenu(): array
     {
         return AdminHelper::getAdminRoutes(Router::getInstance()->getRoutes());
     }

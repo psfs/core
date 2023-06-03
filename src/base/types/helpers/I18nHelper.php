@@ -36,7 +36,7 @@ class I18nHelper
                 $locale = array_shift($browserLocales);
             }
         }
-        $locale = strtolower($locale);
+        $locale = strtolower($locale ?: 'es_es');
         if (false !== strpos($locale, '_')) {
             $locale = explode('_', $locale);
             $locale = $locale[0];

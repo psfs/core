@@ -1,26 +1,27 @@
-FROM ubuntu:18.04
-MAINTAINER "Fran López <fran.lopez84@hotmail.es>"
+# 746792098073.dkr.ecr.eu-west-1.amazonaws.com/saas_php_base
+FROM --platform=linux/amd64 php:7.4-fpm
 
-# Update ubuntu
-RUN apt-get update
+LABEL 'author'='Fran Lopez <fran.lopez@pandago.eco>'
+LABEL 'version'='1.0.2'
 
-# Install basics
-RUN apt-get install locales openssl curl -y
-RUN locale-gen es_ES.UTF-8
+RUN apt-get update && apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev \
+    libmcrypt-dev libbz2-dev libgmp-dev libcurl4-gnutls-dev libicu-dev libxml2-dev libxslt-dev \
+    libzip-dev libonig-dev git unzip
+RUN docker-php-ext-configure gd
+RUN docker-php-ext-install bz2 curl gd gmp gettext iconv intl mbstring opcache mysqli pcntl pdo pdo_mysql soap xml xsl zip
+RUN apt-get install -y exif openssl libssl-dev libmcrypt-dev
 
-# Install php
-RUN apt-get install php7.2 php7.2-curl php7.2-gmp php7.2-json php7.2-mysql \
-    php7.2-xml php7.2-bz2 php7.2-fpm php7.2-intl php7.2-mbstring php7.2-soap php7.2-xsl php7.2-zip -y
+RUN pecl install mongodb \
+        &&  echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongo.ini
 
-# Install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php --install-dir=bin --filename=composer
+RUN pecl install redis \
+        &&  echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini
 
-# Install nginx
-RUN apt-get install nginx -y
+#RUN pecl install xdebug-3.1.5 \
+#        && echo "zend_extension=xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini
 
-EXPOSE 80
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php composer-setup.php --install-dir=/bin  --filename=composer
+RUN php -r "unlink('composer-setup.php');"
 
-RUN mkdir /psfs
-
-CMD nginx -g 'daemon off;'
+SHELL ["/bin/bash", "-c"]

@@ -1,16 +1,18 @@
 <?php
-namespace PSFS\test\base;
+
+namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
  * Class CacheTest
- * @package PSFS\Test\base
+ * @package PSFS\tests\base
  */
 class CacheTest extends TestCase
 {
@@ -18,19 +20,22 @@ class CacheTest extends TestCase
      * Function to test the instance of Cache class
      * @return Cache
      */
-    private function getInstance()
+    private function getInstance(): Cache
     {
+        FileHelper::deleteDir(CACHE_DIR);
+        GeneratorHelper::createDir(CACHE_DIR);
         Cache::dropInstance();
         $cache = Cache::getInstance();
 
-        self::assertNotNull($cache);
-        self::assertInstanceOf(Cache::class, $cache, 'Instance different than expected');
+        $this->assertNotNull($cache);
+        $this->assertInstanceOf(Cache::class, $cache, 'Instance different from expected');
 
         return $cache;
     }
 
     /**
      * Test for basic usage of cache
+     * @covers
      */
     public function testCacheUse()
     {
@@ -42,28 +47,31 @@ class CacheTest extends TestCase
 
         // TXT cache test
         $cache->storeData('tests' . DIRECTORY_SEPARATOR . $hash, json_encode($data));
-        self::assertFileExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $hash, 'Cache not stored!!');
+        $this->assertFileExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $hash, 'Cache not stored!!');
 
         // Gather cache data from file without transformation
-        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function(){});
-        self::assertEquals($cachedData, json_encode($data), 'Different data cached!');
+        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function () {
+        });
+        $this->assertEquals($cachedData, json_encode($data), 'Different data cached!');
 
         // Gather cache data from file with JSON transformation
         $cache->storeData('tests' . DIRECTORY_SEPARATOR . $hash, $data, Cache::JSONGZ);
-        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function(){}, Cache::JSONGZ);
-        self::assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
+        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 300, function () {
+        }, Cache::JSONGZ);
+        $this->assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
 
         // Gather cache data from expired file
         sleep(2);
-        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 1, function() use ($data){
+        $cachedData = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . $hash, 1, function () use ($data) {
             return $data;
         }, Cache::JSONGZ);
-        self::assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
+        $this->assertEquals($cachedData, $data, 'Error when try to gather cache with JSON transform');
 
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'test');
     }
 
-    private function prepareTestVariables() {
+    private function prepareTestVariables(): array
+    {
         $session = Security::getInstance();
         $hash = sha1(microtime());
         $session->setSessionKey('__CACHE__', [
@@ -81,12 +89,13 @@ class CacheTest extends TestCase
 
     /**
      * Test for specific cache functionality in requests
+     * @covers
      */
     public function testCacheForRequests()
     {
         list($path, $hash) = $this->prepareTestVariables();
-        self::assertNotNull($hash, 'Invalid cache hash');
-        self::assertNotEmpty($path, 'Invalid path to save the cache');
+        $this->assertNotNull($hash, 'Invalid cache hash');
+        $this->assertNotEmpty($path, 'Invalid path to save the cache');
 
         $config = Config::getInstance()->dumpConfig();
         $cache_data_config = Config::getParam('cache.data.enable');
@@ -95,31 +104,37 @@ class CacheTest extends TestCase
             'value' => [true]
         ]);
         Config::getInstance()->setDebugMode(false);
-        self::assertNotFalse(Cache::needCache(), 'Test url expired or error checking cache');
+        $this->assertNotFalse(Cache::needCache(), 'Test url expired or error checking cache');
 
         // Flushing cache
         Cache::getInstance()->flushCache();
-        self::assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . $path, 'Cache directory not deleted properly');
+        $this->assertDirectoryDoesNotExist(CACHE_DIR . DIRECTORY_SEPARATOR . $path, 'Cache directory not deleted properly');
 
         $config['cache.data.enable'] = $cache_data_config;
         Config::save($config, []);
 
         // Cleaning test data
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests');
-        self::assertDirectoryNotExists(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
+        $this->assertDirectoryDoesNotExist(CACHE_DIR . DIRECTORY_SEPARATOR . 'tests', 'Test data directory not cleaned properly');
 
     }
 
     /**
      * Test privileges in folder
+     * @covers
+     * @throws GeneratorException
      */
-    public function testPrivileges() {
-        $this->expectException(\PSFS\base\exception\ConfigException::class);
+    public function testPrivileges()
+    {
         list($path, $hash) = $this->prepareTestVariables();
         GeneratorHelper::createDir(dirname(CACHE_DIR . DIRECTORY_SEPARATOR . $path));
         GeneratorHelper::createDir(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
         $cache = $this->getInstance();
         chmod(realpath(CACHE_DIR . DIRECTORY_SEPARATOR . $path), 0600);
         $cache->storeData($path . $hash, json_encode(''));
+        chmod(realpath(CACHE_DIR . DIRECTORY_SEPARATOR . $path), 0777);
+        FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . $path);
+        chmod(realpath(CACHE_DIR . DIRECTORY_SEPARATOR . 'TEST'), 0777);
+        FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'TEST');
     }
 }

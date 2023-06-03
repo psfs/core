@@ -5,7 +5,7 @@ namespace PSFS\base;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Logger as Monolog;
+use Monolog\Level;
 use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
@@ -78,7 +78,7 @@ class Logger
      */
     private function addPushLogger($logger, $debug)
     {
-        $this->logger = new Monolog(strtoupper($logger));
+        $this->logger = new \Monolog\Logger(strtoupper($logger));
         $this->logger->pushHandler($this->addDefaultStreamHandler($debug));
         if ($debug) {
             $phpFireLog = Config::getParam('logger.phpFire');
@@ -162,27 +162,27 @@ class Logger
      * @param int $level
      * @return bool
      */
-    private function checkLogLevel($level = \Monolog\Logger::NOTICE)
+    private function checkLogLevel($level = Level::Notice)
     {
         switch ($this->logLevel) {
             case 'DEBUG':
-                $logPass = Monolog::DEBUG;
+                $logPass = Level::Debug;
                 break;
             case 'INFO':
-                $logPass = Monolog::INFO;
+                $logPass = Level::Info;
                 break;
             default:
             case 'NOTICE':
-                $logPass = Monolog::NOTICE;
+                $logPass = Level::Notice;
                 break;
             case 'WARNING':
-                $logPass = Monolog::WARNING;
+                $logPass = Level::Warning;
                 break;
             case 'ERROR':
-                $logPass = Monolog::ERROR;
+                $logPass = Level::Error;
                 break;
             case 'CRITICAL':
-                $logPass = Monolog::CRITICAL;
+                $logPass = Level::Critical;
                 break;
         }
         return $logPass <= $level;
@@ -191,10 +191,10 @@ class Logger
     /**
      * @param string $msg
      * @param int $type
-     * @param array $context
+     * @param array|null $context
      * @param bool $force
      */
-    public static function log($msg, $type = LOG_DEBUG, array $context = null, $force = false)
+    public static function log(string $msg, int $type = LOG_DEBUG, array $context = null, bool $force = false)
     {
         if (null === $context) {
             $context = [];
@@ -240,7 +240,7 @@ class Logger
         $output = "[%datetime%] [%channel%:%level_name%]\t%message%\t%context%\t%extra%\n";
         // finally, create a formatter
         $formatter = new LineFormatter($output, $dateFormat);
-        $stream = new StreamHandler($this->stream, $debug ? Monolog::DEBUG : Monolog::WARNING);
+        $stream = new StreamHandler($this->stream, $debug ? Level::Debug : Level::Warning);
         $stream->setFormatter($formatter);
         return $stream;
     }

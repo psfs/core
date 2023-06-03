@@ -18,6 +18,7 @@ abstract class CurlService extends SimpleService
     use CurlTrait;
 
     const PSFS_TRACK_HEADER = 'X-PSFS-UID';
+    const PSFS_AUTH_HEADER = 'X-PSFS-SEC-TOKEN';
 
     public function init()
     {
@@ -62,7 +63,7 @@ abstract class CurlService extends SimpleService
      */
     protected function addRequestToken($secret, $module = 'PSFS')
     {
-        $this->addHeader('X-PSFS-SEC-TOKEN', SecurityHelper::generateToken($secret, $module));
+        $this->addHeader(self::PSFS_AUTH_HEADER, SecurityHelper::generateToken($secret, $module));
     }
 
     /**
@@ -116,7 +117,7 @@ abstract class CurlService extends SimpleService
         switch (strtoupper($this->type)) {
             case Request::VERB_GET:
                 if (!empty($this->params)) {
-                    $sep = false === strpos($this->getUrl(), '?') ? '?' : '';
+                    $sep = !str_contains($this->getUrl(), '?') ? '?' : '';
                     $this->setUrl($this->getUrl() . $sep . http_build_query($this->getParams()), false);
                 }
                 break;
@@ -128,10 +129,9 @@ abstract class CurlService extends SimpleService
         }
 
         $this->applyCurlBehavior(
-            array_key_exists(CURLOPT_RETURNTRANSFER, $this->options) ? (bool)$this->options[CURLOPT_RETURNTRANSFER] : true,
-            array_key_exists(CURLOPT_FOLLOWLOCATION, $this->options) ? (bool)$this->options[CURLOPT_FOLLOWLOCATION] : true,
-            array_key_exists(CURLOPT_SSL_VERIFYHOST, $this->options) ? (bool)$this->options[CURLOPT_SSL_VERIFYHOST] : false,
-            array_key_exists(CURLOPT_SSL_VERIFYPEER, $this->options) ? (bool)$this->options[CURLOPT_SSL_VERIFYPEER] : false
+            !array_key_exists(CURLOPT_RETURNTRANSFER, $this->options) || (bool)$this->options[CURLOPT_RETURNTRANSFER],
+            !array_key_exists(CURLOPT_FOLLOWLOCATION, $this->options) || (bool)$this->options[CURLOPT_FOLLOWLOCATION],
+            array_key_exists(CURLOPT_SSL_VERIFYPEER, $this->options) ? (int)$this->options[CURLOPT_SSL_VERIFYPEER] : 0
         );
     }
 
@@ -156,14 +156,13 @@ abstract class CurlService extends SimpleService
     /**
      * @param bool $returnTransfer
      * @param bool $followLocation
-     * @param bool $sslVerifyHost
      * @param bool $sslVerifyPeer
      */
-    protected function applyCurlBehavior($returnTransfer = true, $followLocation = true, $sslVerifyHost = false, $sslVerifyPeer = false)
+    protected function applyCurlBehavior($returnTransfer = true, $followLocation = true, $sslVerifyPeer = false)
     {
         $this->addOption(CURLOPT_RETURNTRANSFER, Config::getParam('curl.returnTransfer', $returnTransfer));
         $this->addOption(CURLOPT_FOLLOWLOCATION, Config::getParam('curl.followLocation', $followLocation));
-        $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('curl.sslVerifyHost', $sslVerifyHost));
+        $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('debug') ? 0 : 2);
         $this->addOption(CURLOPT_SSL_VERIFYPEER, Config::getParam('curl.sslVerifyPeer', $sslVerifyPeer));
     }
 

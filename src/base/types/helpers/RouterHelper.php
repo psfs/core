@@ -175,7 +175,7 @@ class RouterHelper
             foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                     $params[$param->getName()] = $param->getDefaultValue();
-                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue(), $regex);
+                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue() ?: '', $regex ?: '');
                 } elseif (!$param->isOptional()) {
                     $requirements[] = $param->getName();
                 }
@@ -201,7 +201,7 @@ class RouterHelper
         $regexpRoute = AnnotationHelper::extractRoute($docComments);
         if (null !== $regexpRoute) {
             list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($regexpRoute, $method);
-            if ('' !== $api && false !== strpos($regex, '__API__')) {
+            if ('' !== $api && str_contains($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
             }

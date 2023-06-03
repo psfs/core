@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\test\base;
+namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
@@ -7,7 +7,7 @@ use PSFS\base\Template;
 
 /**
  * Class TemplateTest
- * @package PSFS\test
+ * @package PSFS\tests
  */
 class TemplateTest extends TestCase {
 
@@ -16,31 +16,31 @@ class TemplateTest extends TestCase {
 
         // Check if the template engine is ok
         $engine = $template->getTemplateEngine();
-        self::assertNotNull($engine, 'Error at Template creation');
-        self::assertInstanceOf('\\Twig\\Environment', $engine);
+        $this->assertNotNull($engine, 'Error at Template creation');
+        $this->assertInstanceOf('\\Twig\\Environment', $engine);
 
         // Check if the template loader is ok
         $loader = $template->getLoader();
-        self::assertNotNull($loader, 'Error at Template creation');
-        self::assertInstanceOf('\\Twig\\Loader\\LoaderInterface', $loader);
+        $this->assertNotNull($loader, 'Error at Template creation');
+        $this->assertInstanceOf('\\Twig\\Loader\\LoaderInterface', $loader);
 
         $domains = Template::getDomains(true);
-        self::assertNotNull($domains);
+        $this->assertNotNull($domains);
 
         $path = Template::extractPath(__DIR__);
-        self::assertNotNull($path);
-        self::assertFileExists($path);
+        $this->assertNotNull($path);
+        $this->assertFileExists($path);
 
         Config::getInstance()->setDebugMode(true);
         $output = $template->dump('index.html.twig');
-        self::assertNotNull($output);
-        self::assertNotEmpty($output);
+        $this->assertNotNull($output);
+        $this->assertNotEmpty($output);
 
         Config::getInstance()->setDebugMode(false);
         $output2 = $template->dump('index.html.twig');
-        self::assertNotNull($output2);
-        self::assertNotEmpty($output2);
-        self::assertNotEquals($output2, $output, 'Production template is the same than development one');
+        $this->assertNotNull($output2);
+        $this->assertNotEmpty($output2);
+        $this->assertNotEquals($output2, $output, 'Production template is the same than development one');
         Config::getInstance()->setDebugMode(true);
     }
 
@@ -48,12 +48,12 @@ class TemplateTest extends TestCase {
         $template = Template::getInstance();
 
         $template->setPublicZone(true);
-        self::assertTrue($template->isPublicZone());
+        $this->assertTrue($template->isPublicZone());
         $template->setPublicZone(false);
-        self::assertFalse($template->isPublicZone());
+        $this->assertFalse($template->isPublicZone());
 
         $translations = $template->regenerateTemplates();
-        self::assertNotNull($translations);
-        self::assertNotEmpty($translations);
+        $this->assertNotNull($translations);
+        $this->assertNotEmpty($translations);
     }
 }

@@ -33,7 +33,7 @@ abstract class Admin extends AuthAdminController
      * @throws UserAuthException
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function staticAdminLogon()
+    public static function staticAdminLogon(): string
     {
         if (self::isTest()) {
             throw new UserAuthException();
