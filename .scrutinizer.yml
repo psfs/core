@@ -3,7 +3,10 @@ checks:
 
 build:
   environment:
-    php: "8.2"
+    php:
+      version: '8.2'
+      ini:
+        xdebug.mode: coverage
   tests:
     override:
       - php-scrutinizer-run
@@ -17,7 +20,7 @@ filter:
   excluded_paths:
     - src/bin/*
     - src/command/*
-    - src/test/*
+    - src/tests/*
     - src/public/*
     - src/templates/*
     - locale/*

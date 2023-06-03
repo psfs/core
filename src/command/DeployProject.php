@@ -1,10 +1,10 @@
 <?php
 namespace PSFS\Command;
 
-use Composer\Console\Application;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

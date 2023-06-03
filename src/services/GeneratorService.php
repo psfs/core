@@ -55,7 +55,6 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @param string $controllerType
-     * @throws \PSFS\base\exception\GeneratorException
      */
     private function createModuleBaseFiles($module, $modPath, $force = false, $controllerType = '')
     {
@@ -64,10 +63,20 @@ class GeneratorService extends SimpleService
         $this->generateServiceTemplate($module, $modulePath, $force);
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generateSchemaTemplate($module, $modulePath, $force);
-        $this->generatePropertiesTemplate($module, $modulePath, $force);
-        $this->generateConfigTemplate($modulePath, $force);
+        $this->generateConfigurationTemplates($module, $modulePath, $force);
         $this->generateIndexTemplate($module, $modulePath, $force);
         $this->generatePublicTemplates($modulePath, $force);
+    }
+
+    /**
+     * @param string $module
+     * @param string $modulePath
+     * @param bool $force
+     * @return void
+     */
+    public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void {
+        $this->generatePropertiesTemplate($module, $modulePath, $force);
+        $this->generateConfigTemplate($modulePath, $force);
     }
 
     /**

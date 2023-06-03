@@ -1,11 +1,11 @@
 <?php
 namespace PSFS\Command;
 
-use Composer\Console\Application;
 use FilesystemIterator;
 use Phar;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
