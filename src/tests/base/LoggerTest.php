@@ -2,6 +2,7 @@
 
 namespace PSFS\tests\base;
 
+use Monolog\Level;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
@@ -28,7 +29,7 @@ class LoggerTest extends TestCase
 
     /**
      * Test to check if the Singleton pattern works
-     * @covers
+     * @covers \PSFS\base\Logger
      */
     public function testSingletonLoggerInstance()
     {
@@ -43,7 +44,7 @@ class LoggerTest extends TestCase
 
     /**
      * Test all the functionality for the logger class
-     * @covers
+     * @covers \PSFS\base\Logger
      */
     public function testLogFunctions()
     {
@@ -71,7 +72,8 @@ class LoggerTest extends TestCase
 
     /**
      * Test non default logger configurations set
-     * @covers
+     * @covers \PSFS\base\config\Config
+     * @covers \PSFS\base\Logger
      * @throws GeneratorException
      */
     public function testLogSetup()
@@ -85,7 +87,7 @@ class LoggerTest extends TestCase
         // Create a new logger instance
         $logger = new Logger(['test', true]);
         $this->assertInstanceOf(Logger::class, $logger, 'Logger interface');
-        $logger->addLog('Test', \Monolog\Logger::DEBUG);
+        $logger->addLog('Test', Level::Debug);
         $logger = null;
         unset($defaultConfig['logger.memory']);
         Config::save($defaultConfig, []);

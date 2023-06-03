@@ -88,7 +88,7 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Service
      * @return void
      */
     public function testServiceTraits()
@@ -114,7 +114,7 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\types\CurlService
      * @return void
      */
     public function testSimpleCall()
@@ -127,7 +127,7 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\types\CurlService
      * @return void
      */
     public function testAuthorizedCall()

@@ -12,7 +12,8 @@ use PSFS\base\Template;
 class TemplateTest extends TestCase {
 
     /**
-     * @covers
+     * @covers \PSFS\base\Template
+     * @covers \PSFS\base\config\Config
      * @return void
      */
     public function testTemplateBasics() {
@@ -49,7 +50,7 @@ class TemplateTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Template
      * @return void
      */
     public function testTranslations() {

@@ -81,7 +81,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\Dispatcher
      * @return void
      */
     public function testConstructor()
@@ -94,7 +94,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\Dispatcher
      * @return void
      */
     public function testMem()
@@ -107,7 +107,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\Dispatcher
      * @return void
      */
     public function testTS()
@@ -121,7 +121,7 @@ class DispatcherTest extends TestCase
 
     /**
      * Check if notice was converted to exception
-     * @covers
+     * @covers \PSFS\Dispatcher
      * @throws Exception
      */
     public function testNotice()
@@ -140,7 +140,7 @@ class DispatcherTest extends TestCase
 
     /**
      * Check if warning was converted to exception
-     * @covers
+     * @covers \PSFS\Dispatcher
      * @throws Exception
      */
     public function testWarning()
@@ -156,7 +156,8 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
+     * @covers \PSFS\Dispatcher
      * @throws GeneratorException
      * @throws Exception
      */
@@ -172,7 +173,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
      * @throws GeneratorException
      * @throws Exception
      */
@@ -189,7 +190,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
      * @throws GeneratorException
      * @throws Exception
      */
@@ -209,7 +210,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
      * @throws GeneratorException
      * @throws Exception
      */
@@ -227,7 +228,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
      * @throws GeneratorException
      * @throws Exception
      */
@@ -244,7 +245,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\types\helpers\Inspector
      * @return void
      */
     public function testStats()
@@ -259,7 +260,10 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\controller\base\Admin
+     * @covers \PSFS\base\types\helpers\ResponseHelper
+     * @covers \PSFS\base\types\helpers\SecurityHelper
+     * @covers \PSFS\base\Security
      * @throws GeneratorException
      * @throws Exception
      */

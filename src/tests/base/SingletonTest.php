@@ -12,7 +12,7 @@ use PSFS\tests\examples\SingletonClassTest;
 class SingletonTest extends TestCase {
 
     /**
-     * @covers
+     * @covers \PSFS\base\Singleton
      * @return void
      * @throws \ReflectionException
      */

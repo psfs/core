@@ -18,7 +18,8 @@ use PSFS\Dispatcher;
 class RouterTest extends TestCase {
 
     /**
-     * @covers
+     * @covers \PSFS\base\Router
+     * @covers \PSFS\base\config\Config
      * @return void
      */
     public function testRouterBasics() {
@@ -38,7 +39,7 @@ class RouterTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Router
      * @return void
      * @throws \Exception
      */
@@ -51,7 +52,9 @@ class RouterTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
+     * @covers \PSFS\base\Router
+     * @covers \PSFS\controller\base\Admin
      * @return void
      * @throws \PSFS\base\exception\GeneratorException
      */
@@ -70,7 +73,10 @@ class RouterTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Router
+     * @covers \PSFS\base\types\helpers\SecurityHelper
+     * @covers \PSFS\base\Security
+     * @covers \PSFS\base\config\Config
      * @return void
      * @throws \Exception
      */
@@ -88,7 +94,11 @@ class RouterTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Router
+     * @covers \PSFS\base\Security
+     * @covers \PSFS\base\types\helpers\SecurityHelper
+     * @covers \PSFS\controller\ConfigController
+     * @covers \PSFS\base\config\Config
      * @return void
      * @throws \Exception
      */
@@ -106,7 +116,7 @@ class RouterTest extends TestCase {
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Router
      * @return void
      */
     public function testGetRoute() {

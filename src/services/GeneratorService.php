@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\services;
 
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SimpleService;
@@ -55,6 +56,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @param string $controllerType
+     * @throws GeneratorException
      */
     private function createModuleBaseFiles($module, $modPath, $force = false, $controllerType = '')
     {
@@ -72,11 +74,13 @@ class GeneratorService extends SimpleService
      * @param string $modulePath
      * @param bool $force
      * @return void
+     * @throws GeneratorException
      */
     public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void {
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generatePropertiesTemplate($module, $modulePath, $force);
         $this->generateConfigTemplate($modulePath, $force);
+        $this->createModuleModels($module, CORE_DIR . DIRECTORY_SEPARATOR);
     }
 
     /**

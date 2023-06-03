@@ -57,6 +57,8 @@ class ConfigTest extends TestCase
      * Test that checks basic functionality
      * @return array
      * @throws GeneratorException
+     * @covers \PSFS\base\types\helpers\GeneratorHelper
+     * @covers \PSFS\base\config\Config
      */
     public function getBasicConfigUse()
     {
@@ -97,7 +99,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\config\Config
      * @return void
      * @throws GeneratorException
      */
@@ -124,7 +126,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\config\Config
      * @return void
      * @throws GeneratorException
      */

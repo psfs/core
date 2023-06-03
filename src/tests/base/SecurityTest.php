@@ -36,7 +36,7 @@ class SecurityTest extends TestCase
 
     /**
      * Test basic static functionality for Security class
-     * @covers
+     * @covers \PSFS\base\Security
      */
     public function testSecurityBasics(): Security
     {
@@ -57,7 +57,9 @@ class SecurityTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
+     * @covers \PSFS\base\Request
+     * @covers \PSFS\services\AdminServices
      * @depends testSecurityBasics
      * @return Security
      * @throws GeneratorException
@@ -106,7 +108,7 @@ class SecurityTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\Security
      * @param Security $security
      * @depends testSecurityUserManagement
      * @throws Exception

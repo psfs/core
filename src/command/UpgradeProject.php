@@ -20,8 +20,9 @@ $console
         foreach($modules as $module => $config) {
             $clean_module = str_replace(['@', '\\', '/'], '', $module);
             if($clean_module !== 'ROOT') {
-                GeneratorService::getInstance()->generateConfigurationTemplates($module, $config['base']);
-                $output->writeln("\t- Actualizado módulo {$clean_module}");
+                $output->write("\t- Actualizando módulo {$clean_module}");
+                GeneratorService::getInstance()->generateConfigurationTemplates($clean_module, $config['base']);
+                $output->writeln("\tDONE!");
             }
         }
         $router = Router::getInstance();

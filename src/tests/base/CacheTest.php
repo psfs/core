@@ -36,7 +36,8 @@ class CacheTest extends TestCase
 
     /**
      * Test for basic usage of cache
-     * @covers
+     * @covers \PSFS\base\Cache
+     * @covers \PSFS\base\types\helpers\FileHelper
      */
     public function testCacheUse()
     {
@@ -90,7 +91,9 @@ class CacheTest extends TestCase
 
     /**
      * Test for specific cache functionality in requests
-     * @covers
+     * @covers \PSFS\base\config\Config
+     * @covers \PSFS\base\Cache
+     * @covers \PSFS\base\types\helpers\FileHelper
      */
     public function testCacheForRequests()
     {
@@ -122,7 +125,8 @@ class CacheTest extends TestCase
 
     /**
      * Test privileges in folder
-     * @covers
+     * @covers \PSFS\base\types\helpers\GeneratorHelper
+     * @covers \PSFS\base\types\helpers\FileHelper
      * @throws GeneratorException
      */
     public function testPrivileges()

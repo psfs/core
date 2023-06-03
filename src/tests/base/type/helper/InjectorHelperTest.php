@@ -13,7 +13,6 @@ class InjectorHelperTest extends TestCase
 
     /**
      * @return ReflectionClass
-     * @throws ReflectionException
      */
     private function getExampleReflector()
     {
@@ -21,7 +20,7 @@ class InjectorHelperTest extends TestCase
     }
 
     /**
-     * @covers
+     * @covers \PSFS\base\types\helpers\InjectorHelper
      * @throws ReflectionException
      */
     public function testInjector()

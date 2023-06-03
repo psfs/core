@@ -16,7 +16,7 @@ services:
             - psfs-network
         working_dir: "/app"
         ports:
-            -   "${HOST_PORT:-8001}:8080"
+            -   "${HOST_PORT:-8002}:8080"
         command: 'php -S 0.0.0.0:8080 -t ./html'
         depends_on:
             - redis
