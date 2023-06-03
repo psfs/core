@@ -22,7 +22,7 @@ trait TestTrait {
     /**
      * @param bool $test
      */
-    public static function setTest($test)
+    public static function setTest(bool $test): void
     {
         self::$test = $test;
     }

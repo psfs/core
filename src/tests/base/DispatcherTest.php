@@ -1,8 +1,12 @@
 <?php
-namespace PSFS\test\base;
 
+namespace PSFS\tests\base;
+
+use PHPUnit\Framework\MockObject\Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\Inspector;
@@ -13,19 +17,19 @@ use PSFS\Dispatcher;
 
 /**
  * Class DispatcherTest
- * @package PSFS\test\base
+ * @package PSFS\tests\base
  */
 class DispatcherTest extends TestCase
 {
 
     /**
      * Método que devuelve una instancia del Dspatcher
-     * @param PHPUnit_Framework_MockObject_MockObject $config
-     * @param PHPUnit_Framework_MockObject_MockObject $router
-     * @param PHPUnit_Framework_MockObject_MockObject $security
+     * @param MockObject|Config|null $config
+     * @param MockObject|Router|null $router
+     * @param MockObject|Security|null $security
      * @return Dispatcher
      */
-    private function getInstance($config = null, $router = null, $security = null)
+    private function getInstance(MockObject|Config $config = null, MockObject|Router $router = null, MockObject|Security $security = null): Dispatcher
     {
         $dispatcher = Dispatcher::getInstance();
         Security::setTest(false);
@@ -45,9 +49,10 @@ class DispatcherTest extends TestCase
      * Método que crea un objeto Mock seteado a debug
      * @param boolean $configured
      * @param boolean $debug
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
+     * @throws Exception
      */
-    private function mockConfiguredDebugConfig($configured = true, $debug = true)
+    private function mockConfiguredDebugConfig(bool $configured = true, bool $debug = true): MockObject
     {
         $config = $this->createMock(Config::class);
         $config->expects($this->any())->method('isConfigured')->will($this->returnValue($configured));
@@ -57,18 +62,20 @@ class DispatcherTest extends TestCase
 
     /**
      * Método que mockea la clase Router
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
+     * @throws Exception
      */
-    private function mockDebugRouter()
+    private function mockDebugRouter(): MockObject
     {
         return $this->createMock(Router::class);
     }
 
     /**
      * Método que mockea la clase Router
-     * @return \PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
+     * @throws Exception
      */
-    private function mockDebugSecurity()
+    private function mockDebugSecurity(): MockObject
     {
         return $this->createMock(Security::class);
     }
@@ -77,31 +84,32 @@ class DispatcherTest extends TestCase
     {
         $dispatcher = $this->getInstance();
 
-        self::assertNotNull($dispatcher);
-        self::assertInstanceOf(Dispatcher::class, $dispatcher);
+        $this->assertNotNull($dispatcher);
+        $this->assertInstanceOf(Dispatcher::class, $dispatcher);
 
     }
 
     public function testMem()
     {
         $dispatcher = $this->getInstance();
-        self::assertNotNull($dispatcher->getMem('Bytes'));
-        self::assertNotNull($dispatcher->getMem('KBytes'));
-        self::assertNotNull($dispatcher->getMem('MBytes'));
-        self::assertNotNull($dispatcher->getMem());
+        $this->assertNotNull($dispatcher->getMem('Bytes'));
+        $this->assertNotNull($dispatcher->getMem('KBytes'));
+        $this->assertNotNull($dispatcher->getMem('MBytes'));
+        $this->assertNotNull($dispatcher->getMem());
     }
 
     public function testTS()
     {
         $dispatcher = $this->getInstance();
         $ts = $dispatcher->getTs();
-        self::assertNotNull($ts);
+        $this->assertNotNull($ts);
         usleep(200);
-        self::assertGreaterThan($ts, $dispatcher->getTs());
+        $this->assertGreaterThan($ts, $dispatcher->getTs());
     }
 
     /**
      * Check if notice was converted to exception
+     * @throws Exception
      */
     public function testNotice()
     {
@@ -113,12 +121,13 @@ class DispatcherTest extends TestCase
             unset($test);
             $this->fail('Exception has not been thrown');
         } catch (\Exception $e) {
-            self::assertTrue(true);
+            $this->assertTrue(true);
         }
     }
 
     /**
      * Check if warning was converted to exception
+     * @throws Exception
      */
     public function testWarning()
     {
@@ -128,10 +137,14 @@ class DispatcherTest extends TestCase
             file_get_contents(__DIR__ . 'test.txt');
             $this->fail('Exception has not been thrown');
         } catch (\Exception $e) {
-            self::assertTrue(true);
+            $this->assertTrue(true);
         }
     }
 
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testNormalExecution()
     {
         $router = $this->mockDebugRouter();
@@ -139,10 +152,14 @@ class DispatcherTest extends TestCase
 
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
         $response = $dispatcher->run();
-        self::assertNotNull($response);
-        self::assertEquals('OK', $response);
+        $this->assertNotNull($response);
+        $this->assertEquals('OK', $response);
     }
 
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testNotConfigured()
     {
         $this->expectExceptionMessage("CONFIG");
@@ -151,9 +168,14 @@ class DispatcherTest extends TestCase
         $router = $this->mockDebugRouter();
         $router->expects($this->any())->method('httpNotFound')->willThrowException(new \PSFS\base\exception\ConfigException('CONFIG'));
         $dispatcher = $this->getInstance($config, $router);
+        Security::setTest(true);
         $dispatcher->run();
     }
 
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testNotAuthorized()
     {
         $this->expectExceptionMessage("NOT AUTHORIZED");
@@ -165,10 +187,14 @@ class DispatcherTest extends TestCase
         $security = $this->mockDebugSecurity();
         $security->expects($this->any())->method('notAuthorized')->willThrowException(new \PSFS\base\exception\SecurityException('NOT AUTHORIZED'));
         $dispatcher = $this->getInstance($config, $router, $security);
-
+        Security::setTest(true);
         $dispatcher->run();
     }
 
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testNotFound()
     {
         $this->expectExceptionMessage("NOT FOUND");
@@ -178,10 +204,14 @@ class DispatcherTest extends TestCase
         $router->expects($this->any())->method('execute')->willThrowException(new \PSFS\base\exception\RouterException('NOT FOUND'));
         $router->expects($this->any())->method('httpNotFound')->willThrowException(new \PSFS\base\exception\RouterException('NOT FOUND'));
         $dispatcher = $this->getInstance($config, $router);
-
+        Security::setTest(true);
         $dispatcher->run();
     }
 
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testCatchException()
     {
         $this->expectExceptionMessage("CATCH EXCEPTION");
@@ -190,20 +220,27 @@ class DispatcherTest extends TestCase
         $router->expects($this->any())->method('execute')->willThrowException(new \Exception('CATCH EXCEPTION'));
         $router->expects($this->any())->method('httpNotFound')->willThrowException(new \Exception('CATCH EXCEPTION'));
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
+        Security::setTest(true);
         $dispatcher->run();
     }
 
-    public function testStats() {
+    public function testStats()
+    {
         Inspector::stats('test1', Inspector::SCOPE_DEBUG);
         $stats = Inspector::getStats();
-        self::assertNotEmpty($stats, 'Empty stats');
+        $this->assertNotEmpty($stats, 'Empty stats');
         Inspector::stats('test2', Inspector::SCOPE_DEBUG);
         $secondStats = Inspector::getStats(Inspector::SCOPE_DEBUG);
-        self::assertNotEmpty($secondStats, 'Empty stats');
-        self::assertNotEquals($stats, $secondStats, 'Stats are similar');
+        $this->assertNotEmpty($secondStats, 'Empty stats');
+        $this->assertNotEquals($stats, $secondStats, 'Stats are similar');
     }
 
-    public function testExecuteRoute() {
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
+    public function testExecuteRoute()
+    {
         $router = Router::getInstance();
         $security = Security::getInstance();
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router, $security);
@@ -213,10 +250,10 @@ class DispatcherTest extends TestCase
         SecurityHelper::setTest(true);
         Config::setTest(true);
         $result = $dispatcher->run('/admin/config/params');
-        self::assertNotEmpty($result, 'Empty response');
+        $this->assertNotEmpty($result, 'Empty response');
         $jsonDecodedResponse = json_decode($result, true);
-        self::assertNotNull($jsonDecodedResponse, 'Bad JSON response');
-        self::assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
+        $this->assertNotNull($jsonDecodedResponse, 'Bad JSON response');
+        $this->assertTrue(is_array($jsonDecodedResponse), 'Bad decoded response');
         Admin::setTest(false);
         Security::setTest(false);
         SecurityHelper::setTest(false);

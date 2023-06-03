@@ -1,12 +1,12 @@
 <?php
-namespace PSFS\test\examples;
+namespace PSFS\tests\examples;
 
 use PSFS\base\Request;
 use PSFS\base\Service;
 
 /**
  * Class AuthServiceTest
- * @package PSFS\test\examples
+ * @package PSFS\tests\examples
  */
 final class AuthServiceTest extends Service {
 
@@ -15,8 +15,7 @@ final class AuthServiceTest extends Service {
         $this->addAuthHeader($user, $password);
         $this->addRequestToken($password, 'TEST');
         $this->setDebug(true);
-        $this->addOption(CURLINFO_CONTENT_TYPE, 'application/json');
-        $this->setIsJson(true);
+        $this->setIsJson();
         $this->setType(Request::VERB_GET);
         $this->callSrv();
     }

@@ -1,10 +1,12 @@
 <?php
-namespace PSFS\test\examples;
+
+namespace PSFS\tests\examples;
 
 use PSFS\base\Security;
 use PSFS\base\Singleton;
 
-class SingletonClassTest extends Singleton {
+class SingletonClassTest extends Singleton
+{
     /**
      * @Injectable
      * @var \PSFS\base\Security $security
@@ -12,7 +14,7 @@ class SingletonClassTest extends Singleton {
     protected $security;
     /**
      * @Injectable
-     * @var \PSFS\test\examples\NonSingletonClassTest $testClass
+     * @var \PSFS\tests\examples\NonSingletonClassTest $testClass
      */
     protected $testClass;
     /**
@@ -32,11 +34,13 @@ class SingletonClassTest extends Singleton {
      */
     public static $staticVariable;
 
-    public function init() {
+    public function init()
+    {
         parent::init();
     }
 
-    public function setSecurity(Security $security) {
+    public function setSecurity(Security $security)
+    {
         $this->security = $security;
     }
 }

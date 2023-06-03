@@ -67,7 +67,7 @@ class SecurityHelper
      * @param string $token
      * @return string
      */
-    private static function mixToken($timestamp, $hash, $token)
+    private static function mixToken($timestamp, $hash, $token): string
     {
         $mixedToken = '';
         $hashRest = strlen($hash) - strlen($timestamp);
@@ -76,7 +76,7 @@ class SecurityHelper
         $i = 0;
         $partCount = ceil($hashRest / 4);
         $part = substr($hash, $tsLength + $partCount * $i, $partCount);
-        while (false !== $part) {
+        while (false !== $part && strlen($part) > 0) {
             $mixedToken .= $part .
                 substr(self::RAND_SEP, round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1) .
                 substr(self::RAND_SEP, round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1);
@@ -116,15 +116,14 @@ class SecurityHelper
         $module = strtolower($module);
         $hash = hash_hmac('sha256', $module, $secret);
         $token = self::mixSecret($timestamp, $hash);
-        $finalToken = self::mixToken($timestamp, $hash, $token);
-        return $finalToken;
+        return self::mixToken($timestamp, $hash, $token);
     }
 
     /**
      * @param string $part
      * @return array
      */
-    private static function extractTs($part)
+    private static function extractTs(string $part): array
     {
         $partToken = '';
         $timestamp = '';
@@ -144,15 +143,12 @@ class SecurityHelper
      * @param array $parts
      * @return array
      */
-    private static function parseTokenParts(array $parts)
+    private static function parseTokenParts(array $parts): array
     {
-        $token = '';
         list($partToken, $timestamp) = self::extractTs(array_pop($parts));
+        $token = null;
         if ($timestamp > 0) {
-            foreach ($parts as $part) {
-                $token .= $part;
-            }
-            $token = $partToken . $token;
+            $token = $partToken . implode('', $parts);
         }
         return [$token, $timestamp];
     }
@@ -164,7 +160,7 @@ class SecurityHelper
      *
      * @return null|string
      */
-    private static function decodeToken($token, $force = false)
+    private static function decodeToken(string $token, bool $force = false): ?string
     {
         $decoded = NULL;
         $parts = self::extractTokenParts($token);
@@ -179,7 +175,7 @@ class SecurityHelper
      * @param string $token
      * @return array
      */
-    private static function extractTokenParts($token)
+    private static function extractTokenParts(string $token): array
     {
         for ($i = 0, $ct = strlen(self::RAND_SEP); $i < $ct; $i++) {
             $token = str_replace(substr(self::RAND_SEP, $i, 1), "|", $token);
@@ -195,7 +191,7 @@ class SecurityHelper
      *
      * @return bool
      */
-    public static function checkToken($token, $secret, $module = Router::PSFS_BASE_NAMESPACE)
+    public static function checkToken(string $token, string $secret, string $module = Router::PSFS_BASE_NAMESPACE): bool
     {
         if (0 === strlen($token) || 0 === strlen($secret)) {
             return false;

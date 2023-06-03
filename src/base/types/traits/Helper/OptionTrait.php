@@ -1,6 +1,8 @@
 <?php
 namespace PSFS\base\types\traits\Helper;
 
+use PSFS\base\types\CurlService;
+
 /**
  * Trait OptionTrait
  * @package PSFS\base\types\traits\Helper
@@ -14,16 +16,16 @@ trait OptionTrait {
     /**
      * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
-        return $this->options;
+        return $this->options ?: [];
     }
 
     /**
      * @param array $options
-     * @return OptionTrait
+     * @return mixed
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): mixed
     {
         $this->options = $options;
         return $this;

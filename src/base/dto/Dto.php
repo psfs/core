@@ -39,7 +39,7 @@ class Dto extends Singleton implements \JsonSerializable
      */
     public function __toArray()
     {
-        $dto = array();
+        $dto = [];
         try {
             $reflectionClass = new \ReflectionClass($this);
             $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
@@ -132,7 +132,7 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @return array|mixed
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }

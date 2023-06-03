@@ -1,13 +1,15 @@
 <?php
-namespace PSFS\test\examples;
+
+namespace PSFS\tests\examples;
 
 use PSFS\base\dto\Dto;
 
 /**
  * Class ComplexDto
- * @package PSFS\Test\examples
+ * @package PSFS\tests\examples
  */
-class ComplexDto extends Dto {
+class ComplexDto extends Dto
+{
     /**
      * @var \PSFS\base\dto\FormAction[]
      */
@@ -25,7 +27,7 @@ class ComplexDto extends Dto {
      */
     public $number = 0;
     /**
-     * @var float 
+     * @var float
      */
     public $decimal = 3.141596;
 }

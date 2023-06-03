@@ -28,7 +28,7 @@ class ResponseHelper
             foreach ($cookies as $cookie) {
                 setcookie($cookie["name"],
                     $cookie["value"],
-                    (array_key_exists('expire', $cookie)) ? $cookie["expire"] : NULL,
+                    (array_key_exists('expire', $cookie)) ? $cookie["expire"] : 1440,
                     (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
                     (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
                     (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
@@ -42,7 +42,7 @@ class ResponseHelper
      * Método que inyecta las cabeceras necesarias para la autenticación
      * @param boolean $isPublic
      */
-    public static function setAuthHeaders($isPublic = true)
+    public static function setAuthHeaders(bool $isPublic = true)
     {
         if ($isPublic) {
             unset($_SERVER["PHP_AUTH_USER"]);

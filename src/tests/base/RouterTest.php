@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\test\base;
+namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
@@ -13,7 +13,7 @@ use PSFS\Dispatcher;
 
 /**
  * Class RouterTest
- * @package PSFS\test
+ * @package PSFS\tests
  */
 class RouterTest extends TestCase {
 
@@ -22,15 +22,15 @@ class RouterTest extends TestCase {
         $config = Config::getInstance()->dumpConfig();
         $config['debug'] = true;
         Config::save($config, []);
-        self::assertNotNull($router);
-        self::assertInstanceOf(Router::class, $router);
-        self::assertTrue(Router::exists(Router::class), "Can't check the namespace");
+        $this->assertNotNull($router);
+        $this->assertInstanceOf(Router::class, $router);
+        $this->assertTrue(Router::exists(Router::class), "Can't check the namespace");
 
         $slugs = $router->getSlugs();
-        self::assertNotEmpty($slugs);
+        $this->assertNotEmpty($slugs);
 
         $routes = $router->getAllRoutes();
-        self::assertNotEmpty($routes);
+        $this->assertNotEmpty($routes);
     }
 
     public function testNotFound() {
@@ -83,13 +83,13 @@ class RouterTest extends TestCase {
 
     public function testGetRoute() {
         $router = Router::getInstance();
-        self::assertNotNull($router->getRoute(), "Can't gather the homepage route");
-        self::assertNotNull($router->getRoute('admin'), "Can't gather the admin route");
-        self::assertNotEquals($router->getRoute('admin'), $router->getRoute('admin', true), 'Absolute route is equal than normal');
+        $this->assertNotNull($router->getRoute(), "Can't gather the homepage route");
+        $this->assertNotNull($router->getRoute('admin'), "Can't gather the admin route");
+        $this->assertNotEquals($router->getRoute('admin'), $router->getRoute('admin', true), 'Absolute route is equal than normal');
         try {
             $router->getRoute(uniqid('test', true));
         } catch(\Exception $e) {
-            self::assertInstanceOf(RouterException::class, $e, 'Exception is not the expected: ' . get_class($e));
+            $this->assertInstanceOf(RouterException::class, $e, 'Exception is not the expected: ' . get_class($e));
         }
     }
 

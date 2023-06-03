@@ -1,15 +1,15 @@
 <?php
 
-namespace PSFS\test\services;
+namespace PSFS\tests\services;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\traits\BoostrapTrait;
-use PSFS\services\GeneratorService;
+use PSFS\services\GeneratorService as Service;
 
 /**
  * Class GeneratorServiceTest
- * @package PSFS\test\services
+ * @package PSFS\tests\services
  */
 abstract class GeneratorServiceTest extends TestCase
 {
@@ -28,7 +28,8 @@ abstract class GeneratorServiceTest extends TestCase
         DIRECTORY_SEPARATOR . 'Public' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'app.js',
         DIRECTORY_SEPARATOR . 'Public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'styles.css',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'schema.xml',
-        DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'propel.yml',
+        DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'propel.php',
+        DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'loadDatabase.php',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql' . DIRECTORY_SEPARATOR . 'CLIENT.sql',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql' . DIRECTORY_SEPARATOR . 'sqldb.map',
@@ -67,11 +68,11 @@ abstract class GeneratorServiceTest extends TestCase
     ];
 
     /**
-     * @param GeneratorService $generatorService
+     * @param Service $generatorService
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */
-    public function createNewModule(GeneratorService $generatorService)
+    public function createNewModule(Service $generatorService)
     {
         $generatorService->createStructureModule(self::MODULE_NAME, true);
         $this->checkBasicStructure();
@@ -84,8 +85,8 @@ abstract class GeneratorServiceTest extends TestCase
      */
     public function checkCreateExistingModule()
     {
-        $generatorService = GeneratorService::getInstance();
-        self::assertInstanceOf(GeneratorService::class, $generatorService, 'Error getting GeneratorService instance');
+        $generatorService = Service::getInstance();
+        $this->assertInstanceOf(Service::class, $generatorService, 'Error getting GeneratorService instance');
         $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . self::MODULE_NAME;
 
         $this->createNewModule($generatorService);
@@ -99,7 +100,7 @@ abstract class GeneratorServiceTest extends TestCase
         $this->checkBasicStructure();
 
         foreach (self::$filesToCheckWithSchema as $fileName) {
-            self::assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
+            $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module with schema');
         }
         return $modulePath;
     }
@@ -107,9 +108,9 @@ abstract class GeneratorServiceTest extends TestCase
     private function checkBasicStructure()
     {
         $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . self::MODULE_NAME;
-        self::assertDirectoryExists($modulePath, 'Directory not created');
+        $this->assertDirectoryExists($modulePath, 'Directory not created');
         foreach (self::$filesToCheckWithoutSchema as $fileName) {
-            self::assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module from scratch');
+            $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module from scratch');
         }
     }
 }

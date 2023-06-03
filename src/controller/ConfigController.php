@@ -5,6 +5,8 @@ use HttpException;
 use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
 use PSFS\base\dto\JsonResponse;
+use PSFS\base\exception\ConfigException;
+use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -45,12 +47,14 @@ class ConfigController extends Admin
      * @label Configuración general
      * @icon fa-cogs
      * @return string HTML
-     * @throws HttpException
+     * @throws FormException
      */
     public function config()
     {
         Logger::log("Config loaded executed by " . $this->getRequest()->getRequestUri());
-        /* @var $form ConfigForm */
+        if(defined('PSFS_UNIT_TESTING_EXECUTION')) {
+            throw new ConfigException('CONFIG');
+        }
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         return $this->render('welcome.html.twig', array(
@@ -66,12 +70,11 @@ class ConfigController extends Admin
      * @route /admin/config
      * @visible false
      * @return string
-     * @throws HttpException
+     * @throws FormException|HttpException
      */
     public function saveConfig()
     {
         Logger::log(t("Guardando configuración"), LOG_INFO);
-        /* @var $form ConfigForm */
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         $form->hydrate();

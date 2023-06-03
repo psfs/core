@@ -15,12 +15,12 @@ trait CurlTrait {
     use OptionTrait;
     /**
      * Curl resource
-     * @var resource $con
+     * @var \CurlHandle
      */
     private $con;
     /**
      * Curl destination
-     * @var string
+     * @var ?string
      */
     private $url;
     /**
@@ -40,22 +40,22 @@ trait CurlTrait {
     private $debug = false;
 
     /**
-     * @return resource
+     * @return \CurlHandle
      */
-    public function getCon()
+    public function getCon(): \CurlHandle
     {
         return $this->con;
     }
 
     /**
-     * @param resource $con
+     * @param \CurlHandle|null $con
      */
-    public function setCon($con)
+    public function setCon(?\CurlHandle $con): void
     {
         $this->con = $con;
     }
     /**
-     * @var string $result
+     * @var mixed $result
      */
     private $result;
 
@@ -76,13 +76,12 @@ trait CurlTrait {
      */
     protected $isMultipart = false;
 
-    protected function closeConnection() {
-        if(null !== $this->con) {
-            if(is_resource($this->con)) {
+    protected function closeConnection(): void {
+        if(null !== $this?->con) {
+            if($this?->con instanceof \CurlHandle) {
                 curl_close($this->con);
-            } else {
-                $this->setCon(null);
             }
+            $this->setCon(null);
         }
     }
 
@@ -91,28 +90,27 @@ trait CurlTrait {
         $this->closeConnection();
     }
 
-    private function clearContext()
+    private function clearContext(): void
     {
         $this->params = [];
         $this->headers = [];
-        $this->debug = 'debug' === strtolower(Config::getParam('log.level', 'notice'));
         Logger::log('Context service for ' . static::class . ' cleared!');
         $this->closeConnection();
     }
 
-    private function initialize()
+    private function initialize(): void
     {
         $this->clearContext();
         $con = curl_init($this->url);
-        if(is_resource($con)) {
+        if($con instanceof \CurlHandle) {
             $this->setCon($con);
         }
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    public function getUrl()
+    public function getUrl(): ?string
     {
         return $this->url;
     }
@@ -121,7 +119,7 @@ trait CurlTrait {
      * @param String $url
      * @param bool $cleanContext
      */
-    public function setUrl($url, $cleanContext = true)
+    public function setUrl(string $url, bool $cleanContext = true): void
     {
         $this->url = $url;
         if($cleanContext) {
@@ -130,9 +128,9 @@ trait CurlTrait {
     }
 
     /**
-     * @return string
+     * @return mixed
      */
-    public function getResult()
+    public function getResult(): mixed
     {
         return $this->result;
     }
@@ -221,7 +219,8 @@ trait CurlTrait {
     /**
      * @param bool $debug
      */
-    public function setDebug($debug = false) {
+    public function setDebug(bool $debug = false): void
+    {
         $this->debug = $debug;
     }
 

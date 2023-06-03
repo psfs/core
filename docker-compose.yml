@@ -3,7 +3,7 @@ version: "3.7"
 services:
   php:
     container_name: psfs_${APP_ENVIRONMENT:-local}
-    image: c15k02k18/php:8.2
+    image: c15k02k18/php:8.2-xdebug
     restart: always
     tty: true
     environment:

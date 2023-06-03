@@ -212,7 +212,7 @@ class GeneratorService extends SimpleService
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
         ));
         return $this->writeTemplateToFile($buildProperties,
-            $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.yml",
+            $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.php",
             $force);
     }
 
