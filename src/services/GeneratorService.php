@@ -61,7 +61,6 @@ class GeneratorService extends SimpleService
         $modulePath = $modPath . $module;
         $this->generateControllerTemplate($module, $modulePath, $force, $controllerType);
         $this->generateServiceTemplate($module, $modulePath, $force);
-        $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generateSchemaTemplate($module, $modulePath, $force);
         $this->generateConfigurationTemplates($module, $modulePath, $force);
         $this->generateIndexTemplate($module, $modulePath, $force);
@@ -75,6 +74,7 @@ class GeneratorService extends SimpleService
      * @return void
      */
     public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void {
+        $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generatePropertiesTemplate($module, $modulePath, $force);
         $this->generateConfigTemplate($modulePath, $force);
     }
