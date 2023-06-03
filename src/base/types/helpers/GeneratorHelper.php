@@ -137,6 +137,7 @@ class GeneratorHelper
             'crossdomain' => 'crossdomain.xml',
             'humans' => 'humans.txt',
             'robots' => 'robots.txt',
+            'docker' => '..' . DIRECTORY_SEPARATOR . 'docker-compose.yml',
         ];
         $output->writeln('Start creating html files');
         foreach ($files as $templates => $filename) {
