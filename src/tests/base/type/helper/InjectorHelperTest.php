@@ -21,6 +21,7 @@ class InjectorHelperTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws ReflectionException
      */
     public function testInjector()

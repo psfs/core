@@ -16,9 +16,8 @@ trait JsTrait {
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     * @param string $sri
      */
-    protected function printJs(array $compiledFiles, $baseUrl, $hash, $sri = null)
+    protected function printJs(array $compiledFiles, $baseUrl, $hash)
     {
         if (Config::getParam('debug') && 0 < count($compiledFiles)) {
             foreach ($compiledFiles as $file) {
@@ -26,7 +25,6 @@ trait JsTrait {
             }
         } else {
             echo "\t\t<script type='text/javascript' src='" . $baseUrl . "/js/" . $hash . ".js'" .
-                //" crossorigin='anonymous' integrity='sha384-" . $sri . "'></script>\n";
                 "></script>\n";
         }
     }

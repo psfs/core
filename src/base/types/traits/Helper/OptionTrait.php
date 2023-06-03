@@ -16,7 +16,7 @@ trait OptionTrait {
     /**
      * @return array
      */
-    public function getOptions(): array
+    public function getOptions()
     {
         return $this->options ?: [];
     }
@@ -25,7 +25,7 @@ trait OptionTrait {
      * @param array $options
      * @return mixed
      */
-    public function setOptions(array $options): mixed
+    public function setOptions(array $options)
     {
         $this->options = $options;
         return $this;

@@ -1,4 +1,7 @@
 <?php
+
+use PSFS\base\Logger;
+
 require_once 'bootstrap.php';
 /**
  * Simple, Fast & Secure Framework
@@ -11,8 +14,9 @@ if (!function_exists("PSFSAutoloader")) {
     // autoloader
     function PSFSAutoloader($class)
     {
+        Logger::log("Trying to load class {$class} with " . __FILE__);
         // it only autoload class into the Rain scope
-        if (strpos($class, 'PSFS') !== false) {
+        if (str_contains($class, 'PSFS')) {
 
             // Change order src
             $class = preg_replace('/^\\\\?PSFS/', '', $class);
@@ -25,6 +29,8 @@ if (!function_exists("PSFSAutoloader")) {
             // require the file
             if (file_exists($abs_path)) {
                 require_once $abs_path;
+            } else {
+                Logger::log("{$class} not loaded with " . __FILE__);
             }
         }
         return false;

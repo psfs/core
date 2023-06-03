@@ -133,10 +133,8 @@ trait SwaggerFormaterTrait
                             $paths[$url][$method]['parameters'][] = $query;
                         }
                     }
-                    $isReturn = true;
                     foreach ($endpoint['objects'] as $name => $object) {
-                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method, $isReturn);
-                        $isReturn = false;
+                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method);
                     }
                 }
             }

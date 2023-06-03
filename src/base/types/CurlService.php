@@ -46,7 +46,7 @@ abstract class CurlService extends SimpleService
 
     /**
      * @param $header
-     * @param null $content
+     * @param $content
      *
      * @return $this
      */

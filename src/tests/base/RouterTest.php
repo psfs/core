@@ -17,6 +17,10 @@ use PSFS\Dispatcher;
  */
 class RouterTest extends TestCase {
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testRouterBasics() {
         $router = Router::getInstance();
         $config = Config::getInstance()->dumpConfig();
@@ -33,6 +37,11 @@ class RouterTest extends TestCase {
         $this->assertNotEmpty($routes);
     }
 
+    /**
+     * @covers
+     * @return void
+     * @throws \Exception
+     */
     public function testNotFound() {
         $this->expectExceptionCode(404);
         $this->expectException(\PSFS\base\exception\RouterException::class);
@@ -41,6 +50,11 @@ class RouterTest extends TestCase {
         $router->execute(uniqid(time(), true));
     }
 
+    /**
+     * @covers
+     * @return void
+     * @throws \PSFS\base\exception\GeneratorException
+     */
     public function testCanAccess() {
         $this->expectExceptionCode(401);
         $this->expectException(\PSFS\base\exception\UserAuthException::class);
@@ -55,6 +69,11 @@ class RouterTest extends TestCase {
         $router->execute('/admin/config');
     }
 
+    /**
+     * @covers
+     * @return void
+     * @throws \Exception
+     */
     public function testPreconditions() {
         $this->expectExceptionCode(404);
         $this->expectException(\PSFS\base\exception\RouterException::class);
@@ -68,6 +87,11 @@ class RouterTest extends TestCase {
         $router->execute('/admin//config');
     }
 
+    /**
+     * @covers
+     * @return void
+     * @throws \Exception
+     */
     public function testPreconditionsNonStrict() {
         $this->expectException(\PSFS\base\exception\UserAuthException::class);
         Router::dropInstance();
@@ -81,6 +105,10 @@ class RouterTest extends TestCase {
         $router->execute('/admin//config');
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testGetRoute() {
         $router = Router::getInstance();
         $this->assertNotNull($router->getRoute(), "Can't gather the homepage route");

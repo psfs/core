@@ -8,7 +8,7 @@ use PSFS\base\Service;
  * Class AuthServiceTest
  * @package PSFS\tests\examples
  */
-final class AuthServiceTest extends Service {
+class AuthServiceTest extends Service {
 
     public function test($user, $password) {
         $this->setUrl('https://jsonplaceholder.typicode.com/todos');

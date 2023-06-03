@@ -11,6 +11,10 @@ use PSFS\base\Template;
  */
 class TemplateTest extends TestCase {
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testTemplateBasics() {
         $template = Template::getInstance();
 
@@ -44,6 +48,10 @@ class TemplateTest extends TestCase {
         Config::getInstance()->setDebugMode(true);
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testTranslations() {
         $template = Template::getInstance();
 

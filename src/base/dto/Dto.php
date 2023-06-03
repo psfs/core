@@ -132,7 +132,7 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @return array|mixed
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize()
     {
         return $this->toArray();
     }

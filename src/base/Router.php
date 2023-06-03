@@ -94,7 +94,6 @@ class Router
     public function execute($route)
     {
         Inspector::stats('[Router] Executing the request', Inspector::SCOPE_DEBUG);
-        $code = 404;
         try {
             //Search action and execute
             return $this->searchAction($route);

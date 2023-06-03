@@ -6,10 +6,10 @@ use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\services\DocumentorService as Service;
 
 /**
- * Class DocumentorServiceTest
+ * Class DocumentServiceTest
  * @package PSFS\tests\services
  */
-class DocumentorServiceTest extends GeneratorServiceTest{
+class DocumentorServiceTest extends GeneratorServiceTest {
 
     public static $namespaces = [
         '\CLIENT\Api\Test\Test',
@@ -41,6 +41,7 @@ class DocumentorServiceTest extends GeneratorServiceTest{
     }
 
     /**
+     * @covers
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */

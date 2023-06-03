@@ -138,9 +138,8 @@ trait CssTrait {
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     * @param string $sri
      */
-    protected function printCss(array $compiledFiles, $baseUrl, $hash, $sri = null)
+    protected function printCss(array $compiledFiles, $baseUrl, $hash)
     {
         if (Config::getParam('debug') && 0 < count($compiledFiles)) {
             foreach ($compiledFiles as $file) {

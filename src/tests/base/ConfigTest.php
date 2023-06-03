@@ -5,6 +5,7 @@ namespace PSFS\tests\base;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
@@ -22,6 +23,7 @@ class ConfigTest extends TestCase
     /**
      * Creates an instance of Config
      * @return Config
+     * @throws GeneratorException
      */
     private function getInstance()
     {
@@ -54,11 +56,12 @@ class ConfigTest extends TestCase
     /**
      * Test that checks basic functionality
      * @return array
+     * @throws GeneratorException
      */
     public function getBasicConfigUse()
     {
         $config = $this->getInstance();
-        $previusConfigData = $config->dumpConfig();
+        $previousConfigData = $config->dumpConfig();
         $config->clearConfig();
 
         // Check if config can create the config dir
@@ -90,12 +93,13 @@ class ConfigTest extends TestCase
         $configured = $config->isConfigured();
         $this->assertTrue(is_bool($configured) && true === $configured);
 
-        return $previusConfigData;
+        return $previousConfigData;
     }
 
     /**
      * @covers
      * @return void
+     * @throws GeneratorException
      */
     public function testConfigFileFunctions()
     {
@@ -122,6 +126,7 @@ class ConfigTest extends TestCase
     /**
      * @covers
      * @return void
+     * @throws GeneratorException
      */
     public function testMultipleModuleConfig()
     {

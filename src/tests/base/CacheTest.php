@@ -19,6 +19,7 @@ class CacheTest extends TestCase
     /**
      * Function to test the instance of Cache class
      * @return Cache
+     * @throws GeneratorException
      */
     private function getInstance(): Cache
     {

@@ -4,6 +4,7 @@ namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 
 /**
@@ -27,6 +28,7 @@ class LoggerTest extends TestCase
 
     /**
      * Test to check if the Singleton pattern works
+     * @covers
      */
     public function testSingletonLoggerInstance()
     {
@@ -41,6 +43,7 @@ class LoggerTest extends TestCase
 
     /**
      * Test all the functionality for the logger class
+     * @covers
      */
     public function testLogFunctions()
     {
@@ -60,7 +63,7 @@ class LoggerTest extends TestCase
             // Other logs
             Logger::log('Test other logs', LOG_CRON, [], true);
         } catch (\Exception $e) {
-            $this->assertFalse(true, $e->getMessage());
+            $this->fail($e->getMessage());
         } finally {
             $this->assertTrue(true, 'Finished Logger test function');
         }
@@ -68,6 +71,8 @@ class LoggerTest extends TestCase
 
     /**
      * Test non default logger configurations set
+     * @covers
+     * @throws GeneratorException
      */
     public function testLogSetup()
     {

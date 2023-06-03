@@ -16,7 +16,7 @@ abstract class AuthController extends Controller implements AuthInterface
 
     /**
      * Constructor por defecto
-     * @throws AccessDeniedException
+     * @throws AccessDeniedException|UserAuthException
      */
     public function init()
     {

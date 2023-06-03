@@ -67,7 +67,7 @@ class SecurityHelper
      * @param string $token
      * @return string
      */
-    private static function mixToken($timestamp, $hash, $token): string
+    private static function mixToken($timestamp, $hash, $token)
     {
         $mixedToken = '';
         $hashRest = strlen($hash) - strlen($timestamp);
@@ -123,7 +123,7 @@ class SecurityHelper
      * @param string $part
      * @return array
      */
-    private static function extractTs(string $part): array
+    private static function extractTs(string $part)
     {
         $partToken = '';
         $timestamp = '';
@@ -143,7 +143,7 @@ class SecurityHelper
      * @param array $parts
      * @return array
      */
-    private static function parseTokenParts(array $parts): array
+    private static function parseTokenParts(array $parts)
     {
         list($partToken, $timestamp) = self::extractTs(array_pop($parts));
         $token = null;
@@ -160,7 +160,7 @@ class SecurityHelper
      *
      * @return null|string
      */
-    private static function decodeToken(string $token, bool $force = false): ?string
+    private static function decodeToken(string $token, bool $force = false)
     {
         $decoded = NULL;
         $parts = self::extractTokenParts($token);
@@ -175,7 +175,7 @@ class SecurityHelper
      * @param string $token
      * @return array
      */
-    private static function extractTokenParts(string $token): array
+    private static function extractTokenParts(string $token)
     {
         for ($i = 0, $ct = strlen(self::RAND_SEP); $i < $ct; $i++) {
             $token = str_replace(substr(self::RAND_SEP, $i, 1), "|", $token);
@@ -191,7 +191,7 @@ class SecurityHelper
      *
      * @return bool
      */
-    public static function checkToken(string $token, string $secret, string $module = Router::PSFS_BASE_NAMESPACE): bool
+    public static function checkToken(string $token, string $secret, string $module = Router::PSFS_BASE_NAMESPACE)
     {
         if (0 === strlen($token) || 0 === strlen($secret)) {
             return false;

@@ -15,7 +15,7 @@ trait SecureTrait
      * Método que verifica si está autenticado el usuario
      * @return boolean
      */
-    public function isLogged(): bool
+    public function isLogged()
     {
         return (null !== Security::getInstance()->getUser() || $this->isAdmin());
     }
@@ -24,7 +24,7 @@ trait SecureTrait
      * Método que devuelve si un usuario es administrador de la plataforma
      * @return boolean
      */
-    public function isAdmin(): bool
+    public function isAdmin()
     {
         return Security::getInstance()->canAccessRestrictedAdmin();
     }
@@ -35,7 +35,7 @@ trait SecureTrait
      * TODO
      * @return bool
      */
-    public function canDo($action): bool
+    public function canDo($action)
     {
         return true;
     }

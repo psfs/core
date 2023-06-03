@@ -148,14 +148,14 @@ class Logger
 
     /**
      * @param string $msg
-     * @param int $type
+     * @param Level $type
      * @param array $context
      * @param boolean $force
      * @return bool
      */
-    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = [], $force = false)
+    public function addLog($msg, $type = Level::Notice, array $context = [], $force = false)
     {
-        return $this->checkLogLevel($type) || $force ? $this->logger->addRecord($type, $msg, $this->addMinimalContext($context)) : true;
+        return !($this->checkLogLevel($type) || $force) || $this->logger->addRecord($type, $msg, $this->addMinimalContext($context));
     }
 
     /**
@@ -204,25 +204,25 @@ class Logger
         }
         switch ($type) {
             case LOG_DEBUG:
-                self::getInstance()->addLog($msg, \Monolog\Logger::DEBUG, $context, $force);
+                self::getInstance()->addLog($msg, Level::Debug, $context, $force);
                 break;
             case LOG_WARNING:
-                self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context, $force);
+                self::getInstance()->addLog($msg, Level::Warning, $context, $force);
                 break;
             case LOG_CRIT:
                 if (Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace($msg, '', '', $context);
                 }
-                self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context, $force);
+                self::getInstance()->addLog($msg, Level::Critical, $context, $force);
                 break;
             case LOG_ERR:
-                self::getInstance()->addLog($msg, \Monolog\Logger::ERROR, $context, $force);
+                self::getInstance()->addLog($msg, Level::Error, $context, $force);
                 break;
             case LOG_INFO:
-                self::getInstance()->addLog($msg, \Monolog\Logger::INFO, $context, $force);
+                self::getInstance()->addLog($msg, Level::Info, $context, $force);
                 break;
             default:
-                self::getInstance()->addLog($msg, \Monolog\Logger::NOTICE, $context, $force);
+                self::getInstance()->addLog($msg, Level::Notice, $context, $force);
                 break;
         }
     }

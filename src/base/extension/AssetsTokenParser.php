@@ -131,8 +131,8 @@ class AssetsTokenParser extends AbstractTokenParser
 
     /**
      * Método
-     * @param \Twig_Node_Expression|\Twig_Node_Expression_Conditional|null $node
-     * @param \Twig_Node_Expression|\Twig_Node_Expression_Conditional|null $value
+     * @param $node
+     * @param $value
      *
      * @return array
      */

@@ -70,7 +70,7 @@ class DocumentorHelper
      * @param $isReturn
      * @return array
      */
-    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method, $isReturn = false)
+    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method)
     {
         if (class_exists($name)) {
             $class = GeneratorHelper::extractClassFromNamespace($name);

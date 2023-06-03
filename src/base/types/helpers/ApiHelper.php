@@ -23,7 +23,7 @@ class ApiHelper
 
     /**
      * @param string $domain
-     * @param string $tableMap
+     * @param TableMap $tableMap
      * @param string $field
      * @param array $behaviors
      * @return Field|null
@@ -31,7 +31,6 @@ class ApiHelper
      */
     protected static function parseFormField($domain, TableMap $tableMap, $field, array $behaviors = [])
     {
-        $fDto = null;
         /** @var ColumnMap $mappedColumn */
         $mappedColumn = $tableMap->getColumnByPhpName($field);
         $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
@@ -148,7 +147,7 @@ class ApiHelper
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected static function generateTextField($field, ColumnMap $mappedColumn, bool $required): Field
+    protected static function generateTextField($field, ColumnMap $mappedColumn, bool $required)
     {
         if ($mappedColumn->getSize() > 100) {
             $fDto = self::createField($field, Field::TEXTAREA_TYPE, $required);
@@ -166,7 +165,7 @@ class ApiHelper
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required): Field
+    protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {
         $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
         if (array_key_exists('timestampable', $behaviors) && false !== array_search($mappedColumn->getName(), $behaviors['timestampable'])) {

@@ -98,7 +98,7 @@ class InjectorHelper
     /**
      * Method extract if a variable is required
      * @param $doc
-     * @return null|string
+     * @return bool
      */
     public static function checkIsRequired($doc)
     {
@@ -112,7 +112,7 @@ class InjectorHelper
     /**
      * Method extract if a class or variable is visible
      * @param $doc
-     * @return null|string
+     * @return bool
      */
     public static function checkIsVisible($doc)
     {
@@ -139,7 +139,7 @@ class InjectorHelper
 
     /**
      * @param $doc
-     * @return null
+     * @return null|string
      */
     public static function getDefaultValue($doc) {
         return AnnotationHelper::extractFromDoc('default', $doc);

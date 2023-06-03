@@ -21,7 +21,7 @@ trait ApiTrait {
     use ConnectionTrait;
     use MutationTrait;
     use JsonTrait {
-        json as _json;
+        JsonTrait::json as _json;
     }
 
     /**
@@ -247,7 +247,6 @@ trait ApiTrait {
      * @param \PSFS\base\dto\JsonResponse $response
      * @param int $status
      *
-     * @return mixed
      */
     public function json($response, $status = 200)
     {

@@ -78,6 +78,7 @@ class AssetsHelper
         $extension = explode(".", $string);
         $extension = end($extension);
         $file = "/" . substr(md5($string), 0, 8) . "." . $extension;
+        $htmlBase = '';
         finfo_close($finfo);
         if (preg_match('/\.css$/i', $string)) {
             $file = "/" . substr(md5($string), 0, 8) . "$cache.css";
@@ -94,7 +95,6 @@ class AssetsHelper
         } elseif (preg_match("/(text|html)/i", $mime)) {
             $htmlBase = "templates";
         } elseif (!$return && !is_null($name)) {
-            $htmlBase = '';
             $file = $name;
         }
         if ($debug) {

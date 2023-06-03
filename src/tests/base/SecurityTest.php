@@ -57,6 +57,7 @@ class SecurityTest extends TestCase
     }
 
     /**
+     * @covers
      * @depends testSecurityBasics
      * @return Security
      * @throws GeneratorException
@@ -105,6 +106,7 @@ class SecurityTest extends TestCase
     }
 
     /**
+     * @covers
      * @param Security $security
      * @depends testSecurityUserManagement
      * @throws Exception

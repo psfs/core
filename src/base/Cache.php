@@ -172,7 +172,7 @@ class Cache
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
             if (is_callable($function) && $this->hasExpiredCache($path, $expires)) {
                 $data = $function();
-                $this->storeData($path, $data, $transform, false, $expires);
+                $this->storeData($path, $data, $transform);
             } else {
                 $data = $this->getDataFromFile($path, $transform);
             }

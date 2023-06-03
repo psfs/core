@@ -4,6 +4,7 @@ use PSFS\base\config\Config;
 use PSFS\base\dto\Dto;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\dto\ProfilingJsonResponse;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
@@ -21,7 +22,7 @@ Trait JsonTrait {
      * @param mixed $response
      * @param int $statusCode
      *
-     * @return mixed JSON
+     * @throws GeneratorException
      */
     public function json($response, $statusCode = 200)
     {
@@ -56,6 +57,7 @@ Trait JsonTrait {
     /**
      * Método que devuelve una salida en formato JSON
      * @param mixed $response
+     * @throws GeneratorException
      */
     public function jsonp($response)
     {
@@ -65,7 +67,6 @@ Trait JsonTrait {
     
     /**
      * @param $response
-     * @return array|string
      */
     private function decodeJsonResponse(&$response)
     {

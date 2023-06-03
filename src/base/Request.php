@@ -268,7 +268,7 @@ class Request
      * @param string $url
      * @return string
      */
-    protected function checkServerPort(string $url): string
+    protected function checkServerPort(string $url)
     {
         $port = (integer)$this->getServer('SERVER_PORT');
         $host = $this->getServer('HTTP_HOST');

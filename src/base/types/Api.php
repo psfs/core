@@ -1,7 +1,6 @@
 <?php
 namespace PSFS\base\types;
 
-use CORE\Models\Map\CustomerTableMap;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Collection\ArrayCollection;
 use Propel\Runtime\Map\TableMap;
@@ -241,7 +240,6 @@ abstract class Api extends Singleton
     public function get($pk)
     {
         $this->action = self::API_ACTION_GET;
-        $return = NULL;
         $total = NULL;
         $pages = 1;
         $message = null;

@@ -80,6 +80,10 @@ class DispatcherTest extends TestCase
         return $this->createMock(Security::class);
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testConstructor()
     {
         $dispatcher = $this->getInstance();
@@ -89,6 +93,10 @@ class DispatcherTest extends TestCase
 
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testMem()
     {
         $dispatcher = $this->getInstance();
@@ -98,6 +106,10 @@ class DispatcherTest extends TestCase
         $this->assertNotNull($dispatcher->getMem());
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testTS()
     {
         $dispatcher = $this->getInstance();
@@ -109,6 +121,7 @@ class DispatcherTest extends TestCase
 
     /**
      * Check if notice was converted to exception
+     * @covers
      * @throws Exception
      */
     public function testNotice()
@@ -127,6 +140,7 @@ class DispatcherTest extends TestCase
 
     /**
      * Check if warning was converted to exception
+     * @covers
      * @throws Exception
      */
     public function testWarning()
@@ -142,6 +156,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */
@@ -157,6 +172,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */
@@ -173,6 +189,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */
@@ -192,6 +209,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */
@@ -209,6 +227,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */
@@ -224,6 +243,10 @@ class DispatcherTest extends TestCase
         $dispatcher->run();
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testStats()
     {
         Inspector::stats('test1', Inspector::SCOPE_DEBUG);
@@ -236,6 +259,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      * @throws Exception
      */

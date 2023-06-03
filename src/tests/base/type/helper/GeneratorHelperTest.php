@@ -16,6 +16,7 @@ class GeneratorHelperTest extends TestCase
 {
 
     /**
+     * @covers
      * @throws GeneratorException
      */
     public function testStructureFunctions()
@@ -42,6 +43,7 @@ class GeneratorHelperTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws GeneratorException
      */
     public function testCreateRootDocument()
@@ -68,6 +70,7 @@ class GeneratorHelperTest extends TestCase
     }
 
     /**
+     * @covers
      * @throws \Exception
      */
     public function testDeployNewVersion()

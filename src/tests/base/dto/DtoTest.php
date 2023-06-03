@@ -46,8 +46,7 @@ class DtoTest extends TestCase
 
     /**
      * Test for Form and Field Dto
-     * @throws \PSFS\base\exception\GeneratorException
-     * @throws \ReflectionException
+     * @covers
      * @covers \PSFS\base\dto\Form
      * @covers \PSFS\base\dto\Field
      */
@@ -72,6 +71,7 @@ class DtoTest extends TestCase
 
     /**
      * @return void
+     * @covers
      * @throws \ReflectionException
      * @covers \PSFS\base\dto\Form
      * @covers \PSFS\base\dto\FormAction
@@ -113,7 +113,7 @@ class DtoTest extends TestCase
 
     /**
      * Test Dto basics
-     * @throws \PSFS\base\exception\GeneratorException
+     * @covers
      * @throws \ReflectionException
      * @covers \PSFS\base\dto\Form
      * @covers \PSFS\base\dto\Order
@@ -185,7 +185,7 @@ class DtoTest extends TestCase
     }
 
     /**
-     * @throws \PSFS\base\exception\GeneratorException
+     * @covers
      * @covers \PSFS\base\dto\JsonResponse
      * @covers \PSFS\base\dto\ProfilingJsonResponse
      */

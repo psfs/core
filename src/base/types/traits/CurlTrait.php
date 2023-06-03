@@ -42,7 +42,7 @@ trait CurlTrait {
     /**
      * @return \CurlHandle
      */
-    public function getCon(): \CurlHandle
+    public function getCon()
     {
         return $this->con;
     }
@@ -50,7 +50,7 @@ trait CurlTrait {
     /**
      * @param \CurlHandle|null $con
      */
-    public function setCon(?\CurlHandle $con): void
+    public function setCon(?\CurlHandle $con)
     {
         $this->con = $con;
     }
@@ -76,7 +76,7 @@ trait CurlTrait {
      */
     protected $isMultipart = false;
 
-    protected function closeConnection(): void {
+    protected function closeConnection() {
         if(null !== $this?->con) {
             if($this?->con instanceof \CurlHandle) {
                 curl_close($this->con);
@@ -90,7 +90,7 @@ trait CurlTrait {
         $this->closeConnection();
     }
 
-    private function clearContext(): void
+    private function clearContext()
     {
         $this->params = [];
         $this->headers = [];
@@ -98,7 +98,7 @@ trait CurlTrait {
         $this->closeConnection();
     }
 
-    private function initialize(): void
+    private function initialize()
     {
         $this->clearContext();
         $con = curl_init($this->url);
@@ -110,7 +110,7 @@ trait CurlTrait {
     /**
      * @return string|null
      */
-    public function getUrl(): ?string
+    public function getUrl()
     {
         return $this->url;
     }
@@ -119,7 +119,7 @@ trait CurlTrait {
      * @param String $url
      * @param bool $cleanContext
      */
-    public function setUrl(string $url, bool $cleanContext = true): void
+    public function setUrl(string $url, bool $cleanContext = true)
     {
         $this->url = $url;
         if($cleanContext) {
@@ -130,7 +130,7 @@ trait CurlTrait {
     /**
      * @return mixed
      */
-    public function getResult(): mixed
+    public function getResult()
     {
         return $this->result;
     }
@@ -219,7 +219,7 @@ trait CurlTrait {
     /**
      * @param bool $debug
      */
-    public function setDebug(bool $debug = false): void
+    public function setDebug(bool $debug = false)
     {
         $this->debug = $debug;
     }
@@ -234,7 +234,7 @@ trait CurlTrait {
     /**
      * @return string
      */
-    public function getRawResult(): string
+    public function getRawResult()
     {
         return $this->rawResult;
     }
@@ -242,7 +242,7 @@ trait CurlTrait {
     /**
      * @param string $rawResult
      */
-    public function setRawResult(string $rawResult): void
+    public function setRawResult(string $rawResult)
     {
         $this->rawResult = $rawResult;
     }

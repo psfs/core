@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\Service;
 use PSFS\base\Singleton;
 use PSFS\base\types\CurlService;
-use PSFS\tests\examples\AuthServiceTest;
 
 /**
  * Class ServiceTest
@@ -88,6 +87,10 @@ class ServiceTest extends TestCase
         $this->assertEquals(30, $option, 'Different option value');
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testServiceTraits()
     {
         $srv = $this->getServiceInstance();
@@ -123,9 +126,13 @@ class ServiceTest extends TestCase
         }
     }
 
+    /**
+     * @covers
+     * @return void
+     */
     public function testAuthorizedCall()
     {
-        $authSrv = AuthServiceTest::getInstance();
+        $authSrv = \PSFS\tests\examples\AuthServiceTest::getInstance();
         // Generate random user and password
         $user = uniqid('user');
         $password = sha1(microtime(true));
