@@ -342,7 +342,7 @@ class GeneratorService extends SimpleService
     private function checkIfIsModel($module, $filename, $package = null)
     {
         $parts = [$module, 'Models'];
-        if (strlen($package)) {
+        if (strlen($package ?: '')) {
             $parts[] = $package;
         }
         $parts[] = $filename;

@@ -29,7 +29,6 @@ abstract class GeneratorServiceTest extends TestCase
         DIRECTORY_SEPARATOR . 'Public' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR . 'styles.css',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'schema.xml',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'propel.php',
-        DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'loadDatabase.php',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql' . DIRECTORY_SEPARATOR . 'CLIENT.sql',
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql' . DIRECTORY_SEPARATOR . 'sqldb.map',

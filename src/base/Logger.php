@@ -5,7 +5,6 @@ namespace PSFS\base;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Level;
 use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
@@ -148,12 +147,12 @@ class Logger
 
     /**
      * @param string $msg
-     * @param Level $type
+     * @param LogLevel $type
      * @param array $context
      * @param boolean $force
      * @return bool
      */
-    public function addLog($msg, $type = Level::Notice, array $context = [], $force = false)
+    public function addLog($msg, $type = \Monolog\Logger::NOTICE, array $context = [], $force = false)
     {
         return !($this->checkLogLevel($type) || $force) || $this->logger->addRecord($type, $msg, $this->addMinimalContext($context));
     }
@@ -162,27 +161,27 @@ class Logger
      * @param int $level
      * @return bool
      */
-    private function checkLogLevel($level = Level::Notice)
+    private function checkLogLevel($level = \Monolog\Logger::NOTICE)
     {
         switch ($this->logLevel) {
             case 'DEBUG':
-                $logPass = Level::Debug;
+                $logPass = \Monolog\Logger::DEBUG;
                 break;
             case 'INFO':
-                $logPass = Level::Info;
+                $logPass = \Monolog\Logger::INFO;
                 break;
             default:
             case 'NOTICE':
-                $logPass = Level::Notice;
+                $logPass = \Monolog\Logger::NOTICE;
                 break;
             case 'WARNING':
-                $logPass = Level::Warning;
+                $logPass = \Monolog\Logger::WARNING;
                 break;
             case 'ERROR':
-                $logPass = Level::Error;
+                $logPass = \Monolog\Logger::ERROR;
                 break;
             case 'CRITICAL':
-                $logPass = Level::Critical;
+                $logPass = \Monolog\Logger::CRITICAL;
                 break;
         }
         return $logPass <= $level;
@@ -194,7 +193,7 @@ class Logger
      * @param array|null $context
      * @param bool $force
      */
-    public static function log(string $msg, int $type = LOG_DEBUG, array $context = null, bool $force = false)
+    public static function log(string $msg, $type = LOG_DEBUG, array $context = null, bool $force = false)
     {
         if (null === $context) {
             $context = [];
@@ -204,25 +203,25 @@ class Logger
         }
         switch ($type) {
             case LOG_DEBUG:
-                self::getInstance()->addLog($msg, Level::Debug, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::DEBUG, $context, $force);
                 break;
             case LOG_WARNING:
-                self::getInstance()->addLog($msg, Level::Warning, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::WARNING, $context, $force);
                 break;
             case LOG_CRIT:
                 if (Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace($msg, '', '', $context);
                 }
-                self::getInstance()->addLog($msg, Level::Critical, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::CRITICAL, $context, $force);
                 break;
             case LOG_ERR:
-                self::getInstance()->addLog($msg, Level::Error, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::ERROR, $context, $force);
                 break;
             case LOG_INFO:
-                self::getInstance()->addLog($msg, Level::Info, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::INFO, $context, $force);
                 break;
             default:
-                self::getInstance()->addLog($msg, Level::Notice, $context, $force);
+                self::getInstance()->addLog($msg, \Monolog\Logger::NOTICE, $context, $force);
                 break;
         }
     }
@@ -240,7 +239,7 @@ class Logger
         $output = "[%datetime%] [%channel%:%level_name%]\t%message%\t%context%\t%extra%\n";
         // finally, create a formatter
         $formatter = new LineFormatter($output, $dateFormat);
-        $stream = new StreamHandler($this->stream, $debug ? Level::Debug : Level::Warning);
+        $stream = new StreamHandler($this->stream, $debug ? \Monolog\Logger::DEBUG : \Monolog\Logger::WARNING);
         $stream->setFormatter($formatter);
         return $stream;
     }

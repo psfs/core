@@ -2,7 +2,6 @@
 
 namespace PSFS\tests\base;
 
-use Monolog\Level;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
@@ -87,7 +86,7 @@ class LoggerTest extends TestCase
         // Create a new logger instance
         $logger = new Logger(['test', true]);
         $this->assertInstanceOf(Logger::class, $logger, 'Logger interface');
-        $logger->addLog('Test', Level::Debug);
+        $logger->addLog('Test', \Monolog\Logger::DEBUG);
         $logger = null;
         unset($defaultConfig['logger.memory']);
         Config::save($defaultConfig, []);

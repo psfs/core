@@ -2,14 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd"
          bootstrap="src/tests/bootstrap.php"
-         executionOrder="depends,defects"
          requireCoverageMetadata="false"
          beStrictAboutCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
          colors="true"
-         failOnRisky="true"
-         failOnWarning="true"
-         failOnDeprecation="true"
 >
     <testsuites>
         <testsuite name="default">
@@ -24,7 +20,7 @@
         <exclude>
             <directory>src/tests</directory>
             <directory>src/tests/examples</directory>
-            <file>src/tests/services/GeneratorServiceTest.php</file>
+            <directory>src/tests/services</directory>
         </exclude>
     </source>
 

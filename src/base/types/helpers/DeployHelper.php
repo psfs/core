@@ -15,7 +15,8 @@ final class DeployHelper {
      * @throws \Exception
      */
     public static function updateCacheVar() {
-        $now = new \DateTime(null, new \DateTimeZone(Config::getParam('project.timezone', 'Europe/Madrid')));
+        $now = new \DateTime();
+        $now->setTimezone(new \DateTimeZone(Config::getParam('project.timezone', 'Europe/Madrid')));
         $config = Config::getInstance()->dumpConfig();
         $config[self::CACHE_VAR_TAG] = 'v' . $now->format('Ymd.His');
         Config::save($config);

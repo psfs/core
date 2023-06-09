@@ -6,7 +6,7 @@
 $serviceContainer = \Propel\Runtime\Propel::getServiceContainer();
 $serviceContainer->checkVersion(2);
 $serviceContainer->setAdapterClass('{{ module }}', 'mysql');
-$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle('{{ module }}');
+$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
     'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host', null, '{{ module|lower }}') . ';port=' . \PSFS\base\config\Config::getParam('db.port', null, '{{ module|lower }}') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name', null, '{{ module|lower }}') . '',
     'user' => \PSFS\base\config\Config::getParam('db.user', null, '{{ module|lower }}'),
@@ -18,10 +18,10 @@ $manager->setConfiguration(array(
     ),
 ));
 $manager->setName('{{ module }}');
-$serviceContainer->setConnectionManager($manager);
+$serviceContainer->setConnectionManager('{{ module }}', $manager);
 
 $serviceContainer->setAdapterClass('debug{{ module }}', 'mysql');
-$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle('debug{{ module }}');
+$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle();
 $manager->setConfiguration(array(
     'dsn' => 'mysql:host=' . \PSFS\base\config\Config::getParam('db.host', null, '{{ module|lower }}') . ';port=' . \PSFS\base\config\Config::getParam('db.port', null, '{{ module|lower }}') . ';dbname=' . \PSFS\base\config\Config::getParam('db.name', null, '{{ module|lower }}') . '',
     'user' => \PSFS\base\config\Config::getParam('db.user', null, '{{ module|lower }}'),
@@ -33,7 +33,7 @@ $manager->setConfiguration(array(
     ),
 ));
 $manager->setName('debug{{ module }}');
-$serviceContainer->setConnectionManager($manager);
+$serviceContainer->setConnectionManager('debug{{ module }}', $manager);
 
 $serviceContainer->setDefaultDatasource('{{ module }}');
 $serviceContainer->setLoggerConfiguration('defaultLogger', array(
@@ -43,4 +43,4 @@ $serviceContainer->setLoggerConfiguration('defaultLogger', array(
     'bubble' => true,
 ));
 
-require_once 'loadDatabase.php';
+#require_once 'loadDatabase.php';

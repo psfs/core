@@ -17,7 +17,6 @@ if (!function_exists("PSFSAutoloader")) {
         Logger::log("Trying to load class {$class} with " . __FILE__);
         // it only autoload class into the Rain scope
         if (str_contains($class, 'PSFS')) {
-
             // Change order src
             $class = preg_replace('/^\\\\?PSFS/', '', $class);
             // transform the namespace in path
