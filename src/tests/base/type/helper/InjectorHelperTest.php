@@ -4,7 +4,7 @@ namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\InjectorHelper;
-use PSFS\tests\examples\SingletonClassTest;
+use PSFS\tests\examples\SingletonClassTestExample;
 use ReflectionClass;
 use ReflectionException;
 
@@ -16,11 +16,10 @@ class InjectorHelperTest extends TestCase
      */
     private function getExampleReflector()
     {
-        return new ReflectionClass(SingletonClassTest::class);
+        return new ReflectionClass(SingletonClassTestExample::class);
     }
 
     /**
-     * @covers \PSFS\base\types\helpers\InjectorHelper
      * @throws ReflectionException
      */
     public function testInjector()

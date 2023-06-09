@@ -42,7 +42,8 @@
     },
     "autoload": {
         "psr-4": {
-            "PSFS\\": "src/"
+            "PSFS\\": "src/",
+            "PSFS\\tests\\": "src/tests"
         },
         "files": ["src/autoload.php"],
         "exclude-from-classmap": ["src/tests"]

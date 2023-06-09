@@ -16,7 +16,6 @@ class GeneratorHelperTest extends TestCase
 {
 
     /**
-     * @covers \PSFS\base\types\helpers\GeneratorHelper
      * @throws GeneratorException
      */
     public function testStructureFunctions()
@@ -43,7 +42,6 @@ class GeneratorHelperTest extends TestCase
     }
 
     /**
-     * @covers \PSFS\base\types\helpers\GeneratorHelper
      * @throws GeneratorException
      */
     public function testCreateRootDocument()
@@ -70,8 +68,6 @@ class GeneratorHelperTest extends TestCase
     }
 
     /**
-     * @covers \PSFS\base\config\Config
-     * @covers \PSFS\base\types\helpers\DeployHelper
      * @throws \Exception
      */
     public function testDeployNewVersion()

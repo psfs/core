@@ -28,7 +28,6 @@ class LoggerTest extends TestCase
 
     /**
      * Test to check if the Singleton pattern works
-     * @covers \PSFS\base\Logger
      */
     public function testSingletonLoggerInstance()
     {
@@ -43,7 +42,6 @@ class LoggerTest extends TestCase
 
     /**
      * Test all the functionality for the logger class
-     * @covers \PSFS\base\Logger
      */
     public function testLogFunctions()
     {
@@ -71,8 +69,6 @@ class LoggerTest extends TestCase
 
     /**
      * Test non default logger configurations set
-     * @covers \PSFS\base\config\Config
-     * @covers \PSFS\base\Logger
      * @throws GeneratorException
      */
     public function testLogSetup()

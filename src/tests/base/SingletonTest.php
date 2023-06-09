@@ -3,7 +3,7 @@ namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Singleton;
-use PSFS\tests\examples\SingletonClassTest;
+use PSFS\tests\examples\SingletonClassTestExample;
 
 /**
  * Class SingletonTest
@@ -12,24 +12,23 @@ use PSFS\tests\examples\SingletonClassTest;
 class SingletonTest extends TestCase {
 
     /**
-     * @covers \PSFS\base\Singleton
      * @return void
      * @throws \ReflectionException
      */
     public function testCompleteSingletonCases()
     {
-        $exampleClass = SingletonClassTest::getInstance();
+        $exampleClass = SingletonClassTestExample::getInstance();
 
         // Basic instance cases
         $this->assertNotNull($exampleClass, 'Error when instance the class');
         $this->assertInstanceOf(Singleton::class, $exampleClass, 'Instance not valid');
 
         // Singleton pattern cases
-        $example2 = SingletonClassTest::getInstance();
+        $example2 = SingletonClassTestExample::getInstance();
         $this->assertEquals($exampleClass, $example2, 'Singleton pattern not found');
 
         // Extended functionality cases
-        $this->assertEquals('SingletonClassTest', $exampleClass->getShortName(), 'The short name is not equals than expected');
+        $this->assertEquals('SingletonClassTestExample', $exampleClass->getShortName(), 'The short name is not equals than expected');
         $exampleClass->init();
 
         $var = date('Y');

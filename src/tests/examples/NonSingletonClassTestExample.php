@@ -1,5 +1,5 @@
 <?php
 namespace PSFS\tests\examples;
 
-class NonSingletonClassTest {
+class NonSingletonClassTestExample {
 }

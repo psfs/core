@@ -11,11 +11,15 @@ use PSFS\services\GeneratorService as Service;
  * Class GeneratorServiceTest
  * @package PSFS\tests\services
  */
-abstract class GeneratorServiceTest extends TestCase
+class GeneratorServiceTest extends TestCase
 {
     use BoostrapTrait;
 
     const MODULE_NAME = 'CLIENT';
+
+    public function testBaseClass() {
+        $this->assertTrue(true);
+    }
 
     public static $filesToCheckWithoutSchema = [
         DIRECTORY_SEPARATOR . 'phpunit.xml.dist',

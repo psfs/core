@@ -41,8 +41,6 @@ class DocumentorServiceTest extends GeneratorServiceTest {
     }
 
     /**
-     * @covers \PSFS\base\Router
-     * @covers \PSFS\services\DocumentorService
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */

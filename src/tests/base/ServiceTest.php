@@ -88,7 +88,6 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers \PSFS\base\Service
      * @return void
      */
     public function testServiceTraits()
@@ -114,7 +113,6 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers \PSFS\base\types\CurlService
      * @return void
      */
     public function testSimpleCall()
@@ -127,12 +125,11 @@ class ServiceTest extends TestCase
     }
 
     /**
-     * @covers \PSFS\base\types\CurlService
      * @return void
      */
     public function testAuthorizedCall()
     {
-        $authSrv = \PSFS\tests\examples\AuthServiceTest::getInstance();
+        $authSrv = \PSFS\tests\examples\AuthServiceTestExample::getInstance();
         // Generate random user and password
         $user = uniqid('user');
         $password = sha1(microtime(true));

@@ -5,7 +5,7 @@ namespace PSFS\tests\examples;
 use PSFS\base\Security;
 use PSFS\base\Singleton;
 
-class SingletonClassTest extends Singleton
+class SingletonClassTestExample extends Singleton
 {
     /**
      * @Injectable
@@ -14,7 +14,7 @@ class SingletonClassTest extends Singleton
     protected $security;
     /**
      * @Injectable
-     * @var \PSFS\tests\examples\NonSingletonClassTest $testClass
+     * @var \PSFS\tests\examples\NonSingletonClassTestExample $testClass
      */
     protected $testClass;
     /**

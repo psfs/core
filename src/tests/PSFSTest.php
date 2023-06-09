@@ -14,7 +14,6 @@ class PSFSTest extends TestCase {
 
     /**
      * Basic test for the basic functionality
-     * @covers \PSFS\Dispatcher
      */
     public function testDispatcher()
     {
@@ -30,7 +29,6 @@ class PSFSTest extends TestCase {
 
     /**
      * Basic test for Config functionality
-     * @covers \PSFS\base\config\Config
      */
     public function testConfig()
     {
@@ -51,7 +49,6 @@ class PSFSTest extends TestCase {
 
     /**
      * Basic test for Router functionality
-     * @covers \PSFS\base\Router
      */
     public function testRouter()
     {
@@ -71,7 +68,6 @@ class PSFSTest extends TestCase {
 
     /**
      * Basic test for Security functionality
-     * @covers \PSFS\base\Security
      */
     public function testSecurity()
     {
@@ -83,7 +79,6 @@ class PSFSTest extends TestCase {
 
     /**
      * Basic test for Request functionality
-     * @covers \PSFS\base\Request
      */
     public function testRequest()
     {

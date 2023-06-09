@@ -8,7 +8,6 @@ use PSFS\base\types\helpers\SecurityHelper;
 class SecurityHelperTest extends TestCase
 {
     /**
-     * @covers \PSFS\base\types\helpers\SecurityHelper
      * @param string|null $secretOK
      * @param string|null $secretKO
      * @param string|null $moduleOK

@@ -46,8 +46,6 @@ class DtoTest extends TestCase
 
     /**
      * Test for Form and Field Dto
-     * @covers \PSFS\base\dto\Form
-     * @covers \PSFS\base\dto\Field
      */
     public function testFormDto()
     {
@@ -71,9 +69,6 @@ class DtoTest extends TestCase
     /**
      * @return void
      * @throws \ReflectionException
-     * @covers \PSFS\base\dto\Form
-     * @covers \PSFS\base\dto\FormAction
-     * @covers \PSFS\base\dto\Field
      */
     public function testPopulatingDto()
     {
@@ -112,8 +107,6 @@ class DtoTest extends TestCase
     /**
      * Test Dto basics
      * @throws \ReflectionException
-     * @covers \PSFS\base\dto\Form
-     * @covers \PSFS\base\dto\Order
      */
     public function testDtoBasics()
     {
@@ -181,10 +174,6 @@ class DtoTest extends TestCase
         $this->assertEquals($complextDto->__toString(), $complextDto2->__toString(), 'Different values fot toString');
     }
 
-    /**
-     * @covers \PSFS\base\dto\JsonResponse
-     * @covers \PSFS\base\dto\ProfilingJsonResponse
-     */
     public function testJsonResponseDto()
     {
         $jsonResponse = new JsonResponse();
