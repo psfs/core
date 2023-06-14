@@ -35,6 +35,11 @@ trait ApiTrait {
     protected $action;
 
     /**
+     * @var array $data
+     */
+    protected $data = array();
+
+    /**
      * Method that extract the Api name
      * @return mixed
      */
