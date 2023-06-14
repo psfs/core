@@ -68,7 +68,7 @@ class Request
      */
     private function parseHeaders()
     {
-        return getallheaders();
+        return getallheaders() ?: [];
     }
 
     /**

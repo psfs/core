@@ -11,7 +11,7 @@
         "ext-curl": "*",
         "ext-gmp": "*",
         "ext-fileinfo": "*",
-        "propel/propel": "2.0.0-alpha12",
+        "propel/propel": "~2.0@beta",
         "symfony/console": "v5.x",
         "symfony/finder": "v5.x",
         "symfony/translation": "v5.x",

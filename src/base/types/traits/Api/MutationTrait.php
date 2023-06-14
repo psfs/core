@@ -28,8 +28,6 @@ trait MutationTrait
      */
     protected $lang;
 
-
-
     /**
      * @var string
      * @header X-FIELD-TYPE
@@ -44,10 +42,30 @@ trait MutationTrait
     protected $extraColumns = array();
 
     /**
+     * @var array $query
+     */
+    protected $query = array();
+
+    /**
+     * @var array $data
+     */
+    protected $data = array();
+
+    /**
      * Extract Model TableMap
      * @return TableMap
      */
     abstract function getModelTableMap();
+
+    /**
+     * Hydrate data from request
+     */
+    protected function hydrateRequestData()
+    {
+        $request = Request::getInstance();
+        $this->query = array_merge($this->query, $request->getQueryParams());
+        $this->data = array_merge($this->data, $request->getRawData());
+    }
 
     /**
      * Extract model api namespace

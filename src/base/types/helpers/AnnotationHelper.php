@@ -24,7 +24,7 @@ final class AnnotationHelper {
     public static function extractReflectionVisibility($docComments)
     {
         $visible = self::extractFromDoc('visible', $docComments, '');
-        return false === strpos($visible, 'false');
+        return !str_contains($visible, 'false');
     }
 
     /**
@@ -34,7 +34,7 @@ final class AnnotationHelper {
      */
     public static function extractReflectionCacheability($docComments)
     {
-        return self::extractFromDoc('cache', $docComments, 0);
+        return (bool)self::extractFromDoc('cache', $docComments, false);
     }
 
     /**
