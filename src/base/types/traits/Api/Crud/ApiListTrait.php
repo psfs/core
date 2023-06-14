@@ -119,7 +119,6 @@ trait ApiListTrait {
         try {
             $query = $this->prepareQuery();
             $this->addFilters($query);
-            $this->checkReturnFields($query);
             $this->addOrders($query);
             list($page, $limit) = $this->extractPagination();
             if ($limit === -1) {
@@ -127,6 +126,7 @@ trait ApiListTrait {
             } else {
                 $this->list = $query->paginate($page, $limit, $this->con);
             }
+            $this->checkReturnFields($this->list->getQuery());
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
