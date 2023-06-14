@@ -70,7 +70,7 @@
             class="form-control" name="{{ "{{ entity + '_' + field.name }}" }}"
             ng-readonly="field.readonly || extraActionExecution"
         tabindex="{{ required ? '' : '10' }}{{ "{{ $index + 1 }}" }}">
-        <option ng-if="!field.required">{{ "Selecciona un valor"|trans }}</option>
+        <option ng-if="!field.required" value>{{ "Selecciona un valor"|trans }}</option>
         <option ng-repeat="element in field.data" ng-value="element[field.name]" ng-bind="element.Label">
         </option>
     </select>

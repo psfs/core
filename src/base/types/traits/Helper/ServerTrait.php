@@ -51,8 +51,8 @@ trait ServerTrait {
      */
     public function getServerName()
     {
-        $serverName = $this->getServer('SERVER_NAME', '');
-        return strlen($serverName) ? $serverName : $this->getServer('HTTP_HOST', 'localhost');
+        $serverName = $this->getServer('HTTP_HOST', $this->getServer('SERVER_NAME', 'localhost'));
+        return explode(':', $serverName)[0];
     }
 
     /**
