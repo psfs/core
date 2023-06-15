@@ -84,6 +84,7 @@ class Config
         'allow.double.slashes', // Allow // in url paths, allowed as default
         'default.log.path', // Default logger path
         'force.https', // Force https protocol for static resources
+        'hide.modules', // Hide modules from menu, separated by comma
     ];
     protected $debug = false;
 

@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\base\types\helpers;
 
+use PSFS\base\config\Config;
 use PSFS\base\Request;
 
 /**
@@ -43,11 +44,15 @@ class AdminHelper
     protected static function extractAdminRoutes(array $systemRoutes)
     {
         $routes = [];
+        $excluded_modules = explode(',', strtoupper(Config::getParam('hide.modules', '')));
         foreach ($systemRoutes as $params) {
+            $module = strtoupper($params['module']);
+            if(in_array($module, $excluded_modules) && $module !== 'PSFS') {
+                continue;
+            }
             if (isset($params['http']) && Request::VERB_GET === $params['http']
                 && preg_match('/^\/admin(\/|$)/', $params['default'])
                 && !in_array($params['slug'], ['n-a', 'admin-login', 'admin'])) {
-                $module = strtoupper($params['module']);
                 $mode = $params['visible'] ? 'visible' : 'hidden';
                 $routes[$module][$mode][] = [
                     'slug' => $params['slug'],
