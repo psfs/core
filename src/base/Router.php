@@ -79,10 +79,14 @@ class Router
      */
     private function debugLoad()
     {
-        Logger::log('Begin routes load');
-        $this->hydrateRouting();
-        $this->simpatize();
-        Logger::log('End routes load');
+                if(!Config::getParam('skip.route_generation', false)) {
+                    Logger::log('Begin routes load');
+                    $this->hydrateRouting();
+                    $this->simpatize();
+                    Logger::log('End routes load');
+                } else {
+                    Logger::log('Routes generation skipped');
+                }
     }
 
     /**

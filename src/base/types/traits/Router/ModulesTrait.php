@@ -155,6 +155,7 @@ trait ModulesTrait {
      */
     private function loadExternalModule($hydrateRoute, $module, &$routing = [])
     {
+        $modulesToIgnore = explode(',', Config::getParam('hide.modules', ''));
         try {
             $module = preg_replace('/(\\\|\/)/', DIRECTORY_SEPARATOR, $module);
             $externalModulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'src';
@@ -162,7 +163,9 @@ trait ModulesTrait {
                 $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
                 if ($externalModule->hasResults()) {
                     foreach ($externalModule->getIterator() as $modulePath) {
-                        $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath, $routing);
+                        if(!in_array(strtoupper($modulePath->getRelativePathname()), $modulesToIgnore)) {
+                            $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath, $routing);
+                        }
                     }
                 }
             }

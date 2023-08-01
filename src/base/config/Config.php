@@ -85,6 +85,7 @@ class Config
         'default.log.path', // Default logger path
         'force.https', // Force https protocol for static resources
         'hide.modules', // Hide modules from menu, separated by comma
+        'skip.route_generation', // Skip routes generation
     ];
     protected $debug = false;
 
