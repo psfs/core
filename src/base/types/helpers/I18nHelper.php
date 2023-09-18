@@ -111,7 +111,7 @@ class I18nHelper
                 }
             }
         } elseif (is_string($data)) {
-            $data = utf8_encode($data);
+            $data = mb_convert_encoding($data, 'UTF-8');
         }
         return $data;
     }
