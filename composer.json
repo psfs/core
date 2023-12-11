@@ -1,6 +1,6 @@
 {
     "name": "psfs/core",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Php Simple Fast & Secure",
     "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "homepage": "https://github.com/psfs/core",
@@ -20,7 +20,7 @@
         "matthiasmullie/minify": "1.3.71"
     },
     "require-dev": {
-        "phpunit/phpunit": "10.3.x-dev",
+        "phpunit/phpunit": "10.5.x-dev",
         "roave/security-advisories": "dev-master"
     },
     "config" : {
@@ -51,7 +51,7 @@
     "bin": [
         "src/bin/psfs"
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
             "dev-master": "2.x-dev"
@@ -59,8 +59,10 @@
     },
     "scripts": {
         "post-autoload-dump": [
-            "@clearCache"
+            "@clearCache",
+            "@clearViewCache"
         ],
-        "clearCache": "rm -rf cache/*"
+        "clearCache": "[ -d ./cache/reflections ] && mv ./cache/reflections ./cache/.reflections_$(date +%Y%m%d%H%M%S) || echo 'La carpeta reflections no existe.'",
+        "clearViewCache": "[ -d ./cache/twig ] && rm -rf ./cache/twig || echo 'La carpeta twig no existe.'"
     }
 }

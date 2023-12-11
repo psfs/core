@@ -3,12 +3,9 @@ version: "3.7"
 services:
     php:
         container_name: psfs_${APP_ENVIRONMENT:-local}
-        image: c15k02k18/php:8.2-xdebug
+        image: c15k02k18/php:8.2{$DEBUG:-}
         restart: always
         tty: true
-        environment:
-            XDEBUG_CONFIG: "remote_host=localhost"
-            PHP_IDE_CONFIG: "serverName=PSFS"
         volumes:
             - .:/app
             - ./docker/php.ini:/usr/local/etc/php/php.ini
@@ -18,16 +15,28 @@ services:
         ports:
             -   "${HOST_PORT:-8001}:8080"
         command: 'php -S 0.0.0.0:8080 -t ./html'
+        environment:
+            XDEBUG_CONFIG: "remote_host=localhost"
+            PHP_IDE_CONFIG: "serverName=psfs"
         depends_on:
             - redis
+        healthcheck:
+            test: ["CMD", "php-fpm", "-t"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
 
     redis:
-        platform: linux/amd64
         container_name: redis_${APP_ENVIRONMENT:-local}
         restart: always
         image: redis:latest
         networks:
             - psfs-network
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
 
 networks:
     psfs-network:
