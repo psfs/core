@@ -17,13 +17,13 @@ class I18nHelper
 {
     const PSFS_SESSION_LANGUAGE_KEY = '__PSFS_SESSION_LANG_SELECTED__';
 
-    static $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
+    static array $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
 
     /**
-     * @param string $default
+     * @param string|null $default
      * @return string
      */
-    public static function extractLocale($default = null)
+    public static function extractLocale(string $default = null): string
     {
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
@@ -37,7 +37,7 @@ class I18nHelper
             }
         }
         $locale = strtolower($locale ?: 'es_es');
-        if (false !== strpos($locale, '_')) {
+        if (str_contains($locale, '_')) {
             $locale = explode('_', $locale);
             $locale = $locale[0];
         }
@@ -59,7 +59,7 @@ class I18nHelper
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function generateTranslationsFile($absoluteFileName)
+    public static function generateTranslationsFile(string $absoluteFileName): array
     {
         $translations = array();
         if (file_exists($absoluteFileName)) {
@@ -73,12 +73,12 @@ class I18nHelper
 
     /**
      * Method to set the locale
-     * @param string $default
+     * @param string|null $default
      * @throws \Exception
      */
-    public static function setLocale($default = null)
+    public static function setLocale(string $default = null, bool $force = false): void
     {
-        $locale = self::extractLocale($default);
+        $locale = $force ? $default : self::extractLocale($default);
         Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']', Inspector::SCOPE_DEBUG);
         // Load translations
         putenv("LC_ALL=" . $locale);
@@ -91,13 +91,14 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
+        if($force) t('', null, true);
     }
 
     /**
      * @param $data
      * @return string
      */
-    public static function utf8Encode($data)
+    public static function utf8Encode($data): string
     {
         if (is_array($data)) {
             foreach ($data as &$field) {
@@ -105,10 +106,8 @@ class I18nHelper
             }
         } elseif (is_object($data)) {
             $properties = get_class_vars($data);
-            if(is_array($properties)) {
-                foreach (array_keys($properties) as $property) {
-                    $data->$property = self::utf8Encode($data->$property);
-                }
+            foreach (array_keys($properties) as $property) {
+                $data->$property = self::utf8Encode($data->$property);
             }
         } elseif (is_string($data)) {
             $data = mb_convert_encoding($data, 'UTF-8');
@@ -120,7 +119,7 @@ class I18nHelper
      * @param string $namespace
      * @return bool
      */
-    public static function checkI18Class($namespace)
+    public static function checkI18Class(string $namespace): bool
     {
         $isI18n = false;
         if (preg_match('/I18n$/i', $namespace)) {
@@ -136,7 +135,7 @@ class I18nHelper
      * @param $string
      * @return string
      */
-    public static function sanitize($string)
+    public static function sanitize($string): string
     {
         $from = [
             ['á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'],
@@ -155,7 +154,7 @@ class I18nHelper
             ['n', 'N', 'c', 'C',],
         ];
 
-        $text = filter_var($string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+        $text = htmlspecialchars($string);
         for ($i = 0, $total = count($from); $i < $total; $i++) {
             $text = str_replace($from[$i], $to[$i], $text);
         }
@@ -170,7 +169,7 @@ class I18nHelper
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function findTranslations($path, $locale)
+    public static function findTranslations(string $path, string $locale): array
     {
         $localePath = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $localePath .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
