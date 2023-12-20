@@ -46,6 +46,7 @@ Your could use some environment variables to manage the docker containers
 ```
 - APP_ENVIRONMENT: (local|dev|...|prod) Define the staging for the run environment
 - HOST_PORT: 8001 Define the port where you could expose the server
+- DEBUG: -xdebug Loads a docker image with xdebug installed and configured, if empty it loads a default php image
 ```
 
 
