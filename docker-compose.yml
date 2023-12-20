@@ -41,3 +41,4 @@ services:
 networks:
     psfs-network:
         driver: bridge
+

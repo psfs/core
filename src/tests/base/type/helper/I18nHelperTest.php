@@ -19,7 +19,7 @@ class I18nHelperTest extends TestCase {
     }
 
     public function testForceLanguage() {
-        $default_language = Config::getParam('default.language', 'es');
+        $default_language = Config::getParam('default.language', 'es_ES');
         $forced_language = 'en_GB';
         $string_to_translate = 'Página no encontrada';
         // First of all, let's check the default behavior
