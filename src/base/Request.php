@@ -143,6 +143,15 @@ class Request
         return $header ?: $default;
     }
 
+	/**
+	 * @param string $language
+	 * @return void
+	 */
+	public static function setLanguageHeader(string $language)
+	{
+		self::getInstance()->header['X-API-LANG'] = $language;
+	}
+
     /**
      * Método que devuelve la url solicitada
      * @return string|null
