@@ -1,11 +1,11 @@
 {
     "name": "psfs/core",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "Php Simple Fast & Secure",
     "keywords": ["php", "framework", "mvc", "api", "RESTful", "twig"],
     "homepage": "https://github.com/psfs/core",
     "require": {
-        "php" : "^8.2",
+        "php" : "^8.x",
         "ext-gettext": "*",
         "ext-json": "*",
         "ext-curl": "*",
