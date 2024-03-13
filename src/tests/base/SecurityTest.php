@@ -3,6 +3,7 @@
 namespace PSFS\tests\base;
 
 use Exception;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Request;
@@ -56,10 +57,10 @@ class SecurityTest extends TestCase
     }
 
     /**
-     * @depends testSecurityBasics
      * @return Security
      * @throws GeneratorException
      */
+    #[Depends('testSecurityBasics')]
     public function testSecurityUserManagement(): Security
     {
         $user = [
@@ -105,9 +106,9 @@ class SecurityTest extends TestCase
 
     /**
      * @param Security $security
-     * @depends testSecurityUserManagement
      * @throws Exception
      */
+    #[Depends('testSecurityUserManagement')]
     public function testSessionHandler(Security $security)
     {
 

@@ -17,7 +17,7 @@ class RouteController extends Admin
      * Método que pinta por pantalla todas las rutas del sistema
      * @GET
      * @label Visor de rutas del sistema
-     * @icon fa-sitemap
+     * @icon fa-folder-tree
      * @route /admin/routes
      */
     public function printRoutes()

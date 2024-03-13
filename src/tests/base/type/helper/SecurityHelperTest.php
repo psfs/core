@@ -2,6 +2,7 @@
 
 namespace PSFS\tests\base\type\helper;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\SecurityHelper;
 
@@ -12,8 +13,8 @@ class SecurityHelperTest extends TestCase
      * @param string|null $secretKO
      * @param string|null $moduleOK
      * @param string|null $moduleKO
-     * @dataProvider getBatteryTest
      */
+    #[DataProvider('getBatteryTest')]
     public function testToken(string $secretOK = null, string $secretKO = null, string $moduleOK = null, string $moduleKO = null)
     {
         $secretOK = $secretOK ?: uniqid('ok', false);

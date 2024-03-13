@@ -25,6 +25,21 @@ trait DocumentorHelperTrait {
     ];
 
     /**
+     * @param array|string $namespace
+     * @param true $isArray
+     * @return array
+     */
+    public function processPayload(array|string $namespace, bool $isArray): array
+    {
+        if (false !== strpos($namespace, '[') && false !== strpos($namespace, ']')) {
+            $namespace = str_replace(']', '', str_replace('[', '', $namespace));
+            $isArray = true;
+        }
+        $payload = $this->extractModelFields($namespace);
+        return array($isArray, $payload);
+    }
+
+    /**
      * Extract api from doc comments
      *
      * @param string $comments
@@ -84,11 +99,7 @@ trait DocumentorHelperTrait {
         $isArray = false;
         if (count($doc)) {
             $namespace = str_replace('{__API__}', $model, $doc[1]);
-            if (false !== strpos($namespace, '[') && false !== strpos($namespace, ']')) {
-                $namespace = str_replace(']', '', str_replace('[', '', $namespace));
-                $isArray = true;
-            }
-            $payload = $this->extractModelFields($namespace);
+            list($isArray, $payload) = $this->processPayload($namespace, $isArray);
             $reflector = new ReflectionClass($namespace);
             $shortName = $reflector->getShortName();
         } else {
@@ -138,11 +149,7 @@ trait DocumentorHelperTrait {
                     foreach ($subDtos as $subDto) {
                         list($field, $dtoName) = explode('=', $subDto);
                         $isArray = false;
-                        if (false !== strpos($dtoName, '[') && false !== strpos($dtoName, ']')) {
-                            $dtoName = str_replace(']', '', str_replace('[', '', $dtoName));
-                            $isArray = true;
-                        }
-                        $dto = $this->extractModelFields($dtoName);
+                        list($isArray, $dto) = $this->processPayload($dtoName, $isArray);
                         $modelDto[$field] = $isArray ? [$dto] : $dto;
                         $modelDto['objects'][$dtoName] = $dto;
                         $modelDto = $this->checkDtoAttributes($dto, $modelDto, $dtoName);

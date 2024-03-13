@@ -17,15 +17,15 @@
                 {% set swagger_uri = path('domain-api-doc', true, {'domain':_domain}) ~ '?type=swagger' %}
                 <md-button ng-href="/admin/{{ _domain }}/swagger-ui" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en html"|trans }}</md-tooltip>
-                    <md-icon class="fa fa-desktop"></md-icon>
+                    <md-icon class="fa fa-book-spells"></md-icon>
                 </md-button>
                 <md-button ng-href="{{ swagger_uri }}" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en formato Swagger"|trans }}</md-tooltip>
-                    <md-icon class="fa fa-file-code-o fa-file-code"></md-icon>
+                    <md-icon class="fal fa-file-check"></md-icon>
                 </md-button>
                 <md-button ng-href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "Ver documentación en formato Postman"|trans }}</md-tooltip>
-                    <md-icon class="fa fa-external-link"></md-icon>
+                    <md-icon class="fal fa-rocket"></md-icon>
                 </md-button>
             </md-list-item>
             {% endif %}

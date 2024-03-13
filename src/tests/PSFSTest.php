@@ -25,6 +25,7 @@ class PSFSTest extends TestCase {
 
         // Did timestamp generated?
         $this->assertTrue($dispatcher->getTs() > 0);
+        restore_error_handler();
     }
 
     /**

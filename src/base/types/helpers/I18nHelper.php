@@ -74,9 +74,11 @@ class I18nHelper
     /**
      * Method to set the locale
      * @param string|null $default
+     * @param string|null $customKey
+     * @param bool $force
      * @throws \Exception
      */
-    public static function setLocale(string $default = null, bool $force = false): void
+    public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
     {
         $locale = $force ? $default : self::extractLocale($default);
         Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']', Inspector::SCOPE_DEBUG);
@@ -91,7 +93,7 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
-        if($force) t('', null, true);
+        if($force) t('', $customKey, true);
     }
 
     /**

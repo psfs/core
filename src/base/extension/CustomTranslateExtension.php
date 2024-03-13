@@ -64,7 +64,8 @@ class CustomTranslateExtension extends AbstractExtension
     {
         Inspector::stats('[translationsCheckLoad] Start checking translations load', Inspector::SCOPE_DEBUG);
         $session = Security::getInstance();
-        self::$locale = I18nHelper::extractLocale($session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
+        $session_locale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY);
+        self::$locale = $forceReload ? $session_locale : I18nHelper::extractLocale($session_locale);
         $version = $session->getSessionKey(self::LOCALE_CACHED_VERSION);
         $configVersion = self::$locale . '_' . Config::getParam('cache.var', 'v1');
         if ($forceReload) {

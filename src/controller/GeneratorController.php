@@ -27,7 +27,7 @@ class GeneratorController extends Admin
      * @label Método que genera un nuevo módulo
      * @GET
      * @route /admin/module
-     * @icon fa-code
+     * @icon fa-layer-plus
      * @return string
      * @throws FormException
      */

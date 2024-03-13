@@ -2,8 +2,7 @@ version: "3.7"
 
 services:
     php:
-        container_name: psfs_${APP_ENVIRONMENT:-local}
-        image: c15k02k18/php:8.2{$DEBUG:-}
+        image: c15k02k18/php:8.3${DEBUG:-}
         restart: always
         tty: true
         volumes:
@@ -27,7 +26,6 @@ services:
             retries: 5
 
     redis:
-        container_name: redis_${APP_ENVIRONMENT:-local}
         restart: always
         image: redis:latest
         networks:
@@ -38,6 +36,26 @@ services:
             timeout: 3s
             retries: 5
 
+    db:
+        image: mysql
+        networks:
+            - psfs-network
+        environment:
+            MYSQL_USER: ${MYSQL_USER:-psfs}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-psfs}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-psfs}
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-psfs}
+        volumes:
+            - "psfs_db:/var/lib/mysql"
+        healthcheck:
+            test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-checks}" ]
+            interval: 3s
+            timeout: 5s
+            retries: 20
+
 networks:
     psfs-network:
         driver: bridge
+
+volumes:
+    psfs_db:

@@ -27,12 +27,12 @@ class I18nHelperTest extends TestCase {
         $this->assertEquals($default_language, I18nHelper::extractLocale());
         $this->assertEquals($string_to_translate, t($string_to_translate));
         // Now we try to force a different language
-        I18nHelper::setLocale($forced_language, true);
+        I18nHelper::setLocale($forced_language, force: true);
         $this->assertNotEquals($default_language, I18nHelper::extractLocale());
         $this->assertEquals($forced_language, I18nHelper::extractLocale());
         $this->assertEquals('Page not found', t($string_to_translate));
         // And finally we try again changing to default language
-        I18nHelper::setLocale($default_language, true);
+        I18nHelper::setLocale($default_language, force: true);
         $this->assertNotEquals($forced_language, I18nHelper::extractLocale());
         $this->assertEquals($default_language, I18nHelper::extractLocale());
         $this->assertEquals($string_to_translate, t($string_to_translate));

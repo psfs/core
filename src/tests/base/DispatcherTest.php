@@ -4,6 +4,7 @@ namespace PSFS\tests\base;
 
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub\ReturnStub;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
@@ -55,8 +56,8 @@ class DispatcherTest extends TestCase
     private function mockConfiguredDebugConfig(bool $configured = true, bool $debug = true): MockObject
     {
         $config = $this->createMock(Config::class);
-        $config->expects($this->any())->method('isConfigured')->will($this->returnValue($configured));
-        $config->expects($this->any())->method('getDebugMode')->will($this->returnValue($debug));
+        $config->expects($this->any())->method('isConfigured')->will(new ReturnStub($configured));
+        $config->expects($this->any())->method('getDebugMode')->will(new ReturnStub($debug));
         return $config;
     }
 

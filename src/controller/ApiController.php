@@ -24,7 +24,7 @@ class ApiController extends AuthAdminController
     /**
      * @GET
      * @route /admin/api/docs
-     * @icon fa-puzzle-piece
+     * @icon fa-books
      * @label Documentación api
      * @return string HTML
      */

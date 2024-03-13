@@ -1,6 +1,7 @@
 <?php
 namespace PSFS\tests\services;
 
+use PHPUnit\Framework\Attributes\Before;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\services\DocumentorService as Service;
@@ -18,9 +19,9 @@ class DocumentorServiceTest extends GeneratorServiceTest {
     ];
 
     /**
-     * @before
      * @throws \PSFS\base\exception\GeneratorException
      */
+    #[Before]
     public function prepareDocumentRoot()
     {
         if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
