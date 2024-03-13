@@ -1,10 +1,12 @@
 {% set base_version = get_config('admin.version', 'v1') %}
 {% extends '@ROOT/' ~ base_version ~ '/base.html.twig' %}
 {% block body_header %}
+    {% if __DEBUG__ %}
     <md-subheader class="page-header md-primary">
         <h2>{{ "Opps, esto no era lo que me esperaba..."|trans }}</h2>
         <h1>{{ get_config('platform.name') }}</h1>
     </md-subheader>
+    {% endif %}
 {% endblock body_header %}
 {% block body_content %}
     <md-card>
@@ -13,9 +15,13 @@
                 <p><strong>{{ exception.getCode }}</strong> {{ exception.getMessage }}</p>
             </md-card-title-text>
         </md-card-title>
-        <md-card-content>
+        <md-card-content class="col-xs-12">
         {% if __DEBUG__ %}
             <pre>{{ trace }}</pre>
+        {% else %}
+            <div class="thumbnail">
+                <img src="{{ asset("@ROOT/image/not_found.svg") }}" alt="{{ exception.getCode }}"/>
+            </div>
         {% endif %}
         </md-card-content>
     </md-card>
