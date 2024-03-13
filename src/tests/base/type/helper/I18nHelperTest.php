@@ -7,7 +7,7 @@ use PSFS\base\types\helpers\I18nHelper;
 
 class I18nHelperTest extends TestCase {
     public function testDefaultLanguageExtraction() {
-        $default_language = Config::getParam('default.language', 'es');
+        $default_language = Config::getParam('default.language', 'es_ES');
         // In command line interface it should get the default language from the config
         $this->assertEquals($default_language, I18nHelper::extractLocale());
     }
