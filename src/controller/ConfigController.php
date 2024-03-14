@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\controller;
 
 use HttpException;
@@ -10,6 +11,7 @@ use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
 
@@ -52,7 +54,7 @@ class ConfigController extends Admin
     public function config()
     {
         Logger::log("Config loaded executed by " . $this->getRequest()->getRequestUri());
-        if(defined('PSFS_UNIT_TESTING_EXECUTION')) {
+        if (defined('PSFS_UNIT_TESTING_EXECUTION')) {
             throw new ConfigException('CONFIG');
         }
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
@@ -85,6 +87,7 @@ class ConfigController extends Admin
                 Logger::log(t('Configuración guardada correctamente'));
                 //Verificamos si tenemos que limpiar la cache del DocumentRoot
                 if (boolval($debug) !== boolval($newDebug)) {
+                    DeployHelper::updateCacheVar();
                     GeneratorHelper::clearDocumentRoot();
                 }
                 Security::getInstance()->setFlash("callback_message", t("Configuración actualizada correctamente"));

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\exception\ConfigException;
@@ -59,7 +60,7 @@ class GeneratorHelper
      */
     public static function createDir($dir)
     {
-        if(!empty($dir)) {
+        if (!empty($dir)) {
             try {
                 if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
                     throw new \Exception(t('Can\'t create directory ') . $dir);
@@ -87,7 +88,8 @@ class GeneratorHelper
      * @param $namespace
      * @return string
      */
-    public static function extractClassFromNamespace($namespace) {
+    public static function extractClassFromNamespace($namespace)
+    {
         $parts = preg_split('/(\\\|\\/)/', $namespace);
         return array_pop($parts);
     }
@@ -97,13 +99,14 @@ class GeneratorHelper
      * @throws GeneratorException
      * @throws \ReflectionException
      */
-    public static function checkCustomNamespaceApi($namespace) {
-        if(!empty($namespace)) {
-            if(class_exists($namespace)) {
+    public static function checkCustomNamespaceApi($namespace)
+    {
+        if (!empty($namespace)) {
+            if (class_exists($namespace)) {
                 $reflector = new \ReflectionClass($namespace);
-                if(!$reflector->isSubclassOf(Api::class)) {
+                if (!$reflector->isSubclassOf(Api::class)) {
                     throw new GeneratorException(t('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
-                } elseif(!$reflector->isAbstract()) {
+                } elseif (!$reflector->isAbstract()) {
                     throw new GeneratorException(t('La clase definida debe ser abstracta'), 501);
                 }
             } else {
@@ -118,9 +121,10 @@ class GeneratorHelper
      * @param boolean $quiet
      * @throws GeneratorException
      */
-    public static function createRoot($path = WEB_DIR, OutputInterface $output = null, $quiet = false) {
+    public static function createRoot($path = WEB_DIR, OutputInterface $output = null, $quiet = false)
+    {
 
-        if(null === $output) {
+        if (null === $output) {
             $output = new ConsoleOutput();
         }
 
@@ -139,15 +143,20 @@ class GeneratorHelper
             'robots' => 'robots.txt',
             'docker' => '..' . DIRECTORY_SEPARATOR . 'docker-compose.yml',
         ];
+        $verificable = ['humans', 'robots', 'docker'];
         $output->writeln('Start creating html files');
-        foreach ($files as $templates => $filename) {
-            $text = Template::getInstance()->dump("generator/html/" . $templates . '.html.twig');
+        foreach ($files as $template => $filename) {
+            if (in_array($template, $verificable) && file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
+                $output->writeln($filename . ' already exists');
+                continue;
+            }
+            $text = Template::getInstance()->dump("generator/html/" . $template . '.html.twig');
             if (false === file_put_contents($path . DIRECTORY_SEPARATOR . $filename, $text)) {
-                if(!$quiet) {
+                if (!$quiet) {
                     $output->writeln('Can\t create the file ' . $filename);
                 }
             } else {
-                if(!$quiet) {
+                if (!$quiet) {
                     $output->writeln($filename . ' created successfully');
                 }
             }

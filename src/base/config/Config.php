@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\config;
 
 use PSFS\base\exception\ConfigException;
@@ -104,7 +105,8 @@ class Config
     /**
      * @return bool
      */
-    public function isLoaded() {
+    public function isLoaded()
+    {
         return !empty($this->config);
     }
 
@@ -160,7 +162,8 @@ class Config
     /**
      * @param bool $debug
      */
-    public function setDebugMode($debug = true) {
+    public function setDebugMode($debug = true)
+    {
         $this->debug = $debug;
         $this->config['debug'] = $this->debug;
     }
@@ -208,7 +211,7 @@ class Config
         $finalData = self::saveExtraParams($data);
         $saved = false;
         try {
-            $finalData = array_filter($finalData, function($key, $value) {
+            $finalData = array_filter($finalData, function ($key, $value) {
                 return in_array($key, self::$required, true) || !empty($value);
             }, ARRAY_FILTER_USE_BOTH);
             $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($finalData, JSON_PRETTY_PRINT)));
@@ -248,7 +251,7 @@ class Config
     {
         $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
         $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
-        if(array_key_exists('cache.var', $this->config)) {
+        if (array_key_exists('cache.var', $this->config)) {
             Security::getInstance()->setSessionKey('config.cache.var', $this->config['cache.var']);
         }
     }
@@ -270,15 +273,30 @@ class Config
      */
     public static function getParam($key, $defaultValue = null, $module = null)
     {
-        if(null !== $module) {
+        if (null !== $module) {
             return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));
         }
         $param = self::getInstance()->get($key);
         return (null !== $param) ? $param : $defaultValue;
     }
 
-    public static function initialize() {
+    public static function initialize()
+    {
         Config::getInstance();
         Logger::getInstance();
+    }
+
+    public static function clearConfigFiles(): bool
+    {
+        $configs = ['domains.json', 'urls.json'];
+        $done = true;
+        foreach ($configs as $configFile) {
+            if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . $configFile)) {
+                if (!unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . $configFile)) {
+                    $done = false;
+                }
+            }
+        }
+        return $done;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace PSFS\base\extension;
 
+use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -159,6 +160,18 @@ class TemplateFunctions
         $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
         $filenamePath = self::extractPathname($path, $domains);
+        // Check if resources has been copied to public folders
+        if(!$debug) {
+            $cacheFilename = Config::getParam('cache.var', '__initial__') . '.file.cache';
+            $cachedFiles = Cache::getInstance()->readFromCache($cacheFilename,
+                1, fn() => [], Cache::JSON, true) ?: [];
+            // Force the resource copy
+            if(!in_array($filenamePath, $cachedFiles) || $force) {
+                $force = true;
+                $cachedFiles[] = $filenamePath;
+                Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
+            }
+        }
         GeneratorHelper::copyResources($dest, $force, $filenamePath, $debug);
         return '';
     }
@@ -178,7 +191,7 @@ class TemplateFunctions
                 $domainFilename = str_replace($domain, $paths['public'], $path);
                 if (file_exists($domainFilename)) {
                     $filenamePath = $domainFilename;
-                    continue;
+                    break;
                 }
             }
 

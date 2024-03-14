@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
@@ -161,16 +162,17 @@ class Cache
      * @param int $expires
      * @param callable $function
      * @param int $transform
+     * @param bool $ignoreExpiration
      * @return mixed|null
      * @throws GeneratorException
      * @throws ConfigException
      */
-    public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT)
+    public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT, $ignoreExpiration = false)
     {
         $data = null;
         Inspector::stats('[Cache] Reading data from cache: ' . json_encode(['path' => $path]), Inspector::SCOPE_DEBUG);
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
-            if (is_callable($function) && $this->hasExpiredCache($path, $expires)) {
+            if (is_callable($function) && $this->hasExpiredCache($path, $expires) && !$ignoreExpiration) {
                 $data = $function();
                 $this->storeData($path, $data, $transform);
             } else {
@@ -225,13 +227,14 @@ class Cache
         return [$hashPath, $filename];
     }
 
-    public function flushCache() {
-        if(Config::getParam('cache.data.enable', false)) {
+    public function flushCache()
+    {
+        if (Config::getParam('cache.data.enable', false)) {
             Inspector::stats('[Cache] Flushing cache', Inspector::SCOPE_DEBUG);
             $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
-            if(is_array($action)) {
+            if (is_array($action)) {
                 $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
-                if(!file_exists($hashPath)) {
+                if (!file_exists($hashPath)) {
                     $hashPath = CACHE_DIR . DIRECTORY_SEPARATOR . $hashPath;
                 }
                 FileHelper::deleteDir($hashPath);

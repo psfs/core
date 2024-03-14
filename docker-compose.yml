@@ -6,17 +6,17 @@ services:
         restart: always
         tty: true
         volumes:
-            - .:/app
+            - .:/var/www
             - ./docker/php.ini:/usr/local/etc/php/php.ini
         networks:
             - psfs-network
-        working_dir: "/app"
+        working_dir: "/var/www"
         ports:
             -   "${HOST_PORT:-8001}:8080"
         command: 'php -S 0.0.0.0:8080 -t ./html'
         environment:
             XDEBUG_CONFIG: "remote_host=localhost"
-            PHP_IDE_CONFIG: "serverName=psfs"
+            PHP_IDE_CONFIG: "serverName=PSFSCore"
         depends_on:
             - redis
         healthcheck:

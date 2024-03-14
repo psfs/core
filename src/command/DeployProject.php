@@ -1,6 +1,8 @@
 <?php
+
 namespace PSFS\Command;
 
+use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
@@ -21,7 +23,7 @@ $console
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $path = $input->getArgument('path');
-        if (empty($path))  {
+        if (empty($path)) {
             $path = WEB_DIR;
         }
 
@@ -30,6 +32,12 @@ $console
 
         $version = DeployHelper::updateCacheVar();
         $output->writeln(str_replace('%version', $version, t("Versión de cache actualizada a %version")));
+
+        if (Config::clearConfigFiles()) {
+            $output->writeln(t("Ficheros de configuración limpiados con éxito"));
+        } else {
+            $output->writeln(t("No se han podido limpiar uno o más ficheros de la carpeta de configuración"));
+        }
 
         $router = Router::getInstance();
         $router->hydrateRouting();
