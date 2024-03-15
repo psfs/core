@@ -45,6 +45,17 @@ html body .form-group.has-success .form-control {
 html body md-dialog {
   padding: 20px;
 }
+html body md-dialog button {
+  border-radius: 5px;
+}
+html body md-dialog button.md-confirm-button {
+  border-color: #d43f3a;
+  background: #d9534f;
+  color: white !important;
+}
+html body md-dialog button.md-confirm-button:hover {
+  background-color: #d9534f !important;
+}
 html body header .page-header {
   margin: 10px 0;
 }

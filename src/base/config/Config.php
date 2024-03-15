@@ -227,11 +227,11 @@ class Config
     /**
      * Method that returns a config value
      * @param string $param
-     * @param mixed $defaultValue
+     * @param mixed|null $defaultValue
      *
      * @return mixed|null
      */
-    public function get($param, $defaultValue = null)
+    public function get(string $param, mixed $defaultValue = null): mixed
     {
         return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
     }
@@ -240,7 +240,7 @@ class Config
      * Method that returns all the configuration
      * @return array
      */
-    public function dumpConfig()
+    public function dumpConfig(): array
     {
         return $this->config ?: [];
     }
@@ -248,7 +248,7 @@ class Config
     /**
      * Method that reloads config file
      */
-    public function loadConfigData()
+    public function loadConfigData(): void
     {
         $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
         $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
@@ -269,10 +269,10 @@ class Config
      * Static wrapper for extracting params
      * @param string $key
      * @param mixed|null $defaultValue
-     * @param string $module
+     * @param string|null $module
      * @return mixed|null
      */
-    public static function getParam($key, $defaultValue = null, $module = null)
+    public static function getParam(string $key, mixed $defaultValue = null, string $module = null): mixed
     {
         if (null !== $module) {
             return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));
@@ -281,7 +281,7 @@ class Config
         return (null !== $param) ? $param : $defaultValue;
     }
 
-    public static function initialize()
+    public static function initialize(): void
     {
         Config::getInstance();
         Logger::getInstance();

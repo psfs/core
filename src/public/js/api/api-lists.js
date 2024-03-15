@@ -30,7 +30,7 @@
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
                             .title($scope.entity + ' Error ' + status)
-                            .content(err)
+                            .htmlContent(err)
                             .ariaLabel('Loading error')
                             .ok($scope.i18N['close'])
                     );

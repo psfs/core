@@ -92,7 +92,7 @@
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title($scope.entity + ' Error ' + err.status)
-                        .content(err.data.message)
+                        .htmlContent(err.data.message)
                         .ariaLabel('Save error')
                         .ok($scope.i18N['close'])
                 ).finally(function() {
@@ -165,7 +165,7 @@
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
                             .title($scope.entity + ' form invalid')
-                            .content($scope.entity + ' form invalid, please complete the form')
+                            .htmlContent($scope.entity + ' form invalid, please complete the form')
                             .ariaLabel('Invalid form')
                             .ok('Close')
                     );
@@ -304,7 +304,7 @@
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title(label)
-                        .content(message)
+                        .htmlContent(message)
                         .ok('Close')
                 );
             }
@@ -321,7 +321,7 @@
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title(label)
-                        .content(message)
+                        .htmlContent(message)
                         .ok('Close')
                 );
             }
@@ -367,7 +367,7 @@
                         $scope.loading = true;
                         var confirm = $mdDialog.confirm()
                             .title(label)
-                            .content('La acción implica un borrado, ¿estás seguro?')
+                            .htmlContent('La acción implica un borrado, ¿estás seguro?')
                             .ok($scope.i18N['delete'])
                             .cancel($scope.i18N['cancel']);
                         $mdDialog.show(confirm).then(function() {

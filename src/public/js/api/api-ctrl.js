@@ -84,7 +84,7 @@
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title($scope.i18N['generic_error_label'])
-                        .content(response)
+                        .htmlContent(response)
                         .ariaLabel('Alert Error Dialog')
                         .ok($scope.i18N['close'])
                 );
@@ -97,7 +97,7 @@
                     $scope.loading = true;
                     var confirm = $mdDialog.confirm()
                         .title($scope.i18N['confirm_delete_label'].replace('%entity%', $apiSrv.getLabel(item)))
-                        .content($scope.i18N['confirm_delete_message'])
+                        .htmlContent($scope.i18N['confirm_delete_message'])
                         .ok($scope.i18N['delete'])
                         .cancel($scope.i18N['cancel']);
                     $mdDialog.show(confirm).then(function() {
@@ -114,7 +114,7 @@
                                     $mdDialog.alert()
                                         .clickOutsideToClose(true)
                                         .title($scope.entity + ' Error ' + status)
-                                        .content(err.data.data)
+                                        .htmlContent(err.data.data)
                                         .ariaLabel('Delete error')
                                         .ok($scope.i18N['close'])
                                 );
