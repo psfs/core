@@ -48,6 +48,8 @@ class TemplateTest extends TestCase
         $this->assertNotEmpty($output2);
         $this->assertNotEquals($output2, $output, 'Production template is the same than development one');
         Config::getInstance()->setDebugMode(true);
+
+        $this->assertEquals('/admin/translations/es', $template->getRoute('admin-translations-locale', false, ['locale' => 'es']), 'Route is not the same that expected');
     }
 
     /**

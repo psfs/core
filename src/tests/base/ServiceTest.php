@@ -3,6 +3,7 @@
 namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\Logger;
 use PSFS\base\Service;
 use PSFS\base\Singleton;
 use PSFS\base\types\CurlService;
@@ -109,7 +110,7 @@ class ServiceTest extends TestCase
         $this->assertEquals('https://google.com', $srv->getUrl(), 'Service does not update url');
         $this->assertNotEmpty($srv->getParams(), 'Params are empty');
         $this->assertNotEmpty($srv->getOptions(), 'Options are empty');
-
+        $this->assertInstanceOf(Logger::class, $srv->getLog(), 'Logger not instantiated');
     }
 
     /**

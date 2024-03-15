@@ -8,6 +8,8 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AdminHelper;
+use PSFS\base\types\helpers\RequestHelper;
+use PSFS\bootstrap;
 use PSFS\Dispatcher;
 
 class PSFSTest extends TestCase
@@ -27,6 +29,12 @@ class PSFSTest extends TestCase
         // Did timestamp generated?
         $this->assertTrue($dispatcher->getTs() > 0);
         restore_error_handler();
+
+        // Test bootstrap loader
+        $this->assertTrue(bootstrap::$loaded, 'Bootstrap is not loaded');
+        bootstrap::$loaded = false;
+        bootstrap::load();
+        $this->assertTrue(bootstrap::$loaded, 'Bootstrap is not reloaded');
     }
 
     /**
@@ -97,6 +105,37 @@ class PSFSTest extends TestCase
 
         // Checks if timestamp was generated
         $this->assertNotNull($request->getTs());
+
+        // Check cors
+        $corsHeaders = RequestHelper::getCorsHeaders();
+        $this->assertIsArray($corsHeaders, 'Wrong returned headers');
+        $headers = [
+            'Access-Control-Allow-Methods',
+            'Access-Control-Allow-Headers',
+            'Access-Control-Allow-Origin',
+            'Access-Control-Expose-Headers',
+            'Origin',
+            'X-Requested-With',
+            'Content-Type',
+            'Accept',
+            'Authorization',
+            'Cache-Control',
+            'Content-Language',
+            'Accept-Language',
+            'X-API-SEC-TOKEN',
+            'X-API-USER-TOKEN',
+            'X-API-LANG',
+            'X-FIELD-TYPE',
+        ];
+        foreach($headers as $header) {
+            $this->assertTrue(in_array($header, $corsHeaders), sprintf('%s not found in CORS array', $header));
+        }
+
+        // Verify IPs
+        $currentIp = str_replace("\n", "", file_get_contents('http://checkip.amazonaws.com'));
+        $this->assertTrue(RequestHelper::validateIpAddress($currentIp), 'IP validation error');
+        $this->assertNotTrue(RequestHelper::validateIpAddress('350.168.458.a'), 'IP validation error');
+        $this->assertNotTrue(RequestHelper::validateIpAddress('350.168.458.1500'), 'IP validation error');
     }
 
     public function testPre()

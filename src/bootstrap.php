@@ -34,7 +34,7 @@ if (!class_exists(bootstrap::class)) {
      */
     class bootstrap
     {
-        protected static bool $loaded = false;
+        public static bool $loaded = false;
 
         public static function load(): void
         {

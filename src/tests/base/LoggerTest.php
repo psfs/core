@@ -58,6 +58,8 @@ class LoggerTest extends TestCase
             Logger::log('Test critical log', LOG_CRIT, [], true);
             // Debug log
             Logger::log('Test debug logs', LOG_DEBUG, [], true);
+            Logger::log('Test alert logs', LOG_ALERT, [], true);
+            Logger::log('Test emergency logs', LOG_EMERG, [], true);
             // Other logs
             Logger::log('Test other logs', LOG_CRON, [], true);
         } catch (\Exception $e) {
@@ -82,7 +84,7 @@ class LoggerTest extends TestCase
         // Create a new logger instance
         $logger = new Logger(['test', true]);
         $this->assertInstanceOf(Logger::class, $logger, 'Logger interface');
-        $logger->addLog('Test', \Monolog\Logger::DEBUG);
+        $logger->addLog('Test', \Monolog\Level::Debug);
         $logger = null;
         unset($defaultConfig['logger.memory']);
         Config::save($defaultConfig, []);

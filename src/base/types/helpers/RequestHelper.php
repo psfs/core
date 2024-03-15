@@ -12,7 +12,7 @@ use PSFS\base\Request;
  */
 class RequestHelper
 {
-    private static function getCorsHeaders(): array
+    public static function getCorsHeaders(): array
     {
         $headers = [
             'Access-Control-Allow-Methods',
@@ -108,50 +108,28 @@ class RequestHelper
     }
 
     /**
-     * Ensures an ip address is both a valid IP and does not fall within
-     * a private network range.
+     * @param string $ipAddress
+     * @param string $startRange
+     * @param string $endRange
+     * @return bool
      */
-    public static function validateIpAddress($ipAddress): bool
+    public static function validateIpAddress(string $ipAddress, string $startRange = '0.0.0.0', string $endRange = '255.255.255.255'): bool
     {
-        if (strtolower($ipAddress) === 'unknown') {
-            return false;
+        // Utiliza FILTER_VALIDATE_IP para validar el formato de la dirección IP
+        if (filter_var($ipAddress, FILTER_VALIDATE_IP) === false) {
+            return false; // La IP no es válida
         }
 
-        // generate ipv4 network address
-        $ipAddress = ip2long($ipAddress);
+        // Convierte las IP a números enteros
+        $ipNum = ip2long($ipAddress);
+        $rangoInicioNum = ip2long($startRange);
+        $rangoFinNum = ip2long($endRange);
 
-        // if the ip is set and not equivalent to 255.255.255.255
-        if ($ipAddress !== false && $ipAddress !== -1) {
-            // make sure to get unsigned long representation of ip
-            // due to discrepancies between 32 and 64 bit OSes and
-            // signed numbers (ints default to signed in PHP)
-            $ipAddress = sprintf('%u', $ipAddress);
-            // do private network range checking
-            if ($ipAddress >= 0 && $ipAddress <= 50331647) {
-                return false;
-            }
-            if ($ipAddress >= 167772160 && $ipAddress <= 184549375) {
-                return false;
-            }
-            if ($ipAddress >= 2130706432 && $ipAddress <= 2147483647) {
-                return false;
-            }
-            if ($ipAddress >= 2851995648 && $ipAddress <= 2852061183) {
-                return false;
-            }
-            if ($ipAddress >= 2886729728 && $ipAddress <= 2887778303) {
-                return false;
-            }
-            if ($ipAddress >= 3221225984 && $ipAddress <= 3221226239) {
-                return false;
-            }
-            if ($ipAddress >= 3232235520 && $ipAddress <= 3232301055) {
-                return false;
-            }
-            if ($ipAddress >= 4294967040) {
-                return false;
-            }
+        // Verifica si la IP está en el rango válido
+        if ($ipNum >= $rangoInicioNum && $ipNum <= $rangoFinNum) {
+            return true; // La IP está en el rango válido
+        } else {
+            return false; // La IP está fuera del rango válido
         }
-        return true;
     }
 }

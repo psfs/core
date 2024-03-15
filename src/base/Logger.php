@@ -13,6 +13,7 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\LogHelper;
 use PSFS\base\types\helpers\SlackHelper;
 use PSFS\base\types\traits\SingletonTrait;
 
@@ -111,7 +112,7 @@ class Logger
             $debug = $args[0][1] ?? true;
         }
         $path = $this->createLoggerPath();
-        return [$this->cleanLoggerName($namespace), $debug, $path];
+        return [LogHelper::cleanLoggerName($namespace), $debug, $path];
     }
 
     /**
@@ -120,18 +121,7 @@ class Logger
     private function setLoggerName(): string
     {
         $logger = Config::getParam('platform.name', self::DEFAULT_NAMESPACE);
-        return $this->cleanLoggerName($logger);
-    }
-
-    /**
-     * @param $logger
-     *
-     * @return mixed
-     */
-    private function cleanLoggerName($logger): mixed
-    {
-        $logger = str_replace(' ', '', $logger);
-        return preg_replace("/\\\\/", ".", $logger);
+        return LogHelper::cleanLoggerName($logger);
     }
 
     /**
@@ -155,43 +145,7 @@ class Logger
      */
     public function addLog(string $msg, \Monolog\Level $type = \Monolog\Level::Notice, array $context = [], bool $force = false)
     {
-        return !($this->checkLogLevel($type) || $force) || $this->logger->addRecord($type, $msg, $this->addMinimalContext($context));
-    }
-
-    /**
-     * @param \Monolog\Level $level
-     * @return bool
-     */
-    private function checkLogLevel(\Monolog\Level $level = \Monolog\Level::Notice): bool
-    {
-        switch ($this->logLevel) {
-            case 'DEBUG':
-                $logPass = \Monolog\Log::Debug;
-                break;
-            case 'INFO':
-                $logPass = \Monolog\Level::Info;
-                break;
-            default:
-            case 'NOTICE':
-                $logPass = \Monolog\Level::Notice;
-                break;
-            case 'WARNING':
-                $logPass = \Monolog\Level::Warning;
-                break;
-            case 'ERROR':
-                $logPass = \Monolog\Level::Error;
-                break;
-            case 'EMERGENCY':
-                $logPass = \Monolog\Level::Emergency;
-                break;
-            case 'ALERT':
-                $logPass = \Monolog\Level::Alert;
-                break;
-            case 'CRITICAL':
-                $logPass = \Monolog\Level::Critical;
-                break;
-        }
-        return $logPass <= $level;
+        return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord($type, $msg, LogHelper::addMinimalContext($context));
     }
 
     /**
@@ -208,60 +162,12 @@ class Logger
         if (Config::getParam('profiling.enable') && 'DEBUG' === Config::getParam('log.level', 'NOTICE')) {
             Inspector::stats($msg, Inspector::SCOPE_DEBUG);
         }
-        switch ($type) {
-            case LOG_DEBUG:
-                self::getInstance()->addLog($msg, \Monolog\Level::Debug, $context, $force);
-                break;
-            case LOG_WARNING:
-                self::getInstance()->addLog($msg, \Monolog\Level::Warning, $context, $force);
-                break;
-            case LOG_CRIT:
-                if (Config::getParam('log.slack.hook')) {
-                    SlackHelper::getInstance()->trace($msg, '', '', $context);
-                }
-                self::getInstance()->addLog($msg, \Monolog\Level::Critical, $context, $force);
-                break;
-            case LOG_ERR:
-                self::getInstance()->addLog($msg, \Monolog\Level::Error, $context, $force);
-                break;
-            case LOG_INFO:
-                self::getInstance()->addLog($msg, \Monolog\Level::Info, $context, $force);
-                break;
-            case LOG_EMERG:
-                self::getInstance()->addLog($msg, \Monolog\Level::Emergency, $context, $force);
-                break;
-            case LOG_ALERT:
-                self::getInstance()->addLog($msg, \Monolog\Level::Alert, $context, $force);
-                break;
-            default:
-                self::getInstance()->addLog($msg, \Monolog\Level::Notice, $context, $force);
-                break;
+        $level = LogHelper::calculateLogLevel($type);
+        if (in_array($level, [\Monolog\Level::Critical, \Monolog\Level::Error, \Monolog\Level::Emergency]) &&
+            strlen(Config::getParam('log.slack.hook', '')) > 0) {
+            SlackHelper::getInstance()->trace($msg, '', '', $context);
         }
-    }
-
-    /**
-     * @param bool $debug
-     * @throws \Exception
-     */
-    private function addAwsStreamHandler($debug = false)
-    {
-        $client = new \Aws\CloudWatchLogs\CloudWatchLogsClient([
-            'region' => Config::getParam('aws.region', 'eu-west-1'),
-            'version' => Config::getParam('aws.version', 'latest'),
-            'credentials' => [
-                'key' => Config::getParam('aws.key', 'your AWS key'),
-                'secret' => Config::getParam('aws.secret', 'your AWS secret'),
-            ],
-        ]);
-        $stream = new \Maxbanton\Cwh\Handler\CloudWatch(
-            $client,
-            Config::getParam('aws.group_name', 'PSFS'),
-            Config::getParam('platform.name', 'PSFS'),
-            Config::getParam('aws.retention_days', 30),
-            10000
-        );
-        $stream->setFormatter(new JsonFormatter);
-        return $stream;
+        self::getInstance()->addLog($msg, \Monolog\Level::Notice, $context, $force);
     }
 
     /**
@@ -280,20 +186,6 @@ class Logger
         $stream = new StreamHandler($this->stream, $debug ? \Monolog\Level::Debug : \Monolog\Level::Warning);
         $stream->setFormatter($formatter);
         return $stream;
-    }
-
-    /**
-     * @param array $context
-     * @return array
-     */
-    private function addMinimalContext(array $context = [])
-    {
-        $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
-        $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
-        if (null !== $_SERVER && array_key_exists('HTTP_X_PSFS_UID', $_SERVER)) {
-            $context['uid'] = $_SERVER['HTTP_X_PSFS_UID'];
-        }
-        return $context;
     }
 
     /**
