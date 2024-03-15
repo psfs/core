@@ -20,7 +20,7 @@ class RouterHelper
      * @return mixed
      * @throws ReflectionException
      */
-    public static function getClassToCall(array $action)
+    public static function getClassToCall(array $action): mixed
     {
         Inspector::stats('[RouterHelper] Getting class to call for executing the request action', Inspector::SCOPE_DEBUG);
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
@@ -39,11 +39,11 @@ class RouterHelper
      *
      * @return array
      */
-    public static function extractHttpRoute($pattern)
+    public static function extractHttpRoute($pattern): array
     {
         $httpMethod = 'ALL';
         $routePattern = $pattern;
-        if (false !== strpos($pattern, '#|#')) {
+        if (str_contains($pattern, '#|#')) {
             list($httpMethod, $routePattern) = explode('#|#', $pattern, 2);
         }
 
@@ -59,10 +59,10 @@ class RouterHelper
      *
      * @return array
      */
-    public static function extractComponents($route, $pattern)
+    public static function extractComponents(string $route, string $pattern): array
     {
         Inspector::stats('[RouterHelper] Extracting parts for the request to execute', Inspector::SCOPE_DEBUG);
-        if(Config::getParam('allow.double.slashes', true)) {
+        if (Config::getParam('allow.double.slashes', true)) {
             $route = preg_replace("/\/\//", '/', $route);
         }
         $url = parse_url($route);
@@ -88,7 +88,7 @@ class RouterHelper
      * @param $path
      * @return bool
      */
-    public static function compareSlashes($routePattern, $path)
+    public static function compareSlashes($routePattern, $path): bool
     {
         $patternSeparator = count(explode('/', $routePattern));
         if (preg_match('/\/$/', $routePattern)) {
@@ -100,7 +100,7 @@ class RouterHelper
             $cleanPatternSep--;
         }
 
-        if(Config::getParam('allow.double.slashes', true)) {
+        if (Config::getParam('allow.double.slashes', true)) {
             $path = preg_replace("/\/\//", '/', $path);
         }
         $pathSep = count(explode('/', $path));
@@ -118,9 +118,9 @@ class RouterHelper
      *
      * @return bool
      */
-    public static function matchRoutePattern($routePattern, $path)
+    public static function matchRoutePattern($routePattern, $path): bool
     {
-        if(Config::getParam('allow.double.slashes', true)) {
+        if (Config::getParam('allow.double.slashes', true)) {
             $path = preg_replace("/\/\//", '/', $path);
         }
         $expr = preg_replace('/\{([^}]+)\}/', '%%%', $routePattern);
@@ -136,13 +136,13 @@ class RouterHelper
      * @param string $domain
      * @return array
      */
-    public static function extractDomainInfo(ReflectionClass $class, $domain)
+    public static function extractDomainInfo(ReflectionClass $class, string $domain): array
     {
         $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
         $templatesPath = 'templates';
         $publicPath = 'public';
         $modelsPath = 'models';
-        if (false === strpos($domain, 'ROOT')) {
+        if (!str_contains($domain, 'ROOT')) {
             $templatesPath = ucfirst($templatesPath);
             $publicPath = ucfirst($publicPath);
             $modelsPath = ucfirst($modelsPath);
@@ -164,7 +164,7 @@ class RouterHelper
      * @return array
      * @throws ReflectionException
      */
-    public static function extractReflectionParams($regex, ReflectionMethod $method)
+    public static function extractReflectionParams($regex, ReflectionMethod $method): array
     {
         $default = '';
         $params = [];
@@ -194,7 +194,7 @@ class RouterHelper
      * @return array
      * @throws ReflectionException
      */
-    public static function extractRouteInfo(ReflectionMethod $method, $api = '', $module = '')
+    public static function extractRouteInfo(ReflectionMethod $method, string $api = '', string $module = ''): array
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
@@ -235,7 +235,7 @@ class RouterHelper
      *
      * @return string
      */
-    public static function slugify($text)
+    public static function slugify(string $text): string
     {
         // replace non letter or digits by -
         $text = preg_replace('~[^\\pL\d]+~u', '-', $text);

@@ -2,10 +2,13 @@
 
 namespace PSFS\base\types\helpers;
 
+use Exception;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Template;
 use PSFS\base\types\Api;
+use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -18,7 +21,7 @@ class GeneratorHelper
     /**
      * @param $dir
      */
-    public static function deleteDir($dir)
+    public static function deleteDir($dir): void
     {
         if (is_dir($dir)) {
             $objects = scandir($dir);
@@ -31,7 +34,6 @@ class GeneratorHelper
                     }
                 }
             }
-            reset($objects);
             rmdir($dir);
         }
     }
@@ -39,14 +41,14 @@ class GeneratorHelper
     /**
      * Method that remove all data in the document root path
      */
-    public static function clearDocumentRoot()
+    public static function clearDocumentRoot(): void
     {
         $rootDirs = array("css", "js", "media", "font");
         foreach ($rootDirs as $dir) {
             if (file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
                 try {
                     self::deleteDir(WEB_DIR . DIRECTORY_SEPARATOR . $dir);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     syslog(LOG_INFO, $e->getMessage());
                 }
             }
@@ -58,14 +60,14 @@ class GeneratorHelper
      * @param string $dir
      * @throws GeneratorException
      */
-    public static function createDir($dir)
+    public static function createDir(string $dir): void
     {
         if (!empty($dir)) {
             try {
                 if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
-                    throw new \Exception(t('Can\'t create directory ') . $dir);
+                    throw new Exception(t('Can\'t create directory ') . $dir);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 syslog(LOG_WARNING, $e->getMessage());
                 if (!file_exists(dirname($dir))) {
                     throw new GeneratorException($e->getMessage() . $dir);
@@ -78,7 +80,7 @@ class GeneratorHelper
      * Method that returns the templates path
      * @return string
      */
-    public static function getTemplatePath()
+    public static function getTemplatePath(): string
     {
         $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
         return realpath($path);
@@ -88,7 +90,7 @@ class GeneratorHelper
      * @param $namespace
      * @return string
      */
-    public static function extractClassFromNamespace($namespace)
+    public static function extractClassFromNamespace($namespace): string
     {
         $parts = preg_split('/(\\\|\\/)/', $namespace);
         return array_pop($parts);
@@ -97,13 +99,12 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @throws GeneratorException
-     * @throws \ReflectionException
      */
-    public static function checkCustomNamespaceApi($namespace)
+    public static function checkCustomNamespaceApi($namespace): void
     {
         if (!empty($namespace)) {
             if (class_exists($namespace)) {
-                $reflector = new \ReflectionClass($namespace);
+                $reflector = new ReflectionClass($namespace);
                 if (!$reflector->isSubclassOf(Api::class)) {
                     throw new GeneratorException(t('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
                 } elseif (!$reflector->isAbstract()) {
@@ -121,7 +122,7 @@ class GeneratorHelper
      * @param boolean $quiet
      * @throws GeneratorException
      */
-    public static function createRoot($path = WEB_DIR, OutputInterface $output = null, $quiet = false)
+    public static function createRoot(string $path = WEB_DIR, OutputInterface $output = null, bool $quiet = false): void
     {
 
         if (null === $output) {
@@ -177,7 +178,7 @@ class GeneratorHelper
      * @param boolean $debug
      * @throws GeneratorException
      */
-    public static function copyResources($dest, $force, $filenamePath, $debug)
+    public static function copyResources(string $dest, bool $force, string $filenamePath, bool $debug): void
     {
         if (file_exists($filenamePath)) {
             $destfolder = basename($filenamePath);
@@ -196,9 +197,10 @@ class GeneratorHelper
     /**
      * Method that copy a resource
      * @param string $src
+     * @param string $dst
      * @throws GeneratorException
      */
-    public static function copyr($src, $dst)
+    public static function copyr(string $src, string $dst): void
     {
         $dir = opendir($src);
         self::createDir($dst);

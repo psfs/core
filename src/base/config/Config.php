@@ -26,8 +26,8 @@ class Config
 
     const CONFIG_FILE = 'config.json';
 
-    protected $config = [];
-    static public $defaults = [
+    protected array $config = [];
+    static public array $defaults = [
         'db.host' => 'localhost',
         'db.port' => '3306',
         'default.language' => 'es_ES',
@@ -35,9 +35,9 @@ class Config
         'front.version' => 'v1',
         'version' => 'v1',
     ];
-    static public $required = ['db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug'];
-    static public $encrypted = ['db.password'];
-    static public $optional = [
+    static public array $required = ['db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug'];
+    static public array $encrypted = ['db.password'];
+    static public array $optional = [
         'platform.name', // Platform name
         'restricted', // Restrict the web access
         'admin.login', // Enable web login for admin
@@ -88,7 +88,8 @@ class Config
         'hide.modules', // Hide modules from menu, separated by comma
         'skip.route_generation', // Skip routes generation
     ];
-    protected $debug = false;
+    protected bool $debug = false;
+    public static array $cleanable_config_files = ['domains.json', 'urls.json'];
 
     /**
      * Method that load the configuration data into the system
@@ -288,9 +289,8 @@ class Config
 
     public static function clearConfigFiles(): bool
     {
-        $configs = ['domains.json', 'urls.json'];
         $done = true;
-        foreach ($configs as $configFile) {
+        foreach (self::$cleanable_config_files as $configFile) {
             if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . $configFile)) {
                 if (!unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . $configFile)) {
                     $done = false;

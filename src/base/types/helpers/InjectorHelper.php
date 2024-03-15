@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\Logger;
@@ -31,10 +32,10 @@ class InjectorHelper
                 $label = self::getLabel($property->getDocComment());
                 $values = self::getValues($property->getDocComment());
                 $isArray = (bool)preg_match('/\[\]$/', $instanceType);
-                if($isArray) {
+                if ($isArray) {
                     $instanceType = str_replace('[]', '', $instanceType);
                 }
-                if($instanceType === '\\DateTime' || !Router::exists($instanceType)) {
+                if ($instanceType === '\\DateTime' || !Router::exists($instanceType)) {
                     list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
                     $variables[$property->getName()] = [
                         'type' => $type,
@@ -51,7 +52,7 @@ class InjectorHelper
                         'properties' => self::extractVariables($instance),
                     ];
                 }
-                if(!empty($values)){
+                if (!empty($values)) {
                     $variables[$property->getName()]['enum'] = $values;
                 }
             }
@@ -123,7 +124,8 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getLabel($doc) {
+    public static function getLabel($doc)
+    {
         return t(AnnotationHelper::extractReflectionLabel($doc));
     }
 
@@ -131,7 +133,8 @@ class InjectorHelper
      * @param $doc
      * @return null|array
      */
-    public static function getValues($doc) {
+    public static function getValues($doc)
+    {
         // Extract description
         $values = AnnotationHelper::extractFromDoc('values', $doc, '');
         return false !== strpos($values, '|') ? explode('|', $values) : $values;
@@ -141,7 +144,8 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getDefaultValue($doc) {
+    public static function getDefaultValue($doc)
+    {
         return AnnotationHelper::extractFromDoc('default', $doc);
     }
 

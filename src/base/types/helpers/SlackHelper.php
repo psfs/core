@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
@@ -9,20 +10,23 @@ use PSFS\base\Service;
  * Class SlackHelper
  * @package PSFS\base\types\helpers
  */
-class SlackHelper extends Service {
+class SlackHelper extends Service
+{
     /**
      * @var string
      */
     private static $hookUrl;
 
-    public function __construct() {
+    public function __construct()
+    {
         self::$hookUrl = Config::getParam('log.slack.hook');
         parent::__construct();
     }
 
-    public function trace($message, $file, $line, $info = []) {
+    public function trace($message, $file, $line, $info = []): void
+    {
         $this->setUrl(self::$hookUrl);
-        $this->setIsJson(true);
+        $this->setIsJson();
         $this->setType(Request::VERB_POST);
         $request = Request::getInstance();
         $this->setParams([

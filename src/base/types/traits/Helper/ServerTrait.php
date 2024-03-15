@@ -58,7 +58,7 @@ trait ServerTrait {
     /**
      * @return string
      */
-    public function getProtocol()
+    public function getProtocol(): string
     {
         if(Config::getParam('force.https', false)) {
             return 'https://';

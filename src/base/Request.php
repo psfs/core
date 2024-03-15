@@ -262,7 +262,7 @@ class Request
      * @param boolean $hasProtocol
      * @return string
      */
-    public function getRootUrl($hasProtocol = true)
+    public function getRootUrl(bool $hasProtocol = true): string
     {
         $url = $this->getServerName();
         $protocol = $hasProtocol ? $this->getProtocol() : '';
@@ -277,7 +277,7 @@ class Request
      * @param string $url
      * @return string
      */
-    protected function checkServerPort(string $url)
+    protected function checkServerPort(string $url): string
     {
         $port = (integer)$this->getServer('SERVER_PORT');
         $host = $this->getServer('HTTP_HOST');

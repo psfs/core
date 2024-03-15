@@ -8,6 +8,7 @@ use Propel\Generator\Manager\SqlManager;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\GeneratorHelper;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Trait PropelHelperTrait
@@ -20,7 +21,7 @@ trait PropelHelperTrait {
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
      */
-    private function getPropelPaths($modulePath)
+    private function getPropelPaths(string $modulePath): array
     {
         $moduleDir = CORE_DIR . DIRECTORY_SEPARATOR . $modulePath;
         GeneratorHelper::createDir($moduleDir);
@@ -28,7 +29,7 @@ trait PropelHelperTrait {
         $configDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config';
         $sqlDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql';
         $migrationDir = $moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations';
-        $paths = [
+        return [
             'projectDir' => $moduleDir,
             'outputDir' => $moduleDir,
             'phpDir' => $moduleDir,
@@ -37,7 +38,6 @@ trait PropelHelperTrait {
             'migrationDir' => $migrationDir,
             'schemaDir' => $configDir,
         ];
-        return $paths;
     }
 
     /**
@@ -45,19 +45,18 @@ trait PropelHelperTrait {
      * @return GeneratorConfig
      * @throws \PSFS\base\exception\GeneratorException
      */
-    private function getConfigGenerator($modulePath)
+    private function getConfigGenerator(string $modulePath): GeneratorConfig
     {
         // Generate the configurator
         $paths = $this->getPropelPaths($modulePath);
         foreach ($paths as $path) {
             GeneratorHelper::createDir($path);
         }
-        $configGenerator = new GeneratorConfig($paths['phpConfDir'], [
+        return new GeneratorConfig($paths['phpConfDir'], [
             'propel' => [
                 'paths' => $paths,
             ]
         ]);
-        return $configGenerator;
     }
 
     /**
@@ -74,7 +73,7 @@ trait PropelHelperTrait {
     /**
      * @param GeneratorConfig $configGenerator
      */
-    private function buildSql(GeneratorConfig $configGenerator)
+    private function buildSql(GeneratorConfig $configGenerator): void
     {
         $manager = new SqlManager();
         $connections = $configGenerator->getBuildConnections();
@@ -90,7 +89,7 @@ trait PropelHelperTrait {
      * @param AbstractManager $manager
      * @param string $workingDir
      */
-    private function setupManager(GeneratorConfig $configGenerator, AbstractManager &$manager, $workingDir = CORE_DIR)
+    private function setupManager(GeneratorConfig $configGenerator, AbstractManager &$manager, string $workingDir = CORE_DIR): void
     {
         $manager->setGeneratorConfig($configGenerator);
         $schemaFile = new \SplFileInfo($configGenerator->getSection('paths')['schemaDir'] . DIRECTORY_SEPARATOR . 'schema.xml');
@@ -99,5 +98,27 @@ trait PropelHelperTrait {
             Logger::log($message, LOG_INFO);
         });
         $manager->setWorkingDirectory($workingDir);
+    }
+
+    /**
+     * Find every schema files.
+     *
+     * @param string|array<string> $directory Path to the input directory
+     * @param bool $recursive Search for file inside the input directory and all subdirectories
+     *
+     * @return array List of schema files
+     */
+    protected function getSchemas(array|string $directory, bool $recursive = false): array
+    {
+        $finder = new Finder();
+        $finder
+            ->name('*schema.xml')
+            ->sortByName()
+            ->in($directory);
+        if (!$recursive) {
+            $finder->depth(0);
+        }
+
+        return iterator_to_array($finder->files());
     }
 }

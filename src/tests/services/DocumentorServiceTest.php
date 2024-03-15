@@ -22,7 +22,7 @@ class DocumentorServiceTest extends GeneratorServiceTest {
      * @throws \PSFS\base\exception\GeneratorException
      */
     #[Before]
-    public function prepareDocumentRoot()
+    public function prepareDocumentRoot(): void
     {
         if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
             unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
@@ -36,7 +36,8 @@ class DocumentorServiceTest extends GeneratorServiceTest {
     /**
      * @param string $modulePath
      */
-    protected function clearContext($modulePath) {
+    protected function clearContext(string $modulePath): void
+    {
         GeneratorHelper::deleteDir($modulePath);
         $this->assertDirectoryDoesNotExist($modulePath, 'Error trying to delete the module');
     }

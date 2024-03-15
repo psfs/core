@@ -4,6 +4,8 @@ namespace PSFS\base\extension;
 
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
+use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
@@ -33,13 +35,13 @@ class TemplateFunctions
 
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
-     * @param $string
-     * @param null|string $name
+     * @param string $string
+     * @param string|null $name
      * @param bool $return
      * @return string|null
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function asset($string, $name = null, $return = true)
+    public static function asset(string $string, string $name = null, bool $return = true): ?string
     {
 
         $filePath = '';
@@ -57,29 +59,30 @@ class TemplateFunctions
     /**
      * Función que devuelve una url correspondiente a una ruta
      * @param string $path
-     * @param bool|FALSE $absolute
+     * @param bool $absolute
      * @param array $params
      *
      * @return string|null
      */
-    public static function route($path = '', $absolute = false, array $params = [])
+    public static function route(string $path = '', bool $absolute = false, array $params = []): ?string
     {
         $router = Router::getInstance();
         try {
             return $router->getRoute($path, $absolute, $params);
         } catch (\Exception $e) {
+            Logger::log($e->getMessage());
             return $router->getRoute('', $absolute, $params);
         }
     }
 
     /**
      * Función que devuelve un parámetro de la configuración
-     * @param $param
+     * @param string $param
      * @param string $default
      *
-     * @return string
+     * @return mixed|null
      */
-    public static function config($param, $default = '')
+    public static function config(string $param, string $default = ''): mixed
     {
         return Config::getInstance()->get($param) ?: $default;
     }
@@ -90,7 +93,7 @@ class TemplateFunctions
      *
      * @return string
      */
-    public static function query($query)
+    public static function query(string $query): string
     {
         return Request::getInstance()->getQuery($query);
     }
@@ -101,7 +104,7 @@ class TemplateFunctions
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public static function button(array $button)
+    public static function button(array $button): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/button.html.twig', array(
             'button' => $button,
@@ -115,7 +118,7 @@ class TemplateFunctions
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public static function widget(array $field, $label = null)
+    public static function widget(array $field, string $label = null): void
     {
         if (null !== $label) {
             $field['label'] = $label;
@@ -139,7 +142,7 @@ class TemplateFunctions
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public static function form(Form $form)
+    public static function form(Form $form): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/base.html.twig', array(
             'form' => $form,
@@ -150,23 +153,23 @@ class TemplateFunctions
      * Función que copia un recurso directamente en el DocumentRoot
      * @param string $path
      * @param string $dest
-     * @param bool|FALSE $force
+     * @param bool|bool $force
      *
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function resource($path, $dest, $force = false)
+    public static function resource(string $path, string $dest, bool $force = false): string
     {
         $debug = Config::getParam('debug');
         $domains = Template::getDomains(true);
         $filenamePath = self::extractPathname($path, $domains);
         // Check if resources has been copied to public folders
-        if(!$debug) {
+        if (!$debug) {
             $cacheFilename = Config::getParam('cache.var', '__initial__') . '.file.cache';
             $cachedFiles = Cache::getInstance()->readFromCache($cacheFilename,
                 1, fn() => [], Cache::JSON, true) ?: [];
             // Force the resource copy
-            if(!in_array($filenamePath, $cachedFiles) || $force) {
+            if (!in_array($filenamePath, $cachedFiles) || $force) {
                 $force = true;
                 $cachedFiles[] = $filenamePath;
                 Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
@@ -181,9 +184,9 @@ class TemplateFunctions
      * @param string $path
      * @param $domains
      *
-     * @return mixed
+     * @return string|array
      */
-    private static function extractPathname($path, $domains)
+    private static function extractPathname(string $path, $domains): string|array
     {
         $filenamePath = $path;
         if (!empty($domains) && !file_exists($path)) {
@@ -204,7 +207,7 @@ class TemplateFunctions
      * @param $filenamePath
      * @throws \PSFS\base\exception\GeneratorException
      */
-    private static function processCssLines($filenamePath)
+    private static function processCssLines($filenamePath): void
     {
         $handle = @fopen($filenamePath, 'r');
         if ($handle) {
@@ -217,12 +220,12 @@ class TemplateFunctions
 
     /**
      * Método que copia el contenido de un recurso en su destino correspondiente
-     * @param string $name
+     * @param string|null $name
      * @param string $filenamePath
      * @param string $base
      * @param string $filePath
      */
-    private static function putResourceContent($name, $filenamePath, $base, $filePath)
+    private static function putResourceContent(string|null $name, string $filenamePath, string $base, string $filePath): void
     {
         $data = file_get_contents($filenamePath);
         if (!empty($name)) {
@@ -235,13 +238,13 @@ class TemplateFunctions
     /**
      * Método que procesa un recurso para su copia en el DocumentRoot
      * @param string $string
-     * @param string $name
+     * @param string|null $name
      * @param boolean $return
      * @param string $filenamePath
-     * @return mixed
-     * @throws \PSFS\base\exception\GeneratorException
+     * @return string
+     * @throws GeneratorException
      */
-    private static function processAsset($string, $name, $return, $filenamePath)
+    private static function processAsset(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): string
     {
         $filePath = $filenamePath;
         if (file_exists($filenamePath)) {
@@ -265,7 +268,7 @@ class TemplateFunctions
      * @param string $key
      * @return mixed
      */
-    public static function session($key)
+    public static function session(string $key): mixed
     {
         return Security::getInstance()->getSessionKey($key);
     }
@@ -275,7 +278,7 @@ class TemplateFunctions
      * @param string $key
      * @return bool
      */
-    public static function existsFlash($key = '')
+    public static function existsFlash(string $key = ''): bool
     {
         return null !== Security::getInstance()->getFlash($key);
     }
@@ -285,7 +288,7 @@ class TemplateFunctions
      * @param string $key
      * @return mixed
      */
-    public static function getFlash($key)
+    public static function getFlash(string $key): mixed
     {
         $var = Security::getInstance()->getFlash($key);
         Security::getInstance()->setFlash($key, null);

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
@@ -11,7 +12,8 @@ use PSFS\base\Request;
  */
 class RequestHelper
 {
-    private static function getCorsHeaders() {
+    private static function getCorsHeaders(): array
+    {
         $headers = [
             'Access-Control-Allow-Methods',
             'Access-Control-Allow-Headers',
@@ -36,9 +38,9 @@ class RequestHelper
     }
 
     /**
-     * Check CROS requests
+     * Check CORS requests
      */
-    public static function checkCORS()
+    public static function checkCORS(): void
     {
         Inspector::stats('[RequestHelper] Checking CORS', Inspector::SCOPE_DEBUG);
         $corsEnabled = Config::getParam('cors.enabled');
@@ -65,7 +67,8 @@ class RequestHelper
     /**
      * @return mixed
      */
-    public static function getIpAddress() {
+    public static function getIpAddress(): mixed
+    {
         // check for shared internet/ISP IP
         if (!empty($_SERVER['HTTP_CLIENT_IP']) && self::validateIpAddress($_SERVER['HTTP_CLIENT_IP'])) {
             return $_SERVER['HTTP_CLIENT_IP'];
@@ -108,7 +111,8 @@ class RequestHelper
      * Ensures an ip address is both a valid IP and does not fall within
      * a private network range.
      */
-    public static function validateIpAddress($ipAddress) {
+    public static function validateIpAddress($ipAddress): bool
+    {
         if (strtolower($ipAddress) === 'unknown') {
             return false;
         }

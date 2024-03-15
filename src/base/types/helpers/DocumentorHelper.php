@@ -14,10 +14,10 @@ class DocumentorHelper
      * @param string $variable
      * @return bool
      */
-    private static function searchPayloadParam($params, $variable)
+    private static function searchPayloadParam(array $params, string $variable): bool
     {
         $exists = false;
-        if (null !== $params && count($params)) {
+        if (count($params)) {
             foreach ($params as $param) {
                 if ($param['name'] === $variable) {
                     $exists = true;
@@ -36,7 +36,7 @@ class DocumentorHelper
      * @param string $method
      * @return array
      */
-    public static function parsePayload($endpoint, $dtos, $paths, $url, $method)
+    public static function parsePayload(array $endpoint, array $dtos, array $paths, string $url, string $method): array
     {
         $schema = [
             'type' => $endpoint['payload']['is_array'] ? 'array' : 'object',
@@ -60,17 +60,15 @@ class DocumentorHelper
     }
 
     /**
+     * @param $paths
+     * @param $dtos
      * @param $name
      * @param $endpoint
      * @param $object
-     * @param $paths
      * @param $url
      * @param $method
-     * @param $dtos
-     * @param $isReturn
-     * @return array
      */
-    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method)
+    public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method): void
     {
         if (class_exists($name)) {
             $class = GeneratorHelper::extractClassFromNamespace($name);
@@ -107,7 +105,7 @@ class DocumentorHelper
      *
      * @return array
      */
-    public static function translateSwaggerFormats($format)
+    public static function translateSwaggerFormats(string $format): array
     {
         switch (strtolower(preg_replace('/\\\\/im', '', $format))) {
             case 'bool':
@@ -157,7 +155,7 @@ class DocumentorHelper
      *
      * @return array
      */
-    public static function extractSwaggerDefinition($name, array $fields)
+    public static function extractSwaggerDefinition(string $name, array $fields): array
     {
         $definition = [
             $name => [

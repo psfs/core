@@ -21,7 +21,7 @@ class GeneratorServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public static $filesToCheckWithoutSchema = [
+    public static array $filesToCheckWithoutSchema = [
         DIRECTORY_SEPARATOR . 'phpunit.xml.dist',
         DIRECTORY_SEPARATOR . 'autoload.php',
         DIRECTORY_SEPARATOR . 'Test' . DIRECTORY_SEPARATOR . self::MODULE_NAME . 'Test.php',
@@ -38,7 +38,7 @@ class GeneratorServiceTest extends TestCase
         DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Sql' . DIRECTORY_SEPARATOR . 'sqldb.map',
     ];
 
-    public static $filesToCheckWithSchema = [
+    public static array $filesToCheckWithSchema = [
         // Simple model creation
         DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'Solo.php',
         DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . 'SoloBaseApi.php',
@@ -75,9 +75,9 @@ class GeneratorServiceTest extends TestCase
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */
-    public function createNewModule(Service $generatorService)
+    public function createNewModule(Service $generatorService): void
     {
-        $generatorService->createStructureModule(self::MODULE_NAME, true);
+        $generatorService->createStructureModule(self::MODULE_NAME, true, skipMigration: true);
         $this->checkBasicStructure();
     }
 
@@ -86,7 +86,7 @@ class GeneratorServiceTest extends TestCase
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */
-    public function checkCreateExistingModule()
+    public function checkCreateExistingModule(): string
     {
         $generatorService = Service::getInstance();
         $this->assertInstanceOf(Service::class, $generatorService, 'Error getting GeneratorService instance');
@@ -99,7 +99,7 @@ class GeneratorServiceTest extends TestCase
             $modulePath . DIRECTORY_SEPARATOR . 'Config'
         );
         require_once $modulePath . DIRECTORY_SEPARATOR . 'autoload.php';
-        $generatorService->createStructureModule(self::MODULE_NAME, false);
+        $generatorService->createStructureModule(self::MODULE_NAME, skipMigration: true);
         $this->checkBasicStructure();
 
         foreach (self::$filesToCheckWithSchema as $fileName) {

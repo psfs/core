@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\dto;
 
 use PSFS\base\Logger;
@@ -15,11 +16,12 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @var array
      */
-    protected $__cache = [];
+    protected array $__cache = [];
+
     public function __construct($hydrate = true)
     {
         parent::__construct();
-        if($hydrate) {
+        if ($hydrate) {
             $this->fromArray(Request::getInstance()->getData());
         }
     }
@@ -44,14 +46,13 @@ class Dto extends Singleton implements \JsonSerializable
             $reflectionClass = new \ReflectionClass($this);
             $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
             if (count($properties) > 0) {
-                /** @var \ReflectionProperty $property */
                 foreach ($properties as $property) {
                     $value = $property->getValue($this);
-                    if(is_object($value) && method_exists($value, 'toArray')) {
+                    if (is_object($value) && method_exists($value, 'toArray')) {
                         $dto[$property->getName()] = $value->toArray();
-                    } elseif(is_array($value)) {
-                        foreach($value as &$arrValue) {
-                            if($arrValue instanceof Dto) {
+                    } elseif (is_array($value)) {
+                        foreach ($value as &$arrValue) {
+                            if ($arrValue instanceof Dto) {
                                 $arrValue = $arrValue->toArray();
                             }
                         }
@@ -79,25 +80,25 @@ class Dto extends Singleton implements \JsonSerializable
 
     /**
      * @param array $properties
-     * @param $key
-     * @param mixed $value
-     * @throws \ReflectionException
+     * @param string $key
+     * @param mixed|null $value
      */
-    protected function parseDtoField(array $properties, $key, $value = null) {
+    protected function parseDtoField(array $properties, string $key, mixed $value = null)
+    {
         list($type, $isArray) = $this->extractTypes($properties, $key);
         $reflector = (class_exists($type)) ? new \ReflectionClass($type) : null;
-        if(null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
-            if(null !== $value && is_array($value)) {
-                if(!array_key_exists($type, $this->__cache)) {
+        if (null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
+            if (is_array($value)) {
+                if (!array_key_exists($type, $this->__cache)) {
                     $this->__cache[$type] = new $type(false);
                 }
-                if($isArray) {
+                if ($isArray) {
                     $this->$key = [];
-                    foreach($value as $data) {
-                        if(null !== $data && is_array($data)) {
+                    foreach ($value as $data) {
+                        if (is_array($data)) {
                             $dto = clone $this->__cache[$type];
                             $dto->fromArray($data);
-                            array_push($this->$key, $dto);
+                            $this->$key[] = $dto;
                         }
                     }
                 } else {
@@ -115,7 +116,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param array $object
      * @throws \ReflectionException
      */
-    public function fromArray(array $object = array())
+    public function fromArray(array $object = [])
     {
         if (count($object) > 0) {
             $reflector = new \ReflectionClass($this);
@@ -139,10 +140,10 @@ class Dto extends Singleton implements \JsonSerializable
 
     /**
      * @param array $properties
-     * @param $key
+     * @param string $key
      * @return array
      */
-    protected function extractTypes(array $properties, $key)
+    protected function extractTypes(array $properties, string $key): array
     {
         $type = 'string';
         $isArray = false;
@@ -161,7 +162,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param mixed $value
      * @param string $type
      */
-    protected function castValue($key, $value, $type)
+    protected function castValue(string $key, mixed $value, string $type): void
     {
         $this->$key = $this->checkCastedValue($value, $type);
     }
@@ -169,14 +170,14 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @param mixed $rawValue
      * @param string $type
-     * @return mixed
      */
-    protected function checkCastedValue($rawValue, $type) {
-        if(null !== $rawValue) {
+    protected function checkCastedValue(mixed $rawValue, string $type)
+    {
+        if (null !== $rawValue) {
             switch ($type) {
                 default:
                 case 'string':
-                    $value = $rawValue;
+                    $value = htmlentities($rawValue, ENT_QUOTES, 'UTF-8');
                     break;
                 case 'integer':
                 case 'int':

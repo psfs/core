@@ -4,6 +4,7 @@ namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Template;
 
 /**
@@ -17,7 +18,7 @@ class AssetsHelper
      * @param string $source
      * @return string
      */
-    public static function extractSourceFilename($source)
+    public static function extractSourceFilename($source): string
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
         if (preg_match('/\#/', $sourceFile)) {
@@ -37,9 +38,9 @@ class AssetsHelper
      * @param $string
      * @param string $filePath
      *
-     * @return string
+     * @return string|null
      */
-    public static function findDomainPath($string, $filePath)
+    public static function findDomainPath($string, string $filePath): ?string
     {
         $domains = Template::getDomains(TRUE);
         $filenamePath = null;
@@ -48,7 +49,7 @@ class AssetsHelper
                 $domainFilename = str_replace($domain, $paths["public"], $string);
                 if (file_exists($domainFilename)) {
                     $filenamePath = $domainFilename;
-                    continue;
+                    break;
                 }
             }
         }
@@ -65,7 +66,7 @@ class AssetsHelper
      *
      * @return string[]
      */
-    public static function calculateAssetPath($string, $name, $return, $filenamePath)
+    public static function calculateAssetPath(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): array
     {
         $path = explode("/", $string);
         $originalFilename = end($path);
@@ -109,9 +110,9 @@ class AssetsHelper
      * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
      * @param string $path
      * @param string $content
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
-    public static function storeContents($path, $content = "")
+    public static function storeContents(string $path, string $content = ""): void
     {
         GeneratorHelper::createDir(dirname($path));
         if ("" !== $content && false === file_put_contents($path, $content)) {

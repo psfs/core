@@ -1,12 +1,21 @@
 <?php
+
 namespace PSFS\services;
 
+use Propel\Common\Config\ConfigurationManager;
+use Propel\Generator\Model\Database;
+use Propel\Generator\Model\Diff\DatabaseComparator;
+use Propel\Generator\Model\IdMethod;
+use Propel\Generator\Model\Schema;
+use PSFS\base\config\Config;
+use PSFS\base\exception\ApiException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
 use PSFS\base\types\traits\Generator\StructureTrait;
+use Symfony\Component\Console\Output\Output;
 
 /**
  * Class GeneratorService
@@ -16,6 +25,7 @@ class GeneratorService extends SimpleService
 {
     use PropelHelperTrait;
     use StructureTrait;
+
     /**
      * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
@@ -33,11 +43,11 @@ class GeneratorService extends SimpleService
      * @param boolean $force
      * @param string $type
      * @param string $apiClass
-     * @return mixed
-     * @throws \PSFS\base\exception\GeneratorException
+     * @param bool $skipMigration
+     * @throws GeneratorException
      * @throws \ReflectionException
      */
-    public function createStructureModule($module, $force = false, $type = "", $apiClass = "")
+    public function createStructureModule(string $module, bool $force = false, string $type = "", string $apiClass = "", bool $skipMigration = false): void
     {
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
         $module = ucfirst($module);
@@ -46,6 +56,9 @@ class GeneratorService extends SimpleService
         $this->createModuleBaseFiles($module, $modPath, $force, $type);
         $this->createModuleModels($module, $modPath);
         $this->generateBaseApiTemplate($module, $modPath, $force, $apiClass);
+        if(!$skipMigration) {
+            $this->createModuleMigrations($module, $modPath);
+        }
         //Redireccionamos al home definido
         Logger::log("Módulo generado correctamente");
     }
@@ -76,7 +89,8 @@ class GeneratorService extends SimpleService
      * @return void
      * @throws GeneratorException
      */
-    public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void {
+    public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void
+    {
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generatePropertiesTemplate($module, $modulePath, $force);
         $this->generateConfigTemplate($modulePath, $force);
@@ -121,7 +135,7 @@ class GeneratorService extends SimpleService
 
         $filename = $modPath . DIRECTORY_SEPARATOR . "Test" . DIRECTORY_SEPARATOR . "{$class}Test.php";
         $test = true;
-        if(!file_exists($filename)) {
+        if (!file_exists($filename)) {
             $testTemplate = $this->tpl->dump("generator/testCase.template.twig", array(
                 "module" => $module,
                 "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
@@ -140,9 +154,7 @@ class GeneratorService extends SimpleService
      */
     private function createModuleModels($module, $path)
     {
-        $modulePath = $path . $module;
-        $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $modulePath);
-
+        $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
         $configGenerator = $this->getConfigGenerator($modulePath);
 
         $this->buildModels($configGenerator);
@@ -154,6 +166,133 @@ class GeneratorService extends SimpleService
         $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $modulePath . DIRECTORY_SEPARATOR . "Config" .
             DIRECTORY_SEPARATOR . "config.php", true);
         Logger::log("Generado config genérico para propel");
+    }
+
+    /**
+     * @throws GeneratorException
+     */
+    private function createModuleMigrations($module, $path)
+    {
+        $migrationService = MigrationService::getInstance();
+        list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
+
+        if ($manager->hasPendingMigrations()) {
+            throw new ApiException(t(sprintf('Módulo %s generado correctamente. Hay una migración pendiente de aplicar, ejecute comando `psfs:migrate` o elimine el fichero generado en el módulo', $module)), 400);
+        }
+
+        $totalNbTables = 0;
+        $reversedSchema = new Schema();
+        $debugLogger = Config::getParam('log.level') === 'DEBUG';
+
+        foreach ($manager->getDatabases() as $appDatabase) {
+            $name = $appDatabase->getName();
+            $params = $connections[$name] ?? [];
+            if (!$params) {
+                Logger::log(sprintf('<info>No connection configured for database "%s"</info>', $name));
+            }
+
+            if ($debugLogger) {
+                Logger::log(sprintf('Connecting to database "%s" using DSN "%s"', $name, $params['dsn']));
+            }
+
+            $conn = $manager->getAdapterConnection($name);
+            $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
+
+            $appDatabase->setPlatform($platform);
+
+            if ($platform && !$platform->supportsMigrations()) {
+                Logger::log(sprintf('Skipping database "%s" since vendor "%s" does not support migrations', $name, $platform->getDatabaseType()));
+                continue;
+            }
+
+            $additionalTables = [];
+            foreach ($appDatabase->getTables() as $table) {
+                if ($table->getSchema() && $table->getSchema() != $appDatabase->getSchema()) {
+                    $additionalTables[] = $table;
+                }
+            }
+
+            $database = new Database($name);
+            $database->setPlatform($platform);
+            $database->setSchema($appDatabase->getSchema());
+            $database->setDefaultIdMethod(IdMethod::NATIVE);
+
+            $parser = $generatorConfig->getConfiguredSchemaParser($conn, $name);
+            $nbTables = $parser->parse($database, $additionalTables);
+
+            $reversedSchema->addDatabase($database);
+            $totalNbTables += $nbTables;
+
+            if ($debugLogger) {
+                Logger::log(sprintf('%d tables found in database "%s"', $nbTables, $name), Output::VERBOSITY_VERBOSE);
+            }
+        }
+
+        if ($totalNbTables) {
+            Logger::log(sprintf('%d tables found in all databases.', $totalNbTables));
+        } else {
+            Logger::log('No table found in all databases');
+        }
+
+        // comparing models
+        Logger::log('Comparing models...');
+        $migrationsUp = [];
+        $migrationsDown = [];
+        $configManager = new ConfigurationManager($generatorConfig->getSection('paths')['phpConfDir']);
+        $excludedTables = (array)$configManager->getSection('exclude_tables');
+
+        foreach ($reversedSchema->getDatabases() as $database) {
+            $name = $database->getName();
+
+            if ($debugLogger) {
+                Logger::log(sprintf('Comparing database "%s"', $name));
+            }
+
+            $appDataDatabase = $manager->getDatabase($name);
+            if (!$appDataDatabase) {
+                Logger::log(sprintf('<error>Database "%s" does not exist in schema.xml. Skipped.</error>', $name));
+                continue;
+            }
+
+            $databaseDiff = DatabaseComparator::computeDiff($database, $appDataDatabase, true, false, false, $excludedTables);
+
+            if (!$databaseDiff) {
+                if ($debugLogger) {
+                    Logger::log(sprintf('Same XML and database structures for datasource "%s" - no diff to generate', $name));
+                }
+                continue;
+            }
+
+            Logger::log(sprintf('Structure of database was modified in datasource "%s": %s', $name, $databaseDiff->getDescription()));
+
+            foreach ($databaseDiff->getPossibleRenamedTables() as $fromTableName => $toTableName) {
+                Logger::log(sprintf(
+                    '<info>Possible table renaming detected: "%s" to "%s". It will be deleted and recreated. Use --table-renaming to only rename it.</info>',
+                    $fromTableName,
+                    $toTableName,
+                ));
+            }
+
+            $conn = $manager->getAdapterConnection($name);
+            /** @var \Propel\Generator\Platform\DefaultPlatform $platform */
+            $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
+            $migrationsUp[$name] = $platform->getModifyDatabaseDDL($databaseDiff);
+            $migrationsDown[$name] = $platform->getModifyDatabaseDDL($databaseDiff->getReverseDiff());
+        }
+        if (!$migrationsUp) {
+            Logger::log('Same XML and database structures for all datasource - no diff to generate');
+            return true;
+        }
+
+        $timestamp = time();
+        $migrationFileName = $manager->getMigrationFileName($timestamp);
+        $migrationClassBody = $manager->getMigrationClassBody($migrationsUp, $migrationsDown, $timestamp);
+
+        $file = $generatorConfig->getSection('paths')['migrationDir'] . DIRECTORY_SEPARATOR . $migrationFileName;
+        file_put_contents($file, $migrationClassBody);
+
+        Logger::log(sprintf('"%s" file successfully created.', $file));
+        return true;
     }
 
     /**
@@ -323,7 +462,7 @@ class GeneratorService extends SimpleService
                 ) {
                     $filename = str_replace(".php", "", $file);
                     $this->log->addLog("Generamos Api BASES para {$filename}");
-                    if($this->checkIfIsModel($module, $filename, $package)) {
+                    if ($this->checkIfIsModel($module, $filename, $package)) {
                         $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
                         $this->createApi($module, $apiPath, $force, $filename, $package);
                     }

@@ -2,6 +2,9 @@
 
 namespace PSFS\base\types\helpers;
 
+use DateTime;
+use DateTimeZone;
+use Exception;
 use PSFS\base\config\Config;
 
 /**
@@ -14,12 +17,12 @@ final class DeployHelper
 
     /**
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function updateCacheVar()
+    public static function updateCacheVar(): string
     {
-        $now = new \DateTime();
-        $now->setTimezone(new \DateTimeZone(Config::getParam('project.timezone', 'Europe/Madrid')));
+        $now = new DateTime();
+        $now->setTimezone(new DateTimeZone(Config::getParam('project.timezone', 'Europe/Madrid')));
         $config = Config::getInstance()->dumpConfig();
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $config[self::CACHE_VAR_TAG] . '.file.cache')) {
             unlink(CACHE_DIR . DIRECTORY_SEPARATOR . $config[self::CACHE_VAR_TAG] . '.file.cache');

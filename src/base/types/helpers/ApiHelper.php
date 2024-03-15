@@ -7,6 +7,7 @@ use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\config\Config;
 use PSFS\base\dto\Field;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\traits\Helper\FieldHelperTrait;
 use PSFS\base\types\traits\Helper\FieldMapperHelperTrait;
 use PSFS\base\types\traits\Helper\FieldModelHelperTrait;
@@ -27,7 +28,7 @@ class ApiHelper
      * @param string $field
      * @param array $behaviors
      * @return Field|null
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     protected static function parseFormField($domain, TableMap $tableMap, $field, array $behaviors = [])
     {
@@ -82,7 +83,7 @@ class ApiHelper
      * @param bool $required
      * @param ColumnMap $mappedColumn
      * @return Field
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     protected static function parseEnumField($field, bool $required, ColumnMap $mappedColumn)
     {
@@ -115,7 +116,7 @@ class ApiHelper
      * @param ColumnMap $mappedColumn
      * @param bool $required
      * @return Field
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     protected static function parseFieldType($domain, $field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {
@@ -145,7 +146,7 @@ class ApiHelper
      * @param ColumnMap $mappedColumn
      * @param bool $required
      * @return Field
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     protected static function generateTextField($field, ColumnMap $mappedColumn, bool $required)
     {
@@ -163,7 +164,7 @@ class ApiHelper
      * @param ColumnMap $mappedColumn
      * @param bool $required
      * @return Field
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {

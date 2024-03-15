@@ -1,5 +1,7 @@
 <?php
+
 namespace PSFS\base\types\helpers;
+
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -7,23 +9,26 @@ use Symfony\Component\Filesystem\Filesystem;
  * Class FileHelper
  * @package PSFS\base\types\helpers
  */
-class FileHelper {
+class FileHelper
+{
     /**
      * @param mixed $data
      * @param string $path
      * @return int
      */
-    public static function writeFile($path, $data) {
+    public static function writeFile(string $path, mixed $data): int
+    {
         return @file_put_contents($path, $data);
     }
 
     /**
      * @param string $path
-     * @return mixed
+     * @return string|bool
      */
-    public static function readFile($path) {
+    public static function readFile(string $path): string|bool
+    {
         $data = false;
-        if(file_exists($path)) {
+        if (file_exists($path)) {
             $data = @file_get_contents($path);
         }
         return $data;
@@ -35,7 +40,8 @@ class FileHelper {
      * @param array $query
      * @return string
      */
-    public static function generateHashFilename($verb, $slug, array $query = []) {
+    public static function generateHashFilename(string $verb, string $slug, array $query = []): string
+    {
         return sha1(strtolower($verb) . ' ' . $slug . ' ' . strtolower(http_build_query($query)));
     }
 
@@ -44,7 +50,8 @@ class FileHelper {
      * @param array $query
      * @return string
      */
-    public static function generateCachePath(array $action, array $query = []) {
+    public static function generateCachePath(array $action, array $query = []): string
+    {
         $class = GeneratorHelper::extractClassFromNamespace($action['class']);
         $filename = self::generateHashFilename($action['http'], $action['slug'], $query);
         $subPath = substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2);
@@ -55,7 +62,8 @@ class FileHelper {
      * @param $path
      * @throws IOException
      */
-    public static function deleteDir($path) {
+    public static function deleteDir($path): void
+    {
         (new Filesystem())->remove($path);
     }
 }

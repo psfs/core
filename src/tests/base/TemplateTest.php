@@ -34,7 +34,7 @@ class TemplateTest extends TestCase {
         $this->assertNotNull($path);
         $this->assertFileExists($path);
 
-        Config::getInstance()->setDebugMode(true);
+        Config::getInstance()->setDebugMode();
         $output = $template->dump('index.html.twig');
         $this->assertNotNull($output);
         $this->assertNotEmpty($output);

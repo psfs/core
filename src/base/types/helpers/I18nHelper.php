@@ -2,8 +2,10 @@
 
 namespace PSFS\base\types\helpers;
 
+use Exception;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -57,7 +59,7 @@ class I18nHelper
     /**
      * @param string $absoluteFileName
      * @return array
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     public static function generateTranslationsFile(string $absoluteFileName): array
     {
@@ -76,7 +78,7 @@ class I18nHelper
      * @param string|null $default
      * @param string|null $customKey
      * @param bool $force
-     * @throws \Exception
+     * @throws Exception
      */
     public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
     {
@@ -93,7 +95,7 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
-        if($force) t('', $customKey, true);
+        if ($force) t('', $customKey, true);
     }
 
     /**
@@ -169,7 +171,7 @@ class I18nHelper
      * @param string $path
      * @param string $locale
      * @return array
-     * @throws \PSFS\base\exception\GeneratorException
+     * @throws GeneratorException
      */
     public static function findTranslations(string $path, string $locale): array
     {

@@ -22,7 +22,7 @@ class ResponseHelper
      * Method that sets the cookie headers
      * @param $cookies
      */
-    public static function setCookieHeaders($cookies)
+    public static function setCookieHeaders($cookies): void
     {
         if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
             foreach ($cookies as $cookie) {
@@ -42,7 +42,7 @@ class ResponseHelper
      * Método que inyecta las cabeceras necesarias para la autenticación
      * @param boolean $isPublic
      */
-    public static function setAuthHeaders(bool $isPublic = true)
+    public static function setAuthHeaders(bool $isPublic = true): void
     {
         if ($isPublic) {
             unset($_SERVER["PHP_AUTH_USER"]);
@@ -55,9 +55,9 @@ class ResponseHelper
 
     /**
      * Método que establece el status code
-     * @param string $statusCode
+     * @param string|null $statusCode
      */
-    public static function setStatusHeader($statusCode = null)
+    public static function setStatusHeader(string $statusCode = null): void
     {
         if (NULL !== $statusCode && !self::isTest()) {
             header($statusCode);
@@ -70,7 +70,7 @@ class ResponseHelper
      *
      * @return array
      */
-    public static function setDebugHeaders(array $vars)
+    public static function setDebugHeaders(array $vars): array
     {
         if ((Config::getParam('debug', true) || Config::getParam('profiling.enable', false)) && !self::isTest()) {
             Logger::log('Adding debug headers to render response');
@@ -87,13 +87,12 @@ class ResponseHelper
     /**
      * @param Exception|NULL $exception
      * @param bool $isJson
-     * @return string
-     * @throws RouterException
+     * @return int|string
      * @throws GeneratorException
      */
-    public static function httpNotFound(Exception $exception = NULL, $isJson = false)
+    public static function httpNotFound(Exception $exception = NULL, bool $isJson = false): int|string
     {
-        if(self::isTest()) {
+        if (self::isTest()) {
             return 404;
         }
         Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
@@ -108,7 +107,7 @@ class ResponseHelper
         }
 
         $notFoundRoute = Config::getParam('route.404');
-        if(null !== $notFoundRoute) {
+        if (null !== $notFoundRoute) {
             Request::getInstance()->redirect(Router::getInstance()->getRoute($notFoundRoute, true));
         } else {
             return $template->render('error.html.twig', array(
@@ -117,5 +116,6 @@ class ResponseHelper
                 'error_page' => TRUE,
             ));
         }
+        return 200;
     }
 }

@@ -6,13 +6,13 @@ require_once 'bootstrap.php';
 /**
  * Simple, Fast & Secure Framework
  * @author Fran Lopez <fran.lopez84@hotmail.es>
- * @version 0.1
+ * @version 1.0
  */
 defined("BASE_DIR") or define("BASE_DIR", dirname(__DIR__, preg_match('/vendor/', __DIR__) ? 4 : 1));
 \PSFS\bootstrap::load();
 if (!function_exists("PSFSAutoloader")) {
     // autoloader
-    function PSFSAutoloader($class)
+    function PSFSAutoloader($class): false
     {
         Logger::log("Trying to load class {$class} with " . __FILE__);
         // it only autoload class into the Rain scope

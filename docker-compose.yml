@@ -46,7 +46,7 @@ services:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-psfs}
             MYSQL_DATABASE: ${MYSQL_DATABASE:-psfs}
         volumes:
-            - "psfs_db:/var/lib/mysql"
+            - "./cache/.db:/var/lib/mysql"
         healthcheck:
             test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-checks}" ]
             interval: 3s
@@ -56,6 +56,3 @@ services:
 networks:
     psfs-network:
         driver: bridge
-
-volumes:
-    psfs_db:

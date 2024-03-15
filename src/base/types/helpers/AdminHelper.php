@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
@@ -16,7 +17,7 @@ class AdminHelper
      * @param array $elementB
      * @return int
      */
-    public static function sortByLabel(array $elementA, array $elementB)
+    public static function sortByLabel(array $elementA, array $elementB): int
     {
         $labelA = array_key_exists('label', $elementA) ? $elementA['label'] : '';
         $labelB = array_key_exists('label', $elementB) ? $elementB['label'] : '';
@@ -30,7 +31,7 @@ class AdminHelper
      * @param array $systemRoutes
      * @return array
      */
-    public static function getAdminRoutes(array $systemRoutes)
+    public static function getAdminRoutes(array $systemRoutes): array
     {
         $routes = self::extractAdminRoutes($systemRoutes);
         self::sortRoutes($routes);
@@ -41,13 +42,13 @@ class AdminHelper
      * @param array $systemRoutes
      * @return array
      */
-    protected static function extractAdminRoutes(array $systemRoutes)
+    protected static function extractAdminRoutes(array $systemRoutes): array
     {
         $routes = [];
         $excluded_modules = explode(',', strtoupper(Config::getParam('hide.modules', '')));
         foreach ($systemRoutes as $params) {
             $module = strtoupper($params['module']);
-            if(in_array($module, $excluded_modules) && $module !== 'PSFS') {
+            if (in_array($module, $excluded_modules) && $module !== 'PSFS') {
                 continue;
             }
             if (isset($params['http']) && Request::VERB_GET === $params['http']
@@ -67,7 +68,7 @@ class AdminHelper
     /**
      * @param array $routes
      */
-    protected static function sortRoutes(array &$routes)
+    protected static function sortRoutes(array &$routes): void
     {
         foreach ($routes as &$route) {
             if (array_key_exists('visible', $route)) {
