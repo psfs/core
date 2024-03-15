@@ -179,7 +179,7 @@ trait MutationTrait
             $this->addPkToList();
         }
         if (!empty($this->extraColumns)) {
-            if(Config::getParam('api.extrafields.compat', true)) {
+            if (Config::getParam('api.extrafields.compat', true)) {
                 $fields = array_values($this->extraColumns);
             } else {
                 $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
@@ -187,7 +187,7 @@ trait MutationTrait
                 $fields[] = self::API_MODEL_KEY_FIELD;
             }
             foreach ($this->extraColumns as $expression => $columnName) {
-                if(empty($fields) || in_array($columnName, $fields)) {
+                if (empty($fields) || in_array($columnName, $fields)) {
                     $query->withColumn($expression, $columnName);
                 }
             }
@@ -206,7 +206,8 @@ trait MutationTrait
         return $columns;
     }
 
-    protected function extractApiLang() {
+    protected function extractApiLang()
+    {
         $defaultLanguage = explode('_', Config::getParam('default.language', 'es_ES'));
         $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage[0]);
     }
@@ -225,11 +226,11 @@ trait MutationTrait
             $i18nMapClass = str_replace(end($modelParts), 'Map\\' . end($modelParts), $modelI18n) . 'TableMap';
             /** @var TableMap $modelI18nTableMap */
             $modelI18nTableMap = $i18nMapClass::getTableMap();
-            foreach($modelI18nTableMap->getColumns() as $columnMap) {
-                if(!$columnMap->isPrimaryKey()) {
+            foreach ($modelI18nTableMap->getColumns() as $columnMap) {
+                if (!$columnMap->isPrimaryKey()) {
                     $query->withColumn($columnMap->getFullyQualifiedName(), ApiHelper::getColumnMapName($columnMap));
-                } elseif(!$columnMap->isForeignKey()) {
-                    $query->withColumn('IFNULL(' . $columnMap->getFullyQualifiedName() . ', "'.$this->lang.'")', ApiHelper::getColumnMapName($columnMap));
+                } elseif (!$columnMap->isForeignKey()) {
+                    $query->withColumn('IFNULL(' . $columnMap->getFullyQualifiedName() . ', "' . $this->lang . '")', ApiHelper::getColumnMapName($columnMap));
                 }
             }
         }
@@ -239,26 +240,26 @@ trait MutationTrait
      * @param ActiveRecordInterface $model
      * @param array $data
      */
-    protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = []) {
+    protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = [])
+    {
         $model->fromArray($data, ApiHelper::getFieldTypes());
         $tableMap = $this->getTableMap();
         try {
-            if($tableMap->hasRelation($tableMap->getPhpName() . 'I18n'))
-            {
+            if ($tableMap->hasRelation($tableMap->getPhpName() . 'I18n')) {
                 $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
                 $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, 'es_ES')));
-                foreach($i18NTableMap->getColumns() as $columnMap) {
+                foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
                     $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
-                    if(array_key_exists($dtoColumnName, $data)
+                    if (array_key_exists($dtoColumnName, $data)
                         && method_exists($model, $method)
                         && !($columnMap->isPrimaryKey() && $columnMap->isForeignKey())) {
                         $model->$method($data[$dtoColumnName]);
                     }
                 }
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
         }
     }
@@ -266,7 +267,8 @@ trait MutationTrait
     /**
      * Check and change the fieldType for API dto
      */
-    protected function checkFieldType() {
+    protected function checkFieldType()
+    {
         $this->fieldType = ApiHelper::getFieldTypes();
     }
 }

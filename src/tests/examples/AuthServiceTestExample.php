@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\tests\examples;
 
 use PSFS\base\Request;
@@ -8,9 +9,11 @@ use PSFS\base\Service;
  * Class AuthServiceTest
  * @package PSFS\tests\examples
  */
-class AuthServiceTestExample extends Service {
+class AuthServiceTestExample extends Service
+{
 
-    public function test($user, $password) {
+    public function test($user, $password)
+    {
         $this->setUrl('https://jsonplaceholder.typicode.com/todos');
         $this->addAuthHeader($user, $password);
         $this->addRequestToken($password, 'TEST');

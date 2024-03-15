@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 use PSFS\base\Cache;
@@ -14,10 +15,12 @@ use PSFS\base\types\helpers\ResponseHelper;
  * Class OutputTrait
  * @package PSFS\base\types\traits
  */
-trait OutputTrait {
+trait OutputTrait
+{
 
     use BoostrapTrait;
     use TestTrait;
+
     /**
      * @var bool
      */
@@ -122,7 +125,7 @@ trait OutputTrait {
                 $this->setStatusCode(Template::STATUS_OK);
                 break;
             default:
-                $this->setStatusCode('HTTP/1.0 ' .($status ?: 200));
+                $this->setStatusCode('HTTP/1.0 ' . ($status ?: 200));
                 break;
         }
         return $this;
@@ -154,7 +157,7 @@ trait OutputTrait {
      */
     public function output($output = '', $contentType = 'text/html', array $cookies = array())
     {
-        if(!self::isTest()) {
+        if (!self::isTest()) {
             Logger::log('Start output response');
             ob_start();
             $this->setReponseHeaders($contentType, $cookies);

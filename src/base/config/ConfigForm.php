@@ -83,15 +83,15 @@ class ConfigForm extends Form
             'class' => 'btn-warning md-default',
             'icon' => 'fa-plus',
         ];
-        if(Config::getParam('admin.version', 'v1') === 'v1') {
+        if (Config::getParam('admin.version', 'v1') === 'v1') {
             $add['onclick'] = 'javascript:addNewField(document.getElementById("' . $this->getName() . '"));';
         } else {
             $add['ng-click'] = 'addNewField()';
         }
         $this->addButton('submit', t('Guardar configuración'), 'submit', array(
-                'class' => 'btn-success col-md-offset-2 md-primary',
-                'icon' => 'fa-save',
-            ))
+            'class' => 'btn-success col-md-offset-2 md-primary',
+            'icon' => 'fa-save',
+        ))
             ->addButton('add_field', t('Añadir nuevo parámetro'), 'button', $add);
     }
 

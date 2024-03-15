@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types\traits\Helper;
 
 /**
  * Trait ParameterTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait ParameterTrait {
+trait ParameterTrait
+{
     /**
      * Curl query/raw params
      * @var array
@@ -17,7 +19,7 @@ trait ParameterTrait {
      */
     public function getParams()
     {
-        return $this->params?: [];
+        return $this->params ?: [];
     }
 
     /**
@@ -48,8 +50,9 @@ trait ParameterTrait {
      * @param string $key
      * @return ParameterTrait
      */
-    public function dropParam($key) {
-        if(array_key_exists($key, $this->params)) {
+    public function dropParam($key)
+    {
+        if (array_key_exists($key, $this->params)) {
             unset($this->params[$key]);
         }
         return $this;
@@ -59,8 +62,9 @@ trait ParameterTrait {
      * @param string $key
      * @return mixed|null
      */
-    public function getParam($key) {
-        if(array_key_exists($key, $this->params)) {
+    public function getParam($key)
+    {
+        if (array_key_exists($key, $this->params)) {
             return $this->params[$key];
         }
         return null;

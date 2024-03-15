@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types;
 
 use PSFS\base\exception\FormException;
@@ -51,6 +52,7 @@ abstract class Form extends Singleton implements FormType
         }
         return $this;
     }
+
     /**
      * @return bool
      * @throws FormException

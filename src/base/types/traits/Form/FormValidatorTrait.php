@@ -1,12 +1,15 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 /**
  * Trait FormGeneratorTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormValidatorTrait {
+trait FormValidatorTrait
+{
     use FormSchemaTrait;
+
     /**
      * @var array
      */

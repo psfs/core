@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types;
 
 /**
  * Class CustomApi
  * @package PSFS\base\types
  */
-abstract class CustomApi extends Api {
+abstract class CustomApi extends Api
+{
 
     public function getModelTableMap()
     {
@@ -37,7 +39,8 @@ abstract class CustomApi extends Api {
         return null;
     }
 
-    public function admin() {
+    public function admin()
+    {
         return null;
     }
 

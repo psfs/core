@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Router;
 
 use PSFS\base\Cache;
@@ -10,8 +11,10 @@ use PSFS\base\types\helpers\RouterHelper;
  * Trait SluggerTrait
  * @package PSFS\base\types\traits\Router
  */
-trait SluggerTrait {
+trait SluggerTrait
+{
     use RoutingTrait;
+
     /**
      * @var array
      */

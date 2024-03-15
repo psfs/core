@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Helper;
 
 use Propel\Runtime\Map\TableMap;
@@ -11,7 +12,8 @@ use PSFS\base\Logger;
  * Trait FieldHelperTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait FieldHelperTrait {
+trait FieldHelperTrait
+{
 
     /**
      * @param string $field
@@ -122,27 +124,27 @@ trait FieldHelperTrait {
         $behaviors = $tableMap->getBehaviors();
         foreach ($map::getFieldNames() as $field) {
             $fDto = self::parseFormField($domain, $tableMap, $field, $behaviors);
-            if(null !== $fDto) {
+            if (null !== $fDto) {
                 $form->addField($fDto);
             }
         }
 
-        if(array_key_exists('i18n', $behaviors)) {
+        if (array_key_exists('i18n', $behaviors)) {
             $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
-            if(null !== $relateI18n) {
+            if (null !== $relateI18n) {
                 $i18NTableMap = $relateI18n->getLocalTable();
-                foreach($i18NTableMap->getColumns() as $columnMap) {
+                foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $columnName = self::getColumnMapName($columnMap);
-                    if(!$form->fieldExists($columnName)) {
+                    if (!$form->fieldExists($columnName)) {
                         /** @var Field $fDto */
                         $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
-                        if(null !== $fDto) {
+                        if (null !== $fDto) {
                             $fDto->pk = false;
                             $fDto->required = true;
-                            if(strtolower($fDto->name) === 'locale') {
+                            if (strtolower($fDto->name) === 'locale') {
                                 $fDto->type = Field::COMBO_TYPE;
                                 $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'es_ES')));
-                                foreach($languages as $language) {
+                                foreach ($languages as $language) {
                                     $fDto->data[] = [
                                         $fDto->name => $language,
                                         'Label' => t($language),
@@ -169,9 +171,9 @@ trait FieldHelperTrait {
     {
         $column = null;
         try {
-            foreach($tableMap->getColumns() as $tableMapColumn) {
+            foreach ($tableMap->getColumns() as $tableMapColumn) {
                 $columnName = $tableMapColumn->getPhpName();
-                if(preg_match('/^'.$field.'$/i', $columnName)) {
+                if (preg_match('/^' . $field . '$/i', $columnName)) {
                     $column = $tableMapColumn;
                     break;
                 }
@@ -185,9 +187,10 @@ trait FieldHelperTrait {
     /**
      * @return string
      */
-    public static function getFieldTypes() {
+    public static function getFieldTypes()
+    {
         $configType = Config::getParam('api.field.case', TableMap::TYPE_PHPNAME);
-        switch($configType) {
+        switch ($configType) {
             default:
             case 'UpperCamelCase':
             case TableMap::TYPE_PHPNAME:

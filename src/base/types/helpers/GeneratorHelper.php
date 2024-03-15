@@ -8,7 +8,6 @@ use PSFS\base\exception\GeneratorException;
 use PSFS\base\Template;
 use PSFS\base\types\Api;
 use ReflectionClass;
-use ReflectionException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 

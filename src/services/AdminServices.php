@@ -10,6 +10,7 @@ use PSFS\base\types\traits\TestTrait;
 class AdminServices extends Service
 {
     use TestTrait;
+
     /**
      * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración

@@ -15,6 +15,7 @@ use PSFS\base\types\helpers\Inspector;
 
 defined('CSS_SRI_FILENAME') or define('CSS_SRI_FILENAME', CACHE_DIR . DIRECTORY_SEPARATOR . 'css.sri.json');
 defined('JS_SRI_FILENAME') or define('JS_SRI_FILENAME', CACHE_DIR . DIRECTORY_SEPARATOR . 'js.sri.json');
+
 /**
  * Class AssetsParser
  * @package PSFS\base\extension
@@ -61,12 +62,13 @@ class AssetsParser
     /**
      * @param string $type
      */
-    public function init($type) {
+    public function init($type)
+    {
         $this->sriFilename = $type === 'js' ? JS_SRI_FILENAME : CSS_SRI_FILENAME;
         /** @var Cache $cache */
         $cache = Cache::getInstance();
         $this->sri = $cache->getDataFromFile($this->sriFilename, Cache::JSON, true);
-        if(empty($this->sri)) {
+        if (empty($this->sri)) {
             $this->sri = [];
         }
     }
@@ -121,9 +123,9 @@ class AssetsParser
     /**
      * Método que procesa los ficheros solicitados en función del modo de ejecución
      * @return AssetsParser
-     * @internal param string $type
      * @throws ConfigException
      * @throws \PSFS\base\exception\GeneratorException
+     * @internal param string $type
      */
     public function compile()
     {
@@ -193,7 +195,7 @@ class AssetsParser
         if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
             foreach ($urls as $source) {
                 $orig = self::calculateResourcePathname($filenamePath, $source);
-                if(!empty($orig)) {
+                if (!empty($orig)) {
                     $orig_part = preg_split("/Public/i", $orig);
                     $dest = WEB_DIR . $orig_part[1];
                     GeneratorHelper::createDir(dirname($dest));
@@ -213,8 +215,9 @@ class AssetsParser
      * @return mixed|string
      * @throws \PSFS\base\exception\GeneratorException
      */
-    protected function getSriHash($hash, $type = 'js') {
-        if(array_key_exists($hash, $this->sri)) {
+    protected function getSriHash($hash, $type = 'js')
+    {
+        if (array_key_exists($hash, $this->sri)) {
             $sriHash = $this->sri[$hash];
         } else {
             Inspector::stats('[SRITrait] Generating SRI for ' . $hash, Inspector::SCOPE_DEBUG);

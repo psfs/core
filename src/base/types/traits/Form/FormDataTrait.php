@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 use PSFS\base\exception\FormException;
@@ -8,8 +9,10 @@ use PSFS\base\Request;
  * Trait FormDataTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormDataTrait {
+trait FormDataTrait
+{
     use FormValidatorTrait;
+
     /**
      * @var array
      */
@@ -27,7 +30,7 @@ trait FormDataTrait {
     public function add($name, array $value = [])
     {
         $this->fields[$name] = $value;
-        $this->fields[$name]['name'] = $this->getName() . '['.$name.']';
+        $this->fields[$name]['name'] = $this->getName() . '[' . $name . ']';
         $this->fields[$name]['id'] = $this->getName() . '_' . $name;
         $this->fields[$name]['placeholder'] = array_key_exists('placeholder', $value) ? $value['placeholder'] : $name;
         $this->fields[$name]['hasLabel'] = array_key_exists('hasLabel', $value) ? $value['hasLabel'] : true;
@@ -74,7 +77,6 @@ trait FormDataTrait {
         }
         return $data;
     }
-
 
 
     /**

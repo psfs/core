@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Api;
 
 use Exception;
@@ -15,7 +16,8 @@ use ReflectionException;
  * Trait DocumentorHelperTrait
  * @package PSFS\base\types\traits\Api
  */
-trait DocumentorHelperTrait {
+trait DocumentorHelperTrait
+{
     public static $nativeMethods = [
         'modelList', // Api list
         'get', // Api get

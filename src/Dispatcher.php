@@ -28,6 +28,7 @@ use PSFS\controller\UserController;
 class Dispatcher extends Singleton
 {
     use SystemTrait;
+
     /**
      * @Injectable
      * @var \PSFS\base\Security $security
@@ -87,7 +88,7 @@ class Dispatcher extends Singleton
             return $this->security->notAuthorized($this->actualUri);
         } catch (RouterException $r) {
             return $this->router->httpNotFound($r);
-        } catch(ApiException $a) {
+        } catch (ApiException $a) {
             return $this->router->httpNotFound($a, true);
         } catch (\Exception $e) {
             return $this->dumpException($e);

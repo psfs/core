@@ -74,10 +74,10 @@ class CustomTranslateExtension extends AbstractExtension
             $version = null;
             self::$translations = [];
         }
-        if(count(self::$translations) === 0) {
+        if (count(self::$translations) === 0) {
             Inspector::stats('[translationsCheckLoad] Extracting translations', Inspector::SCOPE_DEBUG);
             self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
-            if(null !== $version && $version === $configVersion) {
+            if (null !== $version && $version === $configVersion) {
                 Inspector::stats('[translationsCheckLoad] Translations loaded from session', Inspector::SCOPE_DEBUG);
                 self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG);
             } else {
@@ -140,7 +140,7 @@ class CustomTranslateExtension extends AbstractExtension
      */
     public static function _($message, $customKey = null, $forceReload = false)
     {
-        if(0 === count(self::$translations) || $forceReload) {
+        if (0 === count(self::$translations) || $forceReload) {
             self::translationsCheckLoad($customKey, $forceReload);
         }
         if (is_array(self::$translations) && array_key_exists($message, self::$translations)) {

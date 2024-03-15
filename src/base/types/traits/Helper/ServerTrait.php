@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Helper;
 
 use PSFS\base\config\Config;
@@ -7,7 +8,8 @@ use PSFS\base\config\Config;
  * Trait ServerTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait ServerTrait {
+trait ServerTrait
+{
     /**
      * @var array
      */
@@ -21,7 +23,7 @@ trait ServerTrait {
     public function getServer($key, $default = null)
     {
         $value = null;
-        if(array_key_exists($key, $this->server)) {
+        if (array_key_exists($key, $this->server)) {
             $value = $this->server[$key];
         }
         return $value ?: $default;
@@ -60,7 +62,7 @@ trait ServerTrait {
      */
     public function getProtocol(): string
     {
-        if(Config::getParam('force.https', false)) {
+        if (Config::getParam('force.https', false)) {
             return 'https://';
         }
         return ($this->getServer('HTTPS') || $this->getServer('https')) ? 'https://' : 'http://';

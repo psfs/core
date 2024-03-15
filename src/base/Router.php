@@ -11,7 +11,6 @@ use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\Controller;
-use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\RouterHelper;
@@ -79,14 +78,14 @@ class Router
      */
     private function debugLoad()
     {
-                if(!Config::getParam('skip.route_generation', false)) {
-                    Logger::log('Begin routes load');
-                    $this->hydrateRouting();
-                    $this->simpatize();
-                    Logger::log('End routes load');
-                } else {
-                    Logger::log('Routes generation skipped');
-                }
+        if (!Config::getParam('skip.route_generation', false)) {
+            Logger::log('Begin routes load');
+            $this->hydrateRouting();
+            $this->simpatize();
+            Logger::log('End routes load');
+        } else {
+            Logger::log('Routes generation skipped');
+        }
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\tests\services;
 
 use PHPUnit\Framework\Attributes\Before;
@@ -10,7 +11,8 @@ use PSFS\services\DocumentorService as Service;
  * Class DocumentServiceTest
  * @package PSFS\tests\services
  */
-class DocumentorServiceTest extends GeneratorServiceTest {
+class DocumentorServiceTest extends GeneratorServiceTest
+{
 
     public static $namespaces = [
         '\CLIENT\Api\Test\Test',
@@ -24,7 +26,7 @@ class DocumentorServiceTest extends GeneratorServiceTest {
     #[Before]
     public function prepareDocumentRoot(): void
     {
-        if(file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
+        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json')) {
             unlink(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json');
         }
         $this->assertFileDoesNotExist(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', 'Previous generated domains json, please delete it before testing');
@@ -46,7 +48,8 @@ class DocumentorServiceTest extends GeneratorServiceTest {
      * @throws \PSFS\base\exception\GeneratorException
      * @throws \ReflectionException
      */
-    public function testApiDocumentation() {
+    public function testApiDocumentation()
+    {
         $modulePath = $this->checkCreateExistingModule();
         $this->assertDirectoryExists($modulePath, 'Module did not exists');
 
@@ -54,7 +57,7 @@ class DocumentorServiceTest extends GeneratorServiceTest {
         $documentorService = Service::getInstance();
         $module = $documentorService->getModules(self::MODULE_NAME);
         $doc = $documentorService->extractApiEndpoints($module);
-        foreach($doc as $namespace => $endpoints) {
+        foreach ($doc as $namespace => $endpoints) {
             $this->assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
             $this->assertCount(7, $endpoints, 'Different number of endpoints');
         }

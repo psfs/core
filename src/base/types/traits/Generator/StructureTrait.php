@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Generator;
 
 use PSFS\base\config\Config;
@@ -10,7 +11,8 @@ use PSFS\base\types\traits\TemplateTrait;
  * Trait StructureTrait
  * @package PSFS\base\types\traits\Generator
  */
-trait StructureTrait {
+trait StructureTrait
+{
     use TemplateTrait;
 
     /**

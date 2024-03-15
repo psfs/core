@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 use PSFS\base\Request;
@@ -8,9 +9,11 @@ use PSFS\base\Router;
  * Class RouteTrait
  * @package PSFS\base\types
  */
-Trait RouteTrait {
+trait RouteTrait
+{
 
     use BoostrapTrait;
+
     /**
      * Wrapper para obtener la url de una ruta interna
      * @param string $route

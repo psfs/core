@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Api;
 
 use PSFS\base\dto\JsonResponse;
@@ -13,7 +14,8 @@ use PSFS\base\types\traits\RouteTrait;
  * Trait ManagerTrait
  * @package PSFS\base\types\traits\Api
  */
-trait ManagerTrait {
+trait ManagerTrait
+{
     use RouteTrait;
     use ApiTrait;
 

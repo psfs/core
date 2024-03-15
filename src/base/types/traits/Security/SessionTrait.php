@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Security;
 
 use PSFS\base\Logger;
@@ -7,7 +8,8 @@ use PSFS\base\Logger;
  * Trait SessionTrait
  * @package PSFS\base\types\traits\Security
  */
-trait SessionTrait {
+trait SessionTrait
+{
     /**
      * @var array $session
      */
@@ -29,9 +31,10 @@ trait SessionTrait {
         return $data;
     }
 
-    public function hasSessionKey($key) {
+    public function hasSessionKey($key)
+    {
         $exists = false;
-        if(array_key_exists($key, $this->session)) {
+        if (array_key_exists($key, $this->session)) {
             $exists = true;
         }
         return $exists;
@@ -51,12 +54,13 @@ trait SessionTrait {
         return $this;
     }
 
-    protected function initSession() {
+    protected function initSession()
+    {
         if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
             session_start();
         }
         // Fix for phpunits
-        if(!isset($_SESSION)) {
+        if (!isset($_SESSION)) {
             $_SESSION = [];
         }
         $this->session = null === $_SESSION ? [] : $_SESSION;
@@ -76,8 +80,10 @@ trait SessionTrait {
         $_SESSION[self::ADMIN_ID_TOKEN] = serialize($this->admin);
         if ($closeSession) {
             Logger::log('Close session');
-            /** @scrutinizer ignore-unhandled */ @session_write_close();
-            /** @scrutinizer ignore-unhandled */ @session_start();
+            /** @scrutinizer ignore-unhandled */
+            @session_write_close();
+            /** @scrutinizer ignore-unhandled */
+            @session_start();
         }
         Logger::log('Session updated');
         return $this;
@@ -86,9 +92,12 @@ trait SessionTrait {
     public function closeSession()
     {
         unset($_SESSION);
-        /** @scrutinizer ignore-unhandled */ @session_destroy();
-        /** @scrutinizer ignore-unhandled */ @session_regenerate_id(TRUE);
-        /** @scrutinizer ignore-unhandled */ @session_start();
+        /** @scrutinizer ignore-unhandled */
+        @session_destroy();
+        /** @scrutinizer ignore-unhandled */
+        @session_regenerate_id(TRUE);
+        /** @scrutinizer ignore-unhandled */
+        @session_start();
     }
 
 }

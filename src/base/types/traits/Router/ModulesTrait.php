@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Router;
 
 use Exception;
@@ -20,8 +21,10 @@ use Symfony\Component\Finder\SplFileInfo;
  * Trait ModulesTrait
  * @package PSFS\base\types\traits\Router
  */
-trait ModulesTrait {
+trait ModulesTrait
+{
     use SluggerTrait;
+
     /**
      * @Injectable
      * @var Finder $finder
@@ -35,7 +38,8 @@ trait ModulesTrait {
     /**
      *
      */
-    public function initializeFinder() {
+    public function initializeFinder()
+    {
         $this->finder = new Finder();
     }
 
@@ -163,7 +167,7 @@ trait ModulesTrait {
                 $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
                 if ($externalModule->hasResults()) {
                     foreach ($externalModule->getIterator() as $modulePath) {
-                        if(!in_array(strtoupper($modulePath->getRelativePathname()), $modulesToIgnore)) {
+                        if (!in_array(strtoupper($modulePath->getRelativePathname()), $modulesToIgnore)) {
                             $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath, $routing);
                         }
                     }
@@ -178,12 +182,13 @@ trait ModulesTrait {
      * @param string $domainToCheck
      * @return bool
      */
-    public function domainExists($domainToCheck) {
+    public function domainExists($domainToCheck)
+    {
         $exists = false;
         $domains = array_keys($this->getDomains());
-        foreach($domains as $domain) {
+        foreach ($domains as $domain) {
             $cleanDomain = strtolower(str_replace(['@', '/', '\\'], '', $domain));
-            if($cleanDomain === strtolower($domainToCheck)) {
+            if ($cleanDomain === strtolower($domainToCheck)) {
                 $exists = true;
                 break;
             }

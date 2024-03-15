@@ -26,10 +26,11 @@ if (!function_exists("getallheaders")) {
     function getallheaders(): array
     {
         $headers = [];
-        foreach ($_SERVER as $h => $v)
+        foreach ($_SERVER as $h => $v) {
             if (preg_match('/HTTP_(.+)/', $h, $hp)) {
                 $headers[$hp[1]] = $v;
             }
+        }
         return $headers;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 use PSFS\base\config\Config;
@@ -10,7 +11,8 @@ use PSFS\base\types\helpers\SlackHelper;
  * Class SystemTrait
  * @package PSFS\base\types\traits
  */
-Trait SystemTrait {
+trait SystemTrait
+{
     use BoostrapTrait;
 
     /**
@@ -61,7 +63,7 @@ Trait SystemTrait {
     protected function bindWarningAsExceptions()
     {
         Inspector::stats('[SystemTrait] Added handlers for errors', Inspector::SCOPE_DEBUG);
-        if(Config::getParam('debug')) {
+        if (Config::getParam('debug')) {
             Logger::log('Setting error_reporting as E_ALL');
             ini_set('error_reporting', E_ALL);
             ini_set('display_errors', 1);
@@ -74,18 +76,18 @@ Trait SystemTrait {
 
         register_shutdown_function(function () {
             $error = error_get_last() or json_last_error() or preg_last_error() or \DateTime::getLastErrors();
-            if( $error !== NULL) {
-                $errno   = $error["type"];
+            if ($error !== NULL) {
+                $errno = $error["type"];
                 $errfile = $error["file"];
                 $errline = $error["line"];
-                $errstr  = $error["message"];
+                $errstr = $error["message"];
                 Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
-                if(null !== Config::getParam('log.slack.hook')) {
+                if (null !== Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace($errstr, $errfile, $errline, $error);
                 }
             }
 
-            if(self::getTs() > 10 && null !== Config::getParam('log.slack.hook')) {
+            if (self::getTs() > 10 && null !== Config::getParam('log.slack.hook')) {
                 SlackHelper::getInstance()->trace('Slow service endpoint', '', '', [
                     'time' => round(self::getTs(), 3) . ' secs',
                     'memory' => round(self::getMem('MBytes'), 3) . ' Mb',

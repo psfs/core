@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types;
 
 use PSFS\base\Logger;
@@ -8,7 +9,8 @@ use PSFS\base\Singleton;
  * Class SimpleService
  * @package PSFS\base\types
  */
-abstract class SimpleService extends Singleton {
+abstract class SimpleService extends Singleton
+{
 
     /**
      * @Injectable

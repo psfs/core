@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Api;
 
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -17,7 +18,8 @@ use PSFS\base\types\traits\JsonTrait;
  * Trait ApiCrudTrait
  * @package PSFS\base\types\traits
  */
-trait ApiTrait {
+trait ApiTrait
+{
     use ConnectionTrait;
     use MutationTrait;
     use JsonTrait {
@@ -73,7 +75,9 @@ trait ApiTrait {
         return (NULL !== $this->model) ? $this->model->toArray() : [];
     }
 
-    protected function extractFields() { }
+    protected function extractFields()
+    {
+    }
 
     /**
      * Hydrate fields from request
@@ -88,12 +92,13 @@ trait ApiTrait {
     /**
      * Hydrate list elements for bulk insert
      */
-    protected function hydrateBulkRequest() {
+    protected function hydrateBulkRequest()
+    {
         $class = new \ReflectionClass($this->getModelNamespace());
         $this->list = [];
-        foreach($this->data as $item) {
-            if(is_array($item)) {
-                if(count($this->list) < Config::getParam('api.block.limit', 1000)) {
+        foreach ($this->data as $item) {
+            if (is_array($item)) {
+                if (count($this->list) < Config::getParam('api.block.limit', 1000)) {
                     /** @var ActiveRecordInterface $model */
                     $model = $class->newInstance();
                     $this->hydrateModelFromRequest($model, $item);
@@ -108,14 +113,15 @@ trait ApiTrait {
     /**
      * Save the list of items
      */
-    protected function saveBulk() {
+    protected function saveBulk()
+    {
         $tablemap = $this->getTableMap();
-        foreach($this->list as &$model) {
+        foreach ($this->list as &$model) {
             $con = Propel::getWriteConnection($tablemap::DATABASE_NAME);
             try {
                 $model->save($con);
                 $con->commit();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 Logger::log($e->getMessage(), LOG_ERR, $model->toArray());
                 $con->rollBack();
             }
@@ -125,10 +131,11 @@ trait ApiTrait {
     /**
      * @return array
      */
-    protected function exportList() {
+    protected function exportList()
+    {
         $list = [];
         /** @var ActiveRecordInterface $item */
-        foreach($this->list as $item) {
+        foreach ($this->list as $item) {
             $list[] = $item->toArray();
         }
         return $list;
@@ -150,20 +157,21 @@ trait ApiTrait {
      * @return ActiveRecordInterface|null
      * @throws ApiException
      */
-    protected function findPk(ModelCriteria $query, $primaryKey) {
+    protected function findPk(ModelCriteria $query, $primaryKey)
+    {
         $pks = explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
-        if(count($pks) === 1 && !empty($pks[0])) {
+        if (count($pks) === 1 && !empty($pks[0])) {
             $query->filterByPrimaryKey($pks[0]);
         } else {
             $item = 0;
-            foreach($this->getPkDbName() as $phpName) {
+            foreach ($this->getPkDbName() as $phpName) {
                 try {
                     $query->filterBy($phpName, $pks[$item]);
                     $item++;
-                    if($item >= count($pks)) {
+                    if ($item >= count($pks)) {
                         break;
                     }
-                } catch(\Exception $e) {
+                } catch (\Exception $e) {
                     Logger::log($e->getMessage(), LOG_DEBUG);
                 }
             }
@@ -175,7 +183,8 @@ trait ApiTrait {
     /**
      * @return ModelCriteria
      */
-    protected function prepareQuery() {
+    protected function prepareQuery()
+    {
         $query = ApiHelper::extractQuery($this->getModelNamespace(), $this->con);
         $this->joinTables($query);
         $this->checkI18n($query);

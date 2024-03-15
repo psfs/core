@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\dto;
 
 /**
@@ -28,7 +29,8 @@ class Form extends Dto
      * @param string $name
      * @return bool
      */
-    public function fieldExists($name) {
+    public function fieldExists($name)
+    {
         return array_key_exists($name, $this->fields);
     }
 
@@ -44,9 +46,9 @@ class Form extends Dto
         foreach ($this->fields as $field) {
             $array['fields'][] = $field->__toArray();
         }
-        usort($array['fields'], function($fieldA, $fieldB) {
-            if((bool)$fieldA['required'] !== (bool)$fieldB['required']) {
-                if((bool)$fieldA['required']) {
+        usort($array['fields'], function ($fieldA, $fieldB) {
+            if ((bool)$fieldA['required'] !== (bool)$fieldB['required']) {
+                if ((bool)$fieldA['required']) {
                     return -1;
                 } else {
                     return 1;
@@ -59,7 +61,7 @@ class Form extends Dto
             }
             return ($aOrder < $bOrder) ? -1 : 1;
         });
-        foreach($this->actions as $action) {
+        foreach ($this->actions as $action) {
             $array['actions'][] = $action->__toArray();
         }
         return $array;
@@ -69,23 +71,34 @@ class Form extends Dto
      * @param array $field
      * @return int
      */
-    public static function fieldsOrder(array $field) {
+    public static function fieldsOrder(array $field)
+    {
         switch ($field['type']) {
-            case Field::HIDDEN_TYPE: $order = 0; break;
+            case Field::HIDDEN_TYPE:
+                $order = 0;
+                break;
             case Field::TEXT_TYPE:
             case Field::PHONE_TYPE:
             case Field::URL_TYPE:
             case Field::PASSWORD_FIELD:
-            case Field::SEARCH_TYPE: $order = 1; break;
+            case Field::SEARCH_TYPE:
+                $order = 1;
+                break;
             case Field::CHECK_TYPE:
             case Field::RADIO_TYPE:
             case Field::COMBO_TYPE:
             case Field::NUMBER_TYPE:
-            case Field::SWITCH_TYPE: $order = 2; break;
-            case Field::TEXTAREA_TYPE: $order = 3; break;
+            case Field::SWITCH_TYPE:
+                $order = 2;
+                break;
+            case Field::TEXTAREA_TYPE:
+                $order = 3;
+                break;
             default:
             case Field::DATE:
-            case Field::TIMESTAMP: $order = 4; break;
+            case Field::TIMESTAMP:
+                $order = 4;
+                break;
         }
         return $order;
     }

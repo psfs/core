@@ -1,6 +1,8 @@
 <?php
+
 namespace PSFS\base;
 
+use JetBrains\PhpStorm\NoReturn;
 use PSFS\base\types\traits\Helper\ServerTrait;
 use PSFS\base\types\traits\SingletonTrait;
 
@@ -24,31 +26,31 @@ class Request
     /**
      * @var array
      */
-    protected $cookies;
+    protected array $cookies;
     /**
      * @var array
      */
-    protected $upload;
+    protected array $upload;
     /**
      * @var array
      */
-    protected $header;
+    protected array $header;
     /**
      * @var array
      */
-    protected $data;
+    protected array $data;
     /**
      * @var array
      */
-    protected $raw = [];
+    protected array $raw = [];
     /**
      * @var array
      */
-    protected $query;
+    protected array $query;
     /**
      * @var bool
      */
-    private $isLoaded = false;
+    private bool $isLoaded = false;
 
     public function init()
     {
@@ -66,7 +68,7 @@ class Request
      * Método que devuelve las cabeceras de la petición
      * @return array
      */
-    private function parseHeaders()
+    private function parseHeaders(): array
     {
         return getallheaders() ?: [];
     }
@@ -77,7 +79,7 @@ class Request
      *
      * @return boolean
      */
-    public function hasHeader($header)
+    public function hasHeader($header): bool
     {
         return array_key_exists($header, $this->header);
     }
@@ -87,7 +89,7 @@ class Request
      * Método que indica si una petición tiene cookies
      * @return boolean
      */
-    public function hasCookies()
+    public function hasCookies(): bool
     {
         return (null !== $this->cookies && 0 !== count($this->cookies));
     }
@@ -96,7 +98,7 @@ class Request
      * Método que indica si una petición tiene cookies
      * @return boolean
      */
-    public function hasUpload()
+    public function hasUpload(): bool
     {
         return (null !== $this->upload && 0 !== count($this->upload));
     }
@@ -108,7 +110,7 @@ class Request
      *
      * @return string
      */
-    public static function getTimestamp($formatted = false)
+    public static function getTimestamp(bool $formatted = false)
     {
         return self::getInstance()->getTs($formatted);
     }
@@ -116,41 +118,41 @@ class Request
     /**
      * Método que devuelve una cabecera de la petición si existe
      * @param string $name
-     * @param string $default
+     * @param string|null $default
      *
      * @return string|null
      */
-    public static function header($name, $default = null)
+    public static function header(string $name, string $default = null)
     {
-        return self::getInstance()->getHeader($name,  $default);
+        return self::getInstance()->getHeader($name, $default);
     }
 
     /**
      * @param string $name
-     * @param string $default
+     * @param string|null $default
      * @return string|null
      */
-    public function getHeader($name, $default = null)
+    public function getHeader(string $name, string $default = null)
     {
         $header = null;
         if ($this->hasHeader($name)) {
             $header = $this->header[$name];
-        } else if(array_key_exists('h_' . strtolower($name), $this->query)) {
+        } else if (array_key_exists('h_' . strtolower($name), $this->query)) {
             $header = $this->query['h_' . strtolower($name)];
-        } else if(array_key_exists('HTTP_' . strtoupper(str_replace('-', '_', $name)), $this->server)) {
+        } else if (array_key_exists('HTTP_' . strtoupper(str_replace('-', '_', $name)), $this->server)) {
             $header = $this->getServer('HTTP_' . strtoupper(str_replace('-', '_', $name)));
         }
         return $header ?: $default;
     }
 
-	/**
-	 * @param string $language
-	 * @return void
-	 */
-	public static function setLanguageHeader(string $language)
-	{
-		self::getInstance()->header['X-API-LANG'] = $language;
-	}
+    /**
+     * @param string $language
+     * @return void
+     */
+    public static function setLanguageHeader(string $language): void
+    {
+        self::getInstance()->header['X-API-LANG'] = $language;
+    }
 
     /**
      * Método que devuelve la url solicitada
@@ -165,7 +167,7 @@ class Request
      * Método que determina si se ha solicitado un fichero
      * @return boolean
      */
-    public function isFile()
+    public function isFile(): bool
     {
         return preg_match('/\.[a-z0-9]{2,4}$/', $this->getRequestUri()) !== 0;
     }
@@ -177,7 +179,7 @@ class Request
      *
      * @return mixed
      */
-    public function getQuery($queryParams)
+    public function getQuery($queryParams): mixed
     {
         return array_key_exists($queryParams, $this->query) ? $this->query[$queryParams] : null;
     }
@@ -187,7 +189,7 @@ class Request
      *
      * @return mixed
      */
-    public function getQueryParams()
+    public function getQueryParams(): mixed
     {
         return $this->query;
     }
@@ -198,7 +200,7 @@ class Request
      *
      * @return string|null
      */
-    public function get($param)
+    public function get(string $param)
     {
         return array_key_exists($param, $this->data) ? $this->data[$param] : null;
     }
@@ -207,7 +209,7 @@ class Request
      * Método que devuelve todos los datos del Request
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         return array_merge($this->data, $this->raw);
     }
@@ -215,7 +217,8 @@ class Request
     /**
      * @return array
      */
-    public function getRawData() {
+    public function getRawData(): array
+    {
         return $this->raw;
     }
 
@@ -225,7 +228,7 @@ class Request
      *
      * @return string
      */
-    public function getCookie($name)
+    public function getCookie(string $name)
     {
         return array_key_exists($name, $this->cookies) ? $this->cookies[$name] : null;
     }
@@ -236,16 +239,16 @@ class Request
      *
      * @return array
      */
-    public function getFile($name)
+    public function getFile($name): array
     {
-        return array_key_exists($name, $this->upload) ? $this->upload[$name] : array();
+        return array_key_exists($name, $this->upload) ? $this->upload[$name] : [];
     }
 
     /**
      * Método que realiza una redirección a la url dada
-     * @param string $url
+     * @param string|null $url
      */
-    public function redirect($url = null)
+    #[NoReturn] public function redirect(string $url = null): void
     {
         if (null === $url) {
             $url = $this->getServer('HTTP_ORIGIN');
@@ -269,8 +272,7 @@ class Request
         if (!empty($protocol)) {
             $url = $protocol . $url;
         }
-        $url = $this->checkServerPort($url);
-        return $url;
+        return $this->checkServerPort($url);
     }
 
     /**
@@ -281,10 +283,10 @@ class Request
     {
         $port = (integer)$this->getServer('SERVER_PORT');
         $host = $this->getServer('HTTP_HOST');
-        if(!empty($host)) {
+        if (!empty($host)) {
             $parts = explode(':', $host);
             $hostPort = (integer)end($parts);
-            if($hostPort !== $port && count($parts) > 1) {
+            if ($hostPort !== $port && count($parts) > 1) {
                 $port = $hostPort;
             }
         }

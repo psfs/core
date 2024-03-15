@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\dto;
 
 class Order extends Dto
@@ -81,7 +82,7 @@ class Order extends Dto
      */
     public function fromArray(array $object = [])
     {
-        foreach($object as $field => $order) {
+        foreach ($object as $field => $order) {
             $this->addOrder($field, $order);
         }
     }

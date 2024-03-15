@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
@@ -10,8 +11,10 @@ use PSFS\base\config\Config;
  * Trait FormModelTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormModelTrait {
+trait FormModelTrait
+{
     use FormDataTrait;
+
     /**
      * @var ActiveRecordInterface
      */

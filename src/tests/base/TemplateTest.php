@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
@@ -9,12 +10,14 @@ use PSFS\base\Template;
  * Class TemplateTest
  * @package PSFS\tests
  */
-class TemplateTest extends TestCase {
+class TemplateTest extends TestCase
+{
 
     /**
      * @return void
      */
-    public function testTemplateBasics() {
+    public function testTemplateBasics()
+    {
         $template = Template::getInstance();
 
         // Check if the template engine is ok
@@ -50,7 +53,8 @@ class TemplateTest extends TestCase {
     /**
      * @return void
      */
-    public function testTranslations() {
+    public function testTranslations()
+    {
         $template = Template::getInstance();
 
         $template->setPublicZone(true);

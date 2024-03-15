@@ -1,7 +1,7 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
-use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\types\traits\Helper\OptionTrait;
 use PSFS\base\types\traits\Helper\ParameterTrait;
@@ -10,9 +10,11 @@ use PSFS\base\types\traits\Helper\ParameterTrait;
  * Trait CurlTrait
  * @package PSFS\base\types\traits
  */
-trait CurlTrait {
+trait CurlTrait
+{
     use ParameterTrait;
     use OptionTrait;
+
     /**
      * Curl resource
      * @var \CurlHandle
@@ -54,6 +56,7 @@ trait CurlTrait {
     {
         $this->con = $con;
     }
+
     /**
      * @var mixed $result
      */
@@ -76,9 +79,10 @@ trait CurlTrait {
      */
     protected $isMultipart = false;
 
-    protected function closeConnection() {
-        if(null !== $this?->con) {
-            if($this?->con instanceof \CurlHandle) {
+    protected function closeConnection()
+    {
+        if (null !== $this?->con) {
+            if ($this?->con instanceof \CurlHandle) {
                 curl_close($this->con);
             }
             $this->setCon(null);
@@ -102,7 +106,7 @@ trait CurlTrait {
     {
         $this->clearContext();
         $con = curl_init($this->url);
-        if($con instanceof \CurlHandle) {
+        if ($con instanceof \CurlHandle) {
             $this->setCon($con);
         }
     }
@@ -122,7 +126,7 @@ trait CurlTrait {
     public function setUrl(string $url, bool $cleanContext = true)
     {
         $this->url = $url;
-        if($cleanContext) {
+        if ($cleanContext) {
             $this->initialize();
         }
     }
@@ -178,16 +182,18 @@ trait CurlTrait {
     /**
      * @return mixed
      */
-    public function getInfo() {
+    public function getInfo()
+    {
         return $this->info;
     }
 
     /**
      * @param bool $isJson
      */
-    public function setIsJson($isJson = true) {
+    public function setIsJson($isJson = true)
+    {
         $this->isJson = $isJson;
-        if($isJson) {
+        if ($isJson) {
             $this->setIsMultipart(false);
         }
     }
@@ -195,16 +201,18 @@ trait CurlTrait {
     /**
      * @return bool
      */
-    public function getIsJson() {
+    public function getIsJson()
+    {
         return $this->isJson;
     }
 
     /**
      * @param bool $isMultipart
      */
-    public function setIsMultipart($isMultipart = true) {
+    public function setIsMultipart($isMultipart = true)
+    {
         $this->isMultipart = $isMultipart;
-        if($isMultipart) {
+        if ($isMultipart) {
             $this->setIsJson(false);
         }
     }
@@ -212,7 +220,8 @@ trait CurlTrait {
     /**
      * @return bool
      */
-    public function getIsMultipart() {
+    public function getIsMultipart()
+    {
         return $this->isMultipart;
     }
 
@@ -227,7 +236,8 @@ trait CurlTrait {
     /**
      * @return bool
      */
-    public function isDebug() {
+    public function isDebug()
+    {
         return $this->debug;
     }
 

@@ -17,7 +17,8 @@ class GeneratorServiceTest extends TestCase
 
     const MODULE_NAME = 'CLIENT';
 
-    public function testBaseClass() {
+    public function testBaseClass()
+    {
         $this->assertTrue(true);
     }
 

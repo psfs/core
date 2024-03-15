@@ -69,7 +69,7 @@ class DocumentorController extends Controller
      */
     public function swaggerUi($domain)
     {
-        if(!Router::getInstance()->domainExists($domain)) {
+        if (!Router::getInstance()->domainExists($domain)) {
             throw new RouterException('Domains is empty');
         }
         return $this->render('swagger.html.twig', [

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\Command;
 
 use PSFS\base\types\helpers\GeneratorHelper;

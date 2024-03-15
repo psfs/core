@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 use PSFS\base\Security;

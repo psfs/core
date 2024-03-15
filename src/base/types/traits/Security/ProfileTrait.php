@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Security;
 
 use PSFS\base\Cache;
@@ -9,7 +10,8 @@ use PSFS\base\Security;
  * Trait ProfileTrait
  * @package PSFS\base\types\traits\Security
  */
-trait ProfileTrait {
+trait ProfileTrait
+{
     /**
      * @var array $user
      */
@@ -120,7 +122,8 @@ trait ProfileTrait {
      * @param $alias
      * @param $profile
      */
-    public function updateAdmin($alias, $profile) {
+    public function updateAdmin($alias, $profile)
+    {
         $this->admin = array(
             'alias' => $alias,
             'profile' => $profile,
@@ -152,7 +155,6 @@ trait ProfileTrait {
     {
         return substr($role, 0, 8);
     }
-
 
 
 }

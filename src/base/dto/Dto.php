@@ -59,7 +59,7 @@ class Dto extends Singleton implements \JsonSerializable
                         $dto[$property->getName()] = $value;
                     } else {
                         $type = InjectorHelper::extractVarType($property->getDocComment());
-                        $dto[$property->getName()] = $this->checkCastedValue($property->getValue($this), $type);
+                        $dto[$property->getName()] = $this->checkCastedValue($property->getValue($this), $type ?: 'string');
                     }
                 }
             }
@@ -170,6 +170,7 @@ class Dto extends Singleton implements \JsonSerializable
     /**
      * @param mixed $rawValue
      * @param string $type
+     * @return bool|float|int|string|null
      */
     protected function checkCastedValue(mixed $rawValue, string $type)
     {

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types;
 
 use PSFS\base\config\Config;
@@ -37,7 +38,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
-        if(Config::getParam('profiling.enable')) {
+        if (Config::getParam('profiling.enable')) {
             $vars['__profiling__'] = Inspector::getStats();
         }
         $domain = (null === $domain) ? $this->getDomain() : $domain;

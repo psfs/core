@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Generator;
 
 use Propel\Generator\Config\GeneratorConfig;
@@ -14,7 +15,8 @@ use Symfony\Component\Finder\Finder;
  * Trait PropelHelperTrait
  * @package PSFS\base\types\traits\Generator
  */
-trait PropelHelperTrait {
+trait PropelHelperTrait
+{
 
     /**
      * @param string $modulePath

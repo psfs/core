@@ -7,11 +7,9 @@ use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
-use PSFS\base\types\Api;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\RouterHelper;
-use PSFS\services\DocumentorService;
 use ReflectionClass;
 use ReflectionMethod;
 

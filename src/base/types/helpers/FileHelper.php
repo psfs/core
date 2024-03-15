@@ -14,9 +14,9 @@ class FileHelper
     /**
      * @param mixed $data
      * @param string $path
-     * @return int
+     * @return int|bool
      */
-    public static function writeFile(string $path, mixed $data): int
+    public static function writeFile(string $path, mixed $data): int|bool
     {
         return @file_put_contents($path, $data);
     }

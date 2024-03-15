@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types\traits\Router;
 
 /**
  * Trait RoutingTrait
  * @package PSFS\base\types\traits\Router
  */
-trait RoutingTrait {
+trait RoutingTrait
+{
     /**
      * @var array
      */

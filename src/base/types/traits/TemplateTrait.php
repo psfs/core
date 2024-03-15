@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 use PSFS\base\Cache;
@@ -8,12 +9,14 @@ use PSFS\base\Logger;
  * Trait TemplateTrait
  * @package PSFS\base\types\traits
  */
-trait TemplateTrait {
+trait TemplateTrait
+{
     /**
      * @Injectable
      * @var \PSFS\base\Template Servicio de gestión de plantillas
      */
     protected $tpl;
+
     /**
      * Método que graba el contenido de una plantilla en un fichero
      * @param string $fileContent

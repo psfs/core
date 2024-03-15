@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\extension\traits;
 
 use MatthiasMullie\Minify\CSS;
@@ -13,7 +14,8 @@ use PSFS\base\types\helpers\Inspector;
  * Trait CssTrait
  * @package PSFS\base\extension\traits
  */
-trait CssTrait {
+trait CssTrait
+{
 
     /**
      * @var string
@@ -39,7 +41,7 @@ trait CssTrait {
                     $data = $this->processCssLine($file, $base, $data, $hash);
                 }
             }
-            if($debug) {
+            if ($debug) {
                 AssetsHelper::storeContents($base . $hash . ".css", $data);
             } else {
                 $minifier = new CSS();

@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\command;
 
 use PSFS\base\Router;
@@ -29,7 +30,7 @@ $console = new Application();
 //Hidratamos con los comandos de PSFS
 $commands = new Finder();
 $commands->in(__DIR__)->notName("PSFSConsole.php");
-foreach ($commands as $com) if($com->isFile()) include_once($com->getRealPath());
+foreach ($commands as $com) if ($com->isFile()) include_once($com->getRealPath());
 
 //Hidratamos con los comandos de los módulos
 $domains = Router::getInstance()->getDomains();

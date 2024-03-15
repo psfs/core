@@ -1,13 +1,13 @@
 <?php
-namespace PSFS\base\types\traits\Helper;
 
-use PSFS\base\types\CurlService;
+namespace PSFS\base\types\traits\Helper;
 
 /**
  * Trait OptionTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait OptionTrait {
+trait OptionTrait
+{
     /**
      * @var array
      */
@@ -49,8 +49,9 @@ trait OptionTrait {
      * @param string $key
      * @return OptionTrait
      */
-    public function dropOption($key) {
-        if(array_key_exists($key, $this->options)) {
+    public function dropOption($key)
+    {
+        if (array_key_exists($key, $this->options)) {
             unset($this->options[$key]);
         }
         return $this;
@@ -60,8 +61,9 @@ trait OptionTrait {
      * @param string $key
      * @return mixed|null
      */
-    public function getOption($key) {
-        if(array_key_exists($key, $this->options)) {
+    public function getOption($key)
+    {
+        if (array_key_exists($key, $this->options)) {
             return $this->options[$key];
         }
         return null;

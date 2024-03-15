@@ -6,7 +6,6 @@ use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\GeneratorException;
-use PSFS\base\exception\RouterException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;

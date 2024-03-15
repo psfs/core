@@ -2,7 +2,6 @@
 
 namespace PSFS\tests;
 
-use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\Request;
@@ -100,7 +99,8 @@ class PSFSTest extends TestCase
         $this->assertNotNull($request->getTs());
     }
 
-    public function testPre() {
+    public function testPre()
+    {
         ob_start();
         pre('test');
         $return = ob_get_clean();

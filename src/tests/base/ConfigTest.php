@@ -158,12 +158,13 @@ class ConfigTest extends TestCase
         $this->restoreConfig();
     }
 
-    public function testCleaningConfigFiles() {
-        foreach(Config::$cleanable_config_files as $cleanable_config_file) {
+    public function testCleaningConfigFiles()
+    {
+        foreach (Config::$cleanable_config_files as $cleanable_config_file) {
             $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $cleanable_config_file);
         }
         Config::clearConfigFiles();
-        foreach(Config::$cleanable_config_files as $cleanable_config_file) {
+        foreach (Config::$cleanable_config_files as $cleanable_config_file) {
             $this->assertFileDoesNotExist(CONFIG_DIR . DIRECTORY_SEPARATOR . $cleanable_config_file);
         }
     }

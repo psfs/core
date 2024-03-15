@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\controller;
 
 use Exception;

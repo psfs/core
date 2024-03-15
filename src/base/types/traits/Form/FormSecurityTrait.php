@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 use PSFS\base\types\Form;
@@ -7,7 +8,8 @@ use PSFS\base\types\Form;
  * Trait FormSecurityTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormSecurityTrait {
+trait FormSecurityTrait
+{
     /**
      * @var
      */

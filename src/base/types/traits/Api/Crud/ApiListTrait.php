@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Api\Crud;
 
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -7,7 +8,8 @@ use PSFS\base\Logger;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\traits\Api\MutationTrait;
 
-trait ApiListTrait {
+trait ApiListTrait
+{
     use MutationTrait;
 
     const API_COMBO_FIELD = '__combo';
@@ -84,7 +86,7 @@ trait ApiListTrait {
         }
         if (!$orderAdded) {
             $pks = $this->getPkDbName();
-            foreach(array_keys($pks) as $key) {
+            foreach (array_keys($pks) as $key) {
                 $query->addAscendingOrderByColumn($key);
             }
         }
@@ -103,7 +105,7 @@ trait ApiListTrait {
             foreach ($this->query as $field => $value) {
                 if (self::API_COMBO_FIELD === $field) {
                     ApiHelper::composerComboField($tableMap, $query, $this->extraColumns, $value);
-                } elseif(!preg_match('/^__/', $field)) {
+                } elseif (!preg_match('/^__/', $field)) {
                     ApiHelper::addModelField($tableMap, $query, $field, $value);
                 }
             }

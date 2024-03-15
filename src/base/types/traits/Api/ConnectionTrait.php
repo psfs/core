@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Api;
 
 use Propel\Runtime\Connection\ConnectionInterface;
@@ -12,7 +13,8 @@ use PSFS\base\types\traits\DebugTrait;
  * Trait ConnectionTrait
  * @package PSFS\base\types\traits\Api
  */
-trait ConnectionTrait {
+trait ConnectionTrait
+{
 
     /**
      * @var ConnectionInterface con
@@ -32,7 +34,7 @@ trait ConnectionTrait {
     {
         $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
         $this->con->beginTransaction();
-        if(method_exists($this->con, 'useDebug')) {
+        if (method_exists($this->con, 'useDebug')) {
             Logger::log('Enabling debug queries mode', LOG_INFO);
             $this->con->useDebug(Config::getParam('debug'));
         }
@@ -45,7 +47,7 @@ trait ConnectionTrait {
      */
     protected function closeTransaction($status)
     {
-        if(null !== $this->con) {
+        if (null !== $this->con) {
             $this->traceDebugQuery();
             if (null !== $this->con && $this->con->inTransaction()) {
                 if ($status === 200) {
@@ -64,21 +66,22 @@ trait ConnectionTrait {
     protected function traceDebugQuery()
     {
         if (Config::getParam('debug')) {
-            Logger::log($this->con->getLastExecutedQuery()?: 'Empty Query', LOG_DEBUG);
+            Logger::log($this->con->getLastExecutedQuery() ?: 'Empty Query', LOG_DEBUG);
         }
     }
 
     /**
      * Checks if the connection has a transaction initialized
      */
-    protected function checkTransaction() {
-        if(null !== $this->con && !$this->con->inTransaction()) {
+    protected function checkTransaction()
+    {
+        if (null !== $this->con && !$this->con->inTransaction()) {
             $this->con->beginTransaction();
         }
-        if(null !== $this->con && $this->con->inTransaction()) {
+        if (null !== $this->con && $this->con->inTransaction()) {
             $this->items++;
         }
-        if($this->items >= Config::getParam('api.block.limit', 1000)) {
+        if ($this->items >= Config::getParam('api.block.limit', 1000)) {
             $this->con->commit();
             $this->items = 0;
         }

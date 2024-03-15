@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Helper;
 
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
@@ -13,22 +14,24 @@ use PSFS\base\types\Api;
  * Trait FieldMapperHelperTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait FieldMapperHelperTrait {
+trait FieldMapperHelperTrait
+{
 
     /**
      * @param ActiveRecordInterface $model
      * @param array $data
      * @return array
      */
-    private static function mapResult(ActiveRecordInterface $model, array $data = []) {
+    private static function mapResult(ActiveRecordInterface $model, array $data = [])
+    {
         $result = [];
-        foreach($data as $key => $value) {
+        foreach ($data as $key => $value) {
             try {
                 $realValue = $model->getByName($key);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $realValue = $value;
             }
-            if(Api::API_MODEL_KEY_FIELD === $key) {
+            if (Api::API_MODEL_KEY_FIELD === $key) {
                 $result[$key] = (integer)$realValue;
             } else {
                 $result[$key] = $realValue;
@@ -45,7 +48,8 @@ trait FieldMapperHelperTrait {
      * @return array
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array $data = []) {
+    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array $data = [])
+    {
         $formatter = new ObjectFormatter();
         $formatter->setClass($namespace);
         $data[$modelPk->getPhpName()] = $data[Api::API_MODEL_KEY_FIELD];
@@ -55,14 +59,14 @@ trait FieldMapperHelperTrait {
         $objTableMap = get_class($formatter->getTableMap());
         /** @var TableMapTrait $objTableMap */
         $objData = $data;
-        foreach($objTableMap::getFieldNames() as $field) {
-            if(!array_key_exists($field, $objData)) {
+        foreach ($objTableMap::getFieldNames() as $field) {
+            if (!array_key_exists($field, $objData)) {
                 $objData[$field] = null;
             }
         }
         $obj = @$formatter->getAllObjectsFromRow($objData);
         $result = self::mapResult($obj, $data);
-        if(!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
+        if (!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
             unset($result[$modelPk->getPhpName()]);
         }
         return $result;
@@ -72,12 +76,13 @@ trait FieldMapperHelperTrait {
      * @param ColumnMap $field
      * @return string
      */
-    public static function getColumnMapName(ColumnMap $field) {
-        switch(self::getFieldTypes()) {
+    public static function getColumnMapName(ColumnMap $field)
+    {
+        switch (self::getFieldTypes()) {
             default:
             case 'UpperCamelCase':
             case TableMap::TYPE_PHPNAME:
-                $columnName =$field->getPhpName();
+                $columnName = $field->getPhpName();
                 break;
             case 'camelCase':
             case 'lowerCamelCase':

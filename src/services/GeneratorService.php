@@ -3,9 +3,10 @@
 namespace PSFS\services;
 
 use Propel\Common\Config\ConfigurationManager;
+use Propel\Generator\Config\GeneratorConfig;
+use Propel\Generator\Manager\MigrationManager;
 use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Diff\DatabaseComparator;
-use Propel\Generator\Model\IdMethod;
 use Propel\Generator\Model\Schema;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
@@ -15,7 +16,6 @@ use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
 use PSFS\base\types\traits\Generator\StructureTrait;
-use Symfony\Component\Console\Output\Output;
 
 /**
  * Class GeneratorService
@@ -56,7 +56,7 @@ class GeneratorService extends SimpleService
         $this->createModuleBaseFiles($module, $modPath, $force, $type);
         $this->createModuleModels($module, $modPath);
         $this->generateBaseApiTemplate($module, $modPath, $force, $apiClass);
-        if(!$skipMigration) {
+        if (!$skipMigration) {
             $this->createModuleMigrations($module, $modPath);
         }
         //Redireccionamos al home definido
@@ -174,58 +174,27 @@ class GeneratorService extends SimpleService
     private function createModuleMigrations($module, $path)
     {
         $migrationService = MigrationService::getInstance();
+        /** @var $manager MigrationManager */
+        /** @var $generatorConfig GeneratorConfig */
         list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
 
         if ($manager->hasPendingMigrations()) {
             throw new ApiException(t(sprintf('Módulo %s generado correctamente. Hay una migración pendiente de aplicar, ejecute comando `psfs:migrate` o elimine el fichero generado en el módulo', $module)), 400);
         }
 
+        // Checking the schema xml as source of tables and modifications
         $totalNbTables = 0;
         $reversedSchema = new Schema();
         $debugLogger = Config::getParam('log.level') === 'DEBUG';
-
+        $connections = $generatorConfig->getBuildConnections();
+        /** @var Database $appDatabase */
         foreach ($manager->getDatabases() as $appDatabase) {
-            $name = $appDatabase->getName();
-            $params = $connections[$name] ?? [];
-            if (!$params) {
-                Logger::log(sprintf('<info>No connection configured for database "%s"</info>', $name));
+            list($database, $nbTables) = $migrationService->checkSourceDatabase($manager, $generatorConfig, $appDatabase, $connections, $debugLogger);
+
+            if ($database) {
+                $reversedSchema->addDatabase($database);
             }
-
-            if ($debugLogger) {
-                Logger::log(sprintf('Connecting to database "%s" using DSN "%s"', $name, $params['dsn']));
-            }
-
-            $conn = $manager->getAdapterConnection($name);
-            $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
-
-            $appDatabase->setPlatform($platform);
-
-            if ($platform && !$platform->supportsMigrations()) {
-                Logger::log(sprintf('Skipping database "%s" since vendor "%s" does not support migrations', $name, $platform->getDatabaseType()));
-                continue;
-            }
-
-            $additionalTables = [];
-            foreach ($appDatabase->getTables() as $table) {
-                if ($table->getSchema() && $table->getSchema() != $appDatabase->getSchema()) {
-                    $additionalTables[] = $table;
-                }
-            }
-
-            $database = new Database($name);
-            $database->setPlatform($platform);
-            $database->setSchema($appDatabase->getSchema());
-            $database->setDefaultIdMethod(IdMethod::NATIVE);
-
-            $parser = $generatorConfig->getConfiguredSchemaParser($conn, $name);
-            $nbTables = $parser->parse($database, $additionalTables);
-
-            $reversedSchema->addDatabase($database);
             $totalNbTables += $nbTables;
-
-            if ($debugLogger) {
-                Logger::log(sprintf('%d tables found in database "%s"', $nbTables, $name), Output::VERBOSITY_VERBOSE);
-            }
         }
 
         if ($totalNbTables) {
@@ -234,7 +203,7 @@ class GeneratorService extends SimpleService
             Logger::log('No table found in all databases');
         }
 
-        // comparing models
+        // Comparing models with the connected database for this module
         Logger::log('Comparing models...');
         $migrationsUp = [];
         $migrationsDown = [];
@@ -263,35 +232,16 @@ class GeneratorService extends SimpleService
                 continue;
             }
 
-            Logger::log(sprintf('Structure of database was modified in datasource "%s": %s', $name, $databaseDiff->getDescription()));
-
-            foreach ($databaseDiff->getPossibleRenamedTables() as $fromTableName => $toTableName) {
-                Logger::log(sprintf(
-                    '<info>Possible table renaming detected: "%s" to "%s". It will be deleted and recreated. Use --table-renaming to only rename it.</info>',
-                    $fromTableName,
-                    $toTableName,
-                ));
-            }
-
-            $conn = $manager->getAdapterConnection($name);
-            /** @var \Propel\Generator\Platform\DefaultPlatform $platform */
-            $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
+            list(, $platform) = $migrationService->getPlatformAndConnection($manager, $name, $generatorConfig);
             $migrationsUp[$name] = $platform->getModifyDatabaseDDL($databaseDiff);
             $migrationsDown[$name] = $platform->getModifyDatabaseDDL($databaseDiff->getReverseDiff());
         }
-        if (!$migrationsUp) {
+        if (count($migrationsUp) === 0) {
             Logger::log('Same XML and database structures for all datasource - no diff to generate');
             return true;
         }
 
-        $timestamp = time();
-        $migrationFileName = $manager->getMigrationFileName($timestamp);
-        $migrationClassBody = $manager->getMigrationClassBody($migrationsUp, $migrationsDown, $timestamp);
-
-        $file = $generatorConfig->getSection('paths')['migrationDir'] . DIRECTORY_SEPARATOR . $migrationFileName;
-        file_put_contents($file, $migrationClassBody);
-
-        Logger::log(sprintf('"%s" file successfully created.', $file));
+        $migrationService->generateMigrationFile($manager, $migrationsUp, $migrationsDown, $generatorConfig);
         return true;
     }
 

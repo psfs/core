@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\extension\traits;
 
 use MatthiasMullie\Minify\JS;
@@ -10,7 +11,8 @@ use PSFS\base\types\helpers\GeneratorHelper;
  * Trait JsTrait
  * @package PSFS\base\extension\traits
  */
-trait JsTrait {
+trait JsTrait
+{
 
     /**
      * @param array $compiledFiles
@@ -78,7 +80,7 @@ trait JsTrait {
                         }
                     }
                 }
-                if($debug) {
+                if ($debug) {
                     AssetsHelper::storeContents($base . $hash . ".js", $data);
                 } else {
                     $this->dumpJs($hash, $base, $minifier);

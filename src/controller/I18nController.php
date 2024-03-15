@@ -1,10 +1,10 @@
 <?php
+
 namespace PSFS\controller;
 
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\controller\base\Admin;
-use PSFS\Services\GeneratorService;
 
 /**
  * Class I18nController
@@ -53,7 +53,7 @@ class I18nController extends Admin
         $translations = array_merge($translations, I18nHelper::findTranslations(CACHE_DIR, $locale));
 
         $translations[] = "msgfmt {$localePath}translations.po -o {$localePath}translations.mo";
-        $translations[] = shell_exec('export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt '. $localePath . 'translations.po -o ' . $localePath . 'translations.mo');
+        $translations[] = shell_exec('export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt ' . $localePath . 'translations.po -o ' . $localePath . 'translations.mo');
         return $this->render('translations.html.twig', array(
             'translations' => $translations,
         ));

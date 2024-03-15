@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\Command;
 
 use FilesystemIterator;
@@ -26,10 +27,10 @@ $console
             $project = 'psfs';
         }
         ini_set('memory_limit', -1);
-        if(file_exists($project . '.phar')) {
+        if (file_exists($project . '.phar')) {
             @unlink($project . '.phar');
         }
-        $phar = new Phar( $project . '.phar');
+        $phar = new Phar($project . '.phar');
         $phar = $phar->convertToExecutable(Phar::PHAR);
         $phar->buildFromIterator(
             new RecursiveIteratorIterator(

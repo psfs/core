@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\types\traits\Helper;
 
 use Propel\Runtime\ActiveQuery\Criteria;
@@ -13,7 +14,8 @@ use PSFS\base\Router;
  * Trait FieldModelHelperTrait
  * @package PSFS\base\types\traits\Helper
  */
-trait FieldModelHelperTrait {
+trait FieldModelHelperTrait
+{
     /**
      * @param ColumnMap $mappedColumn
      * @param string $field
@@ -43,7 +45,7 @@ trait FieldModelHelperTrait {
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
         $tableField = $column->getFullyQualifiedName();
-        if(is_array($value)) {
+        if (is_array($value)) {
             $query->add($tableField, $value, Criteria::IN);
         } elseif (preg_match('/^\[/', $value) && preg_match('/\]$/', $value)) {
             $query->add($tableField, explode(',', preg_replace('/(\[|\])/', '', $value)), Criteria::IN);
@@ -52,9 +54,9 @@ trait FieldModelHelperTrait {
             $text = preg_replace('/\ /', '%', $text);
             $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
         } else {
-            if(null !== $column->getValueSet()) {
+            if (null !== $column->getValueSet()) {
                 $valueSet = $column->getValueSet();
-                if(in_array($value, $valueSet)) {
+                if (in_array($value, $valueSet)) {
                     $value = array_search($value, $valueSet);
                 }
             }
@@ -107,8 +109,8 @@ trait FieldModelHelperTrait {
                 $sep = ', " ", ';
             }
         }
-        foreach($tableMap->getRelations() as $relation) {
-            if(preg_match('/I18n$/i', $relation->getName())) {
+        foreach ($tableMap->getRelations() as $relation) {
+            if (preg_match('/I18n$/i', $relation->getName())) {
                 $localeTableMap = $relation->getLocalTable();
                 foreach ($localeTableMap->getColumns() as $column) {
                     if ($column->isText()) {
@@ -119,7 +121,7 @@ trait FieldModelHelperTrait {
             }
         }
         foreach (array_keys($extraColumns) as $extra) {
-            if(!preg_match("/(COUNT|DISTINCT|SUM|MAX|MIN|GROUP)/i", $extra)) {
+            if (!preg_match("/(COUNT|DISTINCT|SUM|MAX|MIN|GROUP)/i", $extra)) {
                 $exp .= $sep . $extra;
                 $sep = ', " ", ';
             }
@@ -134,9 +136,10 @@ trait FieldModelHelperTrait {
      * @param TableMap $tableMap
      * @return null|ColumnMap
      */
-    public static function extractPrimaryKeyColumnName(TableMap $tableMap) {
+    public static function extractPrimaryKeyColumnName(TableMap $tableMap)
+    {
         $modelPk = null;
-        foreach($tableMap->getPrimaryKeys() as $pk) {
+        foreach ($tableMap->getPrimaryKeys() as $pk) {
             $modelPk = $pk;
             break;
         }

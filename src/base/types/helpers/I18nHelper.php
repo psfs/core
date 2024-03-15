@@ -95,7 +95,9 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
-        if ($force) t('', $customKey, true);
+        if ($force) {
+            t('', $customKey, true);
+        }
     }
 
     /**

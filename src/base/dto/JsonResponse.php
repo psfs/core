@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\base\dto;
 
 class JsonResponse extends Dto
@@ -45,7 +46,7 @@ class JsonResponse extends Dto
         $this->success = $result;
         $this->total = $total ?: (is_array($data) ? count($data) : 0);
         $this->pages = $pages;
-        if(null !== $message) {
+        if (null !== $message) {
             $this->message = $message;
         }
     }

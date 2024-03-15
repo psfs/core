@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\Command;
 
 use PSFS\base\Router;
@@ -17,9 +18,9 @@ $console
 
         $modules = Router::getInstance()->getDomains();
         $output->writeln("Hay un total de " . (count($modules) - 1) . " ha actualizar");
-        foreach($modules as $module => $config) {
+        foreach ($modules as $module => $config) {
             $clean_module = str_replace(['@', '\\', '/'], '', $module);
-            if($clean_module !== 'ROOT') {
+            if ($clean_module !== 'ROOT') {
                 $output->write("\t- Actualizando módulo {$clean_module}");
                 GeneratorService::getInstance()->generateConfigurationTemplates($clean_module, $config['base']);
                 $output->writeln("\tDONE!");

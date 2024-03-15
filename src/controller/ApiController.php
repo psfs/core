@@ -1,4 +1,5 @@
 <?php
+
 namespace PSFS\controller;
 
 use PSFS\base\Router;
@@ -28,7 +29,8 @@ class ApiController extends AuthAdminController
      * @label Documentación api
      * @return string HTML
      */
-    public function documentorHome() {
+    public function documentorHome()
+    {
         $domains = Router::getInstance()->getDomains();
         return $this->render('api.home.html.twig', [
             'domains' => $domains,

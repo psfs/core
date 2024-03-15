@@ -40,7 +40,9 @@ if (!class_exists(bootstrap::class)) {
         {
             if (!self::$loaded) {
                 defined('PSFS_BOOTSTRAP_LOADED') or define('PSFS_BOOTSTRAP_LOADED', true);
-                if (class_exists("\\PSFS\\base\\Logger")) \PSFS\base\Logger::log('Bootstrap initialized', LOG_INFO);
+                if (class_exists("\\PSFS\\base\\Logger")) {
+                    \PSFS\base\Logger::log('Bootstrap initialized', LOG_INFO);
+                }
                 self::$loaded = true;
             }
         }

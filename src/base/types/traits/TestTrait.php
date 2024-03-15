@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 /**
  * Trait TestTrait
  * @package PSFS\base\types\traits
  */
-trait TestTrait {
+trait TestTrait
+{
     /**
      * @var bool
      */

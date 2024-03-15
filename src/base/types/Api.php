@@ -1,15 +1,13 @@
 <?php
+
 namespace PSFS\base\types;
 
-use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\Collection\ArrayCollection;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Util\PropelModelPager;
 use PSFS\base\config\Config;
 use PSFS\base\dto\JsonResponse;
-use PSFS\base\dto\Order;
 use PSFS\base\Logger;
-use PSFS\base\Request;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\traits\Api\Crud\ApiListTrait;
@@ -60,7 +58,7 @@ abstract class Api extends Singleton
         $this->domain = $this->getDomain();
         $this->hydrateRequestData();
         $this->hydrateOrders();
-        if($this instanceof CustomApi === false) {
+        if ($this instanceof CustomApi === false) {
             $this->createConnection($this->getTableMap());
         }
         $this->checkFieldType();
@@ -68,15 +66,28 @@ abstract class Api extends Singleton
         Logger::log(static::class . ' loaded', LOG_DEBUG);
     }
 
-    private function checkActions($method) {
-        switch($method) {
+    private function checkActions($method)
+    {
+        switch ($method) {
             default:
-            case 'modelList': $this->action = self::API_ACTION_LIST; break;
-            case 'get': $this->action = self::API_ACTION_GET; break;
-            case 'post': $this->action = self::API_ACTION_POST; break;
-            case 'put': $this->action = self::API_ACTION_PUT; break;
-            case 'delete': $this->action = self::API_ACTION_DELETE; break;
-            case 'bulk': $this->action = self::API_ACTION_BULK; break;
+            case 'modelList':
+                $this->action = self::API_ACTION_LIST;
+                break;
+            case 'get':
+                $this->action = self::API_ACTION_GET;
+                break;
+            case 'post':
+                $this->action = self::API_ACTION_POST;
+                break;
+            case 'put':
+                $this->action = self::API_ACTION_PUT;
+                break;
+            case 'delete':
+                $this->action = self::API_ACTION_DELETE;
+                break;
+            case 'bulk':
+                $this->action = self::API_ACTION_BULK;
+                break;
         }
     }
 
@@ -94,7 +105,7 @@ abstract class Api extends Singleton
         $code = 200;
         list($return, $total, $pages) = $this->getList();
         $message = null;
-        if(!$total) {
+        if (!$total) {
             $message = t('No se han encontrado elementos para la búsqueda');
         }
 
@@ -119,7 +130,7 @@ abstract class Api extends Singleton
         $pages = 1;
         $message = null;
         list($code, $return) = $this->getSingleResult($pk);
-        if($code !== 200) {
+        if ($code !== 200) {
             $message = t('No se ha encontrado el elemento solicitado');
         }
 
@@ -152,9 +163,9 @@ abstract class Api extends Singleton
                 $message = t('No se ha podido guardar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $message = t('Ha ocurrido un error intentando guardar el elemento: ') .'<br>'. $e->getMessage();
+            $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getMessage();
             $context = [];
-            if(null !== $e->getPrevious()) {
+            if (null !== $e->getPrevious()) {
                 $context[] = $e->getPrevious()->getMessage();
             }
             Logger::log($e->getMessage(), LOG_CRIT, $context);
@@ -196,7 +207,7 @@ abstract class Api extends Singleton
             } catch (\Exception $e) {
                 $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 $context = [];
-                if(null !== $e->getPrevious()) {
+                if (null !== $e->getPrevious()) {
                     $context[] = $e->getPrevious()->getMessage();
                 }
                 Logger::log($e->getMessage(), LOG_CRIT, $context);
@@ -229,7 +240,7 @@ abstract class Api extends Singleton
                 $this->con->beginTransaction();
                 $this->hydrateModel($pk);
                 if (NULL !== $this->model) {
-                    if(method_exists('clearAllReferences', $this->model)) {
+                    if (method_exists('clearAllReferences', $this->model)) {
                         $this->model->clearAllReferences(true);
                     }
                     $this->model->delete($this->con);
@@ -237,7 +248,7 @@ abstract class Api extends Singleton
                 }
             } catch (\Exception $e) {
                 $context = [];
-                if(null !== $e->getPrevious()) {
+                if (null !== $e->getPrevious()) {
                     $context[] = $e->getPrevious()->getMessage();
                 }
                 Logger::log($e->getMessage(), LOG_CRIT, $context);
@@ -256,7 +267,8 @@ abstract class Api extends Singleton
      * @payload [{__API__}]
      * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
      */
-    public function bulk() {
+    public function bulk()
+    {
         $this->action = self::API_ACTION_BULK;
         $saved = FALSE;
         $status = 400;
@@ -266,19 +278,20 @@ abstract class Api extends Singleton
             $this->saveBulk();
             $saved = true;
             $status = 200;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
             $message = t('Bulk insert rolled back');
         }
         return $this->json(new JsonResponse($this->exportList(), $saved, count($this->list), 1, $message), $status);
     }
 
-    private function extractDataWithFormat() {
+    private function extractDataWithFormat()
+    {
         $return = [];
 
         /** @var CustomerTableMap $tableMap */
         $modelPk = ApiHelper::extractPrimaryKeyColumnName($this->getTableMap());
-        foreach($this->list->getData() as $data) {
+        foreach ($this->list->getData() as $data) {
             $return[] = ApiHelper::mapArrayObject($this->getModelNamespace(), $modelPk, $this->query, $data);
         }
         return $return;
@@ -295,17 +308,17 @@ abstract class Api extends Singleton
         try {
             $this->paginate();
             if (null !== $this->list) {
-                if(array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam('api.field.types')) {
+                if (array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam('api.field.types')) {
                     $return = $this->extractDataWithFormat();
                 } else {
                     $return = $this->list->toArray(null, false, $this->fieldType ?: TableMap::TYPE_PHPNAME, false);
                 }
                 $total = 0;
                 $pages = 0;
-                if($this->list instanceof PropelModelPager) {
+                if ($this->list instanceof PropelModelPager) {
                     $total = $this->list->getNbResults();
                     $pages = $this->list->getLastPage();
-                } elseif($this->list instanceof ArrayCollection) {
+                } elseif ($this->list instanceof ArrayCollection) {
                     $total = count($return);
                     $pages = 1;
                 }

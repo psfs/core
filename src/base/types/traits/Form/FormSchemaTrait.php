@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 /**
  * Trait FormSchemaTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormSchemaTrait {
+trait FormSchemaTrait
+{
     /**
      * @var string
      */

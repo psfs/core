@@ -1,11 +1,13 @@
 <?php
+
 namespace PSFS\base\types\traits\Form;
 
 /**
  * Trait FormCustomizationTrait
  * @package PSFS\base\types\traits\Form
  */
-trait FormCustomizationTrait {
+trait FormCustomizationTrait
+{
     /**
      * @var array
      */

@@ -1,11 +1,12 @@
 <?php
+
 namespace PSFS\base\types\traits;
 
 /**
  * Class SingletonTrait
  * @package PSFS\base\types
  */
-Trait SingletonTrait
+trait SingletonTrait
 {
     use BoostrapTrait;
 
@@ -38,9 +39,10 @@ Trait SingletonTrait
     /**
      * drop the instance
      */
-    public static function dropInstance() {
+    public static function dropInstance()
+    {
         $class = static::class;
-        if(isset(self::$instance[$class])) {
+        if (isset(self::$instance[$class])) {
             self::$instance[$class] = null;
         }
     }
