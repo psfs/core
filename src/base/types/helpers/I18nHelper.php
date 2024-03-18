@@ -30,8 +30,8 @@ class I18nHelper
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
             $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
-            if (empty($locale) && array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
-                $browserLocales = explode(",", str_replace("-", "_", $_SERVER["HTTP_ACCEPT_LANGUAGE"])); // brosers use en-US, Linux uses en_US
+            if (empty($locale) && ServerHelper::hasServerValue('HTTP_ACCEPT_LANGUAGE')) {
+                $browserLocales = explode(",", str_replace("-", "_", ServerHelper::getServerValue("HTTP_ACCEPT_LANGUAGE"))); // brosers use en-US, Linux uses en_US
                 for ($i = 0, $ct = count($browserLocales); $i < $ct; $i++) {
                     list($browserLocales[$i]) = explode(";", $browserLocales[$i]); //trick for "en;q=0.8"
                 }

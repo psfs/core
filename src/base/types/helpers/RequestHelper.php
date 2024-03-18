@@ -70,41 +70,39 @@ class RequestHelper
     public static function getIpAddress(): mixed
     {
         // check for shared internet/ISP IP
-        if (!empty($_SERVER['HTTP_CLIENT_IP']) && self::validateIpAddress($_SERVER['HTTP_CLIENT_IP'])) {
-            return $_SERVER['HTTP_CLIENT_IP'];
+        $ipAddress = ServerHelper::getServerValue('HTTP_CLIENT_IP');
+        if (!empty($ipAddress) && self::validateIpAddress($ipAddress)) {
+            return $ipAddress;
         }
 
         // check for IPs passing through proxies
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $xForwardedFor = ServerHelper::getServerValue('HTTP_X_FORWARDED_FOR');
+        if (!empty($xForwardedFor)) {
             // check if multiple ips exist in var
-            if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',') !== false) {
-                $iplist = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            if (str_contains($xForwardedFor, ',')) {
+                $iplist = explode(',', $xForwardedFor);
                 foreach ($iplist as $ip) {
                     if (self::validateIpAddress($ip)) {
                         return $ip;
                     }
                 }
             } else {
-                if (self::validateIpAddress($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-                    return $_SERVER['HTTP_X_FORWARDED_FOR'];
+                if (self::validateIpAddress($xForwardedFor)) {
+                    return $xForwardedFor;
                 }
             }
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_X_FORWARDED'])) {
-            return $_SERVER['HTTP_X_FORWARDED'];
+        $xForwarded = ServerHelper::getServerValue('HTTP_X_FORWARDED');
+        if (!empty($xForwarded) && self::validateIpAddress($xForwarded)) {
+            return $xForwarded;
         }
-        if (!empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && self::validateIpAddress($_SERVER['HTTP_X_CLUSTER_CLIENT_IP'])) {
-            return $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
-        }
-        if (!empty($_SERVER['HTTP_FORWARDED_FOR']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED_FOR'])) {
-            return $_SERVER['HTTP_FORWARDED_FOR'];
-        }
-        if (!empty($_SERVER['HTTP_FORWARDED']) && self::validateIpAddress($_SERVER['HTTP_FORWARDED'])) {
-            return $_SERVER['HTTP_FORWARDED'];
+        $xClusterClientIp = ServerHelper::getServerValue('HTTP_X_CLUSTER_CLIENT_IP');
+        if (!empty($xClusterClientIp) && self::validateIpAddress($xClusterClientIp)) {
+            return $xClusterClientIp;
         }
 
         // return unreliable ip since all else failed
-        return $_SERVER['REMOTE_ADDR'];
+        return ServerHelper::getServerValue('REMOTE_ADDR');
     }
 
     /**

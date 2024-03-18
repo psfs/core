@@ -13,7 +13,7 @@ class LogHelper {
     {
         switch ($currentLogLevel) {
             case 'DEBUG':
-                $logPass = \Monolog\Log::Debug;
+                $logPass = \Monolog\Level::Debug;
                 break;
             case 'INFO':
                 $logPass = \Monolog\Level::Info;
@@ -58,10 +58,10 @@ class LogHelper {
      */
     public static function addMinimalContext(array $context = []): array
     {
-        $context['uri'] = null !== $_SERVER && array_key_exists('REQUEST_URI', $_SERVER) ? $_SERVER['REQUEST_URI'] : 'Unknow';
-        $context['method'] = null !== $_SERVER && array_key_exists('REQUEST_METHOD', $_SERVER) ? $_SERVER['REQUEST_METHOD'] : 'Unknow';
-        if (null !== $_SERVER && array_key_exists('HTTP_X_PSFS_UID', $_SERVER)) {
-            $context['uid'] = $_SERVER['HTTP_X_PSFS_UID'];
+        $context['uri'] = ServerHelper::getServerValue('REQUEST_URI', 'Unknow');
+        $context['method'] = ServerHelper::getServerValue('REQUEST_METHOD', 'Unknow');
+        if (null !== ServerHelper::getServerValue('HTTP_X_PSFS_UID')) {
+            $context['uid'] = ServerHelper::getServerValue('HTTP_X_PSFS_UID');
         }
         return $context;
     }

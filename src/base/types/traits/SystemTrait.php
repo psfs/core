@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\helpers\SlackHelper;
 
 /**
@@ -100,11 +101,11 @@ trait SystemTrait
     /**
      * Stats initializer
      */
-    protected function initiateStats()
+    protected function initiateStats(): void
     {
         Inspector::stats('[SystemTrait] Initializing stats (mem + ts)');
-        if (null !== $_SERVER && array_key_exists('REQUEST_TIME_FLOAT', $_SERVER)) {
-            $this->ts = (float)$_SERVER['REQUEST_TIME_FLOAT'];
+        if (ServerHelper::hasServerValue('REQUEST_TIME_FLOAT')) {
+            $this->ts = (float)ServerHelper::getServerValue('REQUEST_TIME_FLOAT');
         } else {
             $this->ts = PSFS_START_TS;
         }

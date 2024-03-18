@@ -3,6 +3,7 @@
 namespace PSFS\base;
 
 use JetBrains\PhpStorm\NoReturn;
+use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\traits\Helper\ServerTrait;
 use PSFS\base\types\traits\SingletonTrait;
 
@@ -54,7 +55,7 @@ class Request
 
     public function init()
     {
-        $this->setServer(is_array($_SERVER) ? $_SERVER : []);
+        $this->setServer(ServerHelper::getServerData());
         $this->cookies = is_array($_COOKIE) ? $_COOKIE : [];
         $this->upload = is_array($_FILES) ? $_FILES : [];
         $this->header = $this->parseHeaders();

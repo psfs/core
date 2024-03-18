@@ -44,8 +44,8 @@ class ResponseHelper
     public static function setAuthHeaders(bool $isPublic = true): void
     {
         if ($isPublic) {
-            unset($_SERVER["PHP_AUTH_USER"]);
-            unset($_SERVER["PHP_AUTH_PW"]);
+            ServerHelper::dropServerValue("PHP_AUTH_USER");
+            ServerHelper::dropServerValue("PHP_AUTH_PW");
             header_remove("Authorization");
         } elseif (!self::isTest()) {
             header('Authorization:');
