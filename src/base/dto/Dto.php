@@ -168,22 +168,6 @@ class Dto extends Singleton implements \JsonSerializable
     }
 
     /**
-     * @param array $data
-     * @return array
-     */
-    protected function cleanArrayData(array $data): array {
-        $cleanedData = [];
-        foreach($data as $key => $value) {
-            if(is_array($value)) {
-                $cleanedData[$key] = $this->cleanArrayData($value);
-            } else {
-                $cleanedData[$key] = htmlentities($value, ENT_QUOTES, 'UTF-8');
-            }
-        }
-        return $cleanedData;
-    }
-
-    /**
      * @param mixed $rawValue
      * @param string $type
      * @return bool|float|int|string|null
@@ -194,11 +178,7 @@ class Dto extends Singleton implements \JsonSerializable
             switch ($type) {
                 default:
                 case 'string':
-                    if (is_array($rawValue)) {
-                        $value = $this->cleanArrayData($rawValue);
-                    } else {
-                        $value = htmlentities($rawValue, ENT_QUOTES, 'UTF-8');
-                    }
+                    $value = $rawValue;
                     break;
                 case 'integer':
                 case 'int':
