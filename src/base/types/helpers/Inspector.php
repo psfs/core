@@ -77,10 +77,10 @@ class Inspector
     }
 
     /**
-     * @param string $scope
+     * @param string|null $scope
      * @return array
      */
-    public static function getStats(string $scope = self::SCOPE_PROFILE): array
+    public static function getStats(string|null $scope = self::SCOPE_PROFILE): array
     {
         return self::processStats($scope);
     }
