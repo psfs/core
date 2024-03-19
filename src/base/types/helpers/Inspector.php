@@ -19,7 +19,7 @@ class Inspector
      * @param string|null $name
      * @return array
      */
-    public static function collect(string $name = null): array
+    public static function collect($name = null): array
     {
         return [
             'ts' => microtime(true),
@@ -33,7 +33,7 @@ class Inspector
      * @param string|null $name
      * @param string $scope
      */
-    public static function stats(string $name = null, string $scope = self::SCOPE_PROFILE): void
+    public static function stats($name = null, $scope = self::SCOPE_PROFILE): void
     {
         self::$debug[] = self::collect($name);
         if ($scope === self::SCOPE_PROFILE) {
@@ -48,7 +48,7 @@ class Inspector
      * @param int $files
      * @return array
      */
-    protected static function calculateStats(array $stats, float $timestamp, int $mem = 0, int $files = 0): array
+    protected static function calculateStats($stats, $timestamp, $mem = 0, $files = 0): array
     {
         return [
             'ts' => round($stats['ts'] - $timestamp, 4),
@@ -62,7 +62,7 @@ class Inspector
      * @param string $scope
      * @return array
      */
-    protected static function processStats(string $scope = self::SCOPE_PROFILE): array
+    protected static function processStats($scope = self::SCOPE_PROFILE): array
     {
         self::stats('Profiling collect start');
         $timestamp = defined('PSFS_START_TS') ? PSFS_START_TS : 0;
@@ -80,7 +80,7 @@ class Inspector
      * @param string|null $scope
      * @return array
      */
-    public static function getStats(string|null $scope = self::SCOPE_PROFILE): array
+    public static function getStats($scope = self::SCOPE_PROFILE): array
     {
         return self::processStats($scope);
     }
