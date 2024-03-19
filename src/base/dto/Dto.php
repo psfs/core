@@ -178,7 +178,14 @@ class Dto extends Singleton implements \JsonSerializable
             switch ($type) {
                 default:
                 case 'string':
-                    $value = htmlentities($rawValue, ENT_QUOTES, 'UTF-8');
+                    if (is_array($rawValue)) {
+                        $value = [];
+                        foreach ($rawValue as $k => $v) {
+                            $value[$k] = htmlentities($v, ENT_QUOTES, 'UTF-8');
+                        }
+                    } else {
+                        $value = htmlentities($rawValue, ENT_QUOTES, 'UTF-8');
+                    }
                     break;
                 case 'integer':
                 case 'int':
