@@ -79,7 +79,7 @@ class Logger
      * @param boolean $debug
      * @throws \Exception
      */
-    private function addPushLogger(string $logger, bool $debug): void
+    private function addPushLogger($logger, $debug)
     {
         $this->logger = new \Monolog\Logger(strtoupper($logger));
         $this->logger->pushHandler($this->addDefaultStreamHandler($debug));
@@ -102,7 +102,7 @@ class Logger
      * @return array
      * @throws exception\GeneratorException
      */
-    private function setup(array $args = []): array
+    private function setup(array $args = [])
     {
         $args = $args ?? [];
         $debug = Config::getParam('debug');
@@ -143,7 +143,7 @@ class Logger
      * @param boolean $force
      * @return bool
      */
-    public function addLog(string $msg, \Monolog\Level $type = \Monolog\Level::Notice, array $context = [], bool $force = false)
+    public function addLog($msg, $type = \Monolog\Level::Notice, $context = [], $force = false)
     {
         return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord($type, $msg, LogHelper::addMinimalContext($context));
     }
@@ -154,7 +154,7 @@ class Logger
      * @param array|null $context
      * @param bool $force
      */
-    public static function log(string $msg, int $type = LOG_DEBUG, array $context = null, bool $force = false): void
+    public static function log($msg, $type = LOG_DEBUG, $context = null, $force = false): void
     {
         if (null === $context) {
             $context = [];
@@ -175,7 +175,7 @@ class Logger
      * @return StreamHandler
      * @throws \Exception
      */
-    private function addDefaultStreamHandler(bool $debug = false): StreamHandler
+    private function addDefaultStreamHandler($debug = false): StreamHandler
     {
         // the default date format is "Y-m-d H:i:s"
         $dateFormat = 'Y-m-d H:i:s.u';

@@ -111,7 +111,7 @@ class Request
      *
      * @return string
      */
-    public static function getTimestamp(bool $formatted = false)
+    public static function getTimestamp($formatted = false)
     {
         return self::getInstance()->getTs($formatted);
     }
@@ -123,7 +123,7 @@ class Request
      *
      * @return string|null
      */
-    public static function header(string $name, string $default = null)
+    public static function header($name, $default = null)
     {
         return self::getInstance()->getHeader($name, $default);
     }
@@ -133,7 +133,7 @@ class Request
      * @param string|null $default
      * @return string|null
      */
-    public function getHeader(string $name, string $default = null)
+    public function getHeader($name, $default = null)
     {
         $header = null;
         if ($this->hasHeader($name)) {
@@ -150,7 +150,7 @@ class Request
      * @param string $language
      * @return void
      */
-    public static function setLanguageHeader(string $language): void
+    public static function setLanguageHeader($language): void
     {
         self::getInstance()->header['X-API-LANG'] = $language;
     }
@@ -201,7 +201,7 @@ class Request
      *
      * @return string|null
      */
-    public function get(string $param)
+    public function get($param)
     {
         return array_key_exists($param, $this->data) ? $this->data[$param] : null;
     }
@@ -229,7 +229,7 @@ class Request
      *
      * @return string
      */
-    public function getCookie(string $name)
+    public function getCookie($name)
     {
         return array_key_exists($name, $this->cookies) ? $this->cookies[$name] : null;
     }
@@ -249,7 +249,7 @@ class Request
      * Método que realiza una redirección a la url dada
      * @param string|null $url
      */
-    #[NoReturn] public function redirect(string $url = null): void
+    public function redirect($url = null)
     {
         if (null === $url) {
             $url = $this->getServer('HTTP_ORIGIN');
@@ -266,7 +266,7 @@ class Request
      * @param boolean $hasProtocol
      * @return string
      */
-    public function getRootUrl(bool $hasProtocol = true): string
+    public function getRootUrl($hasProtocol = true): string
     {
         $url = $this->getServerName();
         $protocol = $hasProtocol ? $this->getProtocol() : '';
@@ -280,7 +280,7 @@ class Request
      * @param string $url
      * @return string
      */
-    protected function checkServerPort(string $url): string
+    protected function checkServerPort($url): string
     {
         $port = (integer)$this->getServer('SERVER_PORT');
         $host = $this->getServer('HTTP_HOST');

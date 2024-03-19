@@ -123,7 +123,7 @@ trait CurlTrait
      * @param String $url
      * @param bool $cleanContext
      */
-    public function setUrl(string $url, bool $cleanContext = true)
+    public function setUrl(string $url, $cleanContext = true)
     {
         $this->url = $url;
         if ($cleanContext) {

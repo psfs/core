@@ -231,7 +231,7 @@ class Config
      *
      * @return mixed|null
      */
-    public function get(string $param, mixed $defaultValue = null): mixed
+    public function get($param, $defaultValue = null)
     {
         return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
     }
@@ -272,7 +272,7 @@ class Config
      * @param string|null $module
      * @return mixed|null
      */
-    public static function getParam(string $key, mixed $defaultValue = null, string $module = null): mixed
+    public static function getParam($key, $defaultValue = null, $module = null)
     {
         if (null !== $module) {
             return self::getParam(strtolower($module) . '.' . $key, self::getParam($key, $defaultValue));

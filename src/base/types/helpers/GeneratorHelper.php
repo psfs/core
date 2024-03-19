@@ -59,7 +59,7 @@ class GeneratorHelper
      * @param string $dir
      * @throws GeneratorException
      */
-    public static function createDir(string $dir): void
+    public static function createDir($dir): void
     {
         if (!empty($dir)) {
             try {
@@ -121,7 +121,7 @@ class GeneratorHelper
      * @param boolean $quiet
      * @throws GeneratorException
      */
-    public static function createRoot(string $path = WEB_DIR, OutputInterface $output = null, bool $quiet = false): void
+    public static function createRoot($path = WEB_DIR, $output = null, $quiet = false): void
     {
 
         if (null === $output) {
@@ -177,7 +177,7 @@ class GeneratorHelper
      * @param boolean $debug
      * @throws GeneratorException
      */
-    public static function copyResources(string $dest, bool $force, string $filenamePath, bool $debug): void
+    public static function copyResources($dest, $force, $filenamePath, $debug): void
     {
         if (file_exists($filenamePath)) {
             $destfolder = basename($filenamePath);
@@ -199,7 +199,7 @@ class GeneratorHelper
      * @param string $dst
      * @throws GeneratorException
      */
-    public static function copyr(string $src, string $dst): void
+    public static function copyr($src, $dst): void
     {
         $dir = opendir($src);
         self::createDir($dst);

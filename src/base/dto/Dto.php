@@ -83,7 +83,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param string $key
      * @param mixed|null $value
      */
-    protected function parseDtoField(array $properties, string $key, mixed $value = null)
+    protected function parseDtoField(array $properties, string $key, $value = null)
     {
         list($type, $isArray) = $this->extractTypes($properties, $key);
         $reflector = (class_exists($type)) ? new \ReflectionClass($type) : null;
