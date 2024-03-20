@@ -5,7 +5,6 @@ namespace PSFS\controller;
 use HttpException;
 use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
-use PSFS\base\dto\JsonResponse;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;

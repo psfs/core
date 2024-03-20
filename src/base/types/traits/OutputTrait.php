@@ -162,8 +162,8 @@ trait OutputTrait
             Logger::log('Start output response');
             ob_start();
             $this->setResponseHeaders($contentType, $cookies);
-            header('Content-length: ' . strlen($output));
-            header('CRC: ' . crc32($output));
+            ResponseHelper::setHeader('Content-length: ' . strlen($output));
+            ResponseHelper::setHeader('CRC: ' . crc32($output));
 
             $needCache = Cache::needCache();
             $cache = Cache::getInstance();
@@ -207,9 +207,9 @@ trait OutputTrait
         Inspector::stats('[OutputTrait] Rendering cache', Inspector::SCOPE_DEBUG);
         ob_start();
         for ($i = 0, $ct = count($headers); $i < $ct; $i++) {
-            header($headers[$i]);
+            ResponseHelper::setHeader($headers[$i]);
         }
-        header('X-PSFS-CACHED: true');
+        ResponseHelper::setHeader('X-PSFS-CACHED: true');
         echo $data;
         ob_flush();
         ob_end_clean();
@@ -225,23 +225,23 @@ trait OutputTrait
     public function download($data, $content = 'text/html', $filename = 'data.txt'): void
     {
         ob_start();
-        header('Pragma: public');
+        ResponseHelper::setHeader('Pragma: public');
         /////////////////////////////////////////////////////////////
         // prevent caching....
         /////////////////////////////////////////////////////////////
         // Date in the past sets the value to already have been expired.
-        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
-        header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        header('Content-Transfer-Encoding: binary');
-        header('Content-type: ' . $content);
-        header('Content-length: ' . strlen($data));
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Access-Control-Expose-Headers: Filename');
-        header('Filename: ' . $filename);
+        ResponseHelper::setHeader('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+        ResponseHelper::setHeader('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        ResponseHelper::setHeader('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
+        ResponseHelper::setHeader('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
+        ResponseHelper::setHeader('Pragma: no-cache');
+        ResponseHelper::setHeader('Expires: 0');
+        ResponseHelper::setHeader('Content-Transfer-Encoding: binary');
+        ResponseHelper::setHeader('Content-type: ' . $content);
+        ResponseHelper::setHeader('Content-length: ' . strlen($data));
+        ResponseHelper::setHeader('Content-Disposition: attachment; filename="' . $filename . '"');
+        ResponseHelper::setHeader('Access-Control-Expose-Headers: Filename');
+        ResponseHelper::setHeader('Filename: ' . $filename);
         echo $data;
         ob_flush();
         ob_end_clean();

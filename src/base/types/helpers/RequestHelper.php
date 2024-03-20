@@ -49,11 +49,11 @@ class RequestHelper
             if ($corsEnabled === '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
                 if (!headers_sent()) {
                     // TODO include this headers in Template class output method
-                    header('Access-Control-Allow-Credentials: true');
-                    header('Access-Control-Allow-Origin: ' . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
-                    header('Vary: Origin');
-                    header('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD');
-                    header('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
+                    ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
+                    ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
+                    ResponseHelper::setHeader('Vary: Origin');
+                    ResponseHelper::setHeader('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD');
+                    ResponseHelper::setHeader('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
                 }
                 if (Request::getInstance()->getMethod() === Request::VERB_OPTIONS) {
                     Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);

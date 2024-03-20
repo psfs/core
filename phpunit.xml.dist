@@ -21,6 +21,10 @@
             <directory>src/tests</directory>
             <directory>src/tests/examples</directory>
             <directory>src/tests/services</directory>
+            <directory>src/command</directory>
+            <directory>src/bin</directory>
+            <directory>src/public</directory>
+            <directory>src/templates</directory>
         </exclude>
     </source>
 

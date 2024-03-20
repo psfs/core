@@ -5,6 +5,7 @@ namespace PSFS\services;
 use PSFS\base\config\Config;
 use PSFS\base\Security;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\TestTrait;
 
 class AdminServices extends Service
@@ -34,8 +35,8 @@ class AdminServices extends Service
     public function setAdminHeaders()
     {
         $platform = trim(Config::getInstance()->get('platform.name', 'PSFS'));
-        header('HTTP/1.1 401 Unauthorized');
-        header('WWW-Authenticate: Basic Realm="' . $platform . '"');
+        ResponseHelper::setHeader('HTTP/1.1 401 Unauthorized');
+        ResponseHelper::setHeader('WWW-Authenticate: Basic Realm="' . $platform . '"');
         echo t('Zona restringida');
         exit();
     }

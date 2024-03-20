@@ -15,8 +15,12 @@ class EventHelper
     {
         if(array_key_exists($eventName, self::$events)) {
             foreach(self::$events[$eventName] as $eventClass) {
-                $return = (new $eventClass)($context);
-                Logger::log("$eventClass event handled with return $return");
+                try {
+                    $return = (new $eventClass)($context);
+                    Logger::log("$eventClass event handled with return $return");
+                } catch (\Exception $exception) {
+                    Logger::log("$eventClass event handled with exception:" . $exception->getMessage(), LOG_CRIT);
+                }
             }
         }
     }
