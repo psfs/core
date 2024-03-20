@@ -167,7 +167,7 @@ class Logger
             strlen(Config::getParam('log.slack.hook', '')) > 0) {
             SlackHelper::getInstance()->trace($msg, '', '', $context);
         }
-        self::getInstance()->addLog($msg, \Monolog\Level::Notice, $context, $force);
+        self::getInstance()->addLog($msg, $level, $context, $force);
     }
 
     /**

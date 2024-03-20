@@ -48,9 +48,6 @@ trait JsonTrait
             Logger::log(json_last_error_msg(), LOG_CRIT);
         }
 
-        if (Config::getParam('angular.protection', false)) {
-            $data = ")]}',\n" . $data;
-        }
         $this->setStatus($statusCode);
         ResponseHelper::setDebugHeaders([]);
         return $this->output($data, "application/json");

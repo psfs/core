@@ -2,12 +2,15 @@
 
 namespace PSFS\base\types\traits;
 
+use JetBrains\PhpStorm\NoReturn;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\EventHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 
@@ -17,7 +20,6 @@ use PSFS\base\types\helpers\ResponseHelper;
  */
 trait OutputTrait
 {
-
     use BoostrapTrait;
     use TestTrait;
 
@@ -136,14 +138,13 @@ trait OutputTrait
      * @param string $contentType
      * @param array $cookies
      */
-    private function setReponseHeaders($contentType = 'text/html', array $cookies = array())
+    private function setResponseHeaders($contentType = 'text/html', array $cookies = array()): void
     {
-        $powered = Config::getParam('poweredBy', 'PSFS');
-        header('X-Powered-By: ' . $powered);
+        ResponseHelper::setHeader('X-Powered-By: ' . Config::getParam('poweredBy', 'PSFS'));
         ResponseHelper::setStatusHeader($this->getStatusCode());
         ResponseHelper::setAuthHeaders($this->isPublicZone());
         ResponseHelper::setCookieHeaders($cookies);
-        header('Content-type: ' . $contentType);
+        ResponseHelper::setHeader('Content-type: ' . $contentType);
 
     }
 
@@ -160,7 +161,7 @@ trait OutputTrait
         if (!self::isTest()) {
             Logger::log('Start output response');
             ob_start();
-            $this->setReponseHeaders($contentType, $cookies);
+            $this->setResponseHeaders($contentType, $cookies);
             header('Content-length: ' . strlen($output));
             header('CRC: ' . crc32($output));
 
@@ -188,16 +189,11 @@ trait OutputTrait
     /**
      * Método que cierra y limpia los buffers de salida
      */
-    public function closeRender()
+    #[NoReturn] public function closeRender(): void
     {
         Logger::log('Close template render');
-        $uri = Request::requestUri();
-        Security::getInstance()->setSessionKey('lastRequest', array(
-            'url' => Request::getInstance()->getRootUrl() . $uri,
-            'ts' => microtime(true),
-        ));
-        Security::getInstance()->updateSession();
-        Logger::log('End request: ' . $uri, LOG_INFO);
+        EventHelper::handleEvents(EventHelper::EVENT_END_REQUEST);
+        Logger::log('End request: ' . Request::requestUri(), LOG_INFO);
         exit;
     }
 
@@ -206,7 +202,7 @@ trait OutputTrait
      * @param string $data
      * @param array $headers
      */
-    public function renderCache($data, $headers = array())
+    public function renderCache($data, $headers = array()): void
     {
         Inspector::stats('[OutputTrait] Rendering cache', Inspector::SCOPE_DEBUG);
         ob_start();
@@ -225,9 +221,8 @@ trait OutputTrait
      * @param $data
      * @param string $content
      * @param string $filename
-     * @return mixed
      */
-    public function download($data, $content = 'text/html', $filename = 'data.txt')
+    public function download($data, $content = 'text/html', $filename = 'data.txt'): void
     {
         ob_start();
         header('Pragma: public');
@@ -257,8 +252,9 @@ trait OutputTrait
      * Método que devuelve una respuesta con formato
      * @param string $response
      * @param string $type
+     * @throws GeneratorException
      */
-    public function response($response, $type = 'text/html')
+    public function response($response, $type = 'text/html'): void
     {
         $this->output($response, $type);
     }

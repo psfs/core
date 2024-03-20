@@ -39,7 +39,7 @@ class ConfigForm extends Form
         $this->add(Form::SEPARATOR);
         if (!empty($optional) && !empty($data)) {
             foreach ($optional as $field) {
-                if (array_key_exists($field, $data) && strlen($data[$field]) > 0) {
+                if (array_key_exists($field, $data) && strlen($data[$field] ?? '') > 0) {
                     $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
                     $this->add($field, array(
                         'label' => t($field),

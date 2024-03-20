@@ -53,6 +53,9 @@ $console
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $port = $input->getArgument('port');
+        if ($port <= 0 || $port > 65535) {
+            $output->writeln("Invalid port {$port}");
+        }
         $output->writeln("Inicializando PSFS server");
         $files = [];
         checkCRC(CORE_DIR, $files);

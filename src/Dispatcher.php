@@ -7,6 +7,7 @@
 namespace PSFS;
 
 use PSFS\base\config\Config;
+use PSFS\base\events\CloseSessionEvent;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
@@ -14,6 +15,7 @@ use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\EventHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\RequestHelper;
@@ -61,6 +63,7 @@ class Dispatcher extends Singleton
         $this->bindWarningAsExceptions();
         $this->actualUri = Request::getInstance()->getServer('REQUEST_URI');
         Inspector::stats('[Dispatcher] Dispatcher init end', Inspector::SCOPE_DEBUG);
+        EventHelper::addEvent(EventHelper::EVENT_END_REQUEST, CloseSessionEvent::class);
     }
 
     /**

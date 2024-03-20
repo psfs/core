@@ -17,6 +17,25 @@ class ResponseHelper
 {
     use TestTrait;
 
+    public static array $headers_sent = [];
+
+    public static function setHeader(string $header): void {
+        list($key, $value) = explode(':', $header);
+        if (!in_array($key, self::$headers_sent)) {
+            if(!self::isTest()) {
+                header($header);
+            }
+            self::$headers_sent[$key] = $value;
+        }
+    }
+
+    public static function dropHeader(string $header): void {
+        if (!in_array($header, self::$headers_sent)) {
+            header_remove($header);
+            unset(self::$headers_sent[$header]);
+        }
+    }
+
     /**
      * Method that sets the cookie headers
      * @param $cookies
@@ -46,9 +65,9 @@ class ResponseHelper
         if ($isPublic) {
             ServerHelper::dropServerValue("PHP_AUTH_USER");
             ServerHelper::dropServerValue("PHP_AUTH_PW");
-            header_remove("Authorization");
+            self::dropHeader("Authorization");
         } elseif (!self::isTest()) {
-            header('Authorization:');
+            self::setHeader('Authorization:');
         }
     }
 
@@ -59,7 +78,7 @@ class ResponseHelper
     public static function setStatusHeader(string $statusCode = null): void
     {
         if (NULL !== $statusCode && !self::isTest()) {
-            header($statusCode);
+            self::setHeader($statusCode);
         }
     }
 
@@ -75,9 +94,9 @@ class ResponseHelper
             Logger::log('Adding debug headers to render response');
             $vars["__DEBUG__"]["includes"] = get_included_files();
             $vars["__DEBUG__"]["trace"] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            header('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
-            header('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
-            header('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
+            self::setHeader('X-PSFS-DEBUG-TS: ' . Dispatcher::getInstance()->getTs() . ' s');
+            self::setHeader('X-PSFS-DEBUG-MEM: ' . Dispatcher::getInstance()->getMem('MBytes') . ' MBytes');
+            self::setHeader('X-PSFS-DEBUG-FILES: ' . count(get_included_files()) . ' files opened');
         }
 
         return $vars;

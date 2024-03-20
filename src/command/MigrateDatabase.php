@@ -32,9 +32,13 @@ $console
                 $output->writeln(sprintf(t("Ejecutando migraciones para módulo %s"), $domain));
                 $configDir = realpath($paths['base']) . DIRECTORY_SEPARATOR . 'Config';
                 $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
-                $script = sprintf("%s/bin/propel migrate %s --platform mysql --config-dir=%s --output-dir=%s", realpath(VENDOR_DIR), $simulate, $configDir, $migrationDir);
-                $result = shell_exec($script);
-                $output->writeln($result);
+                if(file_exists($configDir)) {
+                    $script = sprintf("%s/bin/propel migrate %s --platform mysql --config-dir=%s --output-dir=%s", realpath(VENDOR_DIR), $simulate, $configDir, $migrationDir);
+                    $result = shell_exec($script);
+                    $output->writeln($result);
+                } else {
+                    $output->writeln("Módulo sin configuración de BD, saltando proceso para " . $module);
+                }
             }
         }
         $output->writeln("Migración finalizada");

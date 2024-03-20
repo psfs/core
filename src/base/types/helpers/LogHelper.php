@@ -38,7 +38,7 @@ class LogHelper {
                 $logPass = \Monolog\Level::Critical;
                 break;
         }
-        return $logPass <= $level;
+        return $logPass->value <= $level->value;
     }
 
     /**

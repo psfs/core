@@ -28,7 +28,7 @@ class ConfigController extends Admin
      * @route /admin/config/params
      * @label Parámetros de configuración de PSFS
      * @visible false
-     * @return JsonResponse(data=array)
+     * @return \PSFS\base\dto\JsonResponse(data=array)
      */
     public function getConfigParams()
     {
