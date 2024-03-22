@@ -102,9 +102,9 @@ class I18nHelper
 
     /**
      * @param $data
-     * @return string
+     * @return mixed
      */
-    public static function utf8Encode($data): string
+    public static function utf8Encode($data): mixed
     {
         if (is_array($data)) {
             foreach ($data as &$field) {
