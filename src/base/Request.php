@@ -15,13 +15,13 @@ class Request
     use SingletonTrait;
     use ServerTrait;
 
-    const string VERB_GET = 'GET';
-    const string VERB_POST = 'POST';
-    const string VERB_PUT = 'PUT';
-    const string VERB_DELETE = 'DELETE';
-    const string VERB_OPTIONS = 'OPTIONS';
-    const string VERB_HEAD = 'HEAD';
-    const string VERB_PATCH = 'PATCH';
+    const VERB_GET = 'GET';
+    const VERB_POST = 'POST';
+    const VERB_PUT = 'PUT';
+    const VERB_DELETE = 'DELETE';
+    const VERB_OPTIONS = 'OPTIONS';
+    const VERB_HEAD = 'HEAD';
+    const VERB_PATCH = 'PATCH';
 
     /**
      * @var array
