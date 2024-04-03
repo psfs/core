@@ -44,15 +44,16 @@ class TemplateFunctions
     public static function asset(string $string, string $name = null, bool $return = true): ?string
     {
 
-        $filePath = '';
+        $filePath = $returnPath = '';
         if (!file_exists($filePath)) {
             $filePath = BASE_DIR . $string;
         }
         $filenamePath = AssetsHelper::findDomainPath($string, $filePath);
-
-        $filePath = self::processAsset($string, $name, $return, $filenamePath);
-        $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl(false));
-        $returnPath = empty($name) ? $basePath . '/' . $filePath : $name;
+        if(!empty($filenamePath)){
+            $filePath = self::processAsset($string, $name, $return, $filenamePath);
+            $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl(false));
+            $returnPath = empty($name) ? $basePath . '/' . $filePath : $name;
+        }
         return $return ? $returnPath : '';
     }
 
