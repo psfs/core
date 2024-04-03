@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types\traits\Helper;
 
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\DataFetcher\ArrayDataFetcher;
 use Propel\Runtime\Formatter\ObjectFormatter;
@@ -44,26 +45,26 @@ trait FieldMapperHelperTrait
      * @param string $namespace
      * @param ColumnMap $modelPk
      * @param array $query
-     * @param array $data
+     * @param array|ActiveRecordInterface $data
      * @return array
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array $data = [])
+    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array|ActiveRecordInterface $data = [])
     {
         $formatter = new ObjectFormatter();
         $formatter->setClass($namespace);
         $data[$modelPk->getPhpName()] = $data[Api::API_MODEL_KEY_FIELD];
         $dataFetcher = new ArrayDataFetcher($data);
         $formatter->setDataFetcher($dataFetcher);
-        /** @var ActiveRecordInterface $obj */
-        $objTableMap = get_class($formatter->getTableMap());
         /** @var TableMapTrait $objTableMap */
-        $objData = $data;
+        $objTableMap = get_class($formatter->getTableMap());
+        $objData = is_array($data) ? $data : $data->toArray();
         foreach ($objTableMap::getFieldNames() as $field) {
             if (!array_key_exists($field, $objData)) {
                 $objData[$field] = null;
             }
         }
+        /** @var ActiveRecordInterface $obj */
         $obj = @$formatter->getAllObjectsFromRow($objData);
         $result = self::mapResult($obj, $data);
         if (!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {

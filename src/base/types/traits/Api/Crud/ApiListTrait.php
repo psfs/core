@@ -123,12 +123,12 @@ trait ApiListTrait
             $this->addFilters($query);
             $this->addOrders($query);
             list($page, $limit) = $this->extractPagination();
+            $this->checkReturnFields($query);
             if ($limit === -1) {
                 $this->list = $query->find($this->con);
             } else {
                 $this->list = $query->paginate($page, $limit, $this->con);
             }
-            $this->checkReturnFields($this->list->getQuery());
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }

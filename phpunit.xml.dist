@@ -37,16 +37,4 @@
         <ini name="xdebug.show_exception_trace" value="0"/>
     </php>
 
-    <coverage cacheDirectory="cache/coverage"
-              pathCoverage="false"
-              ignoreDeprecatedCodeUnits="true"
-    >
-        <report>
-            <clover outputFile="cache/coverage/report/clover.xml"/>
-            <cobertura outputFile="cache/coverage/report/cobertura.xml"/>
-            <php outputFile="cache/coverage/report/coverage.php"/>
-            <text outputFile="cache/coverage/report/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
-            <xml outputDirectory="cache/coverage/src"/>
-        </report>
-    </coverage>
 </phpunit>

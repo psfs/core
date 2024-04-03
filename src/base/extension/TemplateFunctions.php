@@ -51,7 +51,7 @@ class TemplateFunctions
         $filenamePath = AssetsHelper::findDomainPath($string, $filePath);
 
         $filePath = self::processAsset($string, $name, $return, $filenamePath);
-        $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl());
+        $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl(false));
         $returnPath = empty($name) ? $basePath . '/' . $filePath : $name;
         return $return ? $returnPath : '';
     }
