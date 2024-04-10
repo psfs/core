@@ -15,6 +15,7 @@ use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
+use PSFS\base\types\interfaces\PreConditionedRunInterface;
 use PSFS\base\types\traits\Router\ModulesTrait;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
@@ -268,18 +269,46 @@ class Router
      */
     private function checkPreActions($class, $method)
     {
+        if ($this->hasToRunPreChecks($class)) {
+            self::run($class, '__check', true);
+        }
         $preAction = 'pre' . ucfirst($method);
         if (method_exists($class, $preAction)) {
-            Inspector::stats('[Router] Pre action invoked', Inspector::SCOPE_DEBUG);
-            try {
-                if (false === call_user_func_array([$class, $preAction])) {
-                    Logger::log(t('Pre action failed'), LOG_ERR, [error_get_last()]);
-                    error_clear_last();
-                }
-            } catch (Exception $e) {
-                Logger::log($e->getMessage(), LOG_ERR, [$class, $method]);
+            self::run($class, $preAction);
+        }
+    }
+
+    /**
+     * @param $class
+     * @param string $method
+     * @param boolean $throwExceptions
+     * @return void
+     * @throws Exception
+     */
+    public static function run($class, $method, $throwExceptions = false): void
+    {
+        Inspector::stats("[Router] Pre action invoked " . get_class($class) . "::{$method}", Inspector::SCOPE_DEBUG);
+        try {
+            if (false === call_user_func_array([$class, $method], [])) {
+                Logger::log(t("[Router] action " . get_class($class) . "::{$method} failed"), LOG_ERR, [error_get_last()]);
+                error_clear_last();
+            }
+        } catch (Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR, [$class, $method]);
+            if ($throwExceptions) {
+                throw $e;
             }
         }
+    }
+
+    /**
+     * Check if class to run route implements the PreConditionedRunInterface
+     * @param string $class
+     * @return bool
+     */
+    private function hasToRunPreChecks($class)
+    {
+        return in_array(PreConditionedRunInterface::class, class_implements($class));
     }
 
     /**

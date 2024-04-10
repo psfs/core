@@ -1,51 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
-         bootstrap="src/tests/bootstrap.php"
-         requireCoverageMetadata="false"
-         beStrictAboutCoverageMetadata="true"
-         beStrictAboutOutputDuringTests="true"
-         colors="true"
->
-    <testsuites>
-        <testsuite name="default">
-            <directory>src/tests</directory>
-        </testsuite>
-    </testsuites>
-
-    <source restrictDeprecations="true" restrictNotices="true" restrictWarnings="true">
-        <include>
-            <directory>src</directory>
-        </include>
-        <exclude>
-            <directory>src/tests</directory>
-            <directory>src/tests/examples</directory>
-            <directory>src/tests/services</directory>
-            <directory>src/command</directory>
-            <directory>src/bin</directory>
-            <directory>src/public</directory>
-            <directory>src/templates</directory>
-        </exclude>
-    </source>
-
-    <php>
-        <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
-        <ini name="error_reporting" value="-1"/>
-        <ini name="memory_limit" value="-1"/>
-        <ini name="zend.assertions" value="1"/>
-        <ini name="assert.assertions" value="1"/>
-        <ini name="xdebug.show_exception_trace" value="0"/>
-    </php>
-    <coverage cacheDirectory="cache/coverage"
-              pathCoverage="false"
-              ignoreDeprecatedCodeUnits="true"
-    >
-        <report>
-            <clover outputFile="cache/coverage/report/clover.xml"/>
-            <cobertura outputFile="cache/coverage/report/cobertura.xml"/>
-            <php outputFile="cache/coverage/report/coverage.php"/>
-            <text outputFile="cache/coverage/report/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
-            <xml outputDirectory="cache/coverage/src"/>
-        </report>
-    </coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="src/tests/bootstrap.php" requireCoverageMetadata="false" beStrictAboutCoverageMetadata="true" beStrictAboutOutputDuringTests="true" colors="true">
+  <testsuites>
+    <testsuite name="default">
+      <directory>src/tests</directory>
+    </testsuite>
+  </testsuites>
+  <source restrictNotices="true" restrictWarnings="true" ignoreIndirectDeprecations="true">
+    <include>
+      <directory>src</directory>
+    </include>
+    <exclude>
+      <directory>src/tests</directory>
+      <directory>src/tests/examples</directory>
+      <directory>src/tests/services</directory>
+      <directory>src/command</directory>
+      <directory>src/bin</directory>
+      <directory>src/public</directory>
+      <directory>src/templates</directory>
+    </exclude>
+  </source>
+  <php>
+    <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
+    <ini name="error_reporting" value="-1"/>
+    <ini name="memory_limit" value="-1"/>
+    <ini name="zend.assertions" value="1"/>
+    <ini name="assert.assertions" value="1"/>
+    <ini name="xdebug.show_exception_trace" value="0"/>
+  </php>
+  <coverage cacheDirectory="cache/coverage" pathCoverage="false" ignoreDeprecatedCodeUnits="true">
+    <report>
+      <clover outputFile="cache/coverage/report/clover.xml"/>
+      <cobertura outputFile="cache/coverage/report/cobertura.xml"/>
+      <php outputFile="cache/coverage/report/coverage.php"/>
+      <text outputFile="cache/coverage/report/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
+      <xml outputDirectory="cache/coverage/src"/>
+    </report>
+  </coverage>
 </phpunit>
