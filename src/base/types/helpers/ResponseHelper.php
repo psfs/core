@@ -20,7 +20,12 @@ class ResponseHelper
     public static array $headers_sent = [];
 
     public static function setHeader(string $header): void {
-        list($key, $value) = explode(':', $header);
+        if(str_contains($header, ':')) {
+            list($key, $value) = explode(':', $header);
+        } else {
+            $key = 'Http Status';
+            $value = $header;
+        }
         if (!in_array($key, self::$headers_sent)) {
             if(!self::isTest()) {
                 header($header);
