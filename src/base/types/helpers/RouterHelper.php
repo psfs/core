@@ -201,6 +201,7 @@ class RouterHelper
         $regexpRoute = AnnotationHelper::extractRoute($docComments);
         if (null !== $regexpRoute) {
             list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($regexpRoute, $method);
+            $originalRegex = $regex;
             if ('' !== $api && str_contains($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
                 $default = str_replace('{__API__}', $api, $default);
@@ -216,6 +217,7 @@ class RouterHelper
                 'method' => $method->getName(),
                 'params' => $params,
                 'default' => $default,
+                'pattern' => $originalRegex,
                 'label' => $label,
                 'icon' => strlen($icon) > 0 ? $icon : '',
                 'module' => preg_replace('/(\\\|\\/)/', '', $module),
