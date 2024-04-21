@@ -124,7 +124,7 @@ class ResponseHelper
             $exception = new Exception(t('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($exception->getCode());
-        if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE'), 'json')) {
+        if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE', 'application/json'), 'json')) {
             $response = new JsonResponse(null, false, 0, 0, $exception->getMessage());
             return $template->output(json_encode($response), 'application/json');
         }
