@@ -163,7 +163,11 @@ abstract class Api extends Singleton
                 $message = t('No se ha podido guardar el modelo seleccionado');
             }
         } catch (\Exception $e) {
-            $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getMessage();
+            if(Config::getParam('debug')) {
+                $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getMessage();
+            } else {
+                $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getCode();
+            }
             $context = [];
             if (null !== $e->getPrevious()) {
                 $context[] = $e->getPrevious()->getMessage();
@@ -205,7 +209,11 @@ abstract class Api extends Singleton
                     $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
                 }
             } catch (\Exception $e) {
-                $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                if(Config::getParam('debug')) {
+                    $message = t('Ha ocurrido un error intentando actualizar el elemento: ') . '<br>' . $e->getMessage();
+                } else {
+                    $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs: ') . '<br>' . $e->getCode();
+                }
                 $context = [];
                 if (null !== $e->getPrevious()) {
                     $context[] = $e->getPrevious()->getMessage();
