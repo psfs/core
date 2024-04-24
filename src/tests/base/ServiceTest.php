@@ -222,7 +222,7 @@ class ServiceTest extends TestCase
 //        Security::save([
 //            'username' => 'demo',
 //            'password' => 'demo',
-//            'profile' => Security::ADMIN_ID_TOKEN,
+//            'profile' => AuthHelper::ADMIN_ID_TOKEN,
 //        ]);
 //        $curl = Service::getInstance();
 //        $curl->setUrl('http://localhost:8888/admin');

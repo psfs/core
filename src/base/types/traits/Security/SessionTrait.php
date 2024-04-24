@@ -3,6 +3,7 @@
 namespace PSFS\base\types\traits\Security;
 
 use PSFS\base\Logger;
+use PSFS\base\types\helpers\AuthHelper;
 
 /**
  * Trait SessionTrait
@@ -76,8 +77,8 @@ trait SessionTrait
     {
         Logger::log('Update session');
         $_SESSION = $this->session;
-        $_SESSION[self::USER_ID_TOKEN] = serialize($this->user);
-        $_SESSION[self::ADMIN_ID_TOKEN] = serialize($this->admin);
+        $_SESSION[AuthHelper::USER_ID_TOKEN] = serialize($this->user);
+        $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = serialize($this->admin);
         if ($closeSession) {
             Logger::log('Close session');
             /** @scrutinizer ignore-unhandled */

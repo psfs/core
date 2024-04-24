@@ -87,6 +87,7 @@ class Config
         'force.https', // Force https protocol for static resources
         'hide.modules', // Hide modules from menu, separated by comma
         'skip.route_generation', // Skip routes generation
+        'auth.expiration', // Set the expiration time for the auth token
     ];
     protected bool $debug = false;
     public static array $cleanable_config_files = ['domains.json', 'urls.json'];

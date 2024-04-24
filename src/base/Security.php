@@ -2,6 +2,8 @@
 
 namespace PSFS\base;
 
+use PSFS\base\types\helpers\AuthHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\SecureTrait;
 use PSFS\base\types\traits\Security\FlashesTrait;
@@ -15,12 +17,6 @@ use PSFS\base\types\traits\TestTrait;
  */
 class Security
 {
-    // sha1('user')
-    const USER_ID_TOKEN = '12dea96fec20593566ab75692c9949596833adc9';
-    // sha1('admin')
-    const MANAGER_ID_TOKEN = 'd033e22ae348aeb5660fc2140aec35850c4da997';
-    // sha1('superadmin')
-    const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
     // sha1('FLASHES')
     const FLASH_MESSAGE_TOKEN = '4680c68435db1bfbf17c3fcc4f7b39d2c6122504';
     const LOGGED_USER_TOKEN = '__U_T_L__';
@@ -51,8 +47,8 @@ class Security
             $this->clearFlashes();
             $this->setSessionKey('__FLASH_CLEAR__', microtime(TRUE));
         }
-        $this->user = $this->hasSessionKey(self::USER_ID_TOKEN) ? unserialize($this->getSessionKey(self::USER_ID_TOKEN)) : null;
-        $this->admin = $this->hasSessionKey(self::ADMIN_ID_TOKEN) ? unserialize($this->getSessionKey(self::ADMIN_ID_TOKEN)) : null;
+        $this->user = $this->hasSessionKey(AuthHelper::USER_ID_TOKEN) ? unserialize($this->getSessionKey(AuthHelper::USER_ID_TOKEN)) : null;
+        $this->admin = $this->hasSessionKey(AuthHelper::ADMIN_ID_TOKEN) ? unserialize($this->getSessionKey(AuthHelper::ADMIN_ID_TOKEN)) : null;
         if (null === $this->admin) {
             $this->checkAdmin();
         }
@@ -79,32 +75,37 @@ class Security
         Logger::log('Checking admin session');
         if ((!$this->authorized && !$this->checked) || $force) {
             $admins = $this->getAdmins();
+            $token = null;
             if (null !== $admins) {
-                $request = Request::getInstance();
-                //Sacamos las credenciales de la petición
-                $user = $user ?: $request->getServer('PHP_AUTH_USER');
-                $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-                if (NULL === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
-                    list($user, $pass) = $this->getAdminFromCookie();
+                if(empty($user)) {
+                    // First try, traditional basic auth
+                    Inspector::stats('[Auth] Checking Basic Auth');
+                    list($user, $token) = AuthHelper::checkBasicAuth($user, $pass, $admins);
+                }
+                if(empty($user)) {
+                    // Second try, cookie auth
+                    Inspector::stats('[Auth] Checking Basic Auth PSFS');
+                    list($user, $token) = AuthHelper::checkComplexAuth($admins);
                 }
                 if (!empty($user) && !empty($admins[$user])) {
                     $auth = $admins[$user]['hash'];
-                    $this->authorized = ($auth === sha1($user . $pass));
+                    $this->authorized = ($auth === $token);
                     if ($this->authorized) {
                         $this->updateAdmin($user, $admins[$user]['profile']);
+                        $encrypted = AuthHelper::encrypt("$user:$pass", AuthHelper::SESSION_TOKEN);
                         ResponseHelper::setCookieHeaders([
                             [
-                                'name' => $this->getHash(),
-                                'value' => base64_encode("$user:$pass"),
+                                'name' => AuthHelper::generateProfileHash(),
+                                'value' => $encrypted,
                                 'http' => true,
                                 'domain' => '',
                             ]
                         ]);
-                        $this->setSessionKey(self::LOGGED_USER_TOKEN, base64_encode("{$user}:{$pass}"));
+                        $this->setSessionKey(AuthHelper::SESSION_TOKEN, $encrypted);
                     }
                 } else {
                     $this->admin = null;
-                    $this->setSessionKey(self::ADMIN_ID_TOKEN, null);
+                    $this->setSessionKey(AuthHelper::SESSION_TOKEN, null);
                 }
                 $this->checked = true;
             }
@@ -148,7 +149,7 @@ class Security
             && array_key_exists('alias', $logged)
             && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];
-            return self::ADMIN_ID_TOKEN === $security;
+            return AuthHelper::ADMIN_ID_TOKEN === $security;
         }
 
         return FALSE;

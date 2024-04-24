@@ -233,6 +233,8 @@ class Template
             'existsFlash' => TemplateFunctions::EXISTS_FLASH_FUNCTION,
             'getFlash' => TemplateFunctions::GET_FLASH_FUNCTION,
             'getQuery' => TemplateFunctions::GET_QUERY_FUNCTION,
+            'encrypt' => TemplateFunctions::ENCRYPT_FUNCTION,
+            'generate_auth_token' => TemplateFunctions::AUTH_TOKEN_FUNCTION,
         ];
         foreach ($functions as $name => $function) {
             $this->addTemplateFunction($name, $function);

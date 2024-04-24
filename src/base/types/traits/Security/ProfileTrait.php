@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Security;
 use PSFS\base\Cache;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\AuthHelper;
 
 /**
  * Trait ProfileTrait
@@ -28,9 +29,9 @@ trait ProfileTrait
     public static function getProfiles()
     {
         return array(
-            Security::ADMIN_ID_TOKEN => t('Administrador'),
-            Security::MANAGER_ID_TOKEN => t('Gestor'),
-            Security::USER_ID_TOKEN => t('Usuario'),
+            AuthHelper::ADMIN_ID_TOKEN => t('Administrador'),
+            AuthHelper::MANAGER_ID_TOKEN => t('Gestor'),
+            AuthHelper::USER_ID_TOKEN => t('Usuario'),
         );
     }
 
@@ -56,9 +57,9 @@ trait ProfileTrait
     public static function getCleanProfiles()
     {
         return array(
-            '__SUPER_ADMIN__' => Security::ADMIN_ID_TOKEN,
-            '__ADMIN__' => Security::MANAGER_ID_TOKEN,
-            '__USER__' => Security::USER_ID_TOKEN,
+            '__SUPER_ADMIN__' => AuthHelper::ADMIN_ID_TOKEN,
+            '__ADMIN__' => AuthHelper::MANAGER_ID_TOKEN,
+            '__USER__' => AuthHelper::USER_ID_TOKEN,
         );
     }
 
@@ -128,7 +129,7 @@ trait ProfileTrait
             'alias' => $alias,
             'profile' => $profile,
         );
-        $this->setSessionKey(self::ADMIN_ID_TOKEN, serialize($this->admin));
+        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, serialize($this->admin));
     }
 
     /**
@@ -137,24 +138,12 @@ trait ProfileTrait
      */
     protected function getAdminFromCookie()
     {
-        $authCookie = Request::getInstance()->getCookie($this->getHash());
+        $authCookie = Request::getInstance()->getCookie(AuthHelper::generateProfileHash());
         $user = $pass = array();
         if (!empty($authCookie)) {
             list($user, $pass) = explode(':', base64_decode($authCookie));
         }
-
         return array($user, $pass);
     }
-
-    /**
-     * Método privado para la generación del hash de la cookie de administración
-     * @param string $role
-     * @return string
-     */
-    public function getHash($role = Security::MANAGER_ID_TOKEN)
-    {
-        return substr($role, 0, 8);
-    }
-
 
 }

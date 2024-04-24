@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\AuthHelper;
 use PSFS\services\AdminServices;
 
 /**
@@ -44,15 +45,15 @@ class SecurityTest extends TestCase
         $this->assertInstanceOf(Security::class, $security);
 
         $profiles = $security->getAdminProfiles();
-        $this->assertArrayHasKey(Security::ADMIN_ID_TOKEN, $profiles, 'Malformed array');
-        $this->assertArrayHasKey(Security::MANAGER_ID_TOKEN, $profiles, 'Malformed array');
-        $this->assertArrayHasKey(Security::USER_ID_TOKEN, $profiles, 'Malformed array');
+        $this->assertArrayHasKey(AuthHelper::ADMIN_ID_TOKEN, $profiles, 'Malformed array');
+        $this->assertArrayHasKey(AuthHelper::MANAGER_ID_TOKEN, $profiles, 'Malformed array');
+        $this->assertArrayHasKey(AuthHelper::USER_ID_TOKEN, $profiles, 'Malformed array');
 
         $cleanProfiles = $security->getAdminCleanProfiles();
         $this->assertNotEmpty($cleanProfiles, 'Malformed security profiles array');
-        $this->assertTrue(in_array(Security::ADMIN_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
-        $this->assertTrue(in_array(Security::MANAGER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
-        $this->assertTrue(in_array(Security::USER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
+        $this->assertTrue(in_array(AuthHelper::ADMIN_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
+        $this->assertTrue(in_array(AuthHelper::MANAGER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
+        $this->assertTrue(in_array(AuthHelper::USER_ID_TOKEN, $cleanProfiles, true), 'Key not exists');
         return $security;
     }
 
@@ -66,7 +67,7 @@ class SecurityTest extends TestCase
         $user = [
             'username' => uniqid('test', true),
             'password' => uniqid('test', true),
-            'profile' => Security::ADMIN_ID_TOKEN,
+            'profile' => AuthHelper::ADMIN_ID_TOKEN,
         ];
         $security = $this->getInstance();
         $security->saveUser($user);
@@ -83,7 +84,7 @@ class SecurityTest extends TestCase
         $this->assertFalse($security->checkAdmin(uniqid('test', true), uniqid('error', true), true), 'Error checking admin user');
         $this->assertNull($security->getAdmin(), 'Wrong admin parser');
 
-        $_COOKIE[substr(Security::MANAGER_ID_TOKEN, 0, 8)] = base64_encode($user['username'] . ':' . $user['password']);
+        $_COOKIE[substr(AuthHelper::SESSION_TOKEN, 0, 8)] = AuthHelper::encrypt($user['username'] . ':' . $user['password'], AuthHelper::SESSION_TOKEN);
         Request::getInstance()->init();
         $this->assertTrue($security->checkAdmin(null, null, true), 'An error occurred verifying the admin user');
         AdminServices::setTest(true);
@@ -99,7 +100,7 @@ class SecurityTest extends TestCase
         $this->assertTrue($security->isAdmin());
 
         $security->updateSession(true);
-        $this->assertNotEmpty($security->getSessionKey(Security::ADMIN_ID_TOKEN), 'Error saving sessions');
+        $this->assertNotEmpty($security->getSessionKey(AuthHelper::SESSION_TOKEN), 'Error saving sessions');
         return $security;
 
     }

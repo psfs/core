@@ -12,6 +12,7 @@ use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\AssetsHelper;
+use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
@@ -32,6 +33,8 @@ class TemplateFunctions
     const EXISTS_FLASH_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::existsFlash';
     const GET_FLASH_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::getFlash';
     const GET_QUERY_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::query';
+    const ENCRYPT_FUNCTION = '\PSFS\base\extension\TemplateFunctions::encrypt';
+    const AUTH_TOKEN_FUNCTION = '\PSFS\base\extension\TemplateFunctions::generateAuthToken';
 
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
@@ -294,6 +297,14 @@ class TemplateFunctions
         $var = Security::getInstance()->getFlash($key);
         Security::getInstance()->setFlash($key, null);
         return $var;
+    }
+
+    public static function encrypt(string $string, string $key): string {
+        return AuthHelper::encrypt($string, $key);
+    }
+
+    public static function generateAuthToken(string $user, string $password) : string {
+        return AuthHelper::generateToken($user, $password);
     }
 
 }

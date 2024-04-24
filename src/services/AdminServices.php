@@ -5,6 +5,7 @@ namespace PSFS\services;
 use PSFS\base\config\Config;
 use PSFS\base\Security;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\TestTrait;
 
@@ -67,14 +68,14 @@ class AdminServices extends Service
             foreach ($admins as &$admin) {
                 if (isset($admin['profile'])) {
                     switch ($admin['profile']) {
-                        case Security::MANAGER_ID_TOKEN:
+                        case AuthHelper::MANAGER_ID_TOKEN:
                             $admin['class'] = 'warning';
                             break;
-                        case Security::ADMIN_ID_TOKEN:
+                        case AuthHelper::ADMIN_ID_TOKEN:
                             $admin['class'] = 'info';
                             break;
                         default:
-                        case Security::USER_ID_TOKEN:
+                        case AuthHelper::USER_ID_TOKEN:
                             $admin['class'] = 'primary';
                             break;
                     }

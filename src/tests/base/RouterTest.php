@@ -7,6 +7,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\controller\base\Admin;
 use PSFS\controller\ConfigController;
@@ -63,7 +64,7 @@ class RouterTest extends TestCase
         Security::getInstance()->saveUser([
             'username' => uniqid('test', true),
             'password' => uniqid('test', true),
-            'profile' => Security::ADMIN_ID_TOKEN,
+            'profile' => AuthHelper::ADMIN_ID_TOKEN,
         ]);
         $router = Router::getInstance();
         Admin::setTest(true);

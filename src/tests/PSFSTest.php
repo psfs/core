@@ -127,7 +127,7 @@ class PSFSTest extends TestCase
             'X-API-LANG',
             'X-FIELD-TYPE',
         ];
-        foreach($headers as $header) {
+        foreach ($headers as $header) {
             $this->assertTrue(in_array($header, $corsHeaders), sprintf('%s not found in CORS array', $header));
         }
 

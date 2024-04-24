@@ -144,10 +144,14 @@ class GeneratorHelper
             'docker' => '..' . DIRECTORY_SEPARATOR . 'docker-compose.yml',
         ];
         $verificable = ['humans', 'robots', 'docker'];
-        $output->writeln('Start creating html files');
+        if (!$quiet) {
+            $output->writeln('Start creating html files');
+        }
         foreach ($files as $template => $filename) {
             if (in_array($template, $verificable) && file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
-                $output->writeln($filename . ' already exists');
+                if (!$quiet) {
+                    $output->writeln($filename . ' already exists');
+                }
                 continue;
             }
             $text = Template::getInstance()->dump("generator/html/" . $template . '.html.twig');
