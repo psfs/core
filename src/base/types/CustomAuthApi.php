@@ -4,6 +4,7 @@ namespace PSFS\base\types;
 
 use PSFS\base\exception\ApiException;
 use PSFS\base\Security;
+use PSFS\base\types\traits\SecureTrait;
 
 /**
  * Class CustomAuthApi
@@ -11,12 +12,12 @@ use PSFS\base\Security;
  */
 abstract class CustomAuthApi extends CustomApi
 {
-
+    use SecureTrait;
     public function init()
     {
-        if (!Security::getInstance()->isLogged()) {
+        parent::init();
+        if (!$this->isLogged()) {
             throw new ApiException(t('Resource not authorized'), 401);
         }
-        parent::init();
     }
 }

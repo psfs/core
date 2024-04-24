@@ -22,7 +22,7 @@ class AuthHelper
         $authCookie = Request::getInstance()->getCookie(self::generateProfileHash());
         $user = $pass = null;
         if (!empty($authCookie)) {
-            list($user, $pass) = explode(':', self::decrypt($authCookie, self::SESSION_TOKEN));
+            list($user, $pass) = explode(':', self::decrypt($authCookie, self::ADMIN_ID_TOKEN));
         }
 
         return [$user, $pass];

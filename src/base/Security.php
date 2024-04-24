@@ -101,11 +101,11 @@ class Security
                                 'domain' => '',
                             ]
                         ]);
-                        $this->setSessionKey(AuthHelper::SESSION_TOKEN, $encrypted);
+                        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $encrypted);
                     }
                 } else {
                     $this->admin = null;
-                    $this->setSessionKey(AuthHelper::SESSION_TOKEN, null);
+                    $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
                 }
                 $this->checked = true;
             }
