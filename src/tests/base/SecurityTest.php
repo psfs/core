@@ -84,7 +84,7 @@ class SecurityTest extends TestCase
         $this->assertFalse($security->checkAdmin(uniqid('test', true), uniqid('error', true), true), 'Error checking admin user');
         $this->assertNull($security->getAdmin(), 'Wrong admin parser');
 
-        $_COOKIE[substr(AuthHelper::SESSION_TOKEN, 0, 8)] = AuthHelper::encrypt($user['username'] . ':' . $user['password'], AuthHelper::SESSION_TOKEN);
+        $_COOKIE[AuthHelper::generateProfileHash()] = AuthHelper::encrypt($user['username'] . ':' . $user['password'], AuthHelper::ADMIN_ID_TOKEN);
         Request::getInstance()->init();
         $this->assertTrue($security->checkAdmin(null, null, true), 'An error occurred verifying the admin user');
         AdminServices::setTest(true);
@@ -100,7 +100,7 @@ class SecurityTest extends TestCase
         $this->assertTrue($security->isAdmin());
 
         $security->updateSession(true);
-        $this->assertNotEmpty($security->getSessionKey(AuthHelper::SESSION_TOKEN), 'Error saving sessions');
+        $this->assertNotEmpty($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN), 'Error saving sessions');
         return $security;
 
     }
