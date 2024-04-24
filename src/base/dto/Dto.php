@@ -178,7 +178,9 @@ class Dto extends Singleton implements \JsonSerializable
             switch ($type) {
                 default:
                 case 'string':
-                    $value = $rawValue;
+                    // Cleaning HTML dangerous tags
+                    $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $rawValue);
+                    $value = preg_replace('/<iframe\b[^>]*>(.*?)<\/iframe>/is', "", $value);
                     break;
                 case 'integer':
                 case 'int':
