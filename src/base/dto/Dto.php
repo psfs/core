@@ -5,6 +5,7 @@ namespace PSFS\base\dto;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 
 /**
@@ -179,8 +180,7 @@ class Dto extends Singleton implements \JsonSerializable
                 default:
                 case 'string':
                     // Cleaning HTML dangerous tags
-                    $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $rawValue);
-                    $value = preg_replace('/<iframe\b[^>]*>(.*?)<\/iframe>/is', "", $value);
+                    $value = I18nHelper::cleanHtmlAttacks($rawValue);
                     break;
                 case 'integer':
                 case 'int':

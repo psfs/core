@@ -13,6 +13,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\I18nHelper;
 
 /**
  * Trait MutationTrait
@@ -236,12 +237,23 @@ trait MutationTrait
         }
     }
 
+    protected function cleanData(array &$data) {
+        foreach($data as $key => &$value) {
+            if(is_array($value)) {
+                $this->cleanData($value);
+            } else if(is_string($value)) {
+                $value = I18nHelper::cleanHtmlAttacks($value);
+            }
+        }
+    }
+
     /**
      * @param ActiveRecordInterface $model
      * @param array $data
      */
     protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = [])
     {
+        $this->cleanData($data);
         $model->fromArray($data, ApiHelper::getFieldTypes());
         $tableMap = $this->getTableMap();
         try {

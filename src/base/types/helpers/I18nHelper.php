@@ -204,4 +204,13 @@ class I18nHelper
         }
         return $translations;
     }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    public static function cleanHtmlAttacks($string): string {
+        $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $string);
+        return preg_replace('/<iframe\b[^>]*>(.*?)<\/iframe>/is', "", $value);
+    }
 }

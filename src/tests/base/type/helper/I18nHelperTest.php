@@ -22,6 +22,16 @@ class I18nHelperTest extends TestCase
         $this->assertEquals($expected, I18nHelper::sanitize($input));
     }
 
+    public function testAvoidAttacks()
+    {
+        $input = '<script>alert("attack");</script>';
+        $this->assertEquals('', I18nHelper::cleanHtmlAttacks($input));
+        $input = '<iframe src="https://www.google.com"></iframe>';
+        $this->assertEquals('', I18nHelper::cleanHtmlAttacks($input));
+        $input = '<p>Hola mundo</p>';
+        $this->assertEquals($input, I18nHelper::cleanHtmlAttacks($input));
+    }
+
     public function testForceLanguage()
     {
         $default_language = Config::getParam('default.language', 'es_ES');
