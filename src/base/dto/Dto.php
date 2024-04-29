@@ -180,7 +180,14 @@ class Dto extends Singleton implements \JsonSerializable
                 default:
                 case 'string':
                     // Cleaning HTML dangerous tags
-                    $value = I18nHelper::cleanHtmlAttacks($rawValue);
+                    if(is_array($rawValue)) {
+                        foreach($rawValue as &$item) {
+                            $item = $this->checkCastedValue($item, $type);
+                        }
+                        $value = $rawValue;
+                    } else {
+                        $value = I18nHelper::cleanHtmlAttacks($rawValue);
+                    }
                     break;
                 case 'integer':
                 case 'int':
