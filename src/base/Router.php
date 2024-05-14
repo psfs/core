@@ -16,6 +16,7 @@ use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\interfaces\PreConditionedRunInterface;
+use PSFS\base\types\traits\RouteCheckTrait;
 use PSFS\base\types\traits\Router\ModulesTrait;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
@@ -29,6 +30,7 @@ class Router
 {
     use SingletonTrait;
     use ModulesTrait;
+    use RouteCheckTrait;
 
     const PSFS_BASE_NAMESPACE = 'PSFS';
     /**
@@ -134,6 +136,7 @@ class Router
             list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($pattern);
             $matched = RouterHelper::matchRoutePattern($routePattern, $path);
             if ($matched && ($httpMethod === 'ALL' || $httpRequest === $httpMethod) && RouterHelper::compareSlashes($routePattern, $path)) {
+                self::setRoute($action);
                 // Checks restricted access
                 SecurityHelper::checkRestrictedAccess($route);
                 $get = RouterHelper::extractComponents($route, $routePattern);
