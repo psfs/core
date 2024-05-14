@@ -136,7 +136,7 @@ class Router
             list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($pattern);
             $matched = RouterHelper::matchRoutePattern($routePattern, $path);
             if ($matched && ($httpMethod === 'ALL' || $httpRequest === $httpMethod) && RouterHelper::compareSlashes($routePattern, $path)) {
-                self::setRoute($action);
+                self::setCheckedRoute($action);
                 // Checks restricted access
                 SecurityHelper::checkRestrictedAccess($route);
                 $get = RouterHelper::extractComponents($route, $routePattern);

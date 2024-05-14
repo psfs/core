@@ -8,11 +8,12 @@ trait RouteCheckTrait {
      */
     private static $route;
 
-    public static function getRoute() {
+    public static function getCheckedRoute(): array
+    {
         return self::$route;
     }
 
-    public static function setRoute($route): void
+    public static function setCheckedRoute($route): void
     {
         self::$route = $route;
     }
