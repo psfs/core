@@ -185,8 +185,10 @@ class Dto extends Singleton implements \JsonSerializable
                             $item = $this->checkCastedValue($item, $type);
                         }
                         $value = $rawValue;
-                    } else {
+                    } elseif(is_string($rawValue)) {
                         $value = I18nHelper::cleanHtmlAttacks($rawValue);
+                    } else {
+                        $value = $rawValue;
                     }
                     break;
                 case 'integer':

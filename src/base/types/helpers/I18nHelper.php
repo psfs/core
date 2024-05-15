@@ -209,7 +209,7 @@ class I18nHelper
      * @param string $string
      * @return string
      */
-    public static function cleanHtmlAttacks($string): string {
+    public static function cleanHtmlAttacks(string $string): string {
         $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $string);
         return preg_replace('/<iframe\b[^>]*>(.*?)<\/iframe>/is', "", $value);
     }
