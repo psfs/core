@@ -1,22 +1,20 @@
-{% apply spaceless %}
-    <md-button
-            {% for name,value in button %}
-                {% if name not in ['class', 'value'] %}
-                    {{ name ~ '=' ~ value }}
-                {% endif %}
-            {% endfor %}
-            class="md-raised {{ button.class|default('md-primary') }}"
-    >
-        {% if button.icon and not button.iconAfter %}
-            {% if button.icon %}
-                <i class="fa {{ button.icon }}"></i>&nbsp;
+<md-button
+        {% for name,value in button %}
+            {% if name not in ['class', 'value'] %}
+                {{ name ~ '=' ~ value }}
             {% endif %}
+        {% endfor %}
+        class="md-raised {{ button.class|default('md-primary') }}"
+>
+    {% if button.icon and not button.iconAfter %}
+        {% if button.icon %}
+            <i class="fa {{ button.icon }}"></i>&nbsp;
         {% endif %}
-        {{ button.value|default('Guardar') }}
-        {% if button.icon and button.iconAfter %}
-            {% if button.icon %}
-                <i class="fa {{ button.icon }}"></i>
-            {% endif %}
+    {% endif %}
+    {{ button.value|default('Guardar') }}
+    {% if button.icon and button.iconAfter %}
+        {% if button.icon %}
+            <i class="fa {{ button.icon }}"></i>
         {% endif %}
-    </md-button>
-{% endapply %}
+    {% endif %}
+</md-button>

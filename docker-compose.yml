@@ -1,8 +1,7 @@
-version: "3.7"
-
 services:
     php:
-        image: c15k02k18/php:8.3${DEBUG:-}
+        image: c15k02k18/php:8.3-alpine${DEBUG:-}
+        pull_policy: always
         restart: always
         tty: true
         volumes:
