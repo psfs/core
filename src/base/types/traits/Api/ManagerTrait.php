@@ -3,7 +3,10 @@
 namespace PSFS\base\types\traits\Api;
 
 use PSFS\base\dto\JsonResponse;
+use PSFS\base\exception\ApiException;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\Router;
+use PSFS\base\Security;
 use PSFS\base\types\Api;
 use PSFS\base\types\AuthAdminController;
 use PSFS\base\types\helpers\ApiFormHelper;
@@ -34,10 +37,11 @@ trait ManagerTrait
      * @icon fa-database
      * @route /admin/{__DOMAIN__}/{__API__}
      * @return string HTML
+     * @throws ApiException
      */
     public function admin()
     {
-        if(Security::getInstance()->isUser()) {
+        if (Security::getInstance()->isUser()) {
             throw new ApiException(t('You are not authorized to access this resource'), 403);
         }
         return AuthAdminController::getInstance()->render('api.admin.html.twig', array(
@@ -57,6 +61,8 @@ trait ManagerTrait
      * @cache 3600
      * @route /admin/api/form/{__DOMAIN__}/{__API__}
      * @return JsonResponse(data=\PSFS\base\dto\Form)
+     * @throws GeneratorException
+     * @throws \ReflectionException
      */
     public function getForm()
     {
