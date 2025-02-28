@@ -55,17 +55,20 @@ class AuthHelper
         $request = Request::getInstance();
         $token = $request->getHeader('Authorization');
         $user = $password = null;
+        $reqUserAgent = array_key_exists('HTTP_USER_AGENT', $_SERVER) ? $_SERVER['HTTP_USER_AGENT'] : 'psfs';
         if (str_contains($token ?? '', 'Basic ')) {
             $token = str_replace('Basic ', '', $token);
             $now = new \DateTime('now', new \DateTimeZone('UTC'));
             foreach ($admins as $admin => $profile) {
-                list($decrypted_user, $timestamp) = self::decodeToken($token, $profile['hash']);
+                list($decrypted_user, $timestamp, $userAgent) = self::decodeToken($token, $profile['hash']);
                 if (!empty($decrypted_user) && !empty($timestamp)) {
-                    $expiration = \DateTime::createFromFormat(self::EXPIRATION_TIMESTAMP_FORMAT, $timestamp);
-                    if (false !== $expiration && $decrypted_user === $admin && $expiration > $now) {
-                        $user = $admin;
-                        $password = $profile['hash'];
-                        break;
+                    if(!empty($userAgent) && $userAgent === $reqUserAgent) {
+                        $expiration = \DateTime::createFromFormat(self::EXPIRATION_TIMESTAMP_FORMAT, $timestamp);
+                        if (false !== $expiration && $decrypted_user === $admin && $expiration > $now) {
+                            $user = $admin;
+                            $password = $profile['hash'];
+                            break;
+                        }
                     }
                 }
             }
@@ -99,22 +102,25 @@ class AuthHelper
         return base64_decode($data);
     }
 
-    public static function generateToken(string $user, string $password): string
+    public static function generateToken(string $user, string $password, $userAgent = null): string
     {
         $tz = new \DateTimeZone('UTC');
         $timestamp = new \DateTime('now', $tz);
         $timestamp->modify(Config::getParam('auth.expiration', '+1 day'));
-        $data = $user . Security::LOGGED_USER_TOKEN . $timestamp->format(self::EXPIRATION_TIMESTAMP_FORMAT);
+        if (null === $userAgent && array_key_exists('HTTP_USER_AGENT', $_SERVER)) {
+            $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        }
+        $data = $user . Security::LOGGED_USER_TOKEN . $timestamp->format(self::EXPIRATION_TIMESTAMP_FORMAT) . Security::LOGGED_USER_TOKEN . ($userAgent ?? 'psfs');
         return self::encrypt($data, sha1($user . $password));
     }
 
     public static function decodeToken(string $token, string $password): array
     {
-        $user = $timestamp = null;
+        $user = $timestamp = $userAgent = null;
         $secret = self::decrypt($token, $password);
         if(!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
-            list($user, $timestamp) = explode(Security::LOGGED_USER_TOKEN, $secret);
+            list($user, $timestamp, $userAgent) = explode(Security::LOGGED_USER_TOKEN, $secret);
         }
-        return [$user, $timestamp];
+        return [$user, $timestamp, $userAgent];
     }
 }

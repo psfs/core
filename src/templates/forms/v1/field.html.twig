@@ -111,6 +111,9 @@
                             {% if field.required %}
                                 required="required"
                             {% endif %}
+                            {% if field.multiple %}
+                                multiple
+                            {% endif %}
                             class="form-control"
                             {% if field.error %}
                         onfocus="$(this).parent().removeClass('has-error').find('.alert').remove();"

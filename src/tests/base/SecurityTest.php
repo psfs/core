@@ -101,6 +101,10 @@ class SecurityTest extends TestCase
 
         $security->updateSession(true);
         $this->assertNotEmpty($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN), 'Error saving sessions');
+
+        $security->deleteUser($user['username']);
+        $this->assertTrue($security->checkAdmin($user['username'], $user['password'], true), 'Error checking admin user');
+
         return $security;
 
     }

@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types\traits;
 
+use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\types\traits\Helper\OptionTrait;
 use PSFS\base\types\traits\Helper\ParameterTrait;
@@ -98,6 +99,7 @@ trait CurlTrait
     {
         $this->params = [];
         $this->headers = [];
+        $this->debug = 'debug' === strtolower(Config::getParam('log.level', 'notice'));
         Logger::log('Context service for ' . static::class . ' cleared!');
         $this->closeConnection();
     }

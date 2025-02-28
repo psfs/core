@@ -11,7 +11,7 @@
     <div class="panel panel-default">
         <div class="panel-body">
             {% for user, admin in admins %}
-            <span class="label label-{{ admin.class }}">{{ user }}</span>
+                <span class="label label-{{ admin.class }}">{{ user }} <i class="fa fa-trash-alt delete-user" data-user="{{ user }}"></i></span>
             {% else %}
             <p class="well">{{ "No hay administradores definidos" }}</p>
             {% endfor %}
@@ -51,5 +51,17 @@
 {% block scripts %}
     {% if base_version == 'v1' %}
     <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('@ROOT/js/api/api-srv.js') }}"></script>
+    <script type="application/javascript">
+        (function(){
+            $('.delete-user').bind('click', function(el) {
+                if (confirm('{{ "¿Quieres eliminar el acceso del usuario?"|trans }}')) {
+                    $httpSrv.$put('/admin/setup', {
+                        'user': $(el.target).attr('data-user')
+                    }).then(function() { document.location.reload(); });
+                }
+            });
+        })();
+    </script>
     {% endif %}
 {% endblock scripts %}

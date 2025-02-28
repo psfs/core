@@ -37,6 +37,9 @@ trait ManagerTrait
      */
     public function admin()
     {
+        if(Security::getInstance()->isUser()) {
+            throw new ApiException(t('You are not authorized to access this resource'), 403);
+        }
         return AuthAdminController::getInstance()->render('api.admin.html.twig', array(
             "api" => $this->getApi(),
             "domain" => $this->getDomain(),

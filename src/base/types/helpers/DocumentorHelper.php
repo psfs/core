@@ -17,7 +17,7 @@ class DocumentorHelper
     private static function searchPayloadParam(array $params, string $variable): bool
     {
         $exists = false;
-        if (count($params)) {
+        if (null !== $params && count($params)) {
             foreach ($params as $param) {
                 if ($param['name'] === $variable) {
                     $exists = true;

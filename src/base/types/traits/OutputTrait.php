@@ -192,6 +192,12 @@ trait OutputTrait
     #[NoReturn] public function closeRender(): void
     {
         Logger::log('Close template render');
+        $uri = Request::requestUri();
+        Security::getInstance()->setSessionKey('lastRequest', array(
+            'url' => Request::getInstance()->getRootUrl() . $uri,
+            'ts' => microtime(true),
+        ));
+        Security::getInstance()->updateSession();
         EventHelper::handleEvents(EventHelper::EVENT_END_REQUEST);
         Logger::log('End request: ' . Request::requestUri(), LOG_INFO);
         exit;

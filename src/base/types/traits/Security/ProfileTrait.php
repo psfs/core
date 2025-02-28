@@ -111,6 +111,13 @@ trait ProfileTrait
         return $saved;
     }
 
+    public function deleteUser($user)
+    {
+        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
+        unset($admins[$user]);
+        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
+    }
+
     /**
      * @param mixed $user
      */

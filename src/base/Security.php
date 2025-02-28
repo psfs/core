@@ -138,6 +138,20 @@ class Security
         ));
     }
 
+    private function checkAdminRole($role = AuthHelper::USER_ID_TOKEN)
+    {
+        $users = $this->getAdmins();
+        $logged = $this->getAdmin();
+        if (is_array($logged)
+            && array_key_exists('alias', $logged)
+            && array_key_exists($logged['alias'], $users)) {
+            $security = $users[$logged['alias']]['profile'];
+            return $role === $security;
+        }
+
+        return FALSE;
+    }
+
     /**
      * @return bool
      */
@@ -154,5 +168,22 @@ class Security
 
         return FALSE;
     }
+
+    /**
+     * @return bool
+     */
+    public function isManager()
+    {
+        return $this->checkAdminRole(AuthHelper::MANAGER_ID_TOKEN);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUser()
+    {
+        return $this->checkAdminRole();
+    }
+
 
 }

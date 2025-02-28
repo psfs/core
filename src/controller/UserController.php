@@ -3,12 +3,14 @@
 namespace PSFS\controller;
 
 use PSFS\base\config\AdminForm;
+use PSFS\base\exception\ApiException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Template;
+use PSFS\base\types\traits\Security\ProfileTrait;
 use PSFS\controller\base\Admin;
 use PSFS\services\AdminServices;
 
@@ -102,5 +104,21 @@ class UserController extends Admin
         } else {
             return Admin::staticAdminLogon();
         }
+    }
+
+    /**
+     * Delete PSFS admin users
+     * @PUT
+     * @route /admin/setup
+     */
+    public function deleteUsers()
+    {
+        $data = Request::getInstance()->getData();
+        $username = $data['user'] ?? null;
+        if (empty($username)) {
+            throw new ApiException(t('No se ha indicado el usuario a eliminar'), 400);
+        }
+        Security::getInstance()->deleteUser($username);
+        return $this->json('OK');
     }
 }

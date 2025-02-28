@@ -303,8 +303,8 @@ class TemplateFunctions
         return AuthHelper::encrypt($string, $key);
     }
 
-    public static function generateAuthToken(string $user, string $password) : string {
-        return AuthHelper::generateToken($user, $password);
+    public static function generateAuthToken(string $user, string $password, $userAgent = null) {
+        return AuthHelper::generateToken($user, $password, $userAgent);
     }
 
 }

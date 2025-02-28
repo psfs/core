@@ -33,6 +33,7 @@ class GeneratorHelper
                     }
                 }
             }
+            reset($objects);
             rmdir($dir);
         }
     }

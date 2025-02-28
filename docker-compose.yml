@@ -16,6 +16,8 @@ services:
         environment:
             XDEBUG_CONFIG: "remote_host=localhost"
             PHP_IDE_CONFIG: "serverName=PSFSCore"
+            PHP_OPCACHE: ${PHP_OPCACHE:-1}
+            PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
         depends_on:
             - redis
         healthcheck:

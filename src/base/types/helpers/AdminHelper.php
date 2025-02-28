@@ -4,6 +4,7 @@ namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
 use PSFS\base\Request;
+use PSFS\base\Security;
 
 /**
  * Class AdminHelper
@@ -33,6 +34,9 @@ class AdminHelper
      */
     public static function getAdminRoutes(array $systemRoutes): array
     {
+        if (Security::getInstance()->isUser()) {
+            return [];
+        }
         $routes = self::extractAdminRoutes($systemRoutes);
         self::sortRoutes($routes);
         return $routes;

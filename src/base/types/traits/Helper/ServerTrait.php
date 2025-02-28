@@ -53,8 +53,15 @@ trait ServerTrait
      */
     public function getServerName()
     {
-        $serverName = $this->getServer('HTTP_HOST', $this->getServer('SERVER_NAME', 'localhost'));
-        return explode(':', $serverName)[0];
+        $serverName = $this->getServer('SERVER_NAME');
+        if(empty($serverName)) {
+            $serverName = $this->getServer('HTTP_HOST');
+        }
+        if(str_contains($serverName, ':')) {
+            $pieces = explode(':', $serverName);
+            $serverName = $pieces[0];
+        }
+        return true === in_array($serverName, ['0.0.0.0', '127.0.0.1', 'docker.host.internal']) ? 'localhost' : $serverName;
     }
 
     /**
