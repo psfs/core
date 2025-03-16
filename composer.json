@@ -11,24 +11,24 @@
         }
     ],
     "require": {
-        "php" : ">=8",
+        "php" : ">=8.0",
         "ext-gettext": "*",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-gmp": "*",
         "ext-fileinfo": "*",
         "propel/propel": "dev-master",
-        "symfony/console": "^7",
-        "symfony/finder": "^7",
-        "symfony/translation": "^7",
-        "twig/twig": "^3",
-        "monolog/monolog": "^3",
+        "symfony/console": "v7.2.1",
+        "symfony/finder": "v7.2.2",
+        "symfony/translation": "v7.2.4",
+        "twig/twig": "3.20.0",
+        "monolog/monolog": "3.8.1",
         "matthiasmullie/minify": "1.3.73"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "11.5.10",
         "roave/security-advisories": "dev-master",
-        "symfony/process": "^7"
+        "symfony/process": "v7.2.4"
     },
     "config" : {
         "optimize-autoloader": true,

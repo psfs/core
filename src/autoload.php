@@ -14,17 +14,14 @@ if (!function_exists("PSFSAutoloader")) {
     // autoloader
     function PSFSAutoloader($class): false
     {
-        Logger::log("Trying to load class {$class} with " . __FILE__);
         // it only autoload class into the Rain scope
         if (str_contains($class, 'PSFS')) {
             // Change order src
             $class = preg_replace('/^\\\\?PSFS/', '', $class);
             // transform the namespace in path
             $path = str_replace("\\", DIRECTORY_SEPARATOR, $class);
-
             // filepath
             $abs_path = SOURCE_DIR . DIRECTORY_SEPARATOR . $path . ".php";
-
             // require the file
             if (file_exists($abs_path)) {
                 require_once $abs_path;

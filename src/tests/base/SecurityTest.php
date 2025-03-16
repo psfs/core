@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\Template;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\services\AdminServices;
 
@@ -78,6 +79,9 @@ class SecurityTest extends TestCase
         $this->assertTrue($security->canDo('something'));
         $this->assertFalse($security->isLogged());
         $this->assertFalse($security->isAdmin());
+        $this->assertFalse($security->isManager());
+        $this->assertFalse($security->isUser());
+        $this->assertFalse($security->isSuperAdmin());
 
         $security->updateUser($user);
         $this->assertNotNull($security->getUser(), 'An error occurred when update user in session');
@@ -98,6 +102,8 @@ class SecurityTest extends TestCase
         $this->assertTrue($security->isSuperAdmin(), 'Wrong checking for super admin profile');
         $this->assertTrue($security->isLogged());
         $this->assertTrue($security->isAdmin());
+        $this->assertFalse($security->isManager());
+        $this->assertFalse($security->isUser());
 
         $security->updateSession(true);
         $this->assertNotEmpty($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN), 'Error saving sessions');
@@ -133,6 +139,16 @@ class SecurityTest extends TestCase
         $this->assertNull($security->getFlash('flash_test'), 'Flash key not deleted');
         $this->assertEmpty($security->getFlashes(), 'Flash with data yet');
         $security->closeSession();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCheckNotAuthorizedRoute(): void
+    {
+        Template::setTest(true);
+        $this->assertNotEmpty($this->getInstance()->notAuthorized('test'), 'Fail to render the redirection template');
+        Template::setTest(false);
     }
 
 }

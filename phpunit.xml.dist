@@ -1,30 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="src/tests/bootstrap.php" requireCoverageMetadata="false" beStrictAboutCoverageMetadata="true" beStrictAboutOutputDuringTests="true" colors="true">
-  <testsuites>
-    <testsuite name="default">
-      <directory>src/tests</directory>
-    </testsuite>
-  </testsuites>
-  <source restrictNotices="true" restrictWarnings="true" ignoreIndirectDeprecations="true">
-    <include>
-      <directory>src</directory>
-    </include>
-    <exclude>
-      <directory>src/tests</directory>
-      <directory>src/tests/examples</directory>
-      <directory>src/tests/services</directory>
-      <directory>src/command</directory>
-      <directory>src/bin</directory>
-      <directory>src/public</directory>
-      <directory>src/templates</directory>
-    </exclude>
-  </source>
-  <php>
-    <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
-    <ini name="error_reporting" value="-1"/>
-    <ini name="memory_limit" value="-1"/>
-    <ini name="zend.assertions" value="1"/>
-    <ini name="assert.assertions" value="1"/>
-    <ini name="xdebug.show_exception_trace" value="0"/>
-  </php>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="src/tests/bootstrap.php"
+         requireCoverageMetadata="false" beStrictAboutCoverageMetadata="true" beStrictAboutOutputDuringTests="true"
+         colors="true">
+    <testsuites>
+        <testsuite name="default">
+            <directory>src/tests</directory>
+        </testsuite>
+    </testsuites>
+    <source restrictNotices="true" restrictWarnings="true" ignoreIndirectDeprecations="true">
+        <include>
+            <directory>src</directory>
+        </include>
+        <exclude>
+            <directory>src/tests</directory>
+            <directory>src/tests/examples</directory>
+            <directory>src/tests/services</directory>
+            <directory>src/command</directory>
+            <directory>src/bin</directory>
+            <directory>src/public</directory>
+            <directory>src/templates</directory>
+        </exclude>
+    </source>
+    <coverage>
+        <report>
+            <html outputDirectory="cache/coverage"/>
+            <clover outputFile="cache/coverage/coverage.xml"/>
+        </report>
+    </coverage>
+    <php>
+        <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
+        <ini name="error_reporting" value="-1"/>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="zend.assertions" value="1"/>
+        <ini name="assert.assertions" value="1"/>
+        <ini name="xdebug.show_exception_trace" value="0"/>
+    </php>
 </phpunit>

@@ -57,7 +57,7 @@ trait ServerTrait
         if(empty($serverName)) {
             $serverName = $this->getServer('HTTP_HOST');
         }
-        if(str_contains($serverName, ':')) {
+        if(str_contains($serverName ?? '', ':')) {
             $pieces = explode(':', $serverName);
             $serverName = $pieces[0];
         }

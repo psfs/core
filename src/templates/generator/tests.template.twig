@@ -5,9 +5,10 @@ namespace {{ module }}\test;
 use PHPUnit\Framework\TestCase;
 
 /**
-*
-*
-**/
+* Class {{ module }}Test
+* @package {{ module }}\test
+* @version {{ get_config("version", "1.0") }}
+*/
 class {{ module }}Test extends TestCase {
     public function test{{ module }}() {
         assertTrue(true, _("{{ module }} example Test"));
