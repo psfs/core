@@ -1,59 +1,62 @@
 services:
-    php:
-        image: c15k02k18/php:8.3-alpine${DEBUG:-}
-        pull_policy: always
-        restart: always
-        tty: true
-        volumes:
-            - .:/var/www
-            - ./docker/php.ini:/usr/local/etc/php/php.ini
-        networks:
-            - psfs-network
-        working_dir: "/var/www"
-        ports:
-            -   "${HOST_PORT:-8001}:8080"
-        command: 'php -S 0.0.0.0:8080 -t ./html'
-        environment:
-            XDEBUG_CONFIG: "remote_host=localhost"
-            PHP_IDE_CONFIG: "serverName=PSFSCore"
-            PHP_OPCACHE: ${PHP_OPCACHE:-1}
-            PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
-        depends_on:
-            - redis
-        healthcheck:
-            test: ["CMD", "php-fpm", "-t"]
-            interval: 1s
-            timeout: 3s
-            retries: 5
+  php:
+    image: c15k02k18/php:8.3-alpine${DEBUG:-}
+    restart: always
+    tty: true
+    volumes:
+      - .:/var/www
+      - ./docker/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - psfs-network
+    working_dir: "/var/www"
+    ports:
+      - "${HOST_PORT:-8001}:8080"
+    command: 'php -S 0.0.0.0:8080 -t ./html'
+    environment:
+      XDEBUG_CONFIG: "remote_host=localhost"
+      PHP_IDE_CONFIG: "serverName=PSFSCore"
+      PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
+      PHP_OPCACHE: "${PHP_OPCACHE:-0}"
+    depends_on:
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-    redis:
-        restart: always
-        image: redis:latest
-        networks:
-            - psfs-network
-        healthcheck:
-            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-            interval: 1s
-            timeout: 3s
-            retries: 5
+  redis:
+    restart: always
+    image: redis:latest
+    networks:
+      - psfs-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    security_opt:
+      - no-new-privileges:true
 
-    db:
-        image: mysql
-        networks:
-            - psfs-network
-        environment:
-            MYSQL_USER: ${MYSQL_USER:-psfs}
-            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-psfs}
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-psfs}
-            MYSQL_DATABASE: ${MYSQL_DATABASE:-psfs}
-        volumes:
-            - "./cache/db:/var/lib/mysql"
-        healthcheck:
-            test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-checks}" ]
-            interval: 3s
-            timeout: 5s
-            retries: 20
+  db:
+    image: mysql
+    networks:
+      - psfs-network
+    environment:
+      MYSQL_USER: ${MYSQL_USER:-psfs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-psfs}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-psfs}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-psfs}
+    volumes:
+      - "./cache/db:/var/lib/mysql"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 networks:
-    psfs-network:
-        driver: bridge
+  psfs-network:
+    driver: bridge

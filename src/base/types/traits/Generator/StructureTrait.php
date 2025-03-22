@@ -110,7 +110,7 @@ trait StructureTrait
             "autoloader" => preg_replace('/(\\\|\/)/', '_', $module),
             "regex" => preg_replace('/(\\\|\/)/m', '\\\\\\\\\\\\', $module),
         ));
-        $autoload = $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", $force);
+        $autoload = $this->writeTemplateToFile($autoloader, $mod_path . DIRECTORY_SEPARATOR . "autoload.php", true);
 
         Logger::log("Generamos el phpunit");
         $phpUnitTemplate = $this->tpl->dump("generator/phpunit.template.twig", array(

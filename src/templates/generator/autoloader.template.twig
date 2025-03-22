@@ -1,34 +1,29 @@
 <?php
 /**
- * {{ module }} Module
+ * {{ module }}Autoloader class
  * @version {{ get_config("version", "1.0") }}
  */
-if(!defined("BASE_DIR")) {
-    define("BASE_DIR", dirname( dirname(__DIR__) ) );
-}
-
-if(!function_exists("{{ autoloader }}_Autoloader")) {
-    // autoloader
-    function {{ autoloader }}_Autoloader( $class ) {
-        // it only autoload class into the Rain scope
-        if (false !== preg_match('/^\\\?{{ regex }}/', $class)) {
-            // Change order src
-            $class = preg_replace('/^\\\?{{ regex }}/', '{{ is_module ? '' : module  }}', $class);
-            // transform the namespace in path
-            $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
-            // filepath
-            $abs_path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $path . ".php";
-
-            // require the file
-            if(file_exists($abs_path)) {
-                require_once $abs_path;
-            }
-        }
-        return false;
+class {{ module }}Autoloader
+{
+    public static function register(): void
+    {
+        spl_autoload_register([self::class, 'autoload']);
     }
 
-    // register the autoloader
-    spl_autoload_register( "{{ autoloader }}_Autoloader" );
+    public static function autoload(string $class): void
+    {
+        if (str_starts_with($class, '{{ module }}\\')) {
+            $relativeClass = substr($class, strlen('{{ module }}\\'));
+            $file = __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+            } else if (class_exists('PSFS\\base\\Logger')) {
+                \PSFS\base\Logger::log("[Autoloader] Class $class not found at $file", LOG_WARNING);
+            }
+        }
+    }
+
 }
 
+{{ module }}Autoloader::register();
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php';
