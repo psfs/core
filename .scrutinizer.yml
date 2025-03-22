@@ -7,14 +7,28 @@ build:
       version: '8.2'
       ini:
         xdebug.mode: coverage
+    mysql: true
+    redis: true
   tests:
     override:
       - php-scrutinizer-run
-      -
-        command: 'vendor/bin/phpunit --coverage-clover=psfs-coverage'
+      - command: 'vendor/bin/phpunit --coverage-clover=psfs-coverage'
         coverage:
           file: 'psfs-coverage'
           format: 'clover'
+
+tools:
+  php_code_sniffer: true
+  php_mess_detector: true
+  php_cpd: true
+  php_pdepend: true
+  php_analyzer:
+    config:
+      parameter_reference_check: true
+      checkstyle: true
+      unused_code: true
+      simplify_boolean_return: true
+  external_code_coverage: true
 
 filter:
   excluded_paths:
