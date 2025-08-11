@@ -30,7 +30,7 @@ class Security
     /**
      * @var bool $authorized
      */
-    private $authorized = FALSE;
+    private $authorized = false;
 
     /**
      * @var bool $checked
@@ -149,7 +149,7 @@ class Security
             return $role === $security;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**

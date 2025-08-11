@@ -36,11 +36,13 @@ class Dispatcher extends Singleton
      * @var \PSFS\base\Security $security
      */
     protected $security;
+
     /**
      * @Injectable
      * @var \PSFS\base\Router $router
      */
     protected $router;
+
     /**
      * @Injectable
      * @var \PSFS\base\config\Config $config
@@ -75,12 +77,13 @@ class Dispatcher extends Singleton
     public function run($uri = null)
     {
         Inspector::stats('[Dispatcher] Begin runner', Inspector::SCOPE_DEBUG);
+
         try {
             if ($this->config->isConfigured()) {
-                //Check CORS for requests
+                // Check CORS for requests
                 RequestHelper::checkCORS();
                 if (!Request::getInstance()->isFile()) {
-                    return $this->router->execute($uri ?: $this->actualUri);
+                    return $this->router->execute($uri ?? $this->actualUri);
                 }
             } else {
                 return ConfigController::getInstance()->config();
@@ -94,30 +97,28 @@ class Dispatcher extends Singleton
         } catch (ApiException $a) {
             return $this->router->httpNotFound($a, true);
         } catch (\Exception $e) {
-            return $this->dumpException($e);
+            return $this->handleException($e);
         }
+
+        return $this->router->httpNotFound();
+
     }
 
-    /**
-     * @param \Exception $exception
-     * @return string HTML
-     * @throws base\exception\GeneratorException
-     */
-    protected function dumpException(\Exception $exception)
+    protected function handleException(\Exception $exception): string
     {
         Inspector::stats('[Dispatcher] Starting dump exception', Inspector::SCOPE_DEBUG);
-        $exception = (NULL !== $exception->getPrevious()) ? $exception->getPrevious() : $exception;
-        $error = array(
+
+        $error = [
             "error" => $exception->getMessage(),
             "file" => $exception->getFile(),
             "line" => $exception->getLine(),
-        );
+        ];
+
         Logger::log('Throwing exception', LOG_ERR, $error);
         unset($error);
 
         return $this->router->httpNotFound($exception);
     }
-
 }
 
 Config::initialize();

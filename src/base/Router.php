@@ -64,8 +64,8 @@ class Router
      */
     public function init()
     {
-        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, TRUE);
-        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, TRUE);
+        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, true);
+        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, true);
         if (empty($this->routing) || Config::getParam('debug', true)) {
             $this->debugLoad();
         }
@@ -200,7 +200,7 @@ class Router
                 }
             }
         }
-        $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->domains, Cache::JSON, TRUE);
+        $this->cache->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->domains, Cache::JSON, true);
     }
 
     /**
@@ -213,8 +213,8 @@ class Router
     {
         $this->generateRouting();
         $home = Config::getParam('home.action', 'admin');
-        if (NULL !== $home || $home !== '') {
-            $homeParams = NULL;
+        if (null !== $home || $home !== '') {
+            $homeParams = null;
             foreach ($this->routing as $pattern => $params) {
                 list($method, $route) = RouterHelper::extractHttpRoute($pattern);
                 if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
@@ -222,7 +222,7 @@ class Router
                 }
                 unset($method);
             }
-            if (NULL !== $homeParams) {
+            if (null !== $homeParams) {
                 $this->routing['/'] = $homeParams;
             }
         }
@@ -329,15 +329,15 @@ class Router
         $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
         Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, $action);
         $cache = Cache::needCache();
-        $execute = TRUE;
+        $execute = true;
         $return = null;
-        if (FALSE !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === FALSE) {
+        if (false !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === false) {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
             $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $cache);
             if (NULL !== $cachedData) {
                 $headers = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers', $cache, null, Cache::JSON);
                 Template::getInstance()->renderCache($cachedData, $headers);
-                $execute = FALSE;
+                $execute = false;
             }
         }
         if ($execute) {
@@ -357,7 +357,7 @@ class Router
      * @return string
      * @throws GeneratorException
      */
-    public function httpNotFound(\Exception $exception = null, $isJson = false)
+    public function httpNotFound(\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);
     }

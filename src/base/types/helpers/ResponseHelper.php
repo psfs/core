@@ -19,22 +19,24 @@ class ResponseHelper
 
     public static array $headers_sent = [];
 
-    public static function setHeader(string $header): void {
-        if(str_contains($header, ':')) {
+    public static function setHeader(string $header): void
+    {
+        if (str_contains($header, ':')) {
             list($key, $value) = explode(':', $header);
         } else {
             $key = 'Http Status';
             $value = $header;
         }
         if (!in_array($key, self::$headers_sent)) {
-            if(!self::isTest()) {
+            if (!self::isTest()) {
                 header($header);
             }
             self::$headers_sent[$key] = $value;
         }
     }
 
-    public static function dropHeader(string $header): void {
+    public static function dropHeader(string $header): void
+    {
         if (!in_array($header, self::$headers_sent)) {
             header_remove($header);
             unset(self::$headers_sent[$header]);
@@ -113,13 +115,13 @@ class ResponseHelper
      * @return int|string
      * @throws GeneratorException
      */
-    public static function httpNotFound(Exception $exception = NULL, bool $isJson = false): int|string
+    public static function httpNotFound(\Throwable $exception = null, bool $isJson = false): int|string
     {
         if (self::isTest()) {
             return 404;
         }
         Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
-        if (NULL === $exception) {
+        if (null === $exception) {
             Logger::log('Not found page thrown without previous exception', LOG_WARNING);
             $exception = new Exception(t('Page not found'), 404);
         }
@@ -136,7 +138,7 @@ class ResponseHelper
             return $template->render('error.html.twig', array(
                 'exception' => $exception,
                 'trace' => $exception->getTraceAsString(),
-                'error_page' => TRUE,
+                'error_page' => true,
             ));
         }
         return 200;

@@ -20,7 +20,7 @@ abstract class AuthApi extends Api
     {
         parent::init();
         if (!$this->checkAuth()) {
-            return $this->json(new JsonResponse(t('Not authorized'), FALSE), 401);
+            return $this->json(new JsonResponse(t('Not authorized'), false), 401);
         }
     }
 
@@ -33,11 +33,11 @@ abstract class AuthApi extends Api
         $namespace = explode('\\', $this->getModelTableMap());
         $module = strtolower($namespace[0]);
         $secret = Config::getInstance()->get($module . '.api.secret');
-        if (NULL === $secret) {
+        if (null === $secret) {
             $secret = Config::getInstance()->get("api.secret");
         }
-        if (NULL === $secret) {
-            $auth = TRUE;
+        if (null === $secret) {
+            $auth = true;
         } else {
             $token = Request::getInstance()->getHeader('X-API-SEC-TOKEN');
             if (array_key_exists('API_TOKEN', $this->query)) {

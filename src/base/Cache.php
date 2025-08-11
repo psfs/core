@@ -28,6 +28,7 @@ class Cache
     const GZIP = 3;
     const JSONGZ = 4;
     const MEMCACHE = 5;
+    const REDIS = 6;
 
     const CACHE_SESSION_VAR = '__CACHE__';
 
@@ -44,6 +45,14 @@ class Cache
     public static function canUseMemcache()
     {
         return Config::getParam('psfs.memcache', false) && !Config::getParam('debug') && class_exists('Memcached');
+    }
+
+    /**
+     * @return bool
+     */
+    public static function canUseRedis()
+    {
+        return Config::getParam('psfs.redis', false) && !Config::getParam('debug') && class_exists('Redis');
     }
 
     /**
