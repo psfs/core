@@ -105,7 +105,7 @@ trait FieldModelHelperTrait
         $sep = '';
         foreach ($tableMap->getColumns() as $column) {
             if ($column->isText()) {
-                $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
+                $exp .= $sep . 'COALESCE(' . $column->getFullyQualifiedName() . ',"")';
                 $sep = ', " ", ';
             }
         }
@@ -114,7 +114,7 @@ trait FieldModelHelperTrait
                 $localeTableMap = $relation->getLocalTable();
                 foreach ($localeTableMap->getColumns() as $column) {
                     if ($column->isText()) {
-                        $exp .= $sep . 'IFNULL(' . $column->getFullyQualifiedName() . ',"")';
+                        $exp .= $sep . 'COALESCE(' . $column->getFullyQualifiedName() . ',"")';
                         $sep = ', " ", ';
                     }
                 }
@@ -122,7 +122,7 @@ trait FieldModelHelperTrait
         }
         foreach (array_keys($extraColumns) as $extra) {
             if (!preg_match("/(COUNT|DISTINCT|SUM|MAX|MIN|GROUP)/i", $extra)) {
-                $exp .= $sep . $extra;
+                $exp .= $sep . 'COALESCE(' . $extra . ', "")';
                 $sep = ', " ", ';
             }
         }
