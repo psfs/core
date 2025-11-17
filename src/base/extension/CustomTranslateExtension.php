@@ -175,7 +175,7 @@ class CustomTranslateExtension extends AbstractExtension
         }
         // Set default translation to catch missing strings
         $isDebugMode = (bool)Config::getParam('debug', false);
-        $translation = (bool)Config::getParam('debug', false) ? 'MISSING_TRANSLATION - ' . self::$locale : $message;
+        $translation = $message;
         // Check if the message is already translated ignoring the string case
         $key = mb_convert_case($message, MB_CASE_LOWER, "UTF-8");
         if(array_key_exists(self::$locale, self::$translationsKeys) && array_key_exists($key, self::$translationsKeys[self::$locale])) {

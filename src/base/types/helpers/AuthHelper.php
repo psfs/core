@@ -2,7 +2,10 @@
 
 namespace PSFS\base\types\helpers;
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use PSFS\base\config\Config;
+use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
 
@@ -62,7 +65,7 @@ class AuthHelper
             foreach ($admins as $admin => $profile) {
                 list($decrypted_user, $timestamp, $userAgent) = self::decodeToken($token, $profile['hash']);
                 if (!empty($decrypted_user) && !empty($timestamp)) {
-                    if(!empty($userAgent) && $userAgent === $reqUserAgent) {
+                    if (!empty($userAgent) && $userAgent === $reqUserAgent) {
                         $expiration = \DateTime::createFromFormat(self::EXPIRATION_TIMESTAMP_FORMAT, $timestamp);
                         if (false !== $expiration && $decrypted_user === $admin && $expiration > $now) {
                             $user = $admin;
@@ -80,7 +83,7 @@ class AuthHelper
     {
         $data = base64_encode($data);
         $encrypted_data = '';
-        for ($i = 0, $j = 0; $i < strlen($data); $i++, $j++) {
+        for ($i = 0, $j = 0, $iMax = strlen($data); $i < $iMax; $i++, $j++) {
             if ($j === strlen($key)) {
                 $j = 0;
             }
@@ -93,7 +96,7 @@ class AuthHelper
     {
         $encrypted_data = base64_decode($encrypted_data);
         $data = '';
-        for ($i = 0, $j = 0; $i < strlen($encrypted_data); $i++, $j++) {
+        for ($i = 0, $j = 0, $iMax = strlen($encrypted_data); $i < $iMax; $i++, $j++) {
             if ($j === strlen($key)) {
                 $j = 0;
             }
@@ -118,9 +121,40 @@ class AuthHelper
     {
         $user = $timestamp = $userAgent = null;
         $secret = self::decrypt($token, $password);
-        if(!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
+        if (!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
             list($user, $timestamp, $userAgent) = explode(Security::LOGGED_USER_TOKEN, $secret);
         }
         return [$user, $timestamp, $userAgent];
+    }
+
+    public static function checkJwtAuth(array $admins)
+    {
+        $user = $hash = null;
+        $request = Request::getInstance();
+        $authorization = $request->getHeader('Authorization');
+        if (!empty($authorization)) {
+            list($bearer, $token) = explode(' ', $authorization);
+            $parts = explode('.', $token);
+            if (count($parts) > 1) {
+                $payload = json_decode(JWT::urlsafeB64Decode($parts[1]), true);
+                if (is_array($payload) && array_key_exists('sub', $payload)) {
+                    foreach ($admins as $admin => $profile) {
+                        if ($admin === $payload['sub']) {
+                            try {
+                                $decoded = (array)JWT::decode($token, new Key($profile['hash'], Config::getParam('jwt.alg', 'HS256')));
+                                if ($decoded === $payload) {
+                                    $user = $admin;
+                                    $hash = $profile['hash'];
+                                }
+                            } catch (\Exception $exception) {
+                                Logger::log($exception->getMessage(), LOG_ERR);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return [$user, $hash];
     }
 }

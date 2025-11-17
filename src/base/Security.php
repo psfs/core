@@ -2,6 +2,7 @@
 
 namespace PSFS\base;
 
+use PSFS\base\config\Config;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
@@ -77,15 +78,20 @@ class Security
             $admins = $this->getAdmins();
             $token = null;
             if (null !== $admins) {
-                if(empty($user)) {
+                if (empty($user)) {
                     // First try, traditional basic auth
                     Inspector::stats('[Auth] Checking Basic Auth');
                     list($user, $token) = AuthHelper::checkBasicAuth($user, $pass, $admins);
                 }
-                if(empty($user)) {
+                if (empty($user)) {
                     // Second try, cookie auth
                     Inspector::stats('[Auth] Checking Basic Auth PSFS');
                     list($user, $token) = AuthHelper::checkComplexAuth($admins);
+                }
+                if (empty($user) && Config::getParam('enable.jwt', false)) {
+                    // Third try, jwt auth
+                    Inspector::stats('[Auth] Checking JWT Auth');
+                    list($user, $token) = AuthHelper::checkJwtAuth($admins);
                 }
                 if (!empty($user) && !empty($admins[$user])) {
                     $auth = $admins[$user]['hash'];
