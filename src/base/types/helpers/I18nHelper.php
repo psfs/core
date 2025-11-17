@@ -18,6 +18,7 @@ use PSFS\base\Security;
 class I18nHelper
 {
     const PSFS_SESSION_LANGUAGE_KEY = '__PSFS_SESSION_LANG_SELECTED__';
+    const PSFS_SESSION_LOCALE_KEY = '__PSFS_SESSION_LOCALE_SELECTED__';
 
     static array $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
 
@@ -95,6 +96,7 @@ class I18nHelper
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
         Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $locale);
         if ($force) {
             t('', $customKey, true);
         }
