@@ -4,7 +4,6 @@ namespace PSFS\Command;
 
 use Firebase\JWT\JWT;
 use PSFS\base\config\Config;
-use PSFS\base\types\helpers\JWTHelper;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,7 +35,7 @@ $console
         $jwt = JWT::encode([
             'iss' => 'PSFS',
             'sub' => $user,
-            'aud' => 'test',
+            'aud' => $module,
             'iat' => time(),
             'exp' => time() + 3600,
         ], sha1($user . $key), Config::getParam('jwt.alg', 'HS256'));
