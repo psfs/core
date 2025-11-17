@@ -5,6 +5,7 @@ namespace PSFS\base\types\helpers;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use PSFS\base\config\Config;
+use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
@@ -143,6 +144,13 @@ class AuthHelper
                             try {
                                 $decoded = (array)JWT::decode($token, new Key($profile['hash'], Config::getParam('jwt.alg', 'HS256')));
                                 if ($decoded === $payload) {
+                                    if(time() < (int)($decoded['iat'] ?? 0)) {
+                                        throw new SecurityException(t('Token not valid yet'));
+                                    }
+                                    if(time() > (int)($decoded['exp'] ?? 0)) {
+                                        throw new SecurityException(t('Token expired'));
+                                    }
+                                    // TODO check modules restrictions
                                     $user = $admin;
                                     $hash = $profile['hash'];
                                 }

@@ -2,6 +2,7 @@
 
 namespace PSFS\base\extension;
 
+use Firebase\JWT\JWT;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
@@ -35,6 +36,7 @@ class TemplateFunctions
     const GET_QUERY_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::query';
     const ENCRYPT_FUNCTION = '\PSFS\base\extension\TemplateFunctions::encrypt';
     const AUTH_TOKEN_FUNCTION = '\PSFS\base\extension\TemplateFunctions::generateAuthToken';
+    const JWT_TOKEN_FUNCTION = '\PSFS\base\extension\TemplateFunctions::generateJWTToken';
 
     /**
      * Función que copia los recursos de las carpetas Public al DocumentRoot
@@ -305,6 +307,16 @@ class TemplateFunctions
 
     public static function generateAuthToken(string $user, string $password, $userAgent = null) {
         return AuthHelper::generateToken($user, $password, $userAgent);
+    }
+
+    public static function generateJWTToken(string $user, string $module, string $password) {
+        return JWT::encode([
+            'iss' => Config::getParam('platform.name', 'PSFS'),
+            'sub' => $user,
+            'aud' => $module,
+            'iat' => time(),
+            'exp' => time() + 3600,
+        ], $password, Config::getParam('jwt.alg', 'HS256'));
     }
 
 }
