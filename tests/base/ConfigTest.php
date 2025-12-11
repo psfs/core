@@ -9,8 +9,6 @@ use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-
 /**
  * Class DispatcherTest
  * @package PSFS\tests\base

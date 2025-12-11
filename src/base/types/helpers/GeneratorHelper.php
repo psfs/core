@@ -155,7 +155,7 @@ class GeneratorHelper
                 }
                 continue;
             }
-            $text = Template::getInstance()->dump("generator/html/" . $template . '.html.twig');
+            $text = Template::getInstance()->dump("generator/html/" . $template . '.html.twig', ['PSFS_AS_VENDOR' => PSFS_AS_VENDOR]);
             if (false === file_put_contents($path . DIRECTORY_SEPARATOR . $filename, $text)) {
                 if (!$quiet) {
                     $output->writeln('Can\t create the file ' . $filename);

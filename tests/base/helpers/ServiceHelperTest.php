@@ -1,5 +1,5 @@
 <?php
-namespace PSFS\tests\base\type\helper;
+namespace PSFS\tests\base\helpers;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\ServiceHelper;

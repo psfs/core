@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="src/tests/bootstrap.php"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="src/bootstrap.php"
          requireCoverageMetadata="false" beStrictAboutCoverageMetadata="true" beStrictAboutOutputDuringTests="true"
          colors="true">
     <testsuites>
         <testsuite name="default">
-            <directory>src/tests</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <source restrictNotices="true" restrictWarnings="true" ignoreIndirectDeprecations="true">
@@ -13,9 +13,7 @@
             <directory>src</directory>
         </include>
         <exclude>
-            <directory>src/tests</directory>
-            <directory>src/tests/examples</directory>
-            <directory>src/tests/services</directory>
+            <directory>tests</directory>
             <directory>src/command</directory>
             <directory>src/bin</directory>
             <directory>src/public</directory>

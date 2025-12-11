@@ -17,8 +17,6 @@ class {{ module }}Autoloader
             $file = __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
             if (file_exists($file)) {
                 require_once $file;
-            } else if (class_exists('PSFS\\base\\Logger')) {
-                \PSFS\base\Logger::log("[Autoloader] Class $class not found at $file", LOG_WARNING);
             }
         }
     }
