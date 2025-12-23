@@ -1,17 +1,8 @@
 <?php
-/**
- * {{ module }}Autoloader class
- * @version {{ get_config("version", "1.0") }}
- */
-class {{ module }}Autoloader
-{
-    public static function register(): void
-    {
-        spl_autoload_register([self::class, 'autoload']);
-    }
 
-    public static function autoload(string $class): void
-    {
+if(!defined('{{ module }}_MODULE_LOADER')) {
+    define('{{ module }}_MODULE_LOADER', true);
+    spl_autoload_register(function (string $class) {
         if (str_starts_with($class, '{{ module }}\\')) {
             $relativeClass = substr($class, strlen('{{ module }}\\'));
             $file = __DIR__ . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
@@ -19,9 +10,6 @@ class {{ module }}Autoloader
                 require_once $file;
             }
         }
-    }
-
+    });
 }
-
-{{ module }}Autoloader::register();
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'config.php';
