@@ -6,6 +6,7 @@ use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
 use ReflectionClass;
 use ReflectionException;
@@ -27,7 +28,7 @@ class Singleton
      */
     public function __construct()
     {
-        Logger::log(static::class . ' constructor invoked');
+        Inspector::stats(static::class . ' constructor invoked');
         $this->init();
     }
 

@@ -296,8 +296,6 @@ abstract class Api extends Singleton
     private function extractDataWithFormat()
     {
         $return = [];
-
-        /** @var CustomerTableMap $tableMap */
         $modelPk = ApiHelper::extractPrimaryKeyColumnName($this->getTableMap());
         foreach ($this->list->getData() as $data) {
             $return[] = ApiHelper::mapArrayObject($this->getModelNamespace(), $modelPk, $this->query, $data);

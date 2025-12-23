@@ -29,12 +29,6 @@ class PSFSTest extends TestCase
         // Did timestamp generated?
         $this->assertTrue($dispatcher->getTs() > 0);
         restore_error_handler();
-
-        // Test bootstrap loader
-        $this->assertTrue(bootstrap::$loaded, 'Bootstrap is not loaded');
-        bootstrap::$loaded = false;
-        bootstrap::load();
-        $this->assertTrue(bootstrap::$loaded, 'Bootstrap is not reloaded');
     }
 
     /**

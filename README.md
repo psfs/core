@@ -9,7 +9,7 @@
 
 Requirements:
 
-* php 8.0+
+* php 8.2+
 * ext-gettext
 * ext-json
 * ext-curl
@@ -33,6 +33,7 @@ Requirements:
 Install composer via: [GetComposer](https://getcomposer.org/download/)
    
 ```
+composer init
 composer require psfs/core
 ./vendor/bin/psfs psfs:create:root
 php -S 0.0.0.0:8080 -t ./html
@@ -49,6 +50,8 @@ Your could use some environment variables to manage the docker containers
 - DEBUG: -xdebug Loads a docker image with xdebug installed and configured, if empty it loads a default php image
 ```
 
+### Documentation
+- [General information and contracts](./doc/CONTRACTS.md)
 
 RoadMap:
 

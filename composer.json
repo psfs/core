@@ -40,26 +40,24 @@
     "authors": [
         {
             "name": "Fran López",
-            "email": "fran.lopez84@hotmail.es"
+            "email": "fran.lopez@stratecode.coms"
         }
     ],
     "support": {
-        "email": "fran.lopez84@hotmail.es",
+        "email": "fran.lopez@stratecode.com",
         "wiki": "https://github.com/psfs/core/wiki",
         "issues": "https://github.com/psfs/core/issues"
     },
     "autoload": {
         "psr-4": {
             "PSFS\\": "src/",
-            "PSFS\\tests\\": "src/tests"
-        },
-        "files": ["src/autoload.php"],
-        "exclude-from-classmap": ["src/tests"]
+            "PSFS\\tests\\": "tests"
+        }
     },
     "bin": [
         "src/bin/psfs"
     ],
-    "minimum-stability": "beta",
+    "minimum-stability": "stable",
     "extra": {
         "branch-alias": {
             "dev-master": "2.x-dev"
@@ -70,7 +68,7 @@
             "@clearCache",
             "@clearViewCache"
         ],
-        "clearCache": "[ -d ./cache/reflections ] && mv ./cache/reflections ./cache/.reflections_$(date +%Y%m%d%H%M%S) || echo 'La carpeta reflections no existe.'",
-        "clearViewCache": "[ -d ./cache/twig ] && rm -rf ./cache/twig || echo 'La carpeta twig no existe.'"
+        "clearCache": "[ -d ./cache/reflections ] && mv ./cache/reflections ./cache/.reflections_$(date +%Y%m%d%H%M%S) || echo 'Reflections folder does not exists.'",
+        "clearViewCache": "[ -d ./cache/twig ] && rm -rf ./cache/twig || echo 'Twig cache folder does not exists.'"
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace PSFS\base;
+namespace PSFS\tests\fixtures;
 
-class Logger
+class FakeLogger
 {
     public static array $logs = [];
 
