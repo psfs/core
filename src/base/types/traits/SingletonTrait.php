@@ -2,6 +2,8 @@
 
 namespace PSFS\base\types\traits;
 
+use PSFS\base\SingletonRegistry;
+
 /**
  * Class SingletonTrait
  * @package PSFS\base\types
@@ -16,11 +18,6 @@ trait SingletonTrait
     private $loaded = false;
 
     /**
-     * @var array Singleton cached reference to singleton instance
-     */
-    private static $instance = [];
-
-    /**
      * gets the instance via lazy initialization (created on first usage)
      *
      * @param array $args
@@ -29,11 +26,13 @@ trait SingletonTrait
     public static function getInstance(...$args)
     {
         $class = static::class;
-        if (!array_key_exists($class, self::$instance) || !self::$instance[$class] instanceof $class) {
-            self::$instance[$class] = new $class($args[0] ?? null);
-            self::initiate(self::$instance[$class]);
+        $instance = SingletonRegistry::get($class);
+        if(!$instance) {
+            $instance = new $class($args[0] ?? null);
+            SingletonRegistry::register($instance);
+            self::initiate($instance);
         }
-        return self::$instance[$class];
+        return $instance;
     }
 
     /**
@@ -42,9 +41,7 @@ trait SingletonTrait
     public static function dropInstance()
     {
         $class = static::class;
-        if (isset(self::$instance[$class])) {
-            self::$instance[$class] = null;
-        }
+        SingletonRegistry::drop($class);
     }
 
     /**
