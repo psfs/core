@@ -22,12 +22,16 @@ defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage(true));
 // 2. Detect execution environment
 // -----------------------------------------------------------------------------
 
-$bootstrapDir = __DIR__;                 // .../psfs/core/src
-$vendorDir = dirname($bootstrapDir, 2) . '/vendor';
-$projectRoot = dirname($bootstrapDir, 2); // When running as vendor
+$bootstrapDir = __DIR__;
+$levels = 2;
+if(false !== stripos($bootstrapDir, 'vendor')) {
+    $levels = 4;
+}// .../psfs/core/src
+$vendorDir = dirname($bootstrapDir, $levels) . '/vendor';
+$projectRoot = dirname($bootstrapDir, $levels); // When running as vendor
 
 // Standalone mode: PSFS cloned and executed directly (no vendor/)
-$standaloneRoot = dirname($bootstrapDir, 1); // .../psfs-core
+$standaloneRoot = dirname($bootstrapDir, $levels - 1); // .../psfs-core
 
 // Detect vendor mode (framework inside vendor/)
 $runningAsVendor = file_exists($vendorDir . '/autoload.php');
