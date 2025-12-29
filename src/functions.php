@@ -43,7 +43,7 @@ if (file_exists(CORE_DIR)) {
     /* @var $file SplFileInfo */
     foreach ($finder as $file) {
         $path = $file->getRealPath();
-        if (!in_array($path, $loaded_files)) {
+        if (!in_array($path, $loaded_files, true) && file_exists($path)) {
             $loaded_files[] = $path;
             require_once($path);
         }

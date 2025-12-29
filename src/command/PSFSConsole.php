@@ -2,7 +2,6 @@
 
 namespace PSFS\command;
 
-use PSFS\base\Router;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Finder\Finder;
 
@@ -14,7 +13,6 @@ $pwd = getcwd();
 $dir = $pwd . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR;
 
 require_once $dir . 'autoload.php';
-
 
 $project_path = $pwd . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR;
 if (file_exists($project_path . "bootstrap.php")) {
@@ -33,12 +31,16 @@ $commands->in(__DIR__)->notName("PSFSConsole.php");
 foreach ($commands as $com) if ($com->isFile()) include_once($com->getRealPath());
 
 //Hidratamos con los comandos de los módulos
-$domains = Router::getInstance()->getDomains();
+$domains = \PSFS\base\Router::getInstance()->getDomains();
 foreach ($domains as $domain => $paths) {
-    if (!preg_match('/ROOT/i', $domain)) {
+    if ((false === stripos($domain, "ROOT")) && file_exists($paths['base'])) {
         $commands = new Finder();
         $commands->in($paths['base'])->path("Command")->name("*.php");
-        foreach ($commands as $com) include_once($com->getRealPath());
+        foreach ($commands as $com) {
+            if ($com->isFile()) {
+                include_once($com->getRealPath());
+            }
+        }
     }
 }
 
