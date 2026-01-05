@@ -9,6 +9,7 @@ use Twig\Node\Node;
  * Class AssetsNode
  * @package PSFS\base\extension
  */
+#[\Twig\Attribute\YieldReady]
 class AssetsNode extends Node
 {
 

@@ -14,9 +14,10 @@
 // 1. Runtime metrics (optional)
 // -----------------------------------------------------------------------------
 
+use Symfony\Component\Finder\Finder;
+
 defined('PSFS_START_TS') or define('PSFS_START_TS', microtime(true));
 defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage(true));
-
 
 // -----------------------------------------------------------------------------
 // 2. Detect execution environment
@@ -38,7 +39,6 @@ $runningAsVendor = file_exists($vendorDir . '/autoload.php');
 
 // Detect standalone mode
 $runningStandalone = !$runningAsVendor;
-
 
 // -----------------------------------------------------------------------------
 // 3. Define base directory constants
@@ -81,9 +81,20 @@ if ($runningAsVendor) {
     require_once $standaloneAutoload;
 }
 
+// -----------------------------------------------------------------------------
+// 5. Load modules autoloader
+// -----------------------------------------------------------------------------
+if(file_exists(CORE_DIR)) {
+    $finder = new Finder();
+    $files = $finder->files()->in(CORE_DIR)->name('autoload.php');
+    foreach ($files as $file) {
+        require_once $file->getRealPath();
+    }
+}
+
 
 // -----------------------------------------------------------------------------
-// 5. Global helper functions
+// 6. Global helper functions
 // -----------------------------------------------------------------------------
 require_once SOURCE_DIR . '/functions.php';
 
