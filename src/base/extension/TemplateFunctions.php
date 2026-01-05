@@ -315,8 +315,8 @@ class TemplateFunctions
             'sub' => $user,
             'aud' => $module,
             'iat' => time(),
-            'exp' => time() + 3600,
-        ], $password, Config::getParam('jwt.alg', 'HS256'));
+            'exp' => time() + (int)Config::getParam('jwt.expiration_seconds', 3600),
+        ], sha1($user . $password), Config::getParam('jwt.alg', 'HS256'));
     }
 
 }

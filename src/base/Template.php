@@ -235,6 +235,7 @@ class Template
             'getQuery' => TemplateFunctions::GET_QUERY_FUNCTION,
             'encrypt' => TemplateFunctions::ENCRYPT_FUNCTION,
             'generate_auth_token' => TemplateFunctions::AUTH_TOKEN_FUNCTION,
+            'generate_jwt_token' => TemplateFunctions::JWT_TOKEN_FUNCTION,
         ];
         foreach ($functions as $name => $function) {
             $this->addTemplateFunction($name, $function);
