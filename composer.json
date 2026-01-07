@@ -11,7 +11,6 @@
     ],
     "require": {
         "php" : ">=8",
-        "ext-gettext": "*",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-gmp": "*",

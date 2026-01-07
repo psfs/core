@@ -1,7 +1,4 @@
 filter:
-  paths:
-    - "src/*"
-    - "tests/*"
   excluded_paths:
     - src/bin/*
     - src/command/*
@@ -12,37 +9,33 @@ filter:
     - cache/*
     - config/*
     - logs/*
-    - vendor/*
+    - tests/*
+  dependency_paths:
+    - vendor/
 
-build_failure_conditions:
-  - "issues.severity(>= MAJOR).new.exists"
-  - "project.metric('scrutinizer.test_coverage', < 0.70)"
+checks:
+    php: true
 
 build:
   environment:
+    timezone: "Europe/Madrid"
     php:
       version: 8.2
       ini:
         memory_limit: "-1"
-        pecl_extensions:
-          - zip
-          - intl
-          - curl
-          - gmp
-    variables:
-      APP_ENV: "scrutinizer"
+        xdebug.mode: coverage
   nodes:
     analysis:
       tests:
         override:
-          - "php-scrutinizer-run"
+          - php-scrutinizer-run --enable-security-analysis
     tests:
       dependencies:
         before:
           - "composer install --no-interaction --prefer-dist --no-progress"
       tests:
         override:
-          - "vendor/bin/phpunit --configuration phpunit.xml"
+          - "vendor/bin/phpunit --configuration phpunit.xml.dist"
       coverage:
-        file: "build/logs/clover.xml"
+        file: "cache/coverage/coverage.xml"
         format: "clover"
