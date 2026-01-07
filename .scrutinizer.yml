@@ -29,13 +29,13 @@ build:
       tests:
         override:
           - php-scrutinizer-run --enable-security-analysis
-    tests:
+    coverage:
       dependencies:
         before:
           - "composer install --no-interaction --prefer-dist --no-progress"
       tests:
         override:
-          - "vendor/bin/phpunit --configuration phpunit.xml.dist"
-      coverage:
-        file: "cache/coverage/coverage.xml"
-        format: "clover"
+          - command: "vendor/bin/phpunit --configuration phpunit.xml.dist"
+            coverage:
+              file: "cache/coverage/coverage.xml"
+              format: "clover"
