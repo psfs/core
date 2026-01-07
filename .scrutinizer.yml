@@ -1,36 +1,7 @@
-checks:
-  php: true
-
-build:
-  environment:
-    php:
-      version: '8.2'
-      ini:
-        xdebug.mode: coverage
-    mysql: true
-    redis: true
-  tests:
-    override:
-      - php-scrutinizer-run
-      - command: 'vendor/bin/phpunit --coverage-clover=psfs-coverage'
-        coverage:
-          file: 'psfs-coverage'
-          format: 'clover'
-
-tools:
-  php_code_sniffer: true
-  php_mess_detector: true
-  php_cpd: true
-  php_pdepend: true
-  php_analyzer:
-    config:
-      parameter_reference_check: true
-      checkstyle: true
-      unused_code: true
-      simplify_boolean_return: true
-  external_code_coverage: false
-
 filter:
+  paths:
+    - "src/*"
+    - "tests/*"
   excluded_paths:
     - src/bin/*
     - src/command/*
@@ -42,3 +13,36 @@ filter:
     - config/*
     - logs/*
     - vendor/*
+
+build_failure_conditions:
+  - "issues.severity(>= MAJOR).new.exists"
+  - "project.metric('scrutinizer.test_coverage', < 0.70)"
+
+build:
+  environment:
+    php:
+      version: 8.2
+      ini:
+        memory_limit: "-1"
+        pecl_extensions:
+          - zip
+          - intl
+          - curl
+          - gmp
+    variables:
+      APP_ENV: "scrutinizer"
+  nodes:
+    analysis:
+      tests:
+        override:
+          - "php-scrutinizer-run"
+    tests:
+      dependencies:
+        before:
+          - "composer install --no-interaction --prefer-dist --no-progress"
+      tests:
+        override:
+          - "vendor/bin/phpunit --configuration phpunit.xml"
+      coverage:
+        file: "build/logs/clover.xml"
+        format: "clover"
