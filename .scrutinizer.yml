@@ -4,7 +4,7 @@ checks:
 build:
   environment:
     php:
-      version: '8.2'
+      version: '8.3'
       ini:
         xdebug.mode: coverage
     mysql: true
@@ -28,7 +28,7 @@ tools:
       checkstyle: true
       unused_code: true
       simplify_boolean_return: true
-  external_code_coverage: true
+  external_code_coverage: false
 
 filter:
   excluded_paths:
