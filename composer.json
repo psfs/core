@@ -6,7 +6,7 @@
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/psfs/propel.git"
+            "url": "https://github.com/psfs/propel"
         }
     ],
     "require": {
@@ -14,7 +14,7 @@
         "ext-json": "*",
         "ext-curl": "*",
         "ext-gmp": "*",
-        "propel/propel": "dev-master",
+        "propel/propel": "2.0.0",
         "symfony/console": "^7.3",
         "symfony/finder": "^7.3",
         "symfony/translation": "^7.3",
@@ -46,6 +46,9 @@
         "issues": "https://github.com/psfs/core/issues"
     },
     "autoload": {
+        "files": [
+            "src/bootstrap.php"
+        ],
         "psr-4": {
             "PSFS\\": "src/",
             "PSFS\\tests\\": "tests"
