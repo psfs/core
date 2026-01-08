@@ -70,7 +70,17 @@ class Request
      */
     private function parseHeaders(): array
     {
-        return getallheaders() ?: [];
+        $headers = [];
+        if (function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+        } else {
+            foreach ($_SERVER as $h => $v) {
+                if (preg_match('/HTTP_(.+)/', $h, $hp)) {
+                    $headers[$hp[1]] = $v;
+                }
+            }
+        }
+        return $headers;
     }
 
     /**

@@ -32,7 +32,7 @@ build:
     coverage:
       dependencies:
         before:
-          - "composer install --no-interaction --prefer-dist --no-progress"
+          - "composer install -o --no-interaction --no-progress"
       tests:
         override:
           - command: "vendor/bin/phpunit --configuration phpunit.xml.dist"
