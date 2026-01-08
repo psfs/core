@@ -2,6 +2,8 @@
 
 namespace PSFS\Command;
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+
 use Firebase\JWT\JWT;
 use PSFS\base\config\Config;
 use Symfony\Component\Console\Application;

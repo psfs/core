@@ -2,28 +2,14 @@
 
 namespace PSFS\command;
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+
 use Symfony\Component\Console\Application;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Consola de gestión de PSFS
+ * PSFS Console manager
  */
-// Load custom config
-$pwd = getcwd();
-$dir = $pwd . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR;
-
-require_once $dir . 'autoload.php';
-
-$project_path = $pwd . DIRECTORY_SEPARATOR . "src" . DIRECTORY_SEPARATOR;
-if (file_exists($project_path . "bootstrap.php")) {
-    include_once($project_path . "bootstrap.php");
-}
-if (file_exists($project_path . "autoload.php")) {
-    include_once($project_path . "autoload.php");
-}
-
-require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-
 $console = new Application();
 //Hidratamos con los comandos de PSFS
 $commands = new Finder();

@@ -2,6 +2,8 @@
 
 namespace PSFS\Command;
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+
 use PSFS\base\types\helpers\GeneratorHelper;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
