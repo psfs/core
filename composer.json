@@ -13,7 +13,8 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/psfs/propel.git"
+      "url": "https://github.com/psfs/propel.git",
+      "canonical": true
     }
   ],
   "require": {
@@ -65,6 +66,7 @@
     "src/bin/psfs"
   ],
   "minimum-stability": "stable",
+  "prefer-stable": true,
   "extra": {
     "branch-alias": {
       "dev-master": "2.x-dev"
