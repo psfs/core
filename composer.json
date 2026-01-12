@@ -22,7 +22,7 @@
     "ext-json": "*",
     "ext-curl": "*",
     "ext-gmp": "*",
-    "propel/propel": "dev-master",
+    "psfs/propel": "dev-master",
     "symfony/console": "^7.3",
     "symfony/finder": "^7.3",
     "symfony/translation": "^7.3",
