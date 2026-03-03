@@ -66,17 +66,13 @@ class AssetsTokenParser extends AbstractTokenParser
     protected function checkTemplateLine(TokenStream $stream)
     {
         $value = $stream->getCurrent();
-        switch ($value->getType()) {
-            case Token::STRING_TYPE:
-                $this->values[] = $this->parser->getExpressionParser()->parseExpression();
-                break;
-            case Token::BLOCK_END_TYPE:
-                $this->end = true;
-                $stream->next();
-                break;
-            default:
-                $stream->next();
-                break;
+        if ($value->test(Token::STRING_TYPE)) {
+            $this->values[] = $this->parser->parseExpression();
+        } elseif ($value->test(Token::BLOCK_END_TYPE)) {
+            $this->end = true;
+            $stream->next();
+        } else {
+            $stream->next();
         }
         return $stream;
     }
