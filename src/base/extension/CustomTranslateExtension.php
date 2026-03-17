@@ -204,6 +204,24 @@ class CustomTranslateExtension extends AbstractExtension
             self::$translations[self::$locale][$message] = $translation;
             self::$translationsKeys[self::$locale][mb_convert_case($message, MB_CASE_LOWER, "UTF-8")] = $message;
         }
+        if (!self::shouldPersistGeneratedTranslation()) {
+            return;
+        }
         file_put_contents(self::$filename, json_encode(self::$translations[self::$locale], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+
+    private static function shouldPersistGeneratedTranslation(): bool
+    {
+        if (!defined('PSFS_UNIT_TESTING_EXECUTION') || true !== PSFS_UNIT_TESTING_EXECUTION) {
+            return true;
+        }
+        $baseCatalogDir = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom';
+        $filenameDir = dirname(self::$filename);
+        $baseRealPath = realpath($baseCatalogDir);
+        $filenameDirRealPath = realpath($filenameDir);
+        if (false === $baseRealPath || false === $filenameDirRealPath) {
+            return true;
+        }
+        return $filenameDirRealPath !== $baseRealPath;
     }
 }

@@ -9,6 +9,7 @@ use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use Throwable;
 
 class AuthHelper
 {
@@ -21,6 +22,7 @@ class AuthHelper
     const SESSION_TOKEN = '659d0629624c0071863f3783e19608ffd9eb97e2';
     const EXPIRATION_TIMESTAMP_FORMAT = 'YmdHis';
     private static array $legacyFallbackTelemetry = [];
+    private static array $invalidInputTelemetry = [];
 
     /**
      * @return array
@@ -28,22 +30,10 @@ class AuthHelper
     public static function getAdminFromCookie(): array
     {
         $authCookie = Request::getInstance()->getCookie(self::generateProfileHash());
-        $user = $pass = null;
-        if (!empty($authCookie)) {
-            $secret = self::decrypt($authCookie, self::SESSION_TOKEN);
-            // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
-            if (false === $secret || !str_contains((string)$secret, ':')) {
-                $secret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
-                if (is_string($secret) && str_contains($secret, ':')) {
-                    self::logLegacyFallbackUsage('cookie_key_admin_token');
-                }
-            }
-            if (is_string($secret) && str_contains($secret, ':')) {
-                list($user, $pass) = explode(':', $secret, 2);
-            }
+        if (empty($authCookie)) {
+            return self::authTuple();
         }
-
-        return [$user, $pass];
+        return self::extractCredentialsFromCookie((string)$authCookie);
     }
 
     /**
@@ -58,56 +48,42 @@ class AuthHelper
 
     public static function checkBasicAuth(?string $user = null, ?string $pass = null, ?array $admins = []): array
     {
-        $request = Request::getInstance();
-        // Extract credentials from HTTP headers
-        $user = $user ?: $request->getServer('PHP_AUTH_USER');
-        $pass = $pass ?: $request->getServer('PHP_AUTH_PW');
-        if (NULL === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
-            list($user, $pass) = self::getAdminFromCookie();
+        $admins = is_array($admins) ? $admins : [];
+        [$candidateUser, $candidatePass] = self::resolveBasicCredentials($user, $pass, $admins);
+        if (null === $candidateUser || !array_key_exists((string)$candidateUser, $admins)) {
+            return self::authTuple();
         }
-        if (!array_key_exists((string)$user, $admins)) {
-            return [null, null];
-        }
-        $storedHash = (string)($admins[$user]['hash'] ?? '');
-        if ('' === $storedHash || null === $pass) {
-            return [null, null];
-        }
-        $legacyHash = sha1($user . $pass);
-        if (self::isPasswordHash($storedHash)) {
-            return password_verify($user . $pass, $storedHash) ? [$user, $storedHash] : [null, null];
-        }
-        if (hash_equals($storedHash, $legacyHash)) {
-            self::logLegacyFallbackUsage('basic_auth_legacy_sha1_hash');
-            return [$user, $legacyHash];
-        }
-
-        return [null, null];
+        return self::validateAdminHash($candidateUser, $candidatePass, $admins[$candidateUser] ?? []);
     }
 
     public static function checkComplexAuth(array $admins)
     {
-        $request = Request::getInstance();
-        $token = $request->getHeader('Authorization');
-        $user = $password = null;
-        $reqUserAgent = array_key_exists('HTTP_USER_AGENT', $_SERVER) ? $_SERVER['HTTP_USER_AGENT'] : 'psfs';
-        if (str_contains($token ?? '', 'Basic ')) {
-            $token = str_replace('Basic ', '', $token);
-            $now = new \DateTime('now', new \DateTimeZone('UTC'));
-            foreach ($admins as $admin => $profile) {
-                list($decrypted_user, $timestamp, $userAgent) = self::decodeToken($token, $profile['hash']);
-                if (!empty($decrypted_user) && !empty($timestamp)) {
-                    if (!empty($userAgent) && $userAgent === $reqUserAgent) {
-                        $expiration = \DateTime::createFromFormat(self::EXPIRATION_TIMESTAMP_FORMAT, $timestamp);
-                        if (false !== $expiration && $decrypted_user === $admin && $expiration > $now) {
-                            $user = $admin;
-                            $password = $profile['hash'];
-                            break;
-                        }
-                    }
-                }
+        $authorization = Request::getInstance()->getHeader('Authorization');
+        $token = self::extractAuthorizationToken($authorization, 'basic');
+        if (null === $token) {
+            if (!empty($authorization)) {
+                self::logInvalidAuthInput('complex_invalid_authorization_header');
+            }
+            return self::authTuple();
+        }
+        $requestUserAgent = self::extractRequestUserAgent();
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        foreach ($admins as $admin => $profile) {
+            [$decodedUser, $timestamp, $userAgent] = self::decodeToken($token, (string)($profile['hash'] ?? ''));
+            if (!self::isValidComplexTokenPayload($decodedUser, $timestamp, $userAgent, $requestUserAgent)) {
+                continue;
+            }
+            $expiration = \DateTime::createFromFormat(self::EXPIRATION_TIMESTAMP_FORMAT, (string)$timestamp);
+            if (false === $expiration) {
+                self::logInvalidAuthInput('complex_invalid_expiration_timestamp');
+                continue;
+            }
+            if ($decodedUser === $admin && $expiration > $now) {
+                return self::authTuple($admin, (string)($profile['hash'] ?? null));
             }
         }
-        return [$user, $password];
+        self::logInvalidAuthInput('complex_token_rejected');
+        return self::authTuple();
     }
 
     public static function encrypt(string $data, string $key): string
@@ -157,62 +133,75 @@ class AuthHelper
     {
         $user = $timestamp = $userAgent = null;
         $secret = self::decrypt($token, $password);
-        if (!empty($secret) && self::isJson($secret)) {
+        if (false === $secret || '' === trim((string)$secret)) {
+            self::logInvalidAuthInput('token_decrypt_failed');
+            return self::tokenTuple();
+        }
+        if (self::isJson($secret)) {
             $payload = json_decode($secret, true);
             if (is_array($payload)) {
-                $user = $payload['sub'] ?? null;
-                $timestamp = $payload['exp'] ?? null;
-                $userAgent = $payload['ua'] ?? null;
+                $user = isset($payload['sub']) ? (string)$payload['sub'] : null;
+                $timestamp = isset($payload['exp']) ? (string)$payload['exp'] : null;
+                $userAgent = isset($payload['ua']) ? (string)$payload['ua'] : null;
+                return self::tokenTuple($user, $timestamp, $userAgent);
             }
-        } else if (!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
-            list($user, $timestamp, $userAgent) = explode(Security::LOGGED_USER_TOKEN, $secret);
-            self::logLegacyFallbackUsage('token_payload_delimited');
+            self::logInvalidAuthInput('token_json_payload_invalid');
+            return self::tokenTuple();
         }
-        return [$user, $timestamp, $userAgent];
+        if (str_contains($secret, Security::LOGGED_USER_TOKEN)) {
+            [$user, $timestamp, $userAgent] = array_pad(explode(Security::LOGGED_USER_TOKEN, $secret), 3, null);
+            self::logLegacyFallbackUsage('token_payload_delimited');
+            return self::tokenTuple($user, $timestamp, $userAgent);
+        }
+        self::logInvalidAuthInput('token_payload_unknown_format');
+        return self::tokenTuple();
     }
 
     public static function checkJwtAuth(array $admins)
     {
-        $user = $hash = null;
-        $request = Request::getInstance();
-        $authorization = $request->getHeader('Authorization');
-        if (!empty($authorization)) {
-            $token = null;
-            if (preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches) === 1) {
-                $token = $matches[1];
-            }
-            if (null === $token) {
-                return [null, null];
-            }
-            $parts = explode('.', $token);
-            if (count($parts) > 1) {
-                $payload = json_decode(JWT::urlsafeB64Decode($parts[1]), true);
-                if (is_array($payload) && array_key_exists('sub', $payload)) {
-                    foreach ($admins as $admin => $profile) {
-                        if ($admin === $payload['sub']) {
-                            try {
-                                $decoded = (array)JWT::decode($token, new Key($profile['hash'], Config::getParam('jwt.alg', 'HS256')));
-                                if ($decoded === $payload) {
-                                    if(time() < (int)($decoded['iat'] ?? 0)) {
-                                        throw new SecurityException(t('Token not valid yet'));
-                                    }
-                                    if(time() > (int)($decoded['exp'] ?? 0)) {
-                                        throw new SecurityException(t('Token expired'));
-                                    }
-                                    // TODO check modules restrictions
-                                    $user = $admin;
-                                    $hash = $profile['hash'];
-                                }
-                            } catch (SecurityException|\DomainException|\UnexpectedValueException|\InvalidArgumentException $exception) {
-                                Logger::log($exception->getMessage(), LOG_ERR);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
+        $authorization = Request::getInstance()->getHeader('Authorization');
+        if (empty($authorization)) {
+            return self::authTuple();
         }
-        return [$user, $hash];
+        $token = self::extractAuthorizationToken($authorization, 'bearer');
+        if (null === $token) {
+            self::logInvalidAuthInput('jwt_invalid_authorization_header');
+            return self::authTuple();
+        }
+        $payload = self::decodeJwtPayloadWithoutVerification($token);
+        if (!is_array($payload) || !array_key_exists('sub', $payload)) {
+            self::logInvalidAuthInput('jwt_missing_subject');
+            return self::authTuple();
+        }
+        $subject = (string)$payload['sub'];
+        if (!array_key_exists($subject, $admins)) {
+            self::logInvalidAuthInput('jwt_subject_not_found');
+            return self::authTuple();
+        }
+        $profile = $admins[$subject] ?? [];
+        $hash = (string)($profile['hash'] ?? '');
+        if ('' === $hash) {
+            self::logInvalidAuthInput('jwt_hash_missing');
+            return self::authTuple();
+        }
+        try {
+            $decoded = (array)JWT::decode($token, new Key($hash, Config::getParam('jwt.alg', 'HS256')));
+            if ($decoded !== $payload) {
+                self::logInvalidAuthInput('jwt_payload_mismatch');
+                return self::authTuple();
+            }
+            if (time() < (int)($decoded['iat'] ?? 0)) {
+                throw new SecurityException(t('Token not valid yet'));
+            }
+            if (time() > (int)($decoded['exp'] ?? 0)) {
+                throw new SecurityException(t('Token expired'));
+            }
+            return self::authTuple($subject, $hash);
+        } catch (Throwable $exception) {
+            self::logInvalidAuthInput('jwt_decode_failure');
+            Logger::log('[AuthInvalid] jwt_decode_failure:' . get_class($exception), LOG_WARNING);
+            return self::authTuple();
+        }
     }
 
     private static function isPasswordHash(string $hash): bool
@@ -336,6 +325,148 @@ class AuthHelper
         return JSON_ERROR_NONE === json_last_error();
     }
 
+    /**
+     * @return array<string,bool>
+     */
+    public static function getLegacyFallbackTelemetry(): array
+    {
+        return self::$legacyFallbackTelemetry;
+    }
+
+    public static function resetLegacyFallbackTelemetry(): void
+    {
+        self::$legacyFallbackTelemetry = [];
+        self::$invalidInputTelemetry = [];
+    }
+
+    /**
+     * @param string|null $authorization
+     * @param string $scheme basic|bearer
+     * @return string|null
+     */
+    private static function extractAuthorizationToken(?string $authorization, string $scheme): ?string
+    {
+        if (null === $authorization || '' === trim($authorization)) {
+            return null;
+        }
+        $pattern = 'basic' === strtolower($scheme)
+            ? '/^Basic\s+(.+)$/i'
+            : '/^Bearer\s+(.+)$/i';
+        if (preg_match($pattern, $authorization, $matches) !== 1) {
+            return null;
+        }
+        $token = trim((string)($matches[1] ?? ''));
+        return '' === $token ? null : $token;
+    }
+
+    private static function resolveBasicCredentials(?string $user, ?string $pass, array $admins): array
+    {
+        $request = Request::getInstance();
+        $candidateUser = $user ?: $request->getServer('PHP_AUTH_USER');
+        $candidatePass = $pass ?: $request->getServer('PHP_AUTH_PW');
+        if (self::shouldTryCookieCredentials($candidateUser, $admins)) {
+            [$cookieUser, $cookiePass] = self::getAdminFromCookie();
+            if (null !== $cookieUser) {
+                $candidateUser = $cookieUser;
+                $candidatePass = $cookiePass;
+            }
+        }
+        return [is_string($candidateUser) ? $candidateUser : null, is_string($candidatePass) ? $candidatePass : null];
+    }
+
+    private static function shouldTryCookieCredentials(?string $user, array $admins): bool
+    {
+        return null === $user || (array_key_exists($user, $admins) && empty($admins[$user]));
+    }
+
+    private static function validateAdminHash(?string $user, ?string $pass, array $profile): array
+    {
+        if (null === $user || null === $pass) {
+            return self::authTuple();
+        }
+        $storedHash = (string)($profile['hash'] ?? '');
+        if ('' === $storedHash) {
+            return self::authTuple();
+        }
+        $legacyHash = sha1($user . $pass);
+        if (self::isPasswordHash($storedHash)) {
+            return password_verify($user . $pass, $storedHash)
+                ? self::authTuple($user, $storedHash)
+                : self::authTuple();
+        }
+        if (hash_equals($storedHash, $legacyHash)) {
+            self::logLegacyFallbackUsage('basic_auth_legacy_sha1_hash');
+            return self::authTuple($user, $legacyHash);
+        }
+        self::logInvalidAuthInput('basic_hash_mismatch');
+        return self::authTuple();
+    }
+
+    private static function extractCredentialsFromCookie(string $authCookie): array
+    {
+        $secret = self::decrypt($authCookie, self::SESSION_TOKEN);
+        if (is_string($secret) && str_contains($secret, ':')) {
+            [$user, $pass] = explode(':', $secret, 2);
+            return self::authTuple($user, $pass);
+        }
+        // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
+        $legacySecret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
+        if (is_string($legacySecret) && str_contains($legacySecret, ':')) {
+            self::logLegacyFallbackUsage('cookie_key_admin_token');
+            [$user, $pass] = explode(':', $legacySecret, 2);
+            return self::authTuple($user, $pass);
+        }
+        self::logInvalidAuthInput('cookie_payload_invalid');
+        return self::authTuple();
+    }
+
+    private static function decodeJwtPayloadWithoutVerification(string $token): ?array
+    {
+        try {
+            $parts = explode('.', $token);
+            if (count($parts) < 2) {
+                self::logInvalidAuthInput('jwt_parts_invalid');
+                return null;
+            }
+            $payload = json_decode(JWT::urlsafeB64Decode($parts[1]), true);
+            if (!is_array($payload)) {
+                self::logInvalidAuthInput('jwt_payload_invalid_json');
+                return null;
+            }
+            return $payload;
+        } catch (Throwable) {
+            self::logInvalidAuthInput('jwt_payload_decode_exception');
+            return null;
+        }
+    }
+
+    private static function isValidComplexTokenPayload(?string $user, ?string $timestamp, ?string $userAgent, string $requestUserAgent): bool
+    {
+        if (null === $user || null === $timestamp) {
+            return false;
+        }
+        if (null === $userAgent || $userAgent !== $requestUserAgent) {
+            self::logInvalidAuthInput('complex_user_agent_mismatch');
+            return false;
+        }
+        return true;
+    }
+
+    private static function extractRequestUserAgent(): string
+    {
+        return array_key_exists('HTTP_USER_AGENT', $_SERVER) ? (string)$_SERVER['HTTP_USER_AGENT'] : 'psfs';
+    }
+
+    private static function authTuple(?string $user = null, ?string $token = null): array
+    {
+        return [$user, $token];
+    }
+
+    private static function tokenTuple(?string $user = null, ?string $timestamp = null, ?string $userAgent = null): array
+    {
+        return [$user, $timestamp, $userAgent];
+    }
+
     private static function logLegacyFallbackUsage(string $context): void
     {
         if (array_key_exists($context, self::$legacyFallbackTelemetry)) {
@@ -343,5 +474,14 @@ class AuthHelper
         }
         self::$legacyFallbackTelemetry[$context] = true;
         Logger::log('[LegacyFallback] ' . $context, LOG_NOTICE);
+    }
+
+    private static function logInvalidAuthInput(string $context): void
+    {
+        if (array_key_exists($context, self::$invalidInputTelemetry)) {
+            return;
+        }
+        self::$invalidInputTelemetry[$context] = true;
+        Logger::log('[AuthInvalid] ' . $context, LOG_WARNING);
     }
 }

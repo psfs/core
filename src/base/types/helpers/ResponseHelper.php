@@ -21,25 +21,37 @@ class ResponseHelper
 
     public static function setHeader(string $header): void
     {
-        if (str_contains($header, ':')) {
-            list($key, $value) = explode(':', $header);
-        } else {
-            $key = 'Http Status';
-            $value = $header;
-        }
-        if (!in_array($key, self::$headers_sent)) {
+        $parsed = ResponseHeaderHelper::parseHeader($header);
+        $key = $parsed['normalized_key'];
+        $value = $parsed['value'];
+        $line = $parsed['line'];
+
+        if (ResponseHeaderHelper::allowsMultipleValues($key)) {
             if (!self::isTest()) {
-                header($header);
+                header($line, false);
             }
             self::$headers_sent[$key] = $value;
+            return;
         }
+
+        if (array_key_exists($key, self::$headers_sent) && self::$headers_sent[$key] === $value) {
+            return;
+        }
+
+        if (!self::isTest()) {
+            header($line, true);
+        }
+        self::$headers_sent[$key] = $value;
     }
 
     public static function dropHeader(string $header): void
     {
-        if (!in_array($header, self::$headers_sent)) {
-            header_remove($header);
-            unset(self::$headers_sent[$header]);
+        $key = ResponseHeaderHelper::normalizeHeaderKey($header);
+        if (array_key_exists($key, self::$headers_sent)) {
+            if (!self::isTest()) {
+                header_remove($header);
+            }
+            unset(self::$headers_sent[$key]);
         }
     }
 
@@ -50,89 +62,29 @@ class ResponseHelper
     public static function setCookieHeaders($cookies): void
     {
         if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
+            $isSecureRequest = self::isSecureRequest();
+            $defaultDomain = Request::getInstance()->getServerName();
             foreach ($cookies as $cookie) {
-                if (!is_array($cookie) || !array_key_exists("name", $cookie) || !array_key_exists("value", $cookie)) {
+                if (!is_array($cookie)) {
                     continue;
                 }
-
-                $httpOnly = array_key_exists('httpOnly', $cookie)
-                    ? (bool)$cookie['httpOnly']
-                    : ((array_key_exists('http', $cookie)) ? (bool)$cookie['http'] : true);
-                $secure = array_key_exists('secure', $cookie)
-                    ? (bool)$cookie['secure']
-                    : self::isSecureRequest();
-                $sameSite = self::normalizeSameSite(
-                    (array_key_exists('sameSite', $cookie)) ? $cookie['sameSite'] : ($cookie['samesite'] ?? 'Lax')
-                );
-                $cookieDomain = self::normalizeCookieDomain(
-                    (array_key_exists('domain', $cookie)) ? $cookie['domain'] : Request::getInstance()->getServerName()
-                );
-
-                if ($sameSite === 'None' && $secure === false) {
-                    // Required by modern browsers for SameSite=None cookies.
-                    $secure = true;
+                $payload = ResponseCookieHelper::buildCookiePayload($cookie, $isSecureRequest, $defaultDomain);
+                if (null === $payload) {
+                    continue;
                 }
-
-                $options = [
-                    'expires' => array_key_exists('expire', $cookie) ? (int)$cookie['expire'] : 0,
-                    'path' => (array_key_exists('path', $cookie)) ? (string)$cookie["path"] : '/',
-                    'secure' => $secure,
-                    'httponly' => $httpOnly,
-                    'samesite' => $sameSite,
-                ];
-                if (!empty($cookieDomain)) {
-                    $options['domain'] = $cookieDomain;
-                }
-
-                setcookie((string)$cookie["name"], (string)$cookie["value"], $options);
+                setcookie($payload['name'], $payload['value'], $payload['options']);
             }
         }
     }
 
     public static function normalizeCookieDomain(?string $domain): ?string
     {
-        if (empty($domain)) {
-            return null;
-        }
-
-        $domain = trim($domain);
-        if ($domain === '') {
-            return null;
-        }
-
-        if (str_contains($domain, '://')) {
-            $parsed = parse_url($domain);
-            if (!is_array($parsed) || empty($parsed['host'])) {
-                return null;
-            }
-            $domain = (string)$parsed['host'];
-        }
-
-        // Strip explicit port if present.
-        if (str_contains($domain, ':')) {
-            $parts = explode(':', $domain);
-            $domain = (string)$parts[0];
-        }
-
-        $domain = strtolower(trim($domain));
-        if ($domain === '' || $domain === 'localhost' || filter_var($domain, FILTER_VALIDATE_IP)) {
-            // Do not force domain for localhost or IP based hosts.
-            return null;
-        }
-
-        return $domain;
+        return ResponseCookieHelper::normalizeCookieDomain($domain);
     }
 
     public static function normalizeSameSite(?string $sameSite): string
     {
-        $value = strtolower(trim((string)$sameSite));
-        if ($value === 'strict') {
-            return 'Strict';
-        }
-        if ($value === 'none') {
-            return 'None';
-        }
-        return 'Lax';
+        return ResponseCookieHelper::normalizeSameSite($sameSite);
     }
 
     public static function isSecureRequest(): bool
@@ -219,7 +171,7 @@ class ResponseHelper
             $exception = new Exception(t('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($exception->getCode());
-        if ($isJson || false !== stripos(Request::getInstance()->getServer('CONTENT_TYPE', 'application/json'), 'json')) {
+        if (self::shouldReturnJsonNotFound($isJson)) {
             $response = new JsonResponse(null, false, 0, 0, $exception->getMessage());
             return $template->output(json_encode($response), 'application/json');
         }
@@ -235,5 +187,18 @@ class ResponseHelper
             ));
         }
         return 200;
+    }
+
+    public static function shouldReturnJsonNotFound(bool $isJson = false): bool
+    {
+        if ($isJson) {
+            return true;
+        }
+
+        $request = Request::getInstance();
+        $contentType = strtolower((string)$request->getServer('CONTENT_TYPE', ''));
+        $accept = strtolower((string)$request->getServer('HTTP_ACCEPT', ''));
+
+        return str_contains($contentType, 'json') || str_contains($accept, 'json');
     }
 }

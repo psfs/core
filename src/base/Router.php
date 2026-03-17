@@ -64,9 +64,9 @@ class Router
      */
     public function init()
     {
-        list($this->routing, $this->slugs) = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, true);
-        $this->domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, true);
-        if (empty($this->routing) || Config::getParam('debug', true)) {
+        [$this->routing, $this->slugs] = $this->loadRoutingCache();
+        $this->domains = $this->loadDomainsCache();
+        if ($this->shouldRebuildRouting()) {
             $this->debugLoad();
         }
         $this->checkExternalModules(false);
@@ -101,20 +101,16 @@ class Router
     {
         Inspector::stats('[Router] Executing the request', Inspector::SCOPE_DEBUG);
         try {
-            //Search action and execute
             return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
             Logger::log(t('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
-            Logger::log($r->getMessage(), LOG_WARNING);
-            $code = $r->getCode();
+            throw $this->mapNotFoundException($r);
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }
-
-        throw new RouterException(t('Página no encontrada'), $code);
     }
 
     /**
@@ -128,33 +124,13 @@ class Router
     protected function searchAction($route)
     {
         Inspector::stats('[Router] Searching action to execute: ' . $route, Inspector::SCOPE_DEBUG);
-        //Revisamos si tenemos la ruta registrada
-        $parts = parse_url($route);
-        $path = array_key_exists('path', $parts) ? $parts['path'] : $route;
-        $httpRequest = Request::getInstance()->getMethod();
-        foreach ($this->routing as $pattern => $action) {
-            list($httpMethod, $routePattern) = RouterHelper::extractHttpRoute($pattern);
-            $matched = RouterHelper::matchRoutePattern($routePattern, $path);
-            if ($matched && ($httpMethod === 'ALL' || $httpRequest === $httpMethod) && RouterHelper::compareSlashes($routePattern, $path)) {
-                self::setCheckedRoute($action);
-                // Checks restricted access
-                SecurityHelper::checkRestrictedAccess($route);
-                $get = RouterHelper::extractComponents($route, $routePattern);
-                /** @var $class Controller */
-                $class = RouterHelper::getClassToCall($action);
-                try {
-                    if ($this->checkRequirements($action, $get)) {
-                        return $this->executeCachedRoute($route, $action, $class, $get);
-                    }
-
-                    throw new RouterException(t('Preconditions failed'), 412);
-                } catch (Exception $e) {
-                    Logger::log($e->getMessage(), LOG_ERR);
-                    throw $e;
-                }
-            }
+        [$path, $httpRequest] = $this->buildMatchContext((string)$route);
+        $matchedRoute = $this->findMatchingRoute($path, $httpRequest);
+        if (null === $matchedRoute) {
+            throw new RouterException(t('Ruta no encontrada'));
         }
-        throw new RouterException(t('Ruta no encontrada'));
+        [$pattern, $action] = $matchedRoute;
+        return $this->executeMatchedRoute((string)$route, $pattern, $action);
     }
 
     /**
@@ -185,7 +161,7 @@ class Router
      * @throws ReflectionException
      * @throws GeneratorException
      */
-    private function generateRouting()
+    protected function generateRouting()
     {
         $base = SOURCE_DIR;
         $modulesPath = realpath(CORE_DIR);
@@ -212,19 +188,13 @@ class Router
     public function hydrateRouting()
     {
         $this->generateRouting();
-        $home = Config::getParam('home.action', 'admin');
-        if (null !== $home || $home !== '') {
-            $homeParams = null;
-            foreach ($this->routing as $pattern => $params) {
-                list($method, $route) = RouterHelper::extractHttpRoute($pattern);
-                if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
-                    $homeParams = $params;
-                }
-                unset($method);
-            }
-            if (null !== $homeParams) {
-                $this->routing['/'] = $homeParams;
-            }
+        $home = $this->normalizeHomeAction(Config::getParam('home.action', 'admin'));
+        if (null === $home) {
+            return;
+        }
+        $homeParams = $this->resolveHomeRouteParams($home);
+        if (null !== $homeParams) {
+            $this->routing['/'] = $homeParams;
         }
     }
 
@@ -360,5 +330,103 @@ class Router
     public function httpNotFound(\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);
+    }
+
+    private function loadRoutingCache(): array
+    {
+        $cached = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, true);
+        if (is_array($cached) && count($cached) === 2) {
+            return [$cached[0] ?: [], $cached[1] ?: []];
+        }
+        return [[], []];
+    }
+
+    private function loadDomainsCache(): array
+    {
+        $domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, true);
+        return is_array($domains) ? $domains : [];
+    }
+
+    private function shouldRebuildRouting(): bool
+    {
+        return empty($this->routing) || Config::getParam('debug', true);
+    }
+
+    private function mapNotFoundException(RouterException $exception): RouterException
+    {
+        Logger::log($exception->getMessage(), LOG_WARNING);
+        return new RouterException(t('Página no encontrada'), $exception->getCode());
+    }
+
+    private function buildMatchContext(string $route): array
+    {
+        $parts = parse_url($route);
+        $path = array_key_exists('path', $parts) ? $parts['path'] : $route;
+        return [$path, Request::getInstance()->getMethod()];
+    }
+
+    private function findMatchingRoute(string $path, string $httpRequest): ?array
+    {
+        $fallback = null;
+        foreach ($this->routing as $pattern => $action) {
+            [$httpMethod, $routePattern] = RouterHelper::extractHttpRoute($pattern);
+            if (!RouterHelper::matchRoutePattern($routePattern, $path) || !RouterHelper::compareSlashes($routePattern, $path)) {
+                continue;
+            }
+            if ($httpMethod === $httpRequest) {
+                return [$pattern, $action];
+            }
+            if ($httpMethod === 'ALL' && null === $fallback) {
+                $fallback = [$pattern, $action];
+            }
+        }
+        return $fallback;
+    }
+
+    /**
+     * @param string $route
+     * @param string $pattern
+     * @param array $action
+     * @return mixed
+     * @throws Exception
+     */
+    private function executeMatchedRoute(string $route, string $pattern, array $action): mixed
+    {
+        [, $routePattern] = RouterHelper::extractHttpRoute($pattern);
+        self::setCheckedRoute($action);
+        SecurityHelper::checkRestrictedAccess($route);
+        $params = RouterHelper::extractComponents($route, $routePattern);
+        /** @var Controller $class */
+        $class = RouterHelper::getClassToCall($action);
+        try {
+            if ($this->checkRequirements($action, $params)) {
+                return $this->executeCachedRoute($route, $action, $class, $params);
+            }
+            throw new RouterException(t('Preconditions failed'), 412);
+        } catch (Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR);
+            throw $e;
+        }
+    }
+
+    private function normalizeHomeAction(mixed $home): ?string
+    {
+        if (null === $home) {
+            return null;
+        }
+        $value = trim((string)$home);
+        return '' === $value ? null : $value;
+    }
+
+    private function resolveHomeRouteParams(string $home): ?array
+    {
+        $homeParams = null;
+        foreach ($this->routing as $pattern => $params) {
+            [, $route] = RouterHelper::extractHttpRoute($pattern);
+            if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
+                $homeParams = $params;
+            }
+        }
+        return is_array($homeParams) ? $homeParams : null;
     }
 }

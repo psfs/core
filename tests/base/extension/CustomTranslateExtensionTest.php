@@ -105,6 +105,35 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertSame($translation, $storedCatalog[$message]);
     }
 
+    public function testWrapperSourceOfTruthProviderOrderContract(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+        ]);
+        I18nHelper::setLocale('en_GB', force: true);
+        I18nHelper::clearMissingTranslationsReport();
+
+        $knownMessage = 'Página no encontrada';
+        $this->setRuntimeCatalog('en_GB', [
+            $knownMessage => 'Custom provider wins',
+        ]);
+
+        // Source of truth wrapper contract: merged custom/base catalog first.
+        $this->assertSame('Custom provider wins', CustomTranslateExtension::_($knownMessage));
+
+        // Then gettext fallback when catalog does not contain the key.
+        $this->setRuntimeCatalog('en_GB', []);
+        $this->assertSame(gettext($knownMessage), CustomTranslateExtension::_($knownMessage));
+
+        // Finally original message when neither provider resolves it.
+        $missingMessage = '__I18N_WRAPPER_MISSING_' . uniqid('', true);
+        $this->assertSame($missingMessage, CustomTranslateExtension::_($missingMessage));
+        $report = I18nHelper::getMissingTranslationsReport();
+        $this->assertArrayHasKey('en_GB', $report);
+        $this->assertContains($missingMessage, $report['en_GB']);
+    }
+
     private function overrideConfig(array $override): void
     {
         $config = $this->configBackup;
@@ -136,5 +165,29 @@ class CustomTranslateExtensionTest extends TestCase
         $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_TAG, null);
         $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_VERSION, null);
         $security->setSessionKey(CustomTranslateExtension::CUSTOM_LOCALE_SESSION_KEY, null);
+    }
+
+    private function setRuntimeCatalog(string $locale, array $catalog): void
+    {
+        $reflection = new \ReflectionClass(CustomTranslateExtension::class);
+        $translationsProperty = $reflection->getProperty('translations');
+        $translationsProperty->setAccessible(true);
+        $translationsProperty->setValue(null, [
+            $locale => $catalog,
+        ]);
+
+        $map = [];
+        foreach ($catalog as $key => $_value) {
+            $map[mb_convert_case($key, MB_CASE_LOWER, 'UTF-8')] = $key;
+        }
+        $keysProperty = $reflection->getProperty('translationsKeys');
+        $keysProperty->setAccessible(true);
+        $keysProperty->setValue(null, [
+            $locale => $map,
+        ]);
+
+        $localeProperty = $reflection->getProperty('locale');
+        $localeProperty->setAccessible(true);
+        $localeProperty->setValue(null, $locale);
     }
 }
