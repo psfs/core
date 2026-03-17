@@ -23,7 +23,8 @@ class Inspector
     {
         return [
             'ts' => microtime(true),
-            'mem' => memory_get_usage(),
+            // Use real memory mode to stay consistent with PSFS_START_MEM.
+            'mem' => memory_get_usage(true),
             'files' => count(get_required_files()),
             'name' => $name ?: static::class,
         ];

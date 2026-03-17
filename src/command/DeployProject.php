@@ -4,7 +4,6 @@ namespace PSFS\Command;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-use PSFS\base\config\Config;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
@@ -32,10 +31,10 @@ $console
         GeneratorHelper::createRoot($path, $output);
         $output->writeln(str_replace('%path', $path, t("Document root re-generado en %path")));
 
-        $version = DeployHelper::updateCacheVar();
-        $output->writeln(str_replace('%version', $version, t("Versión de cache actualizada a %version")));
+        $cacheState = DeployHelper::refreshCacheState();
+        $output->writeln(str_replace('%version', $cacheState['version'], t("Versión de cache actualizada a %version")));
 
-        if (Config::clearConfigFiles()) {
+        if ($cacheState['config_files_cleaned']) {
             $output->writeln(t("Ficheros de configuración limpiados con éxito"));
         } else {
             $output->writeln(t("No se han podido limpiar uno o más ficheros de la carpeta de configuración"));
@@ -46,4 +45,3 @@ $console
         $router->simpatize();
         $output->writeln(t("Rutas del proyecto generadas con éxito"));
     });
-

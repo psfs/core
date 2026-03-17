@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types\traits\Router;
 
+use PSFS\base\Cache;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\config\Config;
@@ -48,7 +49,13 @@ trait RouterCacheFlowTrait
 
     private function shouldRebuildRouting(): bool
     {
-        return empty($this->routing) || Config::getParam('debug', true);
+        if (empty($this->routing)) {
+            return true;
+        }
+        if (!Config::getParam('debug', true)) {
+            return false;
+        }
+        return !$this->isRoutingMetaFresh();
     }
 
     private function mapNotFoundException(RouterException $exception): RouterException
@@ -101,5 +108,32 @@ trait RouterCacheFlowTrait
             }
         }
         return is_array($homeParams) ? $homeParams : null;
+    }
+
+    private function isRoutingMetaFresh(): bool
+    {
+        $meta = $this->loadRoutingMeta();
+        if (!is_array($meta) || empty($meta['fingerprint'])) {
+            return false;
+        }
+        $currentFingerprint = $this->calculateRoutingFingerprint();
+        return hash_equals((string)$meta['fingerprint'], (string)$currentFingerprint);
+    }
+
+    private function loadRoutingMeta(): array
+    {
+        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::ROUTING_META_FILE;
+        $meta = $this->cache->getDataFromFile($metaPath, Cache::JSON, true);
+        return is_array($meta) ? $meta : [];
+    }
+
+    private function storeRoutingMeta(): void
+    {
+        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::ROUTING_META_FILE;
+        $payload = [
+            'fingerprint' => $this->calculateRoutingFingerprint(),
+            'updated_at' => date('c'),
+        ];
+        $this->cache->storeData($metaPath, $payload, Cache::JSON, true);
     }
 }

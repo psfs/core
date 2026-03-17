@@ -34,7 +34,8 @@ trait SystemTrait
      */
     public function getMem($unit = "Bytes")
     {
-        $use = memory_get_usage() - $this->mem;
+        // Keep same mode as bootstrap baseline (PSFS_START_MEM uses memory_get_usage(true)).
+        $use = memory_get_usage(true) - $this->mem;
         switch ($unit) {
             case "KBytes":
                 $use /= 1024;

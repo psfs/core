@@ -59,8 +59,8 @@ class Dispatcher extends Singleton
     {
         Config::getInstance();
         Inspector::stats('[Dispatcher] Dispatcher init', Inspector::SCOPE_DEBUG);
-        parent::init();
         $this->initiateStats();
+        parent::init();
         I18nHelper::setLocale();
         $this->bindWarningAsExceptions();
         $this->actualUri = Request::getInstance()->getServer('REQUEST_URI');

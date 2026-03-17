@@ -249,4 +249,38 @@ trait ModulesTrait
             }
         }
     }
+
+    /**
+     * Builds a lightweight routing fingerprint from controller/api PHP files.
+     * Used in debug mode to skip full route regeneration when nothing changed.
+     */
+    protected function calculateRoutingFingerprint(): string
+    {
+        $seedParts = [];
+        $scanTargets = [SOURCE_DIR];
+        $modulesPath = realpath(CORE_DIR);
+        if (is_string($modulesPath) && $modulesPath !== '') {
+            $scanTargets[] = $modulesPath;
+        }
+
+        foreach ($scanTargets as $origin) {
+            if (!is_dir($origin)) {
+                continue;
+            }
+            $finder = new Finder();
+            $files = $finder
+                ->files()
+                ->in($origin)
+                ->path('/(controller|api)/i')
+                ->depth('< 3')
+                ->name('*.php');
+            foreach ($files as $file) {
+                $realPath = $file->getRealPath() ?: $file->getPathname();
+                $seedParts[] = $realPath . '|' . $file->getMTime() . '|' . $file->getSize();
+            }
+        }
+
+        sort($seedParts);
+        return sha1(implode(';', $seedParts));
+    }
 }

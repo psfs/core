@@ -84,4 +84,30 @@ class GeneratorHelperTest extends TestCase
         }
         $this->assertTrue(abs(count(array_keys($configPrevious)) - count(array_keys($config))) < 2, 'There are more than 1 key different in the config');
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function testRefreshCacheStateCleansGeneratedConfigArtifacts()
+    {
+        $artifacts = [
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json',
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json',
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'routes.meta.json',
+        ];
+        foreach ($artifacts as $artifact) {
+            file_put_contents($artifact, json_encode(['test' => true]));
+            $this->assertFileExists($artifact);
+        }
+
+        $state = DeployHelper::refreshCacheState();
+        $this->assertArrayHasKey('version', $state);
+        $this->assertArrayHasKey('config_files_cleaned', $state);
+        $this->assertTrue($state['config_files_cleaned']);
+        $this->assertSame($state['version'], Config::getParam(DeployHelper::CACHE_VAR_TAG));
+
+        foreach ($artifacts as $artifact) {
+            $this->assertFileDoesNotExist($artifact);
+        }
+    }
 }

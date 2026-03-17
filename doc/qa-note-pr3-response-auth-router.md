@@ -1,25 +1,24 @@
 # QA Note PR-3 (non-blocking)
 
-Fecha: 2026-03-17  
-Ámbito revisado: `ResponseHelper`, `AuthHelper`, `Router`  
-Tipo: revisión de seguridad/calidad/performance, sin bloquear entrega
+Date: 2026-03-17  
+Reviewed scope: `ResponseHelper`, `AuthHelper`, `Router`  
+Type: security/quality/performance review, non-blocking for delivery
 
-## Hallazgos y ajustes mínimos recomendados
+## Findings and minimum recommended adjustments
 
-1. `Router::executeCachedRoute` mezcla params con prioridad final de query string.
-Recomendación: evitar que `Request::getQueryParams()` sobreescriba params de ruta críticos (`id`, `slug`, etc.) en acciones sensibles.  
-Ajuste mínimo: merge con prioridad de ruta (`array_merge(query, actionDefaults, routeParams)` o allowlist de override).
+1. `Router::executeCachedRoute` mixes params with query-string taking final priority.
+Recommendation: prevent `Request::getQueryParams()` from overwriting critical route params (`id`, `slug`, etc.) in sensitive actions.  
+Minimum fix: merge with route-priority (`array_merge(query, actionDefaults, routeParams)`) or use an override allowlist.
 
-2. `AuthHelper::checkComplexAuth` valida token Basic con `str_contains`.
-Recomendación: usar validación de prefijo estricto (`preg_match('/^Basic\\s+/i', ...)`) para evitar matches parciales ambiguos.  
-Impacto: endurecimiento de parsing, sin romper contrato funcional esperado.
+2. `AuthHelper::checkComplexAuth` validates Basic token using `str_contains`.
+Recommendation: use strict prefix validation (`preg_match('/^Basic\\s+/i', ...)`) to avoid ambiguous partial matches.  
+Impact: stronger parsing without breaking the expected functional contract.
 
-3. `AuthHelper` mantiene fallback legacy criptográfico y de hashes.
-Estado: correcto para compatibilidad legacy controlada.  
-Recomendación: añadir contador/telemetría agregada por contexto (no por request) para planificar retirada progresiva sin ruido de logs.
+3. `AuthHelper` keeps legacy crypto/hash fallback.
+Status: correct for controlled legacy compatibility.  
+Recommendation: add aggregated counter/telemetry by context (not per request) to plan progressive deprecation without noisy logs.
 
-## Estado general
+## General status
 
-- No se detectan regressions bloqueantes en los cambios revisados.
-- Las recomendaciones anteriores son incrementales y de bajo riesgo.
-
+- No blocking regressions were detected in the reviewed changes.
+- The recommendations above are incremental and low risk.

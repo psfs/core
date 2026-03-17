@@ -33,6 +33,7 @@ class Router
     use RouterExecutionTrait;
 
     const PSFS_BASE_NAMESPACE = 'PSFS';
+    private const ROUTING_META_FILE = 'routes.meta.json';
 
     /**
      * @var Cache $cache
@@ -87,6 +88,7 @@ class Router
             Logger::log('Begin routes load');
             $this->hydrateRouting();
             $this->simpatize();
+            $this->storeRoutingMeta();
             Logger::log('End routes load');
         } else {
             Logger::log('Routes generation skipped');

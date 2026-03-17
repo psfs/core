@@ -159,6 +159,10 @@ class ConfigTest extends TestCase
     public function testCleaningConfigFiles()
     {
         foreach (Config::$cleanable_config_files as $cleanable_config_file) {
+            $path = CONFIG_DIR . DIRECTORY_SEPARATOR . $cleanable_config_file;
+            if (!file_exists($path)) {
+                file_put_contents($path, '{}');
+            }
             $this->assertFileExists(CONFIG_DIR . DIRECTORY_SEPARATOR . $cleanable_config_file);
         }
         Config::clearConfigFiles();

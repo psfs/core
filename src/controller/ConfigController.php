@@ -81,12 +81,15 @@ class ConfigController extends Admin
         $form->hydrate();
         if ($form->isValid()) {
             $debug = Config::getInstance()->getDebugMode();
-            $newDebug = $form->getFieldValue("debug");
             if (Config::save($form->getData(), $form->getExtraData())) {
                 Logger::log(t('Configuración guardada correctamente'));
-                //Verificamos si tenemos que limpiar la cache del DocumentRoot
-                if (boolval($debug) !== boolval($newDebug)) {
-                    DeployHelper::updateCacheVar();
+                $runtimeDebug = (bool)Config::getParam('debug', false);
+                // En producción (debug=0) siempre refrescamos cache.var e invalidamos artefactos de config.
+                if (!$runtimeDebug) {
+                    DeployHelper::refreshCacheState();
+                }
+                // Verificamos si tenemos que limpiar la cache del DocumentRoot.
+                if (boolval($debug) !== $runtimeDebug) {
                     GeneratorHelper::clearDocumentRoot();
                 }
                 Security::getInstance()->setFlash("callback_message", t("Configuración actualizada correctamente"));
