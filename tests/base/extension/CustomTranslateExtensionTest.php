@@ -155,6 +155,31 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertSame('Hello from session cache', $translated);
     }
 
+    public function testExtensionMetadataAndFilterContract(): void
+    {
+        $extension = new CustomTranslateExtension();
+        $this->assertSame('PSFSi18n', $extension->getName());
+        $filters = $extension->getFilters();
+        $this->assertNotEmpty($filters);
+        $this->assertNotEmpty($extension->getTokenParsers());
+    }
+
+    public function testForceReloadResolvesLocaleAliasAndCustomBaseFallback(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+        ]);
+        $security = Security::getInstance();
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, 'en');
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'en');
+        $security->setSessionKey(CustomTranslateExtension::CUSTOM_LOCALE_SESSION_KEY, '__missing_custom_key__');
+
+        $translated = CustomTranslateExtension::_('Página no encontrada', null, true);
+        $this->assertIsString($translated);
+        $this->assertNotSame('', $translated);
+    }
+
     private function overrideConfig(array $override): void
     {
         $config = $this->configBackup;

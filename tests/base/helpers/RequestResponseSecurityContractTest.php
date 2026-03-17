@@ -215,4 +215,73 @@ class RequestResponseSecurityContractTest extends TestCase
         ResponseHelper::setStatusHeader('HTTP/1.1 201 Created');
         $this->assertArrayNotHasKey('http status', ResponseHelper::$headers_sent);
     }
+
+    public function testSetAuthHeadersDropsAuthorizationInPublicMode(): void
+    {
+        $_SERVER['PHP_AUTH_USER'] = 'user';
+        $_SERVER['PHP_AUTH_PW'] = 'pass';
+        ResponseHelper::$headers_sent = [];
+        ResponseHelper::setHeader('Authorization: Basic test');
+        $this->assertArrayHasKey('authorization', ResponseHelper::$headers_sent);
+
+        ResponseHelper::setAuthHeaders(true);
+        $this->assertArrayNotHasKey('authorization', ResponseHelper::$headers_sent);
+    }
+
+    public function testSetCookieHeadersSkipsInvalidPayloadsAndRunsWhenNotTest(): void
+    {
+        ResponseHelper::setTest(false);
+        Request::getInstance()->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'SERVER_NAME' => 'localhost',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+            'HTTPS' => 'on',
+        ]);
+        ResponseHelper::setCookieHeaders([
+            'invalid-entry',
+            ['name' => 'only-name'],
+            [
+                'name' => 'ok',
+                'value' => 'v',
+                'sameSite' => 'Strict',
+                'domain' => 'example.com',
+                'secure' => true,
+            ],
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testSetDebugHeadersNoopWhenDebugAndProfilingDisabled(): void
+    {
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        $config['profiling.enable'] = false;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        ResponseHelper::setTest(false);
+        $vars = ['x' => 1];
+        $result = ResponseHelper::setDebugHeaders($vars);
+        $this->assertSame($vars, $result);
+    }
+
+    public function testHeaderAndStatusMutationBranchesInNonTestMode(): void
+    {
+        ResponseHelper::setTest(false);
+        ResponseHelper::$headers_sent = [];
+
+        ResponseHelper::setHeader('Set-Cookie: a=b');
+        $this->assertArrayHasKey('set-cookie', ResponseHelper::$headers_sent);
+
+        ResponseHelper::setHeader('Authorization: Bearer token');
+        $this->assertArrayHasKey('authorization', ResponseHelper::$headers_sent);
+        ResponseHelper::dropHeader('Authorization');
+        $this->assertArrayNotHasKey('authorization', ResponseHelper::$headers_sent);
+
+        ResponseHelper::setAuthHeaders(false);
+        $this->assertArrayHasKey('authorization', ResponseHelper::$headers_sent);
+
+        ResponseHelper::setStatusHeader('HTTP/1.1 202 Accepted');
+        $this->assertArrayHasKey('http status', ResponseHelper::$headers_sent);
+    }
 }

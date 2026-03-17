@@ -70,6 +70,7 @@
       "@clearCache",
       "@clearViewCache"
     ],
+    "coverage:top10": "php tests/coverage/check-top10-coverage.php cache/coverage.xml 85",
     "clearCache": "[ -d ./cache/reflections ] && mv ./cache/reflections ./cache/.reflections_$(date +%Y%m%d%H%M%S) || echo 'Reflections folder does not exists.'",
     "clearViewCache": "[ -d ./cache/twig ] && rm -rf ./cache/twig || echo 'Twig cache folder does not exists.'"
   }

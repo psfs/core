@@ -203,6 +203,106 @@ class AuthHelperTest extends TestCase
         $this->assertNull($hash);
     }
 
+    public function testCheckComplexAuthReturnsAdminForValidToken(): void
+    {
+        $admin = 'complex_admin';
+        $hash = sha1($admin . 'secret');
+        $exp = (new \DateTime('now'))->modify('+10 minutes')->format(AuthHelper::EXPIRATION_TIMESTAMP_FORMAT);
+        $token = AuthHelper::encrypt(json_encode([
+            'sub' => $admin,
+            'exp' => $exp,
+            'ua' => 'phpunit-auth-helper',
+        ]), $hash);
+
+        $this->bootstrapRequest([
+            'HTTP_AUTHORIZATION' => 'Basic ' . $token,
+            'HTTP_USER_AGENT' => 'phpunit-auth-helper',
+        ]);
+        [$user, $tokenHash] = AuthHelper::checkComplexAuth([
+            $admin => ['hash' => $hash],
+        ]);
+
+        $this->assertSame($admin, $user);
+        $this->assertSame($hash, $tokenHash);
+    }
+
+    public function testCheckComplexAuthHandlesInvalidExpirationTimestamp(): void
+    {
+        $admin = 'complex_invalid_exp';
+        $hash = sha1($admin . 'secret');
+        $token = AuthHelper::encrypt(json_encode([
+            'sub' => $admin,
+            'exp' => 'invalid-exp',
+            'ua' => 'phpunit-auth-helper',
+        ]), $hash);
+
+        $this->bootstrapRequest([
+            'HTTP_AUTHORIZATION' => 'Basic ' . $token,
+            'HTTP_USER_AGENT' => 'phpunit-auth-helper',
+        ]);
+        [$user, $tokenHash] = AuthHelper::checkComplexAuth([
+            $admin => ['hash' => $hash],
+        ]);
+
+        $this->assertNull($user);
+        $this->assertNull($tokenHash);
+    }
+
+    public function testDecodeTokenCoversNonArrayJsonAndUnknownFormats(): void
+    {
+        $key = 'decode_key';
+        [$u1, $t1, $ua1] = AuthHelper::decodeToken(AuthHelper::encrypt('true', $key), $key);
+        $this->assertNull($u1);
+        $this->assertNull($t1);
+        $this->assertNull($ua1);
+
+        [$u2, $t2, $ua2] = AuthHelper::decodeToken(AuthHelper::encrypt('plain-secret', $key), $key);
+        $this->assertNull($u2);
+        $this->assertNull($t2);
+        $this->assertNull($ua2);
+    }
+
+    public function testCheckJwtAuthCoversMissingSubjectAndHashCases(): void
+    {
+        $jwtKey = str_repeat('k', 32);
+        $token = JWT::encode(['sub' => 'jwt-user', 'iat' => time() - 5, 'exp' => time() + 30], $jwtKey, 'HS256');
+
+        $this->bootstrapRequest(['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        [$user, $hash] = AuthHelper::checkJwtAuth(['other-user' => ['hash' => $jwtKey]]);
+        $this->assertNull($user);
+        $this->assertNull($hash);
+
+        [$user, $hash] = AuthHelper::checkJwtAuth(['jwt-user' => ['hash' => '']]);
+        $this->assertNull($user);
+        $this->assertNull($hash);
+    }
+
+    public function testCheckJwtAuthCoversNotYetValidAndExpiredBranches(): void
+    {
+        $subject = 'jwt-timing-user';
+        $secret = sha1($subject . ':pwd');
+
+        $futureToken = JWT::encode([
+            'sub' => $subject,
+            'iat' => time() + 3600,
+            'exp' => time() + 7200,
+        ], $secret, 'HS256');
+        $this->bootstrapRequest(['HTTP_AUTHORIZATION' => 'Bearer ' . $futureToken]);
+        [$userFuture, $hashFuture] = AuthHelper::checkJwtAuth([$subject => ['hash' => $secret]]);
+        $this->assertNull($userFuture);
+        $this->assertNull($hashFuture);
+
+        $expiredToken = JWT::encode([
+            'sub' => $subject,
+            'iat' => time() - 7200,
+            'exp' => time() - 3600,
+        ], $secret, 'HS256');
+        $this->bootstrapRequest(['HTTP_AUTHORIZATION' => 'Bearer ' . $expiredToken]);
+        [$userExpired, $hashExpired] = AuthHelper::checkJwtAuth([$subject => ['hash' => $secret]]);
+        $this->assertNull($userExpired);
+        $this->assertNull($hashExpired);
+    }
+
     public function testAuthFlowPrecedenceBasicThenCookieThenJwt(): void
     {
         $basicUser = 'basic_user';

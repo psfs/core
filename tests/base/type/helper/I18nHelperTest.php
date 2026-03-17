@@ -149,6 +149,34 @@ class I18nHelperTest extends TestCase
         I18nHelper::findTranslations(BASE_DIR, 'en-GB');
     }
 
+    public function testGenerateTranslationsFileCreatesAndLoadsCatalog(): void
+    {
+        $filename = CACHE_DIR . DIRECTORY_SEPARATOR . 'tmp_i18n_' . uniqid('', true) . '.php';
+        @unlink($filename);
+        $generated = I18nHelper::generateTranslationsFile($filename);
+        $this->assertIsArray($generated);
+        $this->assertFileExists($filename);
+
+        file_put_contents($filename, '<?php $translations = ["hello" => "hola"];');
+        $loaded = I18nHelper::generateTranslationsFile($filename);
+        $this->assertSame('hola', $loaded['hello'] ?? null);
+        @unlink($filename);
+    }
+
+    public function testUtf8EncodeAndCheckI18nClassBranches(): void
+    {
+        $encoded = I18nHelper::utf8Encode([
+            'a' => "ni\xC3\xB1o",
+            'nested' => ['b' => "canci\xC3\xB3n"],
+        ]);
+        $this->assertIsArray($encoded);
+        $this->assertArrayHasKey('a', $encoded);
+        $this->assertIsArray($encoded['nested']);
+
+        $this->assertTrue(I18nHelper::checkI18Class(\PSFS\controller\ConfigController::class . 'I18n'));
+        $this->assertFalse(I18nHelper::checkI18Class('PSFS\\Unknown\\NopeI18n'));
+    }
+
     private function clearLanguageHeader(): void
     {
         $request = Request::getInstance();

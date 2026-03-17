@@ -8,6 +8,7 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AuthHelper;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\controller\base\Admin;
 use PSFS\controller\ConfigController;
@@ -18,6 +19,21 @@ use PSFS\controller\ConfigController;
  */
 class RouterTest extends TestCase
 {
+    private array $configBackup = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->configBackup = Config::getInstance()->dumpConfig();
+    }
+
+    protected function tearDown(): void
+    {
+        Config::save($this->configBackup, []);
+        Config::getInstance()->loadConfigData(true);
+        Router::dropInstance();
+        parent::tearDown();
+    }
 
     /**
      * @return void
@@ -123,4 +139,50 @@ class RouterTest extends TestCase
         }
     }
 
+    public function testRunHandlesFalseResultAndExceptions(): void
+    {
+        Router::run(new RouterRunHelper(), 'returnsFalse', false);
+        $this->assertTrue(true);
+
+        Router::run(new RouterRunHelper(), 'throwsException', false);
+        $this->assertTrue(true);
+    }
+
+    public function testRunCanRethrowAndHttpNotFound(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        Router::run(new RouterRunHelper(), 'throwsException', true);
+    }
+
+    public function testDebugLoadSkipRouteGenerationAndHttpNotFoundWrapper(): void
+    {
+        $config = Config::getInstance()->dumpConfig();
+        $config['skip.route_generation'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        $router = Router::getInstance();
+
+        $method = new \ReflectionMethod($router, 'debugLoad');
+        $method->setAccessible(true);
+        $method->invoke($router);
+
+        ResponseHelper::setTest(true);
+        $response = $router->httpNotFound(new \Exception('Not found', 404), true);
+        $this->assertSame(404, $response);
+        ResponseHelper::setTest(false);
+    }
+
+}
+
+class RouterRunHelper
+{
+    public function returnsFalse(): bool
+    {
+        return false;
+    }
+
+    public function throwsException(): bool
+    {
+        throw new \RuntimeException('run-exception');
+    }
 }

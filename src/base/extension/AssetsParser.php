@@ -203,7 +203,8 @@ class AssetsParser
                         throw new ConfigException("Can't copy " . $orig . " to " . $dest);
                     }
                 } else {
-                    Logger::log($filenamePath . ' has an empty origin with the url ' . $source, LOG_WARNING);
+                    $sourceValue = is_array($source) ? ($source[0] ?? json_encode($source)) : (string)$source;
+                    Logger::log($filenamePath . ' has an empty origin with the url ' . $sourceValue, LOG_WARNING);
                 }
             }
         }
