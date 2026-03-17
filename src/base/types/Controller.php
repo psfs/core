@@ -4,6 +4,7 @@ namespace PSFS\base\types;
 
 use PSFS\base\config\Config;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\interfaces\ControllerInterface;
@@ -23,6 +24,7 @@ abstract class Controller extends Singleton implements ControllerInterface
      * @Injectable
      * @var \PSFS\base\Template $tpl
      */
+    #[Injectable]
     protected $tpl;
     protected $domain = 'ROOT';
 

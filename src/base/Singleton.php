@@ -5,6 +5,9 @@ namespace PSFS\base;
 use Exception;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
+use PSFS\base\reflection\FileReflectionCacheRepository;
+use PSFS\base\reflection\RedisReadThroughReflectionCacheRepository;
+use PSFS\base\reflection\ReflectionCacheRepositoryInterface;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\traits\SingletonTrait;
@@ -108,17 +111,13 @@ class Singleton
     public function init()
     {
         if (!$this->isLoaded()) {
-            $filename = sha1(get_class($this));
-            $cacheFilename = 'reflections' . DIRECTORY_SEPARATOR . substr($filename, 0, 2) . DIRECTORY_SEPARATOR . substr($filename, 2, 2) . DIRECTORY_SEPARATOR . $filename . '.json';
-            /** @var Cache $cacheService */
-            $cacheService = Cache::getInstance();
             /** @var Config $configService */
             $configService = Config::getInstance();
-            $cache = Cache::canUseMemcache() ? Cache::MEMCACHE : Cache::JSON;
-            $properties = $cacheService->getDataFromFile($cacheFilename, $cache);
+            $repository = $this->createReflectionRepository(get_class($this));
+            $properties = $repository->read();
             if (!$properties || true === $configService->getDebugMode()) {
                 $properties = InjectorHelper::getClassProperties(get_class($this));
-                $cacheService->storeData($cacheFilename, $properties, $cache);
+                $repository->save($properties);
             }
             /** @var ReflectionProperty $property */
             if (!empty($properties) && is_array($properties)) {
@@ -130,5 +129,16 @@ class Singleton
         } else {
             Logger::log(get_class($this) . ' already loaded', LOG_INFO);
         }
+    }
+
+    protected function createReflectionRepository(string $className): ReflectionCacheRepositoryInterface
+    {
+        $fileRepository = new FileReflectionCacheRepository($className);
+        if (Cache::canUseRedis()) {
+            $ttl = (int)Config::getParam('cache.reflections.ttl', 300);
+            $version = (string)Config::getParam('cache.var', 'v1');
+            return new RedisReadThroughReflectionCacheRepository($fileRepository, $ttl, $version);
+        }
+        return $fileRepository;
     }
 }

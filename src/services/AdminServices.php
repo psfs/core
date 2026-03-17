@@ -5,6 +5,7 @@ namespace PSFS\services;
 use PSFS\base\config\Config;
 use PSFS\base\Security;
 use PSFS\base\Service;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\TestTrait;
@@ -17,16 +18,19 @@ class AdminServices extends Service
      * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
      */
+    #[Injectable]
     protected $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
+    #[Injectable]
     protected $security;
     /**
      * @Injectable
      * @var \PSFS\base\Template Servicio de gestión de plantillas
      */
+    #[Injectable]
     protected $tpl;
 
     /**

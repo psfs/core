@@ -12,6 +12,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\ApiGenerationTrait;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
@@ -31,11 +32,13 @@ class GeneratorService extends SimpleService
      * @Injectable
      * @var \PSFS\base\config\Config Servicio de configuración
      */
+    #[Injectable]
     protected $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
+    #[Injectable]
     protected $security;
 
     /**

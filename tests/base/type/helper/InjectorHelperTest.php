@@ -3,7 +3,9 @@
 namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\config\Config;
 use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\tests\examples\AttributeInjectableSingletonTestExample;
 use PSFS\tests\examples\SingletonClassTestExample;
 use ReflectionClass;
 use ReflectionException;
@@ -39,6 +41,25 @@ class InjectorHelperTest extends TestCase
             $injector = InjectorHelper::constructInjectableInstance($variable, true, $classNameSpace, $reflector->getName());
             $this->assertNotNull($injector, 'Injector class is null');
             $this->assertInstanceOf($classNameSpace, $injector, 'Injector has been created a different namespace than expected');
+        }
+    }
+
+    public function testAttributeInjectableSupportWhenMetadataAttributesEnabled(): void
+    {
+        $configBackup = Config::getInstance()->dumpConfig();
+        try {
+            $override = $configBackup;
+            $override['metadata.attributes.enabled'] = true;
+            Config::save($override, []);
+            Config::getInstance()->loadConfigData(true);
+
+            $reflector = new ReflectionClass(AttributeInjectableSingletonTestExample::class);
+            $properties = InjectorHelper::extractProperties($reflector);
+            $this->assertArrayHasKey('security', $properties);
+            $this->assertEquals('\\PSFS\\base\\Security', $properties['security']);
+        } finally {
+            Config::save($configBackup, []);
+            Config::getInstance()->loadConfigData(true);
         }
     }
 }

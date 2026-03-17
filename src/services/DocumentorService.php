@@ -7,6 +7,7 @@ use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use PSFS\base\dto\Dto;
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\SimpleService;
@@ -34,6 +35,7 @@ class DocumentorService extends SimpleService
      * @Injectable
      * @var \PSFS\base\Router route
      */
+    #[Injectable]
     protected $route;
 
     /**

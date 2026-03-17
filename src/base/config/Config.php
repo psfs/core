@@ -95,6 +95,10 @@ class Config
         'csrf.expiration', // CSRF token expiration time (seconds)
         'psfs.redis', // Enable redis read-through cache
         'cache.config.ttl', // Config read-through ttl
+        'cache.reflections.ttl', // Reflection cache read-through ttl
+        'redis.host', // Redis host for read-through caches
+        'redis.port', // Redis port for read-through caches
+        'redis.timeout', // Redis timeout for read-through caches
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
         'i18n.provider.custom.enabled', // Use custom provider before gettext
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
