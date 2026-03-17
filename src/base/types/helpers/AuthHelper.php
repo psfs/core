@@ -12,6 +12,9 @@ use PSFS\base\Security;
 
 class AuthHelper
 {
+    const CRYPTO_VERSION_PREFIX = 'v2:';
+    const CRYPTO_CIPHER = 'aes-256-gcm';
+    const CRYPTO_TAG_LENGTH = 16;
     const USER_ID_TOKEN = '12dea96fec20593566ab75692c9949596833adc9';
     const MANAGER_ID_TOKEN = 'd033e22ae348aeb5660fc2140aec35850c4da997';
     const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
@@ -26,7 +29,14 @@ class AuthHelper
         $authCookie = Request::getInstance()->getCookie(self::generateProfileHash());
         $user = $pass = null;
         if (!empty($authCookie)) {
-            list($user, $pass) = explode(':', self::decrypt($authCookie, self::ADMIN_ID_TOKEN));
+            $secret = self::decrypt($authCookie, self::SESSION_TOKEN);
+            // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
+            if (false === $secret || !str_contains((string)$secret, ':')) {
+                $secret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
+            }
+            if (is_string($secret) && str_contains($secret, ':')) {
+                list($user, $pass) = explode(':', $secret, 2);
+            }
         }
 
         return [$user, $pass];
@@ -51,7 +61,19 @@ class AuthHelper
         if (NULL === $user || (array_key_exists($user, $admins) && empty($admins[$user]))) {
             list($user, $pass) = self::getAdminFromCookie();
         }
-        return array_key_exists($user, $admins) ? [$user, sha1($user . $pass)] : [null, null];
+        if (!array_key_exists((string)$user, $admins)) {
+            return [null, null];
+        }
+        $storedHash = (string)($admins[$user]['hash'] ?? '');
+        if ('' === $storedHash || null === $pass) {
+            return [null, null];
+        }
+        $legacyHash = sha1($user . $pass);
+        if (self::isPasswordHash($storedHash)) {
+            return password_verify($user . $pass, $storedHash) ? [$user, $storedHash] : [null, null];
+        }
+
+        return hash_equals($storedHash, $legacyHash) ? [$user, $legacyHash] : [null, null];
     }
 
     public static function checkComplexAuth(array $admins)
@@ -82,28 +104,25 @@ class AuthHelper
 
     public static function encrypt(string $data, string $key): string
     {
-        $data = base64_encode($data);
-        $encrypted_data = '';
-        for ($i = 0, $j = 0, $iMax = strlen($data); $i < $iMax; $i++, $j++) {
-            if ($j === strlen($key)) {
-                $j = 0;
-            }
-            $encrypted_data .= $data[$i] ^ $key[$j]; // XOR entre caracteres
+        $cipher = self::secureEncrypt($data, $key);
+        if (false !== $cipher) {
+            return self::CRYPTO_VERSION_PREFIX . $cipher;
         }
-        return base64_encode($encrypted_data);
+        return self::legacyEncrypt($data, $key);
     }
 
     public static function decrypt(string $encrypted_data, string $key): false|string
     {
-        $encrypted_data = base64_decode($encrypted_data);
-        $data = '';
-        for ($i = 0, $j = 0, $iMax = strlen($encrypted_data); $i < $iMax; $i++, $j++) {
-            if ($j === strlen($key)) {
-                $j = 0;
+        $data = false;
+        if (str_starts_with($encrypted_data, self::CRYPTO_VERSION_PREFIX)) {
+            $payload = substr($encrypted_data, strlen(self::CRYPTO_VERSION_PREFIX));
+            $data = self::secureDecrypt($payload, $key);
+            if (false !== $data) {
+                return $data;
             }
-            $data .= $encrypted_data[$i] ^ $key[$j]; // XOR entre caracteres
         }
-        return base64_decode($data);
+
+        return self::legacyDecrypt($encrypted_data, $key);
     }
 
     public static function generateToken(string $user, string $password, $userAgent = null): string
@@ -114,15 +133,26 @@ class AuthHelper
         if (null === $userAgent && array_key_exists('HTTP_USER_AGENT', $_SERVER)) {
             $userAgent = $_SERVER['HTTP_USER_AGENT'];
         }
-        $data = $user . Security::LOGGED_USER_TOKEN . $timestamp->format(self::EXPIRATION_TIMESTAMP_FORMAT) . Security::LOGGED_USER_TOKEN . ($userAgent ?? 'psfs');
-        return self::encrypt($data, sha1($user . $password));
+        $data = [
+            'sub' => $user,
+            'exp' => $timestamp->format(self::EXPIRATION_TIMESTAMP_FORMAT),
+            'ua' => $userAgent ?? 'psfs',
+        ];
+        return self::encrypt(json_encode($data), sha1($user . $password));
     }
 
     public static function decodeToken(string $token, string $password): array
     {
         $user = $timestamp = $userAgent = null;
         $secret = self::decrypt($token, $password);
-        if (!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
+        if (!empty($secret) && self::isJson($secret)) {
+            $payload = json_decode($secret, true);
+            if (is_array($payload)) {
+                $user = $payload['sub'] ?? null;
+                $timestamp = $payload['exp'] ?? null;
+                $userAgent = $payload['ua'] ?? null;
+            }
+        } else if (!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
             list($user, $timestamp, $userAgent) = explode(Security::LOGGED_USER_TOKEN, $secret);
         }
         return [$user, $timestamp, $userAgent];
@@ -164,5 +194,126 @@ class AuthHelper
             }
         }
         return [$user, $hash];
+    }
+
+    private static function isPasswordHash(string $hash): bool
+    {
+        $info = password_get_info($hash);
+        return is_array($info) && array_key_exists('algo', $info) && 0 !== ($info['algo'] ?? 0);
+    }
+
+    private static function secureEncrypt(string $data, string $key): false|string
+    {
+        $ivLen = openssl_cipher_iv_length(self::CRYPTO_CIPHER);
+        if (false === $ivLen || $ivLen < 1) {
+            return false;
+        }
+        try {
+            $iv = random_bytes($ivLen);
+        } catch (\Exception) {
+            return false;
+        }
+        $tag = '';
+        $encrypted = openssl_encrypt(
+            $data,
+            self::CRYPTO_CIPHER,
+            hash('sha256', $key, true),
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag,
+            '',
+            self::CRYPTO_TAG_LENGTH
+        );
+        if (false === $encrypted) {
+            return false;
+        }
+        $payload = json_encode([
+            'iv' => self::toBase64Url($iv),
+            'tag' => self::toBase64Url($tag),
+            'data' => self::toBase64Url($encrypted),
+        ]);
+        if (false === $payload) {
+            return false;
+        }
+
+        return self::toBase64Url($payload);
+    }
+
+    private static function secureDecrypt(string $payload, string $key): false|string
+    {
+        $decodedPayload = self::fromBase64Url($payload);
+        if (false === $decodedPayload) {
+            return false;
+        }
+        $json = json_decode($decodedPayload, true);
+        if (!is_array($json) || !isset($json['iv'], $json['tag'], $json['data'])) {
+            return false;
+        }
+        $iv = self::fromBase64Url((string)$json['iv']);
+        $tag = self::fromBase64Url((string)$json['tag']);
+        $encrypted = self::fromBase64Url((string)$json['data']);
+        if (false === $iv || false === $tag || false === $encrypted) {
+            return false;
+        }
+
+        $decrypted = openssl_decrypt(
+            $encrypted,
+            self::CRYPTO_CIPHER,
+            hash('sha256', $key, true),
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag
+        );
+        return false === $decrypted ? false : $decrypted;
+    }
+
+    private static function legacyEncrypt(string $data, string $key): string
+    {
+        $data = base64_encode($data);
+        $encrypted_data = '';
+        for ($i = 0, $j = 0, $iMax = strlen($data); $i < $iMax; $i++, $j++) {
+            if ($j === strlen($key)) {
+                $j = 0;
+            }
+            $encrypted_data .= $data[$i] ^ $key[$j];
+        }
+        return base64_encode($encrypted_data);
+    }
+
+    private static function legacyDecrypt(string $encrypted_data, string $key): false|string
+    {
+        $encrypted_data = base64_decode($encrypted_data);
+        $data = '';
+        for ($i = 0, $j = 0, $iMax = strlen((string)$encrypted_data); $i < $iMax; $i++, $j++) {
+            if ($j === strlen($key)) {
+                $j = 0;
+            }
+            $data .= $encrypted_data[$i] ^ $key[$j];
+        }
+        return base64_decode($data);
+    }
+
+    private static function toBase64Url(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    private static function fromBase64Url(string $data): false|string
+    {
+        if ('' === $data) {
+            return false;
+        }
+        $encoded = strtr($data, '-_', '+/');
+        $padding = strlen($encoded) % 4;
+        if ($padding > 0) {
+            $encoded .= str_repeat('=', 4 - $padding);
+        }
+        return base64_decode($encoded);
+    }
+
+    private static function isJson(string $string): bool
+    {
+        json_decode($string, true);
+        return JSON_ERROR_NONE === json_last_error();
     }
 }

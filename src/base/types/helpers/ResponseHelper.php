@@ -51,16 +51,109 @@ class ResponseHelper
     {
         if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
             foreach ($cookies as $cookie) {
-                setcookie($cookie["name"],
-                    $cookie["value"],
-                    (array_key_exists('expire', $cookie)) ? $cookie["expire"] : 1440,
-                    (array_key_exists('path', $cookie)) ? $cookie["path"] : "/",
-                    (array_key_exists('domain', $cookie)) ? $cookie["domain"] : Request::getInstance()->getRootUrl(FALSE),
-                    (array_key_exists('secure', $cookie)) ? $cookie["secure"] : FALSE,
-                    (array_key_exists('http', $cookie)) ? $cookie["http"] : true
+                if (!is_array($cookie) || !array_key_exists("name", $cookie) || !array_key_exists("value", $cookie)) {
+                    continue;
+                }
+
+                $httpOnly = array_key_exists('httpOnly', $cookie)
+                    ? (bool)$cookie['httpOnly']
+                    : ((array_key_exists('http', $cookie)) ? (bool)$cookie['http'] : true);
+                $secure = array_key_exists('secure', $cookie)
+                    ? (bool)$cookie['secure']
+                    : self::isSecureRequest();
+                $sameSite = self::normalizeSameSite(
+                    (array_key_exists('sameSite', $cookie)) ? $cookie['sameSite'] : ($cookie['samesite'] ?? 'Lax')
                 );
+                $cookieDomain = self::normalizeCookieDomain(
+                    (array_key_exists('domain', $cookie)) ? $cookie['domain'] : Request::getInstance()->getServerName()
+                );
+
+                if ($sameSite === 'None' && $secure === false) {
+                    // Required by modern browsers for SameSite=None cookies.
+                    $secure = true;
+                }
+
+                $options = [
+                    'expires' => array_key_exists('expire', $cookie) ? (int)$cookie['expire'] : 0,
+                    'path' => (array_key_exists('path', $cookie)) ? (string)$cookie["path"] : '/',
+                    'secure' => $secure,
+                    'httponly' => $httpOnly,
+                    'samesite' => $sameSite,
+                ];
+                if (!empty($cookieDomain)) {
+                    $options['domain'] = $cookieDomain;
+                }
+
+                setcookie((string)$cookie["name"], (string)$cookie["value"], $options);
             }
         }
+    }
+
+    public static function normalizeCookieDomain(?string $domain): ?string
+    {
+        if (empty($domain)) {
+            return null;
+        }
+
+        $domain = trim($domain);
+        if ($domain === '') {
+            return null;
+        }
+
+        if (str_contains($domain, '://')) {
+            $parsed = parse_url($domain);
+            if (!is_array($parsed) || empty($parsed['host'])) {
+                return null;
+            }
+            $domain = (string)$parsed['host'];
+        }
+
+        // Strip explicit port if present.
+        if (str_contains($domain, ':')) {
+            $parts = explode(':', $domain);
+            $domain = (string)$parts[0];
+        }
+
+        $domain = strtolower(trim($domain));
+        if ($domain === '' || $domain === 'localhost' || filter_var($domain, FILTER_VALIDATE_IP)) {
+            // Do not force domain for localhost or IP based hosts.
+            return null;
+        }
+
+        return $domain;
+    }
+
+    public static function normalizeSameSite(?string $sameSite): string
+    {
+        $value = strtolower(trim((string)$sameSite));
+        if ($value === 'strict') {
+            return 'Strict';
+        }
+        if ($value === 'none') {
+            return 'None';
+        }
+        return 'Lax';
+    }
+
+    public static function isSecureRequest(): bool
+    {
+        if (Config::getParam('force.https', false)) {
+            return true;
+        }
+
+        $request = Request::getInstance();
+        $https = strtolower((string)$request->getServer('HTTPS', ''));
+        if (!empty($https) && $https !== 'off') {
+            return true;
+        }
+
+        $scheme = strtolower((string)$request->getServer('REQUEST_SCHEME', ''));
+        if ($scheme === 'https') {
+            return true;
+        }
+
+        $forwardedProto = strtolower((string)$request->getServer('HTTP_X_FORWARDED_PROTO', ''));
+        return str_contains($forwardedProto, 'https');
     }
 
     /**

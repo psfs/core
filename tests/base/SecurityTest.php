@@ -105,8 +105,10 @@ class SecurityTest extends TestCase
         $this->assertFalse($security->isManager());
         $this->assertFalse($security->isUser());
 
+        $this->assertIsArray($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN), 'Admin session must be structured');
         $security->updateSession(true);
         $this->assertNotEmpty($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN), 'Error saving sessions');
+        $this->assertIsArray($_SESSION[AuthHelper::ADMIN_ID_TOKEN] ?? null, 'Persisted admin session must be structured');
 
         $security->deleteUser($user['username']);
         $this->assertTrue($security->checkAdmin($user['username'], $user['password'], true), 'Error checking admin user');

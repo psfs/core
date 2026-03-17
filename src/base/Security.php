@@ -48,8 +48,8 @@ class Security
             $this->clearFlashes();
             $this->setSessionKey('__FLASH_CLEAR__', microtime(TRUE));
         }
-        $this->user = $this->hasSessionKey(AuthHelper::USER_ID_TOKEN) ? unserialize($this->getSessionKey(AuthHelper::USER_ID_TOKEN)) : null;
-        $this->admin = $this->hasSessionKey(AuthHelper::ADMIN_ID_TOKEN) ? unserialize($this->getSessionKey(AuthHelper::ADMIN_ID_TOKEN)) : null;
+        $this->user = $this->readIdentityFromSession(AuthHelper::USER_ID_TOKEN);
+        $this->admin = $this->readIdentityFromSession(AuthHelper::ADMIN_ID_TOKEN);
         if (null === $this->admin) {
             $this->checkAdmin();
         }
@@ -107,7 +107,7 @@ class Security
                                 'domain' => '',
                             ]
                         ]);
-                        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $encrypted);
+                        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
                     }
                 } else {
                     $this->admin = null;
@@ -191,5 +191,24 @@ class Security
         return $this->checkAdminRole();
     }
 
+    private function readIdentityFromSession(string $key): ?array
+    {
+        if (!$this->hasSessionKey($key)) {
+            return null;
+        }
+        $data = $this->getSessionKey($key);
+        if (is_array($data)) {
+            return $data;
+        }
+        if (!is_string($data) || '' === trim($data)) {
+            return null;
+        }
+        $decoded = json_decode($data, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        return null;
+    }
 
 }

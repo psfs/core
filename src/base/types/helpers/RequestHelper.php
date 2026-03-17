@@ -33,8 +33,101 @@ class RequestHelper
             'X-FIELD-TYPE',
         ];
         $extraHeaders = Config::getParam('cors.headers', '');
-        $headers = array_merge($headers, explode(',', $extraHeaders));
+        if (!empty($extraHeaders)) {
+            $headers = array_merge($headers, explode(',', $extraHeaders));
+        }
+        $headers = array_map('trim', $headers);
+        $headers = array_filter($headers, static function ($header) {
+            return $header !== '';
+        });
         return array_unique($headers);
+    }
+
+    /**
+     * Resolves if an origin is allowed by current cors.enabled configuration.
+     * Returns the origin to expose, '*' for wildcard or null when denied.
+     */
+    public static function resolveAllowedOrigin(?string $origin, mixed $corsEnabled): ?string
+    {
+        $normalizedOrigin = self::normalizeOrigin($origin);
+        if (empty($corsEnabled) || empty($normalizedOrigin)) {
+            return null;
+        }
+
+        if ($corsEnabled === '*') {
+            return '*';
+        }
+
+        if (is_array($corsEnabled)) {
+            foreach ($corsEnabled as $allowedOrigin) {
+                $normalizedAllowed = self::normalizeOrigin((string)$allowedOrigin);
+                if (!empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin) {
+                    return $normalizedOrigin;
+                }
+            }
+            return null;
+        }
+
+        $corsEnabled = trim((string)$corsEnabled);
+        if ($corsEnabled === '') {
+            return null;
+        }
+
+        // Backward compatibility with regex-based config.
+        if ($corsEnabled[0] === '/' && str_ends_with($corsEnabled, '/')) {
+            return preg_match($corsEnabled, $normalizedOrigin) === 1 ? $normalizedOrigin : null;
+        }
+
+        $entries = explode(',', $corsEnabled);
+        foreach ($entries as $entry) {
+            $entry = trim($entry);
+            if ($entry === '') {
+                continue;
+            }
+
+            // Wildcard pattern support: https://*.example.com
+            if (str_contains($entry, '*')) {
+                $pattern = '/^' . str_replace('\*', '[^.]+', preg_quote($entry, '/')) . '$/i';
+                if (preg_match($pattern, $normalizedOrigin) === 1) {
+                    return $normalizedOrigin;
+                }
+                continue;
+            }
+
+            $normalizedAllowed = self::normalizeOrigin($entry);
+            if (!empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin) {
+                return $normalizedOrigin;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns origin with scheme + host (+ optional port), without path/query/fragment.
+     */
+    public static function normalizeOrigin(?string $origin): ?string
+    {
+        if (empty($origin)) {
+            return null;
+        }
+
+        $parsed = parse_url(trim($origin));
+        if (!is_array($parsed) || empty($parsed['scheme']) || empty($parsed['host'])) {
+            return null;
+        }
+
+        $scheme = strtolower((string)$parsed['scheme']);
+        $host = strtolower((string)$parsed['host']);
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        $normalized = $scheme . '://' . $host;
+        if (!empty($parsed['port'])) {
+            $normalized .= ':' . (int)$parsed['port'];
+        }
+        return $normalized;
     }
 
     /**
@@ -46,18 +139,24 @@ class RequestHelper
         $corsEnabled = Config::getParam('cors.enabled');
         $request = Request::getInstance();
         if (NULL !== $corsEnabled) {
-            if ($corsEnabled === '*' || preg_match($corsEnabled, $request->getServer('HTTP_REFERER'))) {
+            $origin = $request->getServer('HTTP_ORIGIN');
+            $allowedOrigin = self::resolveAllowedOrigin($origin, $corsEnabled);
+            if ($allowedOrigin !== null) {
                 if (!headers_sent()) {
-                    // TODO include this headers in Template class output method
-                    ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
-                    ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . Request::getInstance()->getServer('HTTP_ORIGIN', '*'));
-                    ResponseHelper::setHeader('Vary: Origin');
+                    // TODO include these headers in Template class output method
+                    if ($allowedOrigin === '*') {
+                        ResponseHelper::setHeader('Access-Control-Allow-Origin: *');
+                    } else {
+                        ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
+                        ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . $allowedOrigin);
+                        ResponseHelper::setHeader('Vary: Origin');
+                    }
                     ResponseHelper::setHeader('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD');
                     ResponseHelper::setHeader('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
                 }
-                if (Request::getInstance()->getMethod() === Request::VERB_OPTIONS) {
+                if ($request->getMethod() === Request::VERB_OPTIONS) {
                     Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
-                    header('HTTP/1.1 200 OK');
+                    ResponseHelper::setStatusHeader('HTTP/1.1 204 No Content');
                     exit();
                 }
             }

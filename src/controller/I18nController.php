@@ -40,6 +40,9 @@ class I18nController extends Admin
         if (null === $locale) {
             $locale = Config::getParam('default.language', 'es_ES');
         }
+        if (!I18nHelper::isValidLocale($locale)) {
+            $locale = Config::getParam('default.language', 'es_ES');
+        }
 
         //Generating the templates translations
         $translations = $this->tpl->regenerateTemplates();
@@ -53,7 +56,7 @@ class I18nController extends Admin
         $translations = array_merge($translations, I18nHelper::findTranslations(CACHE_DIR, $locale));
 
         $translations[] = "msgfmt {$localePath}translations.po -o {$localePath}translations.mo";
-        $translations[] = shell_exec('export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt ' . $localePath . 'translations.po -o ' . $localePath . 'translations.mo');
+        $translations[] = I18nHelper::compileTranslations($localePath);
         return $this->render('translations.html.twig', array(
             'translations' => $translations,
         ));

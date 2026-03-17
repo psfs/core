@@ -23,6 +23,16 @@ class I18nHelper
     static array $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
 
     /**
+     * Locale allowlist format (xx or xx_YY)
+     * @param string $locale
+     * @return bool
+     */
+    public static function isValidLocale(string $locale): bool
+    {
+        return preg_match('/^[a-z]{2}(?:_[A-Z]{2})?$/', $locale) === 1;
+    }
+
+    /**
      * @param string|null $default
      * @return string
      */
@@ -181,6 +191,10 @@ class I18nHelper
      */
     public static function findTranslations(string $path, string $locale): array
     {
+        if (!self::isValidLocale($locale)) {
+            throw new GeneratorException(t('Invalid locale format'));
+        }
+
         $localePath = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $localePath .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
 
@@ -193,13 +207,21 @@ class I18nHelper
                     file_put_contents($localePath . 'translations.po', '');
                 }
                 $inspectPath = realpath($path . DIRECTORY_SEPARATOR . $fileName);
-                $cmdPhp = "export PATH=\$PATH:/opt/local/bin; xgettext " .
-                    $inspectPath . DIRECTORY_SEPARATOR .
-                    "*.php --from-code=UTF-8 -j -L PHP --debug --force-po -o {$localePath}translations.po";
                 if (is_dir($path . DIRECTORY_SEPARATOR . $fileName) && preg_match('/^\./', $fileName) == 0) {
+                    $phpFiles = glob($inspectPath . DIRECTORY_SEPARATOR . '*.php') ?: [];
+                    $outputPo = escapeshellarg($localePath . 'translations.po');
+                    $commandOutput = '';
+                    $cmdPhp = t('No PHP files found in directory');
+                    if (!empty($phpFiles)) {
+                        $escapedFiles = array_map('escapeshellarg', $phpFiles);
+                        $cmdPhp = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; xgettext " .
+                            implode(' ', $escapedFiles) .
+                            " --from-code=UTF-8 -j -L PHP --debug --force-po -o {$outputPo}";
+                        $commandOutput = shell_exec($cmdPhp) ?: '';
+                    }
                     $res = t('Revisando directorio: ') . $inspectPath;
                     $res .= t('Comando ejecutado: ') . $cmdPhp;
-                    $res .= shell_exec($cmdPhp);
+                    $res .= $commandOutput;
                     usleep(10);
                     $translations[] = $res;
                     $translations = array_merge($translations, self::findTranslations($inspectPath, $locale));
@@ -207,6 +229,19 @@ class I18nHelper
             }
         }
         return $translations;
+    }
+
+    /**
+     * Compile locale PO into MO safely.
+     * @param string $localePath
+     * @return string
+     */
+    public static function compileTranslations(string $localePath): string
+    {
+        $poPath = escapeshellarg($localePath . 'translations.po');
+        $moPath = escapeshellarg($localePath . 'translations.mo');
+        $command = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$poPath} -o {$moPath}";
+        return shell_exec($command) ?: '';
     }
 
     /**

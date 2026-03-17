@@ -77,8 +77,8 @@ trait SessionTrait
     {
         Logger::log('Update session');
         $_SESSION = $this->session;
-        $_SESSION[AuthHelper::USER_ID_TOKEN] = serialize($this->user);
-        $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = serialize($this->admin);
+        $_SESSION[AuthHelper::USER_ID_TOKEN] = is_array($this->user) ? $this->user : null;
+        $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = is_array($this->admin) ? $this->admin : null;
         if ($closeSession) {
             Logger::log('Close session');
             /** @scrutinizer ignore-unhandled */

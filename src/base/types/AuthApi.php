@@ -3,7 +3,7 @@
 namespace PSFS\base\types;
 
 use PSFS\base\config\Config;
-use PSFS\base\dto\JsonResponse;
+use PSFS\base\exception\ApiException;
 use PSFS\base\Request;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SecureTrait;
@@ -20,7 +20,7 @@ abstract class AuthApi extends Api
     {
         parent::init();
         if (!$this->checkAuth()) {
-            return $this->json(new JsonResponse(t('Not authorized'), false), 401);
+            throw new ApiException(t('Not authorized'), 401);
         }
     }
 

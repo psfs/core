@@ -9,7 +9,7 @@
 
 Requirements:
 
-* php 8.2+
+* php 8.3 (runtime objetivo en contenedor Docker)
 * ext-gettext
 * ext-json
 * ext-curl
@@ -41,8 +41,51 @@ php -S 0.0.0.0:8080 -t ./html
 
 ### How to use with Docker
 ```
-docker-compose up .
+docker compose up -d
 ```
+This project must be executed using Docker Compose.
+Runtime PHP version for execution and validation is **8.3**.
+
+Run project commands with:
+```
+docker exec <container_name> <command>
+```
+
+Examples:
+```
+docker exec <container_name> php -v
+docker exec <container_name> php vendor/bin/phpunit
+docker exec <container_name> composer install
+```
+
+To discover the PHP container name:
+```
+docker compose ps
+docker ps --format '{{.Names}}'
+```
+
+### Validation (mandatory)
+Run unit tests from the PHP container:
+```
+docker exec <container_name> php -v
+docker exec <container_name> php vendor/bin/phpunit
+```
+
+### Security/Auth contract (v2)
+- Auth/cookies are versioned as **v2** with **legacy fallback in read-only mode**.
+- Expected result for invalid auth is `null/null` and the request flow must be stopped.
+- Target cookie policy:
+  - `HttpOnly=true`
+  - `Secure=true` when running on HTTPS
+  - `SameSite=Lax` or `SameSite=Strict`
+  - `Path=/`
+  - coherent `Domain`
+  - TTL aligned with auth/session policy
+
+### Review and commit policy
+- Changes must be reviewed by a human before commit.
+- Do not auto-commit after automated changes or agent execution.
+
 Your could use some environment variables to manage the docker containers
 ```
 - APP_ENVIRONMENT: (local|dev|...|prod) Define the staging for the run environment
@@ -59,4 +102,3 @@ RoadMap:
         - PhpDoc for all files
     * Testing
         - 100% tests coverage
-
