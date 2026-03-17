@@ -27,7 +27,7 @@ class ApiFormHelper
         if (null !== $reflector) {
             foreach ($reflector->getMethods(ReflectionMethod::IS_PUBLIC) as $apiAction) {
                 $docComments = $apiAction->getDocComment();
-                $action = AnnotationHelper::extractAction($docComments);
+                $action = AnnotationHelper::extractAction($docComments ?: '', $apiAction);
                 if (null !== $action) {
                     list($route, $info) = RouterHelper::extractRouteInfo($apiAction, $api, $domain);
                     list($method, $cleanRoute) = RouterHelper::extractHttpRoute($route);

@@ -13,9 +13,9 @@ final class AnnotationHelper
      * @param string $comments
      * @return string|null
      */
-    public static function extractRoute(string $comments = ''): ?string
+    public static function extractRoute(string $comments = '', \ReflectionMethod $method = null): ?string
     {
-        return self::extractFromDoc('route', $comments);
+        return MetadataReader::getTagValue('route', $comments, null, $method);
     }
 
     /**
@@ -23,10 +23,9 @@ final class AnnotationHelper
      * @param string $docComments
      * @return bool
      */
-    public static function extractReflectionVisibility(string $docComments): bool
+    public static function extractReflectionVisibility(string $docComments, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): bool
     {
-        $visible = self::extractFromDoc('visible', $docComments, '');
-        return !str_contains($visible, 'false');
+        return (bool)MetadataReader::getTagValue('visible', $docComments, true, $reflector);
     }
 
     /**
@@ -34,9 +33,9 @@ final class AnnotationHelper
      * @param string $docComments
      * @return bool
      */
-    public static function extractReflectionCacheability(string $docComments): bool
+    public static function extractReflectionCacheability(string $docComments, \ReflectionMethod $method = null): bool
     {
-        return (bool)self::extractFromDoc('cache', $docComments, false);
+        return (bool)MetadataReader::getTagValue('cache', $docComments, false, $method);
     }
 
     /**
@@ -44,9 +43,9 @@ final class AnnotationHelper
      * @param string $docComments
      * @return string
      */
-    public static function extractReflectionLabel(string $docComments): ?string
+    public static function extractReflectionLabel(string $docComments, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): ?string
     {
-        return self::extractFromDoc('label', $docComments, 'Undefined action');
+        return MetadataReader::getTagValue('label', $docComments, 'Undefined action', $reflector);
     }
 
     /**
@@ -54,28 +53,27 @@ final class AnnotationHelper
      * @param string $docComments
      * @return string
      */
-    public static function extractReflectionHttpMethod(string $docComments): string
+    public static function extractReflectionHttpMethod(string $docComments, \ReflectionMethod $method = null): string
     {
-        preg_match('/@(GET|POST|PUT|DELETE)(\n|\r)/i', $docComments, $routeMethod);
-        return (count($routeMethod) > 0) ? $routeMethod[1] : 'ALL';
+        return (string)MetadataReader::getTagValue('http', $docComments, 'ALL', $method);
     }
 
     /**
      * @param string $docComments
      * @return mixed|string
      */
-    public static function extractDocIcon(string $docComments): mixed
+    public static function extractDocIcon(string $docComments, \ReflectionMethod $method = null): mixed
     {
-        return self::extractFromDoc('icon', $docComments, '');
+        return MetadataReader::getTagValue('icon', $docComments, '', $method);
     }
 
     /**
      * @param string $docComments
      * @return string|null
      */
-    public static function extractApi(string $docComments): ?string
+    public static function extractApi(string $docComments, \ReflectionClass $class = null): ?string
     {
-        return self::extractFromDoc('api', $docComments, '');
+        return MetadataReader::getTagValue('api', $docComments, '', $class);
     }
 
     /**
@@ -83,9 +81,9 @@ final class AnnotationHelper
      * @param string $docComments
      * @return string|null
      */
-    public static function extractAction(string $docComments): ?string
+    public static function extractAction(string $docComments, \ReflectionMethod $method = null): ?string
     {
-        return self::extractFromDoc('action', $docComments);
+        return MetadataReader::getTagValue('action', $docComments, null, $method);
     }
 
     /**
@@ -94,9 +92,8 @@ final class AnnotationHelper
      * @param string|null $default
      * @return string|null
      */
-    public static function extractFromDoc(string $needle, string $comments, string $default = null): ?string
+    public static function extractFromDoc(string $needle, string $comments, string $default = null, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): mixed
     {
-        preg_match('/@' . $needle . '\ (.*)(\n|\r)/im', $comments, $matches);
-        return (count($matches) > 0) ? $matches[1] : $default;
+        return MetadataReader::getTagValue($needle, $comments, $default, $reflector);
     }
 }

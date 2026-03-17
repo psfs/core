@@ -5,18 +5,18 @@
 [![Latest Stable Version](https://poser.pugx.org/psfs/core/v/stable)](https://packagist.org/packages/psfs/core)
 
 
-## Framework Php Simple Fast & Secure
+## PHP Simple Fast & Secure Framework
 
 Requirements:
 
-* php 8.3 (runtime objetivo en contenedor Docker)
+* php 8.3 (Docker runtime target)
 * ext-gettext
 * ext-json
 * ext-curl
 * ext-gmp
 * ext-fileinfo
 
-### Components that PSFS install:
+### Core dependencies installed by PSFS
 
 ```
 "propel/propel": "2.0.x-dev",
@@ -28,7 +28,7 @@ Requirements:
 "matthiasmullie/minify": "1.3.71"
 ```
 
-### How to install using composer:
+### Install with Composer
 
 Install composer via: [GetComposer](https://getcomposer.org/download/)
    
@@ -91,17 +91,18 @@ docker exec <container_name> php vendor/bin/phpunit
 - The root `.env` defines `HOST_PORT=8008`.
 - Use that value for `docker compose up -d` to avoid local port collisions.
 
-Your could use some environment variables to manage the docker containers
+You can use environment variables to manage Docker containers:
 ```
-- APP_ENVIRONMENT: (local|dev|...|prod) Define the staging for the run environment
-- HOST_PORT: 8008 Define the port where you could expose the server
-- DEBUG: -xdebug Loads a docker image with xdebug installed and configured, if empty it loads a default php image
+- APP_ENVIRONMENT: (local|dev|...|prod) defines runtime stage
+- HOST_PORT: 8008 defines exposed host port
+- DEBUG: `-xdebug` loads image with Xdebug; empty value loads default PHP image
 ```
 
 ### Documentation
 - [General information and contracts](./doc/CONTRACTS.md)
+- [Validation runbook](./doc/runbooks/validation.md)
 
-RoadMap:
+Roadmap:
 
     * Framework documentation
         - PhpDoc for all files

@@ -5,6 +5,7 @@
 - Run the project only with Docker Compose.
 - Use `docker exec <php_container> <command>` for runtime and checks.
 - Required runtime PHP version is **8.3**.
+- English documentation is the source of truth for security contracts.
 
 ## Mandatory validation flow
 
@@ -42,6 +43,12 @@ Cookie target policy:
 - Validate `Origin` against an explicit allowlist.
 - Do not rely on `Referer` for security decisions.
 - Avoid reflecting arbitrary origins when credentials are enabled.
+
+## Transition notes
+
+- Metadata migration is hybrid (annotations -> attributes) during transition.
+- Translation migration is dual-provider (custom + gettext) without gettext shutdown in this phase.
+- Compatibility fallbacks stay active until explicit user approval to retire them.
 
 ## Commit and review policy
 

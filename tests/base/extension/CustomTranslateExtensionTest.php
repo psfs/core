@@ -1,0 +1,140 @@
+<?php
+
+namespace PSFS\tests\base\extension;
+
+use PHPUnit\Framework\TestCase;
+use PSFS\base\config\Config;
+use PSFS\base\extension\CustomTranslateExtension;
+use PSFS\base\Security;
+use PSFS\base\types\helpers\FileHelper;
+use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\I18nHelper;
+
+class CustomTranslateExtensionTest extends TestCase
+{
+    private array $configBackup = [];
+    private array $tmpPaths = [];
+
+    protected function setUp(): void
+    {
+        $this->configBackup = Config::getInstance()->dumpConfig();
+        $this->resetTranslationsState();
+        I18nHelper::clearMissingTranslationsReport();
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tmpPaths as $path) {
+            if (file_exists($path)) {
+                FileHelper::deleteDir($path);
+            }
+        }
+        if (!empty($this->configBackup)) {
+            Config::save($this->configBackup, []);
+            Config::getInstance()->loadConfigData(true);
+        }
+        $this->resetTranslationsState();
+        I18nHelper::clearMissingTranslationsReport();
+    }
+
+    public function testCustomOverrideHasPriorityOverBaseCatalog(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+        ]);
+        I18nHelper::setLocale('en_GB', force: true);
+
+        $customKey = 'compat_' . uniqid('', true);
+        $customPath = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . $customKey;
+        GeneratorHelper::createDir($customPath);
+        $this->tmpPaths[] = $customPath;
+
+        $override = 'Page overridden by custom';
+        $customLocaleFile = $customPath . DIRECTORY_SEPARATOR . 'en_GB.json';
+        file_put_contents($customLocaleFile, json_encode([
+            'Página no encontrada' => $override,
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        $translated = CustomTranslateExtension::_('Página no encontrada', $customKey, true);
+        $this->assertSame($override, $translated);
+    }
+
+    public function testFallbackGettextWhenTranslationMissingInCustomCatalog(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+        ]);
+        I18nHelper::setLocale('en_GB', force: true);
+
+        $message = '__MISSING_I18N_' . uniqid('', true);
+        $translated = CustomTranslateExtension::_($message);
+        $this->assertSame(gettext($message), $translated);
+
+        $report = I18nHelper::getMissingTranslationsReport();
+        $this->assertArrayHasKey('en_GB', $report);
+        $this->assertContains($message, $report['en_GB']);
+    }
+
+    public function testAutogeneratePersistsMissingTranslationInCustomCatalog(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => true,
+        ]);
+        $customKey = 'autogen_' . uniqid('', true);
+        $customPath = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . $customKey;
+        GeneratorHelper::createDir($customPath);
+        $this->tmpPaths[] = $customPath;
+
+        $security = Security::getInstance();
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, 'en');
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'en_GB');
+
+        $customLocaleFile = $customPath . DIRECTORY_SEPARATOR . 'en_GB.json';
+        file_put_contents($customLocaleFile, json_encode([], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $message = '__AUTOGEN_I18N_' . uniqid('', true);
+
+        $translation = CustomTranslateExtension::_($message, $customKey, true);
+        $storedCatalog = json_decode((string)file_get_contents($customLocaleFile), true);
+
+        $this->assertSame($message, $translation);
+        $this->assertIsArray($storedCatalog);
+        $this->assertArrayHasKey($message, $storedCatalog);
+        $this->assertSame($translation, $storedCatalog[$message]);
+    }
+
+    private function overrideConfig(array $override): void
+    {
+        $config = $this->configBackup;
+        foreach ($override as $key => $value) {
+            $config[$key] = $value;
+        }
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+    }
+
+    private function resetTranslationsState(): void
+    {
+        CustomTranslateExtension::dropInstance();
+        $reflection = new \ReflectionClass(CustomTranslateExtension::class);
+        $values = [
+            'translations' => [],
+            'translationsKeys' => [],
+            'locale' => 'es_ES',
+            'generate' => false,
+            'filename' => '',
+        ];
+        foreach ($values as $property => $value) {
+            $reflectionProperty = $reflection->getProperty($property);
+            $reflectionProperty->setAccessible(true);
+            $reflectionProperty->setValue(null, $value);
+        }
+
+        $security = Security::getInstance();
+        $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_TAG, null);
+        $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_VERSION, null);
+        $security->setSessionKey(CustomTranslateExtension::CUSTOM_LOCALE_SESSION_KEY, null);
+    }
+}

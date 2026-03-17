@@ -7,6 +7,12 @@
 - Required runtime PHP version is **8.3**.
 - Runtime port is configured in `.env` (`HOST_PORT=8008`).
 
+## Documentation baseline
+
+- English documentation is the source of truth.
+- Transitional Spanish terms can exist in admin flows, but new terms must be defined in English first.
+- Keep public contributor-facing references limited to stable/public docs.
+
 ## Compatibility policy (fallbacks)
 
 - Active compatibility fallbacks are temporary.

@@ -54,16 +54,13 @@ trait ModulesTrait
      */
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
-        $files = $this->finder->files()->in($origen)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
-        if ($files->hasResults()) {
-            foreach ($files->getIterator() as $file) {
-                if ($namespace !== Router::PSFS_BASE_NAMESPACE && method_exists($file, 'getRelativePathname')) {
-                    $filename = '\\' . str_replace('/', '\\', str_replace($origen, '', $file->getRelativePathname()));
-                } else {
-                    $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
-                }
-                $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
+        foreach ($this->iterateControllerFiles($origen) as $file) {
+            if ($namespace !== Router::PSFS_BASE_NAMESPACE && method_exists($file, 'getRelativePathname')) {
+                $filename = '\\' . str_replace('/', '\\', str_replace($origen, '', $file->getRelativePathname()));
+            } else {
+                $filename = str_replace('/', '\\', str_replace($origen, '', $file->getPathname()));
             }
+            $routing = $this->addRouting($namespace . str_replace('.php', '', $filename), $routing, $namespace);
         }
         $this->initializeFinder();
         return $routing;
@@ -83,17 +80,10 @@ trait ModulesTrait
             if (false === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
                 $classComments = $reflection->getDocComment();
-                $api = AnnotationHelper::extractApi($classComments);
-                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    $route = AnnotationHelper::extractRoute($method->getDocComment());
-                    if (null !== $route) {
-                        list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
-
-                        if (null !== $route && null !== $info) {
-                            $info['class'] = $namespace;
-                            $routing[$route] = $info;
-                        }
-                    }
+                $api = AnnotationHelper::extractApi($classComments ?: '', $reflection);
+                foreach ($this->iterateRoutesFromClass($reflection, (string)$api, (string)$module, $namespace) as $routeData) {
+                    list($route, $info) = $routeData;
+                    $routing[$route] = $info;
                 }
             }
         }
@@ -216,6 +206,46 @@ trait ModulesTrait
         foreach ($externalModules as $module) {
             if (strlen($module)) {
                 $this->loadExternalModule($hydrateRoute, $module, $this->routing);
+            }
+        }
+    }
+
+    /**
+     * Iterates controller/api files lazily to reduce scan memory pressure.
+     * @param string $origin
+     * @return \Generator
+     */
+    private function iterateControllerFiles(string $origin): \Generator
+    {
+        $files = $this->finder->files()->in($origin)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
+        if (!$files->hasResults()) {
+            return;
+        }
+        foreach ($files->getIterator() as $file) {
+            yield $file;
+        }
+    }
+
+    /**
+     * Iterates route definitions lazily per class.
+     * @param ReflectionClass $reflection
+     * @param string $api
+     * @param string $module
+     * @param string $namespace
+     * @return \Generator
+     * @throws ReflectionException
+     */
+    private function iterateRoutesFromClass(ReflectionClass $reflection, string $api, string $module, string $namespace): \Generator
+    {
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            $route = AnnotationHelper::extractRoute($method->getDocComment() ?: '', $method);
+            if (null === $route) {
+                continue;
+            }
+            list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
+            if (null !== $route && null !== $info) {
+                $info['class'] = $namespace;
+                yield [$route, $info];
             }
         }
     }

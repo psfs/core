@@ -20,3 +20,15 @@ phpunit.phar
 .tmp_quality/
 *.tmp
 *.swp
+build/
+quality-report.json
+quality-report.md
+quality-report.*
+benchmark-report.*
+
+# Internal local implementation docs and tools (not public)
+tools/
+doc/guides/
+doc/migrations/
+doc/naming/
+doc/rollout/

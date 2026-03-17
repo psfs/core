@@ -1,0 +1,12 @@
+<?php
+
+namespace PSFS\base\types\helpers\attributes;
+
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::TARGET_PROPERTY)]
+class Label
+{
+    public function __construct(public string $value)
+    {
+    }
+}
+

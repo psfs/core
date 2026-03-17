@@ -198,7 +198,7 @@ class RouterHelper
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
-        $regexpRoute = AnnotationHelper::extractRoute($docComments);
+        $regexpRoute = AnnotationHelper::extractRoute($docComments ?: '', $method);
         if (null !== $regexpRoute) {
             list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($regexpRoute, $method);
             $originalRegex = $regex;
@@ -208,9 +208,9 @@ class RouterHelper
             }
             $regex = str_replace('{__DOMAIN__}', $module, $regex);
             $default = str_replace('{__DOMAIN__}', $module, $default);
-            $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments);
-            $icon = AnnotationHelper::extractDocIcon($docComments);
-            $label = AnnotationHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments));
+            $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments ?: '', $method);
+            $icon = AnnotationHelper::extractDocIcon($docComments ?: '', $method);
+            $label = AnnotationHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments ?: ''), $method);
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
@@ -221,9 +221,9 @@ class RouterHelper
                 'label' => $label,
                 'icon' => strlen($icon) > 0 ? $icon : '',
                 'module' => preg_replace('/(\\\|\\/)/', '', $module),
-                'visible' => AnnotationHelper::extractReflectionVisibility($docComments),
+                'visible' => AnnotationHelper::extractReflectionVisibility($docComments ?: '', $method),
                 'http' => $httpMethod,
-                'cache' => AnnotationHelper::extractReflectionCacheability($docComments),
+                'cache' => AnnotationHelper::extractReflectionCacheability($docComments ?: '', $method),
                 'requirements' => $requirements,
             ];
         }

@@ -25,8 +25,10 @@ class Config
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
 
     const CONFIG_FILE = 'config.json';
+    const CONFIG_CACHE_TTL = 60;
 
     protected array $config = [];
+    protected ConfigRepositoryInterface $repository;
     static public array $defaults = [
         'db.host' => 'localhost',
         'db.port' => '3306',
@@ -91,6 +93,11 @@ class Config
         'api.query_token.compat', // Allow legacy API_TOKEN query string fallback (deprecated)
         'api.token.cookie', // Cookie name for API token fallback
         'csrf.expiration', // CSRF token expiration time (seconds)
+        'psfs.redis', // Enable redis read-through cache
+        'cache.config.ttl', // Config read-through ttl
+        'metadata.attributes.enabled', // Enable php attributes metadata extraction
+        'i18n.provider.custom.enabled', // Use custom provider before gettext
+        'i18n.missing.report.path', // Path where missing i18n keys will be reported
     ];
     protected bool $debug = false;
     public static array $cleanable_config_files = ['domains.json', 'urls.json'];
@@ -101,7 +108,8 @@ class Config
      */
     protected function init()
     {
-        if (file_exists(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE)) {
+        $this->repository = $this->createRepository();
+        if (file_exists($this->repository->getConfigPath())) {
             $this->loadConfigData();
         }
         return $this;
@@ -146,7 +154,7 @@ class Config
         $finalData = array();
         if (count($data) > 0) {
             Logger::log('Saving extra configuration parameters');
-            foreach ($data as $key => $value) {
+            foreach (self::iterateConfigEntries($data) as [$key, $value]) {
                 if (null !== $value || $value !== '') {
                     $finalData[$key] = $value;
                 }
@@ -219,9 +227,9 @@ class Config
             $finalData = array_filter($finalData, function ($key, $value) {
                 return in_array($key, self::$required, true) || !empty($value);
             }, ARRAY_FILTER_USE_BOTH);
-            $saved = (false !== file_put_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE, json_encode($finalData, JSON_PRETTY_PRINT)));
-            self::getInstance()->loadConfigData();
-            $saved = true;
+            $instance = self::getInstance();
+            $saved = $instance->repository->save($finalData);
+            $instance->loadConfigData(true);
         } catch (ConfigException $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
@@ -252,9 +260,9 @@ class Config
     /**
      * Method that reloads config file
      */
-    public function loadConfigData(): void
+    public function loadConfigData(bool $refresh = false): void
     {
-        $this->config = json_decode(file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE), true) ?: [];
+        $this->config = $refresh ? $this->repository->refresh() : $this->repository->read();
         $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
         if (array_key_exists('cache.var', $this->config)) {
             Security::getInstance()->setSessionKey('config.cache.var', $this->config['cache.var']);
@@ -302,5 +310,31 @@ class Config
             }
         }
         return $done;
+    }
+
+    protected function createRepository(): ConfigRepositoryInterface
+    {
+        $configPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE;
+        $fileRepository = new FileConfigRepository($configPath);
+        $seed = $fileRepository->read();
+        $redisEnabled = (bool)($seed['psfs.redis'] ?? false);
+        if ($redisEnabled && class_exists(\Redis::class)) {
+            $ttl = (int)($seed['cache.config.ttl'] ?? self::CONFIG_CACHE_TTL);
+            $version = (string)($seed['cache.var'] ?? 'v1');
+            return new RedisReadThroughConfigRepository($fileRepository, $ttl, $version);
+        }
+        return $fileRepository;
+    }
+
+    /**
+     * Iterates config data lazily to keep memory stable in large payloads.
+     * @param array $data
+     * @return \Generator
+     */
+    private static function iterateConfigEntries(array $data): \Generator
+    {
+        foreach ($data as $key => $value) {
+            yield [$key, $value];
+        }
     }
 }

@@ -9,6 +9,7 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\RouterHelper;
 use ReflectionClass;
 use ReflectionMethod;
@@ -197,8 +198,8 @@ trait SwaggerFormaterTrait
     protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {
         $methodInfo = NULL;
-        $docComments = $method->getDocComment();
-        if (FALSE !== $docComments && preg_match('/\@route\ /i', $docComments)) {
+        $docComments = $method->getDocComment() ?: '';
+        if (null !== AnnotationHelper::extractRoute($docComments, $method)) {
             $api = $this->extractApi($reflection->getDocComment());
             list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
             $route = explode('#|#', $route);

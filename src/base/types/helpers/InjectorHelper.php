@@ -26,11 +26,11 @@ class InjectorHelper
     {
         $variables = [];
         foreach ($reflector->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $instanceType = self::extractVarType($property->getDocComment());
+            $instanceType = self::extractVarType($property->getDocComment(), $property);
             if (null !== $instanceType) {
-                $isRequired = self::checkIsRequired($property->getDocComment());
-                $label = self::getLabel($property->getDocComment());
-                $values = self::getValues($property->getDocComment());
+                $isRequired = self::checkIsRequired($property->getDocComment(), $property);
+                $label = self::getLabel($property->getDocComment(), $property);
+                $values = self::getValues($property->getDocComment(), $property);
                 $isArray = (bool)preg_match('/\[\]$/', $instanceType);
                 if ($isArray) {
                     $instanceType = str_replace('[]', '', $instanceType);
@@ -71,9 +71,9 @@ class InjectorHelper
     {
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
-            $doc = $property->getDocComment();
-            if (preg_match($pattern, $doc)) {
-                $instanceType = self::extractVarType($property->getDocComment());
+            $doc = $property->getDocComment() ?: '';
+            if (MetadataReader::hasInjectable($property, $doc) || preg_match($pattern, $doc)) {
+                $instanceType = self::extractVarType($doc, $property);
                 if (null !== $instanceType) {
                     $properties[$property->getName()] = $instanceType;
                 }
@@ -87,13 +87,9 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function extractVarType($doc)
+    public static function extractVarType($doc, ReflectionProperty $property = null)
     {
-        $type = null;
-        if (false !== preg_match(self::VAR_PATTERN, $doc, $matches)) {
-            list(, $type) = $matches;
-        }
-        return $type;
+        return MetadataReader::extractVarType($property, $doc ?: '');
     }
 
     /**
@@ -101,13 +97,15 @@ class InjectorHelper
      * @param $doc
      * @return bool
      */
-    public static function checkIsRequired($doc)
+    public static function checkIsRequired($doc, ReflectionProperty $property = null)
     {
-        $required = false;
-        if (false !== preg_match('/@required/', $doc, $matches)) {
-            $required = (bool)count($matches);
+        if (null !== $property) {
+            $required = MetadataReader::getTagValue('required', $doc ?: '', null, $property);
+            if (null !== $required) {
+                return (bool)$required;
+            }
         }
-        return $required;
+        return preg_match('/@required/', $doc ?: '', $matches) === 1 && (bool)count($matches);
     }
 
     /**
@@ -124,19 +122,21 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getLabel($doc)
+    public static function getLabel($doc, ReflectionProperty $property = null)
     {
-        return t(AnnotationHelper::extractReflectionLabel($doc));
+        return t(AnnotationHelper::extractReflectionLabel($doc ?: '', $property));
     }
 
     /**
      * @param $doc
      * @return null|array
      */
-    public static function getValues($doc)
+    public static function getValues($doc, ReflectionProperty $property = null)
     {
-        // Extract description
-        $values = AnnotationHelper::extractFromDoc('values', $doc, '');
+        $values = AnnotationHelper::extractFromDoc('values', $doc ?: '', '', $property);
+        if (is_array($values)) {
+            return $values;
+        }
         return false !== strpos($values, '|') ? explode('|', $values) : $values;
     }
 
@@ -144,9 +144,9 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getDefaultValue($doc)
+    public static function getDefaultValue($doc, ReflectionProperty $property = null)
     {
-        return AnnotationHelper::extractFromDoc('default', $doc);
+        return AnnotationHelper::extractFromDoc('default', $doc ?: '', null, $property);
     }
 
     /**
@@ -162,7 +162,7 @@ class InjectorHelper
         Logger::log('Create inyectable instance for ' . $classNameSpace);
         $reflector = new ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
-        $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType($property->getDocComment()) : $classNameSpace;
+        $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType($property->getDocComment(), $property) : $classNameSpace;
         if (true === $singleton && method_exists($varInstanceType, 'getInstance')) {
             $instance = $varInstanceType::getInstance();
         } else {

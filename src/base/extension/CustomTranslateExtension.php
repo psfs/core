@@ -175,18 +175,15 @@ class CustomTranslateExtension extends AbstractExtension
         }
         // Set default translation to catch missing strings
         $isDebugMode = (bool)Config::getParam('debug', false);
-        $translation = $message;
-        // Check if the message is already translated ignoring the string case
-        $key = mb_convert_case($message, MB_CASE_LOWER, "UTF-8");
-        if(array_key_exists(self::$locale, self::$translationsKeys) && array_key_exists($key, self::$translationsKeys[self::$locale])) {
-            $message = self::$translationsKeys[self::$locale][$key];
-        }
-        // Check if exists
-        if (array_key_exists(self::$locale, self::$translations) && array_key_exists($message, self::$translations[self::$locale])) {
-            $translation = self::$translations[self::$locale][$message];
-        } else if(!$forceReload && !$isDebugMode) {
-            $translation = gettext($message);
-        }
+        $catalog = array_key_exists(self::$locale, self::$translations) ? self::$translations[self::$locale] : [];
+        $catalogKeys = array_key_exists(self::$locale, self::$translationsKeys) ? self::$translationsKeys[self::$locale] : [];
+        $translation = I18nHelper::translateWithProviders(
+            $message,
+            self::$locale,
+            $catalog,
+            $catalogKeys,
+            !$forceReload && !$isDebugMode
+        );
         if (self::$generate) {
             self::generate($message, $translation);
         }
@@ -203,10 +200,10 @@ class CustomTranslateExtension extends AbstractExtension
             self::$translations[self::$locale] = [];
             self::$translationsKeys[self::$locale] = [];
         }
-        if (!array_key_exists($message, self::$translations)) {
+        if (!array_key_exists($message, self::$translations[self::$locale])) {
             self::$translations[self::$locale][$message] = $translation;
             self::$translationsKeys[self::$locale][mb_convert_case($message, MB_CASE_LOWER, "UTF-8")] = $message;
         }
-        file_put_contents(self::$filename, json_encode(array_unique(self::$translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents(self::$filename, json_encode(self::$translations[self::$locale], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 }
