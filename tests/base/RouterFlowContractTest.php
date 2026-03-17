@@ -62,6 +62,20 @@ class RouterFlowContractTest extends TestCase
         $this->assertSame(['get'], RouterFlowController::$calls);
     }
 
+    public function testMatchUsesAllFallbackWhenExactMethodDoesNotExist(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'ALL#|#/contract/all-fallback' => $this->buildAction('all', RouterFlowController::class, 'ALL'),
+        ]);
+
+        $this->bootstrapRequest('/contract/all-fallback', 'PATCH');
+        $result = $router->execute('/contract/all-fallback');
+
+        $this->assertSame('all', $result);
+        $this->assertSame(['all'], RouterFlowController::$calls);
+    }
+
     public function testRequirementsValidationContract(): void
     {
         $router = new TestableRouter();
@@ -140,6 +154,19 @@ class RouterFlowContractTest extends TestCase
             $this->assertSame(418, $exception->getCode());
             $this->assertSame('Página no encontrada', $exception->getMessage());
         }
+    }
+
+    public function testRequirementsFailureMapsToNotFoundContract(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/require/{id}/{type}' => $this->buildAction('cached', RouterFlowController::class, 'GET', 0, ['id', 'type']),
+        ]);
+        $this->bootstrapRequest('/contract/require/42', 'GET');
+
+        $this->expectException(RouterException::class);
+        $this->expectExceptionMessage('Página no encontrada');
+        $router->execute('/contract/require/42');
     }
 
     public function testHydrateRoutingIgnoresNullOrEmptyHomeAction(): void

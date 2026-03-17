@@ -10,14 +10,12 @@ use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\exception\RouterException;
-use PSFS\base\types\Controller;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
-use PSFS\base\types\helpers\RouterHelper;
-use PSFS\base\types\helpers\SecurityHelper;
-use PSFS\base\types\interfaces\PreConditionedRunInterface;
 use PSFS\base\types\traits\RouteCheckTrait;
 use PSFS\base\types\traits\Router\ModulesTrait;
+use PSFS\base\types\traits\Router\RouterCacheFlowTrait;
+use PSFS\base\types\traits\Router\RouterExecutionTrait;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\controller\base\Admin;
 use ReflectionException;
@@ -31,12 +29,16 @@ class Router
     use SingletonTrait;
     use ModulesTrait;
     use RouteCheckTrait;
+    use RouterCacheFlowTrait;
+    use RouterExecutionTrait;
 
     const PSFS_BASE_NAMESPACE = 'PSFS';
+
     /**
      * @var Cache $cache
      */
     private $cache;
+
     /**
      * @var int
      */
@@ -134,28 +136,6 @@ class Router
     }
 
     /**
-     * @param array $action
-     * @param array $params
-     * @return bool
-     */
-    private function checkRequirements(array $action, $params = [])
-    {
-        Inspector::stats('[Router] Checking request requirements', Inspector::SCOPE_DEBUG);
-        if (!empty($params) && !empty($action['requirements'])) {
-            $checked = 0;
-            foreach (array_keys($params) as $key) {
-                if (in_array($key, $action['requirements'], true) && strlen($params[$key])) {
-                    $checked++;
-                }
-            }
-            $valid = count($action['requirements']) === $checked;
-        } else {
-            $valid = true;
-        }
-        return $valid;
-    }
-
-    /**
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -237,21 +217,6 @@ class Router
     }
 
     /**
-     * @param string $class
-     * @param string $method
-     */
-    private function checkPreActions($class, $method)
-    {
-        if ($this->hasToRunPreChecks($class)) {
-            self::run($class, '__check', true);
-        }
-        $preAction = 'pre' . ucfirst($method);
-        if (method_exists($class, $preAction)) {
-            self::run($class, $preAction);
-        }
-    }
-
-    /**
      * @param $class
      * @param string $method
      * @param boolean $throwExceptions
@@ -275,53 +240,6 @@ class Router
     }
 
     /**
-     * Check if class to run route implements the PreConditionedRunInterface
-     * @param string $class
-     * @return bool
-     */
-    private function hasToRunPreChecks($class)
-    {
-        return in_array(PreConditionedRunInterface::class, class_implements($class));
-    }
-
-    /**
-     * @param string $route
-     * @param array $action
-     * @param string $class
-     * @param array $params
-     * @return mixed
-     * @throws GeneratorException
-     * @throws ConfigException
-     */
-    protected function executeCachedRoute($route, $action, $class, $params = NULL)
-    {
-        Inspector::stats('[Router] Executing route ' . $route, Inspector::SCOPE_DEBUG);
-        $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
-        Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, $action);
-        $cache = Cache::needCache();
-        $execute = true;
-        $return = null;
-        if (false !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === false) {
-            list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
-            $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $cache);
-            if (NULL !== $cachedData) {
-                $headers = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers', $cache, null, Cache::JSON);
-                Template::getInstance()->renderCache($cachedData, $headers);
-                $execute = false;
-            }
-        }
-        if ($execute) {
-            Inspector::stats('[Router] Start executing action ' . $route, Inspector::SCOPE_DEBUG);
-            $this->checkPreActions($class, $action['method']);
-            $return = call_user_func_array([$class, $action['method']], $params);
-            if (false === $return) {
-                Logger::log(t('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
-            }
-        }
-        return $return;
-    }
-
-    /**
      * @param Exception|null $exception
      * @param bool $isJson
      * @return string
@@ -330,103 +248,5 @@ class Router
     public function httpNotFound(\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);
-    }
-
-    private function loadRoutingCache(): array
-    {
-        $cached = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', $this->cacheType, true);
-        if (is_array($cached) && count($cached) === 2) {
-            return [$cached[0] ?: [], $cached[1] ?: []];
-        }
-        return [[], []];
-    }
-
-    private function loadDomainsCache(): array
-    {
-        $domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, true);
-        return is_array($domains) ? $domains : [];
-    }
-
-    private function shouldRebuildRouting(): bool
-    {
-        return empty($this->routing) || Config::getParam('debug', true);
-    }
-
-    private function mapNotFoundException(RouterException $exception): RouterException
-    {
-        Logger::log($exception->getMessage(), LOG_WARNING);
-        return new RouterException(t('Página no encontrada'), $exception->getCode());
-    }
-
-    private function buildMatchContext(string $route): array
-    {
-        $parts = parse_url($route);
-        $path = array_key_exists('path', $parts) ? $parts['path'] : $route;
-        return [$path, Request::getInstance()->getMethod()];
-    }
-
-    private function findMatchingRoute(string $path, string $httpRequest): ?array
-    {
-        $fallback = null;
-        foreach ($this->routing as $pattern => $action) {
-            [$httpMethod, $routePattern] = RouterHelper::extractHttpRoute($pattern);
-            if (!RouterHelper::matchRoutePattern($routePattern, $path) || !RouterHelper::compareSlashes($routePattern, $path)) {
-                continue;
-            }
-            if ($httpMethod === $httpRequest) {
-                return [$pattern, $action];
-            }
-            if ($httpMethod === 'ALL' && null === $fallback) {
-                $fallback = [$pattern, $action];
-            }
-        }
-        return $fallback;
-    }
-
-    /**
-     * @param string $route
-     * @param string $pattern
-     * @param array $action
-     * @return mixed
-     * @throws Exception
-     */
-    private function executeMatchedRoute(string $route, string $pattern, array $action): mixed
-    {
-        [, $routePattern] = RouterHelper::extractHttpRoute($pattern);
-        self::setCheckedRoute($action);
-        SecurityHelper::checkRestrictedAccess($route);
-        $params = RouterHelper::extractComponents($route, $routePattern);
-        /** @var Controller $class */
-        $class = RouterHelper::getClassToCall($action);
-        try {
-            if ($this->checkRequirements($action, $params)) {
-                return $this->executeCachedRoute($route, $action, $class, $params);
-            }
-            throw new RouterException(t('Preconditions failed'), 412);
-        } catch (Exception $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
-            throw $e;
-        }
-    }
-
-    private function normalizeHomeAction(mixed $home): ?string
-    {
-        if (null === $home) {
-            return null;
-        }
-        $value = trim((string)$home);
-        return '' === $value ? null : $value;
-    }
-
-    private function resolveHomeRouteParams(string $home): ?array
-    {
-        $homeParams = null;
-        foreach ($this->routing as $pattern => $params) {
-            [, $route] = RouterHelper::extractHttpRoute($pattern);
-            if (preg_match('/' . preg_quote($route, '/') . '$/i', '/' . $home)) {
-                $homeParams = $params;
-            }
-        }
-        return is_array($homeParams) ? $homeParams : null;
     }
 }

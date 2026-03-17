@@ -189,4 +189,30 @@ class RequestResponseSecurityContractTest extends TestCase
         ]);
         $this->assertFalse(ResponseHelper::isSecureRequest());
     }
+
+    public function testIsSecureRequestHonorsForceHttpsConfig(): void
+    {
+        $config = $this->configBackup;
+        $config['force.https'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $request = Request::getInstance();
+        $request->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'HTTP_X_FORWARDED_PROTO' => 'http',
+            'HTTPS' => '',
+            'REQUEST_SCHEME' => 'http',
+        ]);
+
+        $this->assertTrue(ResponseHelper::isSecureRequest());
+    }
+
+    public function testSetStatusHeaderDoesNotMutateHeadersInTestMode(): void
+    {
+        ResponseHelper::setTest(true);
+        ResponseHelper::$headers_sent = [];
+        ResponseHelper::setStatusHeader('HTTP/1.1 201 Created');
+        $this->assertArrayNotHasKey('http status', ResponseHelper::$headers_sent);
+    }
 }

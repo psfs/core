@@ -9,10 +9,17 @@ use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\types\traits\Helper\AuthCryptoTrait;
+use PSFS\base\types\traits\Helper\AuthFlowTrait;
+use PSFS\base\types\traits\Helper\AuthTelemetryTrait;
 use Throwable;
 
 class AuthHelper
 {
+    use AuthCryptoTrait;
+    use AuthFlowTrait;
+    use AuthTelemetryTrait;
+
     const CRYPTO_VERSION_PREFIX = 'v2:';
     const CRYPTO_CIPHER = 'aes-256-gcm';
     const CRYPTO_TAG_LENGTH = 16;
@@ -21,8 +28,6 @@ class AuthHelper
     const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
     const SESSION_TOKEN = '659d0629624c0071863f3783e19608ffd9eb97e2';
     const EXPIRATION_TIMESTAMP_FORMAT = 'YmdHis';
-    private static array $legacyFallbackTelemetry = [];
-    private static array $invalidInputTelemetry = [];
 
     /**
      * @return array
@@ -44,7 +49,6 @@ class AuthHelper
     {
         return substr($role, 0, 8);
     }
-
 
     public static function checkBasicAuth(?string $user = null, ?string $pass = null, ?array $admins = []): array
     {
@@ -131,7 +135,6 @@ class AuthHelper
 
     public static function decodeToken(string $token, string $password): array
     {
-        $user = $timestamp = $userAgent = null;
         $secret = self::decrypt($token, $password);
         if (false === $secret || '' === trim((string)$secret)) {
             self::logInvalidAuthInput('token_decrypt_failed');
@@ -202,286 +205,5 @@ class AuthHelper
             Logger::log('[AuthInvalid] jwt_decode_failure:' . get_class($exception), LOG_WARNING);
             return self::authTuple();
         }
-    }
-
-    private static function isPasswordHash(string $hash): bool
-    {
-        $info = password_get_info($hash);
-        return is_array($info) && array_key_exists('algo', $info) && 0 !== ($info['algo'] ?? 0);
-    }
-
-    private static function secureEncrypt(string $data, string $key): false|string
-    {
-        $ivLen = openssl_cipher_iv_length(self::CRYPTO_CIPHER);
-        if (false === $ivLen || $ivLen < 1) {
-            return false;
-        }
-        try {
-            $iv = random_bytes($ivLen);
-        } catch (\Exception) {
-            return false;
-        }
-        $tag = '';
-        $encrypted = openssl_encrypt(
-            $data,
-            self::CRYPTO_CIPHER,
-            hash('sha256', $key, true),
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag,
-            '',
-            self::CRYPTO_TAG_LENGTH
-        );
-        if (false === $encrypted) {
-            return false;
-        }
-        $payload = json_encode([
-            'iv' => self::toBase64Url($iv),
-            'tag' => self::toBase64Url($tag),
-            'data' => self::toBase64Url($encrypted),
-        ]);
-        if (false === $payload) {
-            return false;
-        }
-
-        return self::toBase64Url($payload);
-    }
-
-    private static function secureDecrypt(string $payload, string $key): false|string
-    {
-        $decodedPayload = self::fromBase64Url($payload);
-        if (false === $decodedPayload) {
-            return false;
-        }
-        $json = json_decode($decodedPayload, true);
-        if (!is_array($json) || !isset($json['iv'], $json['tag'], $json['data'])) {
-            return false;
-        }
-        $iv = self::fromBase64Url((string)$json['iv']);
-        $tag = self::fromBase64Url((string)$json['tag']);
-        $encrypted = self::fromBase64Url((string)$json['data']);
-        if (false === $iv || false === $tag || false === $encrypted) {
-            return false;
-        }
-
-        $decrypted = openssl_decrypt(
-            $encrypted,
-            self::CRYPTO_CIPHER,
-            hash('sha256', $key, true),
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag
-        );
-        return false === $decrypted ? false : $decrypted;
-    }
-
-    private static function legacyEncrypt(string $data, string $key): string
-    {
-        $data = base64_encode($data);
-        $encrypted_data = '';
-        for ($i = 0, $j = 0, $iMax = strlen($data); $i < $iMax; $i++, $j++) {
-            if ($j === strlen($key)) {
-                $j = 0;
-            }
-            $encrypted_data .= $data[$i] ^ $key[$j];
-        }
-        return base64_encode($encrypted_data);
-    }
-
-    private static function legacyDecrypt(string $encrypted_data, string $key): false|string
-    {
-        $encrypted_data = base64_decode($encrypted_data);
-        $data = '';
-        for ($i = 0, $j = 0, $iMax = strlen((string)$encrypted_data); $i < $iMax; $i++, $j++) {
-            if ($j === strlen($key)) {
-                $j = 0;
-            }
-            $data .= $encrypted_data[$i] ^ $key[$j];
-        }
-        return base64_decode($data);
-    }
-
-    private static function toBase64Url(string $data): string
-    {
-        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-    }
-
-    private static function fromBase64Url(string $data): false|string
-    {
-        if ('' === $data) {
-            return false;
-        }
-        $encoded = strtr($data, '-_', '+/');
-        $padding = strlen($encoded) % 4;
-        if ($padding > 0) {
-            $encoded .= str_repeat('=', 4 - $padding);
-        }
-        return base64_decode($encoded);
-    }
-
-    private static function isJson(string $string): bool
-    {
-        json_decode($string, true);
-        return JSON_ERROR_NONE === json_last_error();
-    }
-
-    /**
-     * @return array<string,bool>
-     */
-    public static function getLegacyFallbackTelemetry(): array
-    {
-        return self::$legacyFallbackTelemetry;
-    }
-
-    public static function resetLegacyFallbackTelemetry(): void
-    {
-        self::$legacyFallbackTelemetry = [];
-        self::$invalidInputTelemetry = [];
-    }
-
-    /**
-     * @param string|null $authorization
-     * @param string $scheme basic|bearer
-     * @return string|null
-     */
-    private static function extractAuthorizationToken(?string $authorization, string $scheme): ?string
-    {
-        if (null === $authorization || '' === trim($authorization)) {
-            return null;
-        }
-        $pattern = 'basic' === strtolower($scheme)
-            ? '/^Basic\s+(.+)$/i'
-            : '/^Bearer\s+(.+)$/i';
-        if (preg_match($pattern, $authorization, $matches) !== 1) {
-            return null;
-        }
-        $token = trim((string)($matches[1] ?? ''));
-        return '' === $token ? null : $token;
-    }
-
-    private static function resolveBasicCredentials(?string $user, ?string $pass, array $admins): array
-    {
-        $request = Request::getInstance();
-        $candidateUser = $user ?: $request->getServer('PHP_AUTH_USER');
-        $candidatePass = $pass ?: $request->getServer('PHP_AUTH_PW');
-        if (self::shouldTryCookieCredentials($candidateUser, $admins)) {
-            [$cookieUser, $cookiePass] = self::getAdminFromCookie();
-            if (null !== $cookieUser) {
-                $candidateUser = $cookieUser;
-                $candidatePass = $cookiePass;
-            }
-        }
-        return [is_string($candidateUser) ? $candidateUser : null, is_string($candidatePass) ? $candidatePass : null];
-    }
-
-    private static function shouldTryCookieCredentials(?string $user, array $admins): bool
-    {
-        return null === $user || (array_key_exists($user, $admins) && empty($admins[$user]));
-    }
-
-    private static function validateAdminHash(?string $user, ?string $pass, array $profile): array
-    {
-        if (null === $user || null === $pass) {
-            return self::authTuple();
-        }
-        $storedHash = (string)($profile['hash'] ?? '');
-        if ('' === $storedHash) {
-            return self::authTuple();
-        }
-        $legacyHash = sha1($user . $pass);
-        if (self::isPasswordHash($storedHash)) {
-            return password_verify($user . $pass, $storedHash)
-                ? self::authTuple($user, $storedHash)
-                : self::authTuple();
-        }
-        if (hash_equals($storedHash, $legacyHash)) {
-            self::logLegacyFallbackUsage('basic_auth_legacy_sha1_hash');
-            return self::authTuple($user, $legacyHash);
-        }
-        self::logInvalidAuthInput('basic_hash_mismatch');
-        return self::authTuple();
-    }
-
-    private static function extractCredentialsFromCookie(string $authCookie): array
-    {
-        $secret = self::decrypt($authCookie, self::SESSION_TOKEN);
-        if (is_string($secret) && str_contains($secret, ':')) {
-            [$user, $pass] = explode(':', $secret, 2);
-            return self::authTuple($user, $pass);
-        }
-        // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
-        $legacySecret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
-        if (is_string($legacySecret) && str_contains($legacySecret, ':')) {
-            self::logLegacyFallbackUsage('cookie_key_admin_token');
-            [$user, $pass] = explode(':', $legacySecret, 2);
-            return self::authTuple($user, $pass);
-        }
-        self::logInvalidAuthInput('cookie_payload_invalid');
-        return self::authTuple();
-    }
-
-    private static function decodeJwtPayloadWithoutVerification(string $token): ?array
-    {
-        try {
-            $parts = explode('.', $token);
-            if (count($parts) < 2) {
-                self::logInvalidAuthInput('jwt_parts_invalid');
-                return null;
-            }
-            $payload = json_decode(JWT::urlsafeB64Decode($parts[1]), true);
-            if (!is_array($payload)) {
-                self::logInvalidAuthInput('jwt_payload_invalid_json');
-                return null;
-            }
-            return $payload;
-        } catch (Throwable) {
-            self::logInvalidAuthInput('jwt_payload_decode_exception');
-            return null;
-        }
-    }
-
-    private static function isValidComplexTokenPayload(?string $user, ?string $timestamp, ?string $userAgent, string $requestUserAgent): bool
-    {
-        if (null === $user || null === $timestamp) {
-            return false;
-        }
-        if (null === $userAgent || $userAgent !== $requestUserAgent) {
-            self::logInvalidAuthInput('complex_user_agent_mismatch');
-            return false;
-        }
-        return true;
-    }
-
-    private static function extractRequestUserAgent(): string
-    {
-        return array_key_exists('HTTP_USER_AGENT', $_SERVER) ? (string)$_SERVER['HTTP_USER_AGENT'] : 'psfs';
-    }
-
-    private static function authTuple(?string $user = null, ?string $token = null): array
-    {
-        return [$user, $token];
-    }
-
-    private static function tokenTuple(?string $user = null, ?string $timestamp = null, ?string $userAgent = null): array
-    {
-        return [$user, $timestamp, $userAgent];
-    }
-
-    private static function logLegacyFallbackUsage(string $context): void
-    {
-        if (array_key_exists($context, self::$legacyFallbackTelemetry)) {
-            return;
-        }
-        self::$legacyFallbackTelemetry[$context] = true;
-        Logger::log('[LegacyFallback] ' . $context, LOG_NOTICE);
-    }
-
-    private static function logInvalidAuthInput(string $context): void
-    {
-        if (array_key_exists($context, self::$invalidInputTelemetry)) {
-            return;
-        }
-        self::$invalidInputTelemetry[$context] = true;
-        Logger::log('[AuthInvalid] ' . $context, LOG_WARNING);
     }
 }

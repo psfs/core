@@ -7,18 +7,28 @@ use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\config\Config;
 use PSFS\base\extension\CustomTranslateExtension;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\I18nHelper;
 
 class I18nHelperTest extends TestCase
 {
+    private array $serverBackup = [];
+
     protected function setUp(): void
     {
+        $this->serverBackup = $_SERVER;
         $this->resetTranslationState();
         $defaultLanguage = Config::getParam('default.language', 'es_ES');
         $security = Security::getInstance();
         $security->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($defaultLanguage, 0, 2));
         $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $defaultLanguage);
         Request::setLanguageHeader('');
+    }
+
+    protected function tearDown(): void
+    {
+        $_SERVER = $this->serverBackup;
+        Request::dropInstance();
     }
 
     public function testDefaultLanguageExtraction()
@@ -110,6 +120,33 @@ class I18nHelperTest extends TestCase
         $this->assertArrayHasKey('en_GB', $report);
         $matches = array_values(array_filter($report['en_GB'], static fn ($msg) => $msg === $missingMessage));
         $this->assertCount(1, $matches);
+    }
+
+    public function testLocaleValidationAcceptsAndRejectsExpectedFormats(): void
+    {
+        $this->assertTrue(I18nHelper::isValidLocale('es_ES'));
+        $this->assertTrue(I18nHelper::isValidLocale('en'));
+        $this->assertFalse(I18nHelper::isValidLocale('ES_es'));
+        $this->assertFalse(I18nHelper::isValidLocale('english'));
+        $this->assertFalse(I18nHelper::isValidLocale('en-GB'));
+    }
+
+    public function testExtractLocaleNormalizesBrowserHeaderVariants(): void
+    {
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'pt-BR,pt;q=0.8';
+        Request::dropInstance();
+        Request::getInstance()->init();
+        Request::setLanguageHeader('');
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, null);
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, null);
+
+        $this->assertSame('pt_PT', I18nHelper::extractLocale());
+    }
+
+    public function testFindTranslationsRejectsInvalidLocale(): void
+    {
+        $this->expectException(GeneratorException::class);
+        I18nHelper::findTranslations(BASE_DIR, 'en-GB');
     }
 
     private function clearLanguageHeader(): void

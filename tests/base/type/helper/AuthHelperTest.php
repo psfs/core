@@ -152,6 +152,37 @@ class AuthHelperTest extends TestCase
         $this->assertSame(sha1($headerUser . $headerPass), $token);
     }
 
+    public function testCheckBasicAuthReadsLegacyCookieFallbackWithAdminToken(): void
+    {
+        $cookieUser = 'legacy_cookie_user';
+        $cookiePass = 'legacy_cookie_pass';
+        $this->bootstrapRequest([], [
+            AuthHelper::generateProfileHash() => AuthHelper::encrypt($cookieUser . ':' . $cookiePass, AuthHelper::ADMIN_ID_TOKEN),
+        ]);
+
+        [$user, $hash] = AuthHelper::checkBasicAuth(null, null, [
+            $cookieUser => ['hash' => sha1($cookieUser . $cookiePass)],
+        ]);
+
+        $this->assertSame($cookieUser, $user);
+        $this->assertSame(sha1($cookieUser . $cookiePass), $hash);
+        $telemetry = AuthHelper::getLegacyFallbackTelemetry();
+        $this->assertArrayHasKey('cookie_key_admin_token', $telemetry);
+    }
+
+    public function testCheckComplexAuthRejectsMalformedAuthorizationHeader(): void
+    {
+        $this->bootstrapRequest([
+            'HTTP_AUTHORIZATION' => 'Token malformed',
+            'HTTP_USER_AGENT' => 'phpunit-auth-helper',
+        ]);
+        [$user, $token] = AuthHelper::checkComplexAuth([
+            'admin' => ['hash' => sha1('admin:secret')],
+        ]);
+        $this->assertNull($user);
+        $this->assertNull($token);
+    }
+
     public function testDecodeTokenInvalidPayloadReturnsNullTuple(): void
     {
         [$user, $timestamp, $userAgent] = AuthHelper::decodeToken('not_a_valid_token', 'invalid_key');
