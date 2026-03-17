@@ -20,6 +20,7 @@ class AuthHelper
     const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
     const SESSION_TOKEN = '659d0629624c0071863f3783e19608ffd9eb97e2';
     const EXPIRATION_TIMESTAMP_FORMAT = 'YmdHis';
+    private static array $legacyFallbackTelemetry = [];
 
     /**
      * @return array
@@ -33,6 +34,9 @@ class AuthHelper
             // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
             if (false === $secret || !str_contains((string)$secret, ':')) {
                 $secret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
+                if (is_string($secret) && str_contains($secret, ':')) {
+                    self::logLegacyFallbackUsage('cookie_key_admin_token');
+                }
             }
             if (is_string($secret) && str_contains($secret, ':')) {
                 list($user, $pass) = explode(':', $secret, 2);
@@ -72,8 +76,12 @@ class AuthHelper
         if (self::isPasswordHash($storedHash)) {
             return password_verify($user . $pass, $storedHash) ? [$user, $storedHash] : [null, null];
         }
+        if (hash_equals($storedHash, $legacyHash)) {
+            self::logLegacyFallbackUsage('basic_auth_legacy_sha1_hash');
+            return [$user, $legacyHash];
+        }
 
-        return hash_equals($storedHash, $legacyHash) ? [$user, $legacyHash] : [null, null];
+        return [null, null];
     }
 
     public static function checkComplexAuth(array $admins)
@@ -121,8 +129,12 @@ class AuthHelper
                 return $data;
             }
         }
+        $legacyData = self::legacyDecrypt($encrypted_data, $key);
+        if (false !== $legacyData) {
+            self::logLegacyFallbackUsage('legacy_xor_decrypt');
+        }
 
-        return self::legacyDecrypt($encrypted_data, $key);
+        return $legacyData;
     }
 
     public static function generateToken(string $user, string $password, $userAgent = null): string
@@ -154,6 +166,7 @@ class AuthHelper
             }
         } else if (!empty($secret) && str_contains($secret, Security::LOGGED_USER_TOKEN)) {
             list($user, $timestamp, $userAgent) = explode(Security::LOGGED_USER_TOKEN, $secret);
+            self::logLegacyFallbackUsage('token_payload_delimited');
         }
         return [$user, $timestamp, $userAgent];
     }
@@ -164,7 +177,13 @@ class AuthHelper
         $request = Request::getInstance();
         $authorization = $request->getHeader('Authorization');
         if (!empty($authorization)) {
-            list($bearer, $token) = explode(' ', $authorization);
+            $token = null;
+            if (preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches) === 1) {
+                $token = $matches[1];
+            }
+            if (null === $token) {
+                return [null, null];
+            }
             $parts = explode('.', $token);
             if (count($parts) > 1) {
                 $payload = json_decode(JWT::urlsafeB64Decode($parts[1]), true);
@@ -184,7 +203,7 @@ class AuthHelper
                                     $user = $admin;
                                     $hash = $profile['hash'];
                                 }
-                            } catch (\Exception $exception) {
+                            } catch (SecurityException|\DomainException|\UnexpectedValueException|\InvalidArgumentException $exception) {
                                 Logger::log($exception->getMessage(), LOG_ERR);
                             }
                             break;
@@ -315,5 +334,14 @@ class AuthHelper
     {
         json_decode($string, true);
         return JSON_ERROR_NONE === json_last_error();
+    }
+
+    private static function logLegacyFallbackUsage(string $context): void
+    {
+        if (array_key_exists($context, self::$legacyFallbackTelemetry)) {
+            return;
+        }
+        self::$legacyFallbackTelemetry[$context] = true;
+        Logger::log('[LegacyFallback] ' . $context, LOG_NOTICE);
     }
 }

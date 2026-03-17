@@ -88,6 +88,9 @@ class Config
         'hide.modules', // Hide modules from menu, separated by comma
         'skip.route_generation', // Skip routes generation
         'auth.expiration', // Set the expiration time for the auth token
+        'api.query_token.compat', // Allow legacy API_TOKEN query string fallback (deprecated)
+        'api.token.cookie', // Cookie name for API token fallback
+        'csrf.expiration', // CSRF token expiration time (seconds)
     ];
     protected bool $debug = false;
     public static array $cleanable_config_files = ['domains.json', 'urls.json'];

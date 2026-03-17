@@ -74,6 +74,7 @@ docker exec <container_name> php vendor/bin/phpunit
 ### Security/Auth contract (v2)
 - Auth/cookies are versioned as **v2** with **legacy fallback in read-only mode**.
 - Expected result for invalid auth is `null/null` and the request flow must be stopped.
+- Compatibility policy: active fallbacks are temporary and can be removed only with explicit user approval.
 - Target cookie policy:
   - `HttpOnly=true`
   - `Secure=true` when running on HTTPS
@@ -86,10 +87,14 @@ docker exec <container_name> php vendor/bin/phpunit
 - Changes must be reviewed by a human before commit.
 - Do not auto-commit after automated changes or agent execution.
 
+### Runtime port
+- The root `.env` defines `HOST_PORT=8008`.
+- Use that value for `docker compose up -d` to avoid local port collisions.
+
 Your could use some environment variables to manage the docker containers
 ```
 - APP_ENVIRONMENT: (local|dev|...|prod) Define the staging for the run environment
-- HOST_PORT: 8001 Define the port where you could expose the server
+- HOST_PORT: 8008 Define the port where you could expose the server
 - DEBUG: -xdebug Loads a docker image with xdebug installed and configured, if empty it loads a default php image
 ```
 

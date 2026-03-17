@@ -207,6 +207,12 @@ class Security
         if (is_array($decoded)) {
             return $decoded;
         }
+        // Legacy compatibility: historic sessions were stored serialized.
+        $legacyData = @unserialize($data, ['allowed_classes' => false]);
+        if (is_array($legacyData)) {
+            Logger::log('[LegacyFallback] session_serialized_' . $key, LOG_NOTICE);
+            return $legacyData;
+        }
 
         return null;
     }

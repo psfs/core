@@ -146,6 +146,27 @@ class SecurityTest extends TestCase
     /**
      * @throws Exception
      */
+    public function testLegacySerializedSessionCompatibility(): void
+    {
+        global $_SESSION;
+        Security::dropInstance();
+        $legacyAdmin = [
+            'alias' => 'legacy_admin',
+            'profile' => AuthHelper::ADMIN_ID_TOKEN,
+        ];
+        $_SESSION = [
+            AuthHelper::ADMIN_ID_TOKEN => serialize($legacyAdmin),
+        ];
+
+        $security = $this->getInstance();
+        $this->assertEquals($legacyAdmin, $security->getAdmin(), 'Legacy serialized admin session is not parsed');
+        $security->updateSession();
+        $this->assertIsArray($_SESSION[AuthHelper::ADMIN_ID_TOKEN] ?? null, 'Legacy session should be migrated to structured array');
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testCheckNotAuthorizedRoute(): void
     {
         Template::setTest(true);

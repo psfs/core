@@ -10,3 +10,13 @@ composer.lock
 .DS_Store
 .phpunit.result.cache
 phpunit.phar
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local quality/tmp artifacts
+.tmp_quality/
+*.tmp
+*.swp

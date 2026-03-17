@@ -59,13 +59,7 @@ class RequestHelper
         }
 
         if (is_array($corsEnabled)) {
-            foreach ($corsEnabled as $allowedOrigin) {
-                $normalizedAllowed = self::normalizeOrigin((string)$allowedOrigin);
-                if (!empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin) {
-                    return $normalizedOrigin;
-                }
-            }
-            return null;
+            return self::resolveOriginFromArray($normalizedOrigin, $corsEnabled);
         }
 
         $corsEnabled = trim((string)$corsEnabled);
@@ -78,29 +72,7 @@ class RequestHelper
             return preg_match($corsEnabled, $normalizedOrigin) === 1 ? $normalizedOrigin : null;
         }
 
-        $entries = explode(',', $corsEnabled);
-        foreach ($entries as $entry) {
-            $entry = trim($entry);
-            if ($entry === '') {
-                continue;
-            }
-
-            // Wildcard pattern support: https://*.example.com
-            if (str_contains($entry, '*')) {
-                $pattern = '/^' . str_replace('\*', '[^.]+', preg_quote($entry, '/')) . '$/i';
-                if (preg_match($pattern, $normalizedOrigin) === 1) {
-                    return $normalizedOrigin;
-                }
-                continue;
-            }
-
-            $normalizedAllowed = self::normalizeOrigin($entry);
-            if (!empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin) {
-                return $normalizedOrigin;
-            }
-        }
-
-        return null;
+        return self::resolveOriginFromCsvAllowlist($normalizedOrigin, $corsEnabled);
     }
 
     /**
@@ -128,6 +100,59 @@ class RequestHelper
             $normalized .= ':' . (int)$parsed['port'];
         }
         return $normalized;
+    }
+
+    /**
+     * @param string $normalizedOrigin
+     * @param array $allowlist
+     * @return string|null
+     */
+    private static function resolveOriginFromArray(string $normalizedOrigin, array $allowlist): ?string
+    {
+        foreach ($allowlist as $allowedOrigin) {
+            $normalizedAllowed = self::normalizeOrigin((string)$allowedOrigin);
+            if (!empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin) {
+                return $normalizedOrigin;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param string $normalizedOrigin
+     * @param string $csvAllowlist
+     * @return string|null
+     */
+    private static function resolveOriginFromCsvAllowlist(string $normalizedOrigin, string $csvAllowlist): ?string
+    {
+        $entries = explode(',', $csvAllowlist);
+        foreach ($entries as $entry) {
+            $entry = trim($entry);
+            if ($entry === '') {
+                continue;
+            }
+            if (self::entryMatchesOrigin($entry, $normalizedOrigin)) {
+                return $normalizedOrigin;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param string $entry
+     * @param string $normalizedOrigin
+     * @return bool
+     */
+    private static function entryMatchesOrigin(string $entry, string $normalizedOrigin): bool
+    {
+        // Wildcard pattern support: https://*.example.com
+        if (str_contains($entry, '*')) {
+            $pattern = '/^' . str_replace('\*', '[^.]+', preg_quote($entry, '/')) . '$/i';
+            return preg_match($pattern, $normalizedOrigin) === 1;
+        }
+
+        $normalizedAllowed = self::normalizeOrigin($entry);
+        return !empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin;
     }
 
     /**

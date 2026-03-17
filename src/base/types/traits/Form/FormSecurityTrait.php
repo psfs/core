@@ -2,6 +2,9 @@
 
 namespace PSFS\base\types\traits\Form;
 
+use PSFS\base\config\Config;
+use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\types\Form;
 
 /**
@@ -10,6 +13,9 @@ use PSFS\base\types\Form;
  */
 trait FormSecurityTrait
 {
+    private const CSRF_SESSION_TOKEN_KEY = '__PSFS_CSRF_FORM_TOKENS__';
+    private const CSRF_DEFAULT_EXPIRATION_SECONDS = 1800;
+
     /**
      * @var
      */
@@ -21,21 +27,36 @@ trait FormSecurityTrait
      */
     private function genCrfsToken()
     {
-        $hashOrig = '';
-        if (!empty($this->fields)) {
-            foreach (array_keys($this->fields) as $field) {
-                if ($field !== self::SEPARATOR) {
-                    $hashOrig .= $field;
-                }
-            }
+        if (empty($this->fields)) {
+            return $this;
         }
-        if ('' !== $hashOrig) {
-            $this->crfs = sha1($hashOrig);
-            $this->add($this->getName() . '_token', array(
-                'type' => 'hidden',
-                'value' => $this->crfs,
-            ));
+
+        $tokenField = $this->getName() . '_token';
+        $formKey = $this->getCsrfFormKey();
+        $storage = $this->getCsrfStorage();
+
+        $submittedToken = $this->extractSubmittedToken($tokenField);
+        $storedToken = (string)($storage[$formKey]['token'] ?? '');
+        $expiresAt = (int)($storage[$formKey]['expires_at'] ?? 0);
+        $storedValid = ($storedToken !== '' && $expiresAt >= time());
+
+        if ($submittedToken !== '' && $storedValid && hash_equals($storedToken, $submittedToken)) {
+            // Keep the same token during POST build to preserve legacy form flow: build() -> hydrate() -> isValid().
+            $this->crfs = $storedToken;
+        } else {
+            $this->crfs = $this->generateRandomToken();
+            $storage[$formKey] = [
+                'token' => $this->crfs,
+                'expires_at' => time() + $this->getCsrfExpiration(),
+            ];
+            $this->setCsrfStorage($storage);
         }
+
+        $this->add($tokenField, array(
+            'type' => 'hidden',
+            'value' => $this->crfs,
+        ));
+
         return $this;
     }
 
@@ -78,12 +99,94 @@ trait FormSecurityTrait
         ) {
             return false;
         }
-        if (array_key_exists('value', $this->fields[$tokenField])
-            && $this->crfs === $this->fields[$tokenField]['value']
-        ) {
-            return true;
+
+        if (!array_key_exists('value', $this->fields[$tokenField])) {
+            return false;
         }
-        return false;
+
+        $submittedToken = (string)$this->fields[$tokenField]['value'];
+        if ('' === $submittedToken) {
+            return false;
+        }
+
+        $formKey = $this->getCsrfFormKey();
+        $storage = $this->getCsrfStorage();
+        $sessionToken = (string)($storage[$formKey]['token'] ?? '');
+        $expiresAt = (int)($storage[$formKey]['expires_at'] ?? 0);
+
+        if ('' === $sessionToken || $expiresAt < time()) {
+            unset($storage[$formKey]);
+            $this->setCsrfStorage($storage);
+            return false;
+        }
+
+        $valid = hash_equals($sessionToken, $submittedToken);
+        unset($storage[$formKey]);
+        $this->setCsrfStorage($storage);
+        $this->crfs = $sessionToken;
+
+        return $valid;
+    }
+
+    /**
+     * @return string
+     */
+    private function getCsrfFormKey(): string
+    {
+        return $this->getName();
+    }
+
+    /**
+     * @return int
+     */
+    private function getCsrfExpiration(): int
+    {
+        $expiration = (int)Config::getParam('csrf.expiration', self::CSRF_DEFAULT_EXPIRATION_SECONDS);
+        return max(60, $expiration);
+    }
+
+    /**
+     * @return string
+     */
+    private function generateRandomToken(): string
+    {
+        try {
+            return bin2hex(random_bytes(32));
+        } catch (\Exception) {
+            return hash('sha256', uniqid('csrf', true) . microtime(true));
+        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getCsrfStorage(): array
+    {
+        $storage = Security::getInstance()->getSessionKey(self::CSRF_SESSION_TOKEN_KEY);
+        return is_array($storage) ? $storage : [];
+    }
+
+    /**
+     * @param array $storage
+     * @return void
+     */
+    private function setCsrfStorage(array $storage): void
+    {
+        Security::getInstance()->setSessionKey(self::CSRF_SESSION_TOKEN_KEY, $storage);
+    }
+
+    /**
+     * @param string $tokenField
+     * @return string
+     */
+    private function extractSubmittedToken(string $tokenField): string
+    {
+        $requestData = Request::getInstance()->getData();
+        $formName = $this->getName();
+        if (!array_key_exists($formName, $requestData) || !is_array($requestData[$formName])) {
+            return '';
+        }
+        return (string)($requestData[$formName][$tokenField] ?? '');
     }
 
 }
