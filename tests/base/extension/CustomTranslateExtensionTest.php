@@ -134,6 +134,27 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertContains($missingMessage, $report['en_GB']);
     }
 
+    public function testTranslationsLoadFromSessionCacheVersionWhenAvailable(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+            'cache.var' => 'vtest',
+        ]);
+        $security = Security::getInstance();
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, 'en');
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'en_GB');
+        $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_VERSION, 'en_GB_vtest');
+        $security->setSessionKey(CustomTranslateExtension::LOCALE_CACHED_TAG, [
+            'en_GB' => [
+                'HELLO_SESSION' => 'Hello from session cache',
+            ],
+        ]);
+
+        $translated = CustomTranslateExtension::_('HELLO_SESSION');
+        $this->assertSame('Hello from session cache', $translated);
+    }
+
     private function overrideConfig(array $override): void
     {
         $config = $this->configBackup;

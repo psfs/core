@@ -61,6 +61,11 @@ class DocumentorServiceTest extends GeneratorServiceTest
             $this->assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
             $this->assertCount(7, $endpoints, 'Different number of endpoints');
         }
+        $swagger = $documentorService->swaggerFormatter($module, $doc);
+        $this->assertArrayHasKey('swagger', $swagger);
+        $this->assertArrayHasKey('paths', $swagger);
+        $this->assertArrayHasKey('definitions', $swagger);
+        $this->assertNotEmpty($swagger['paths']);
         $this->clearContext($modulePath);
     }
 }

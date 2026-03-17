@@ -193,40 +193,47 @@ class RequestHelper
      */
     public static function getIpAddress(): mixed
     {
-        // check for shared internet/ISP IP
-        $ipAddress = ServerHelper::getServerValue('HTTP_CLIENT_IP');
-        if (!empty($ipAddress) && self::validateIpAddress($ipAddress)) {
-            return $ipAddress;
+        $directClientIp = self::extractSingleValidIp('HTTP_CLIENT_IP');
+        if (null !== $directClientIp) {
+            return $directClientIp;
         }
-
-        // check for IPs passing through proxies
-        $xForwardedFor = ServerHelper::getServerValue('HTTP_X_FORWARDED_FOR');
-        if (!empty($xForwardedFor)) {
-            // check if multiple ips exist in var
-            if (str_contains($xForwardedFor, ',')) {
-                $iplist = explode(',', $xForwardedFor);
-                foreach ($iplist as $ip) {
-                    if (self::validateIpAddress($ip)) {
-                        return $ip;
-                    }
-                }
-            } else {
-                if (self::validateIpAddress($xForwardedFor)) {
-                    return $xForwardedFor;
-                }
+        $forwardedChain = self::extractForwardedForIp();
+        if (null !== $forwardedChain) {
+            return $forwardedChain;
+        }
+        foreach (['HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP'] as $serverKey) {
+            $candidate = self::extractSingleValidIp($serverKey);
+            if (null !== $candidate) {
+                return $candidate;
             }
         }
-        $xForwarded = ServerHelper::getServerValue('HTTP_X_FORWARDED');
-        if (!empty($xForwarded) && self::validateIpAddress($xForwarded)) {
-            return $xForwarded;
-        }
-        $xClusterClientIp = ServerHelper::getServerValue('HTTP_X_CLUSTER_CLIENT_IP');
-        if (!empty($xClusterClientIp) && self::validateIpAddress($xClusterClientIp)) {
-            return $xClusterClientIp;
-        }
-
         // return unreliable ip since all else failed
         return ServerHelper::getServerValue('REMOTE_ADDR');
+    }
+
+    private static function extractSingleValidIp(string $serverKey): ?string
+    {
+        $value = trim((string)ServerHelper::getServerValue($serverKey));
+        if ($value === '' || !self::validateIpAddress($value)) {
+            return null;
+        }
+        return $value;
+    }
+
+    private static function extractForwardedForIp(): ?string
+    {
+        $xForwardedFor = trim((string)ServerHelper::getServerValue('HTTP_X_FORWARDED_FOR'));
+        if ($xForwardedFor === '') {
+            return null;
+        }
+        $ipList = str_contains($xForwardedFor, ',') ? explode(',', $xForwardedFor) : [$xForwardedFor];
+        foreach ($ipList as $ip) {
+            $candidate = trim($ip);
+            if (self::validateIpAddress($candidate)) {
+                return $candidate;
+            }
+        }
+        return null;
     }
 
     /**

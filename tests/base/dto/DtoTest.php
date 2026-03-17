@@ -186,4 +186,23 @@ class DtoTest extends TestCase
         $this->assertEquals($jsonResponse->pages, $profilling->pages, 'Error creating profilling dto');
         $this->assertNotEmpty($profilling->profiling, 'Error creating profilling dto');
     }
+
+    public function testCheckCastedValueSanitizesNestedStringArrays(): void
+    {
+        $dto = new class(false) extends \PSFS\base\dto\Dto {
+            public function castForTest(mixed $value, string $type): mixed
+            {
+                return $this->checkCastedValue($value, $type);
+            }
+        };
+
+        $value = [
+            '<script>alert(1)</script>safe',
+            ['<iframe src="x"></iframe>nested'],
+        ];
+        $casted = $dto->castForTest($value, 'string');
+
+        $this->assertSame('safe', $casted[0]);
+        $this->assertSame('nested', $casted[1][0]);
+    }
 }

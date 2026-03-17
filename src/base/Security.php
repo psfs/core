@@ -74,50 +74,66 @@ class Security
     public function checkAdmin($user = NULL, $pass = NULL, $force = false)
     {
         Logger::log('Checking admin session');
-        if ((!$this->authorized && !$this->checked) || $force) {
-            $admins = $this->getAdmins();
-            $token = null;
-            if (null !== $admins) {
-                if (empty($user)) {
-                    // First try, traditional basic auth
-                    Inspector::stats('[Auth] Checking Basic Auth');
-                    list($user, $token) = AuthHelper::checkBasicAuth($user, $pass, $admins);
-                }
-                if (empty($user)) {
-                    // Second try, cookie auth
-                    Inspector::stats('[Auth] Checking Basic Auth PSFS');
-                    list($user, $token) = AuthHelper::checkComplexAuth($admins);
-                }
-                if (empty($user) && Config::getParam('enable.jwt', false)) {
-                    // Third try, jwt auth
-                    Inspector::stats('[Auth] Checking JWT Auth');
-                    list($user, $token) = AuthHelper::checkJwtAuth($admins);
-                }
-                if (!empty($user) && !empty($admins[$user])) {
-                    $auth = $admins[$user]['hash'];
-                    $this->authorized = ($auth === $token);
-                    if ($this->authorized) {
-                        $this->updateAdmin($user, $admins[$user]['profile']);
-                        $encrypted = AuthHelper::encrypt("$user:$pass", AuthHelper::SESSION_TOKEN);
-                        ResponseHelper::setCookieHeaders([
-                            [
-                                'name' => AuthHelper::generateProfileHash(),
-                                'value' => $encrypted,
-                                'http' => true,
-                                'domain' => '',
-                            ]
-                        ]);
-                        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
-                    }
-                } else {
-                    $this->admin = null;
-                    $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
-                }
-                $this->checked = true;
-            }
+        if (!$this->shouldCheckAdmin($force)) {
+            return $this->authorized || self::isTest();
         }
+        $admins = $this->getAdmins();
+        if (null === $admins) {
+            return $this->authorized || self::isTest();
+        }
+        [$user, $token] = $this->resolveAdminCredentials($admins, $user, $pass);
+        $this->authorizeAdminCredentials($admins, $user, $token, $pass);
+        $this->checked = true;
 
         return $this->authorized || self::isTest();
+    }
+
+    private function shouldCheckAdmin(bool $force): bool
+    {
+        return ((!$this->authorized && !$this->checked) || $force);
+    }
+
+    private function resolveAdminCredentials(array $admins, $user, $pass): array
+    {
+        $token = null;
+        if (empty($user)) {
+            Inspector::stats('[Auth] Checking Basic Auth');
+            [$user, $token] = AuthHelper::checkBasicAuth($user, $pass, $admins);
+        }
+        if (empty($user)) {
+            Inspector::stats('[Auth] Checking Basic Auth PSFS');
+            [$user, $token] = AuthHelper::checkComplexAuth($admins);
+        }
+        if (empty($user) && Config::getParam('enable.jwt', false)) {
+            Inspector::stats('[Auth] Checking JWT Auth');
+            [$user, $token] = AuthHelper::checkJwtAuth($admins);
+        }
+        return [$user, $token];
+    }
+
+    private function authorizeAdminCredentials(array $admins, $user, $token, $pass): void
+    {
+        if (empty($user) || empty($admins[$user])) {
+            $this->admin = null;
+            $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
+            return;
+        }
+        $auth = $admins[$user]['hash'];
+        $this->authorized = ($auth === $token);
+        if (!$this->authorized) {
+            return;
+        }
+        $this->updateAdmin($user, $admins[$user]['profile']);
+        $encrypted = AuthHelper::encrypt("$user:$pass", AuthHelper::SESSION_TOKEN);
+        ResponseHelper::setCookieHeaders([
+            [
+                'name' => AuthHelper::generateProfileHash(),
+                'value' => $encrypted,
+                'http' => true,
+                'domain' => '',
+            ]
+        ]);
+        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
     }
 
     /**

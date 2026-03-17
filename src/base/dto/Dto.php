@@ -175,38 +175,33 @@ class Dto extends Singleton implements \JsonSerializable
      */
     protected function checkCastedValue(mixed $rawValue, string $type)
     {
-        if (null !== $rawValue) {
-            switch ($type) {
-                default:
-                case 'string':
-                    // Cleaning HTML dangerous tags
-                    if(is_array($rawValue)) {
-                        foreach($rawValue as &$item) {
-                            $item = $this->checkCastedValue($item, $type);
-                        }
-                        $value = $rawValue;
-                    } elseif(is_string($rawValue)) {
-                        $value = I18nHelper::cleanHtmlAttacks($rawValue);
-                    } else {
-                        $value = $rawValue;
-                    }
-                    break;
-                case 'integer':
-                case 'int':
-                    $value = (integer)$rawValue;
-                    break;
-                case 'float':
-                case 'double':
-                    $value = (float)$rawValue;
-                    break;
-                case 'boolean':
-                case 'bool':
-                    $value = (bool)$rawValue;
-                    break;
-            }
-        } else {
-            $value = $rawValue;
+        if (null === $rawValue) {
+            return null;
         }
-        return $value;
+        $normalizedType = strtolower($type);
+        if (in_array($normalizedType, ['integer', 'int'], true)) {
+            return (int)$rawValue;
+        }
+        if (in_array($normalizedType, ['float', 'double'], true)) {
+            return (float)$rawValue;
+        }
+        if (in_array($normalizedType, ['boolean', 'bool'], true)) {
+            return (bool)$rawValue;
+        }
+        return $this->sanitizeStringLikeValue($rawValue);
+    }
+
+    private function sanitizeStringLikeValue(mixed $rawValue): mixed
+    {
+        if (is_array($rawValue)) {
+            foreach ($rawValue as &$item) {
+                $item = $this->sanitizeStringLikeValue($item);
+            }
+            return $rawValue;
+        }
+        if (is_string($rawValue)) {
+            return I18nHelper::cleanHtmlAttacks($rawValue);
+        }
+        return $rawValue;
     }
 }

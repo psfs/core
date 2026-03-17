@@ -82,56 +82,105 @@ class CustomTranslateExtension extends AbstractExtension
     {
         Inspector::stats('[translationsCheckLoad] Start checking translations load', Inspector::SCOPE_DEBUG);
         $session = Security::getInstance();
-        $session_locale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY) ?? $session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY);
-        self::$locale = $forceReload ? $session_locale : I18nHelper::extractLocale($session_locale);
+        $sessionLocale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY) ?? $session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY);
+        self::$locale = self::resolveLocale($sessionLocale, $forceReload);
         $locale = self::$locale;
         $version = $session->getSessionKey(self::LOCALE_CACHED_VERSION);
         $configVersion = self::$locale . '_' . Config::getParam('cache.var', 'v1');
         if ($forceReload) {
-            Inspector::stats('[translationsCheckLoad] Force translations reload', Inspector::SCOPE_DEBUG);
-            self::dropInstance();
+            self::forceTranslationsReload($locale);
             $version = null;
-            self::$translations[self::$locale] = [];
         }
-        if((!array_key_exists($locale, self::$translations) || count(self::$translations[$locale]) === 0) && strlen($locale) === 2) {
-            $locale = $locale . '_' . strtoupper($locale);
-            if(array_key_exists($locale, self::$translations)) {
-                self::$translations[self::$locale] = self::$translations[$locale];
-                self::generateTranslationsKeys(self::$locale);
-            }
-        }
-        if(!array_key_exists($locale, self::$translations) || count(self::$translations[$locale]) === 0) {
+        $locale = self::hydrateLocaleAliasIfNeeded($locale);
+        if (!self::hasTranslationsLoaded($locale)) {
             Inspector::stats('[translationsCheckLoad] Extracting translations', Inspector::SCOPE_DEBUG);
             self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
-            if(null !== $version && $version === $configVersion) {
+            if (null !== $version && $version === $configVersion) {
                 Inspector::stats('[translationsCheckLoad] Translations loaded from session', Inspector::SCOPE_DEBUG);
-                self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG);
+                self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG) ?: [];
             } else {
-                if (!$useBase) {
-                    $customKey = $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
-                }
-                $standardTranslations = self::extractBaseTranslations();
-                // If the project has custom translations, gather them
-                if (null !== $customKey) {
-                    Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
-                    self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $customKey, $locale . '.json']);
-                } elseif (!empty($standardTranslations)) {
-                    self::$translations[$locale] = $standardTranslations;
-                    self::generateTranslationsKeys($locale);
-                }
-                // Finally we merge base and custom translations to complete all the i18n set
-                if (file_exists(self::$filename)) {
-                    Logger::log('[' . self::class . '] Custom locale detected: ' . $customKey . ' [' . $locale . ']', LOG_INFO);
-                    self::$translations[$locale] = array_merge($standardTranslations, json_decode(file_get_contents(self::$filename), true));
-                    self::generateTranslationsKeys($locale);
-                    $session->setSessionKey(self::LOCALE_CACHED_TAG, self::$translations);
-                    $session->setSessionKey(self::LOCALE_CACHED_VERSION, $configVersion);
-                } elseif (null !== $customKey) {
+                $effectiveCustomKey = self::resolveCustomKey($customKey, $session, $useBase);
+                $loaded = self::loadTranslationsFromCatalog($locale, $effectiveCustomKey, $session, $configVersion);
+                if (!$loaded && null !== $effectiveCustomKey) {
                     self::translationsCheckLoad(null, $forceReload, true);
                 }
             }
         }
         Inspector::stats('[translationsCheckLoad] Translations loaded', Inspector::SCOPE_DEBUG);
+    }
+
+    private static function resolveLocale(?string $sessionLocale, bool $forceReload): string
+    {
+        if ($forceReload && !empty($sessionLocale)) {
+            return (string)$sessionLocale;
+        }
+        return I18nHelper::extractLocale($sessionLocale);
+    }
+
+    private static function forceTranslationsReload(string $locale): void
+    {
+        Inspector::stats('[translationsCheckLoad] Force translations reload', Inspector::SCOPE_DEBUG);
+        self::dropInstance();
+        self::$translations[$locale] = [];
+    }
+
+    private static function hasTranslationsLoaded(string $locale): bool
+    {
+        return array_key_exists($locale, self::$translations) && count(self::$translations[$locale]) > 0;
+    }
+
+    private static function hydrateLocaleAliasIfNeeded(string $locale): string
+    {
+        if (self::hasTranslationsLoaded($locale) || strlen($locale) !== 2) {
+            return $locale;
+        }
+        $expandedLocale = $locale . '_' . strtoupper($locale);
+        if (array_key_exists($expandedLocale, self::$translations)) {
+            self::$translations[self::$locale] = self::$translations[$expandedLocale];
+            self::generateTranslationsKeys(self::$locale);
+        }
+        return $expandedLocale;
+    }
+
+    private static function resolveCustomKey(?string $customKey, Security $session, bool $useBase): ?string
+    {
+        if ($useBase) {
+            return $customKey;
+        }
+        return $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
+    }
+
+    private static function loadTranslationsFromCatalog(string $locale, ?string $customKey, Security $session, string $configVersion): bool
+    {
+        $standardTranslations = self::extractBaseTranslations();
+        self::setCustomCatalogFilename($locale, $customKey);
+        if (null === $customKey && !empty($standardTranslations)) {
+            self::$translations[$locale] = $standardTranslations;
+            self::generateTranslationsKeys($locale);
+        }
+        if (!file_exists(self::$filename)) {
+            return false;
+        }
+        $customTranslations = json_decode((string)file_get_contents(self::$filename), true);
+        if (!is_array($customTranslations)) {
+            $customTranslations = [];
+        }
+        Logger::log('[' . self::class . '] Custom locale detected: ' . $customKey . ' [' . $locale . ']', LOG_INFO);
+        self::$translations[$locale] = array_merge($standardTranslations, $customTranslations);
+        self::generateTranslationsKeys($locale);
+        $session->setSessionKey(self::LOCALE_CACHED_TAG, self::$translations);
+        $session->setSessionKey(self::LOCALE_CACHED_VERSION, $configVersion);
+        return true;
+    }
+
+    private static function setCustomCatalogFilename(string $locale, ?string $customKey): void
+    {
+        if (null !== $customKey) {
+            Logger::log('[' . self::class . '] Custom key detected: ' . $customKey, LOG_INFO);
+            self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $customKey, $locale . '.json']);
+            return;
+        }
+        self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $locale . '.json']);
     }
 
     /**

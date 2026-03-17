@@ -107,45 +107,32 @@ class DocumentorHelper
      */
     public static function translateSwaggerFormats(string $format): array
     {
-        switch (strtolower(preg_replace('/\\\\/im', '', $format))) {
-            case 'bool':
-            case 'boolean':
-                $swaggerType = 'boolean';
-                $swaggerFormat = '';
-                break;
-            default:
-            case 'string':
-            case 'varchar':
-                $swaggerType = 'string';
-                $swaggerFormat = '';
-                break;
-            case 'binary':
-            case 'varbinary':
-                $swaggerType = 'string';
-                $swaggerFormat = 'password';
-                break;
-            case 'int':
-            case 'integer':
-                $swaggerType = 'integer';
-                $swaggerFormat = 'int32';
-                break;
-            case 'float':
-            case 'double':
-                $swaggerType = 'number';
-                $swaggerFormat = strtolower($format);
-                break;
-            case 'date':
-                $swaggerType = 'string';
-                $swaggerFormat = 'date';
-                break;
-            case 'timestamp':
-            case 'datetime':
-                $swaggerType = 'string';
-                $swaggerFormat = 'date-time';
-                break;
-
+        $normalized = self::normalizeSwaggerFormat($format);
+        $map = [
+            'bool' => ['boolean', ''],
+            'boolean' => ['boolean', ''],
+            'string' => ['string', ''],
+            'varchar' => ['string', ''],
+            'binary' => ['string', 'password'],
+            'varbinary' => ['string', 'password'],
+            'int' => ['integer', 'int32'],
+            'integer' => ['integer', 'int32'],
+            'date' => ['string', 'date'],
+            'timestamp' => ['string', 'date-time'],
+            'datetime' => ['string', 'date-time'],
+        ];
+        if (array_key_exists($normalized, $map)) {
+            return $map[$normalized];
         }
-        return [$swaggerType, $swaggerFormat];
+        if (in_array($normalized, ['float', 'double'], true)) {
+            return ['number', $normalized];
+        }
+        return ['string', ''];
+    }
+
+    private static function normalizeSwaggerFormat(string $format): string
+    {
+        return strtolower((string)preg_replace('/\\\\/im', '', $format));
     }
 
     /**

@@ -82,7 +82,27 @@ trait SwaggerFormaterTrait
      */
     public function swaggerFormatter(array $module, array $endpoints)
     {
-        $formatted = [
+        $formatted = $this->buildSwaggerDocumentSkeleton($module);
+        $dtos = $paths = [];
+        foreach ($endpoints as $model) {
+            foreach ($model as $endpoint) {
+                $this->appendEndpointToSwagger($module, $endpoint, $paths, $dtos);
+            }
+        }
+        ksort($dtos);
+        uasort($paths, function ($path1, $path2) {
+            $key1 = array_keys($path1)[0];
+            $key2 = array_keys($path2)[0];
+            return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
+        });
+        $formatted['definitions'] = $dtos;
+        $formatted['paths'] = $paths;
+        return $formatted;
+    }
+
+    private function buildSwaggerDocumentSkeleton(array $module): array
+    {
+        return [
             "swagger" => "2.0",
             "host" => preg_replace('/^(http|https)\:\/\/(.*)\/$/i', '$2', Router::getInstance()->getRoute('', true)),
             "basePath" => '/' . $module['name'] . '/api',
@@ -96,57 +116,61 @@ trait SwaggerFormaterTrait
                 ]
             ]
         ];
-        $dtos = $paths = [];
-        foreach ($endpoints as $model) {
-            foreach ($model as $endpoint) {
-                if (!preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url'])) {
-                    $url = preg_replace('/\/' . $module['name'] . '\/api/i', '', $endpoint['url']);
-                    $description = $endpoint['description'];
-                    $method = strtolower($endpoint['method']);
-                    $paths[$url][$method] = [
-                        'summary' => $description,
-                        'produces' => ['application/json'],
-                        'consumes' => ['application/json'],
-                        'responses' => $this->swaggerResponses(),
-                        'parameters' => [],
-                    ];
-                    if (array_key_exists('parameters', $endpoint)) {
-                        foreach ($endpoint['parameters'] as $parameter => $type) {
-                            list($type, $format) = DocumentorHelper::translateSwaggerFormats($type);
-                            $paths[$url][$method]['parameters'][] = [
-                                'in' => 'path',
-                                'required' => true,
-                                'name' => $parameter,
-                                'type' => $type,
-                                'format' => $format,
-                            ];
-                        }
-                    }
-                    if (array_key_exists('query', $endpoint)) {
-                        foreach ($endpoint['query'] as $query) {
-                            $paths[$url][$method]['parameters'][] = $query;
-                        }
-                    }
-                    if (array_key_exists('headers', $endpoint)) {
-                        foreach ($endpoint['headers'] as $query) {
-                            $paths[$url][$method]['parameters'][] = $query;
-                        }
-                    }
-                    foreach ($endpoint['objects'] as $name => $object) {
-                        DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method);
-                    }
-                }
-            }
+    }
+
+    private function appendEndpointToSwagger(array $module, array $endpoint, array &$paths, array &$dtos): void
+    {
+        if (!$this->shouldIncludeSwaggerEndpoint($endpoint)) {
+            return;
         }
-        ksort($dtos);
-        uasort($paths, function ($path1, $path2) {
-            $key1 = array_keys($path1)[0];
-            $key2 = array_keys($path2)[0];
-            return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
-        });
-        $formatted['definitions'] = $dtos;
-        $formatted['paths'] = $paths;
-        return $formatted;
+        $url = preg_replace('/\/' . $module['name'] . '\/api/i', '', $endpoint['url']);
+        $method = strtolower($endpoint['method']);
+        $paths[$url][$method] = [
+            'summary' => $endpoint['description'],
+            'produces' => ['application/json'],
+            'consumes' => ['application/json'],
+            'responses' => $this->swaggerResponses(),
+            'parameters' => [],
+        ];
+        $this->appendPathParameters($paths[$url][$method]['parameters'], $endpoint);
+        $this->appendDirectParameters($paths[$url][$method]['parameters'], $endpoint, 'query');
+        $this->appendDirectParameters($paths[$url][$method]['parameters'], $endpoint, 'headers');
+        $objects = $endpoint['objects'] ?? [];
+        foreach ($objects as $name => $object) {
+            DocumentorHelper::parseObjects($paths, $dtos, $name, $endpoint, $object, $url, $method);
+        }
+    }
+
+    private function shouldIncludeSwaggerEndpoint(array $endpoint): bool
+    {
+        return !preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url']) > 0;
+    }
+
+    private function appendPathParameters(array &$parameters, array $endpoint): void
+    {
+        if (!array_key_exists('parameters', $endpoint)) {
+            return;
+        }
+        foreach ($endpoint['parameters'] as $parameter => $type) {
+            list($type, $format) = DocumentorHelper::translateSwaggerFormats($type);
+            $parameters[] = [
+                'in' => 'path',
+                'required' => true,
+                'name' => $parameter,
+                'type' => $type,
+                'format' => $format,
+            ];
+        }
+    }
+
+    private function appendDirectParameters(array &$parameters, array $endpoint, string $section): void
+    {
+        if (!array_key_exists($section, $endpoint)) {
+            return;
+        }
+        foreach ($endpoint[$section] as $query) {
+            $parameters[] = $query;
+        }
     }
 
     /**

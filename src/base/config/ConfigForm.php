@@ -24,75 +24,97 @@ class ConfigForm extends Form
     {
         parent::__construct();
         $this->setAction($route);
-        //Añadimos los campos obligatorios
+        $this->addRequiredFields($required);
+        $this->add(Form::SEPARATOR);
+        $this->addOptionalFields($optional, $data);
+        $this->addExtraFields($required, $optional, $data);
+        $this->add(Form::SEPARATOR);
+        $this->setAttrs(['class' => 'form-horizontal']);
+        $this->setData($data);
+        $add = $this->buildAddFieldButtonAttrs();
+        $this->addButton('submit', t('Guardar configuración'), 'submit', array(
+            'class' => 'btn-success col-md-offset-2 md-primary',
+            'icon' => 'fa-save',
+        ))
+            ->addButton('add_field', t('Añadir nuevo parámetro'), 'button', $add);
+    }
+
+    private function addRequiredFields(array $required): void
+    {
         foreach ($required as $field) {
             $type = in_array($field, Config::$encrypted) ? 'password' : 'text';
             $value = isset(Config::$defaults[$field]) ? Config::$defaults[$field] : null;
-            $this->add($field, array(
+            $this->add($field, [
                 'label' => t($field),
                 'class' => 'col-md-6',
                 'required' => true,
                 'type' => $type,
                 'value' => $value,
-            ));
+            ]);
         }
-        $this->add(Form::SEPARATOR);
-        if (!empty($optional) && !empty($data)) {
-            foreach ($optional as $field) {
-                if (array_key_exists($field, $data) && strlen($data[$field] ?? '') > 0) {
-                    $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
-                    $this->add($field, array(
-                        'label' => t($field),
-                        'class' => 'col-md-6',
-                        'required' => false,
-                        'value' => $data[$field],
-                        'type' => $type,
-                    ));
-                }
+    }
+
+    private function addOptionalFields(array $optional, array $data): void
+    {
+        if (empty($optional) || empty($data)) {
+            return;
+        }
+        foreach ($optional as $field) {
+            if (!$this->hasNonEmptyFieldValue($data, $field)) {
+                continue;
             }
+            $this->add($field, [
+                'label' => t($field),
+                'class' => 'col-md-6',
+                'required' => false,
+                'value' => $data[$field],
+                'type' => $this->resolveFieldType($field),
+            ]);
         }
-        $extra = array();
-        $extraKeys = array();
-        if (!empty($data)) {
-            $extraKeys = array_keys($data);
-            $extra = array_diff($extraKeys, array_merge($required, $optional));
+    }
+
+    private function addExtraFields(array $required, array $optional, array $data): void
+    {
+        if (empty($data)) {
+            return;
         }
-        if (!empty($extra)) {
-            foreach ($extra as $key => $field) {
-                if (strlen($data[$field]) > 0) {
-                    $type = preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
-                    $this->add($extraKeys[$key], array(
-                        'label' => $field,
-                        'class' => 'col-md-6',
-                        'required' => false,
-                        'value' => $data[$field],
-                        'type' => $type,
-                    ));
-                }
+        $extraKeys = array_diff(array_keys($data), array_merge($required, $optional));
+        foreach ($extraKeys as $field) {
+            if (!$this->hasNonEmptyFieldValue($data, $field)) {
+                continue;
             }
+            $this->add($field, [
+                'label' => $field,
+                'class' => 'col-md-6',
+                'required' => false,
+                'value' => $data[$field],
+                'type' => $this->resolveFieldType($field),
+            ]);
         }
-        $this->add(Form::SEPARATOR);
-        //Aplicamos estilo al formulario
-        $this->setAttrs(array(
-            'class' => 'form-horizontal',
-        ));
-        //Hidratamos el formulario
-        $this->setData($data);
-        //Añadimos las acciones del formulario
+    }
+
+    private function resolveFieldType(string $field): string
+    {
+        return preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
+    }
+
+    private function hasNonEmptyFieldValue(array $data, string $field): bool
+    {
+        return array_key_exists($field, $data) && strlen((string)($data[$field] ?? '')) > 0;
+    }
+
+    private function buildAddFieldButtonAttrs(): array
+    {
         $add = [
             'class' => 'btn-warning md-default',
             'icon' => 'fa-plus',
         ];
         if (Config::getParam('admin.version', 'v1') === 'v1') {
             $add['onclick'] = 'javascript:addNewField(document.getElementById("' . $this->getName() . '"));';
-        } else {
-            $add['ng-click'] = 'addNewField()';
+            return $add;
         }
-        $this->addButton('submit', t('Guardar configuración'), 'submit', array(
-            'class' => 'btn-success col-md-offset-2 md-primary',
-            'icon' => 'fa-save',
-        ))
-            ->addButton('add_field', t('Añadir nuevo parámetro'), 'button', $add);
+        $add['ng-click'] = 'addNewField()';
+        return $add;
     }
 
     /**

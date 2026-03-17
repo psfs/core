@@ -73,33 +73,19 @@ class Form extends Dto
      */
     public static function fieldsOrder(array $field)
     {
-        switch ($field['type']) {
-            case Field::HIDDEN_TYPE:
-                $order = 0;
-                break;
-            case Field::TEXT_TYPE:
-            case Field::PHONE_TYPE:
-            case Field::URL_TYPE:
-            case Field::PASSWORD_FIELD:
-            case Field::SEARCH_TYPE:
-                $order = 1;
-                break;
-            case Field::CHECK_TYPE:
-            case Field::RADIO_TYPE:
-            case Field::COMBO_TYPE:
-            case Field::NUMBER_TYPE:
-            case Field::SWITCH_TYPE:
-                $order = 2;
-                break;
-            case Field::TEXTAREA_TYPE:
-                $order = 3;
-                break;
-            default:
-            case Field::DATE:
-            case Field::TIMESTAMP:
-                $order = 4;
-                break;
+        $type = $field['type'] ?? '';
+        if ($type === Field::HIDDEN_TYPE) {
+            return 0;
         }
-        return $order;
+        if (in_array($type, [Field::TEXT_TYPE, Field::PHONE_TYPE, Field::URL_TYPE, Field::PASSWORD_FIELD, Field::SEARCH_TYPE], true)) {
+            return 1;
+        }
+        if (in_array($type, [Field::CHECK_TYPE, Field::RADIO_TYPE, Field::COMBO_TYPE, Field::NUMBER_TYPE, Field::SWITCH_TYPE], true)) {
+            return 2;
+        }
+        if ($type === Field::TEXTAREA_TYPE) {
+            return 3;
+        }
+        return 4;
     }
 }
