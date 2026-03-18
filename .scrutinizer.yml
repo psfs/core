@@ -18,6 +18,15 @@ checks:
     php: true
 
 build:
+  dependencies:
+    override:
+      - true
+  project_setup:
+    override:
+      - true
+  tests:
+    override:
+      - true
   nodes:
     docker-tests:
       environment:
