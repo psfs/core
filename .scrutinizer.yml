@@ -22,6 +22,9 @@ build:
   environment:
     php:
       version: "8.2"
+      ini:
+        memory_limit: "-1"
+        xdebug.mode: coverage
   dependencies:
     override:
       - true
@@ -32,24 +35,38 @@ build:
     override:
       - true
   nodes:
-    docker-tests:
+    services-tests:
+      services:
+        mysql: "8.4"
+        redis: "6"
       environment:
-        docker: true
         variables:
           APP_ENVIRONMENT: "test"
-          HOST_PORT: "8008"
-          DEBUG: "-xdebug"
-          PHP_OPCACHE: "0"
+          API_DB_HOST: "127.0.0.1"
+          API_DB_PORT: "3306"
+          API_DB_NAME: "scrutinizer"
+          API_DB_USER: "root"
+          API_DB_PASSWORD: ""
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "3306"
+          DB_NAME: "scrutinizer"
+          DB_USER: "root"
+          DB_PASSWORD: ""
+          PSFS_REDIS_HOST: "127.0.0.1"
+          PSFS_REDIS_PORT: "6379"
+          PSFS_REDIS_TIMEOUT: "1.5"
       dependencies:
         override:
-          - true
+          - composer install -o --no-interaction --no-progress --prefer-dist
+          - php tests/bootstrap/prepare_api_mysql.php
+          - php -r '$f="config/config.json"; $d=file_exists($f)?json_decode((string)file_get_contents($f),true):[]; if(!is_array($d)){$d=[];} $d["psfs.redis"]=true; $d["redis.host"]="127.0.0.1"; $d["redis.port"]=6379; $d["redis.timeout"]=1.5; $d["cache.config.ttl"]=$d["cache.config.ttl"]??60; $d["cache.reflections.ttl"]=$d["cache.reflections.ttl"]??300; file_put_contents($f, json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));'
       project_setup:
         override:
           - true
       tests:
         stop_on_failure: true
         override:
-          - command: "bash tools/ci/scrutinizer-docker-tests.sh"
+          - command: "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never"
             idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
