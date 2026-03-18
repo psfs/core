@@ -25,15 +25,6 @@ build:
       ini:
         memory_limit: "-1"
         xdebug.mode: coverage
-  dependencies:
-    override:
-      - true
-  project_setup:
-    override:
-      - true
-  tests:
-    override:
-      - true
   nodes:
     services-tests:
       services:
