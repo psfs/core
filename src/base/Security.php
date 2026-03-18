@@ -13,7 +13,6 @@ use PSFS\base\types\traits\SingletonTrait;
 use PSFS\base\types\traits\TestTrait;
 
 /**
- * Class Security
  * @package PSFS
  */
 class Security
@@ -29,18 +28,16 @@ class Security
     use FlashesTrait;
 
     /**
-     * @var bool $authorized
-     */
+     * @var bool
+ */
     private $authorized = false;
 
     /**
-     * @var bool $checked
-     */
+     * @var bool
+ */
     private $checked = false;
 
-    /**
-     * Constructor por defecto
-     */
+    
     public function init()
     {
         $this->initSession();
@@ -58,7 +55,7 @@ class Security
 
     /**
      * @return array
-     */
+ */
     public function getAdmins(): array
     {
         $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true);
@@ -71,7 +68,7 @@ class Security
      * @param boolean $force
      *
      * @return bool
-     */
+ */
     public function checkAdmin($user = NULL, $pass = NULL, $force = false)
     {
         Logger::log('Checking admin session');
@@ -138,22 +135,20 @@ class Security
     }
 
     /**
-     * Método que calcula si se está logado o para acceder a administración
      * @return bool
-     */
+ */
     public function canAccessRestrictedAdmin()
     {
         return (null !== $this->admin && !preg_match('/^\/admin\/login/i', Request::requestUri())) || self::isTest();
     }
 
     /**
-     * Servicio que devuelve una pantalla de error porque se necesita estar authenticado
      *
      * @param string|null $route
      *
      * @return string|null
      * @throws exception\GeneratorException
-     */
+ */
     public function notAuthorized($route)
     {
         return Template::getInstance()->render('notauthorized.html.twig', array(
@@ -178,7 +173,7 @@ class Security
 
     /**
      * @return bool
-     */
+ */
     public function isSuperAdmin()
     {
         $users = $this->getAdmins();
@@ -196,7 +191,7 @@ class Security
 
     /**
      * @return bool
-     */
+ */
     public function isManager()
     {
         return $this->checkAdminRole(AuthHelper::MANAGER_ID_TOKEN);
@@ -204,7 +199,7 @@ class Security
 
     /**
      * @return bool
-     */
+ */
     public function isUser()
     {
         return $this->checkAdminRole();

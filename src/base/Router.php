@@ -21,7 +21,6 @@ use PSFS\controller\base\Admin;
 use ReflectionException;
 
 /**
- * Class Router
  * @package PSFS
  */
 class Router
@@ -36,22 +35,21 @@ class Router
     private const ROUTING_META_FILE = 'routes.meta.json';
 
     /**
-     * @var Cache $cache
-     */
+     * @var Cache
+ */
     private $cache;
 
     /**
      * @var int
-     */
+ */
     protected $cacheType = Cache::JSON;
 
     /**
-     * Router constructor.
      * @throws GeneratorException
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
-     */
+ */
     public function __construct()
     {
         $this->cache = Cache::getInstance();
@@ -64,7 +62,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
-     */
+ */
     public function init()
     {
         [$this->routing, $this->slugs] = $this->loadRoutingCache();
@@ -81,7 +79,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
-     */
+ */
     private function debugLoad()
     {
         if (!Config::getParam('skip.route_generation', false)) {
@@ -98,9 +96,9 @@ class Router
     /**
      * @param string|null $route
      *
-     * @return string HTML
+     * @return string
      * @throws Exception
-     */
+ */
     public function execute($route)
     {
         Inspector::stats('[Router] Executing the request', Inspector::SCOPE_DEBUG);
@@ -124,14 +122,14 @@ class Router
      * @throws AdminCredentialsException
      * @throws RouterException
      * @throws Exception
-     */
+ */
     protected function searchAction($route)
     {
         Inspector::stats('[Router] Searching action to execute: ' . $route, Inspector::SCOPE_DEBUG);
         [$path, $httpRequest] = $this->buildMatchContext((string)$route);
         $matchedRoute = $this->findMatchingRoute($path, $httpRequest);
         if (null === $matchedRoute) {
-            throw new RouterException(t('Ruta no encontrada'));
+            throw new RouterException(t('Route not found'));
         }
         [$pattern, $action] = $matchedRoute;
         return $this->executeMatchedRoute((string)$route, $pattern, $action);
@@ -142,7 +140,7 @@ class Router
      * @throws InvalidArgumentException
      * @throws ReflectionException
      * @throws GeneratorException
-     */
+ */
     protected function generateRouting()
     {
         $base = SOURCE_DIR;
@@ -166,7 +164,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
-     */
+ */
     public function hydrateRouting()
     {
         $this->generateRouting();
@@ -183,7 +181,7 @@ class Router
     /**
      * @param string $namespace
      * @return bool
-     */
+ */
     public static function exists($namespace)
     {
         return (class_exists($namespace) || interface_exists($namespace) || trait_exists($namespace));
@@ -196,7 +194,7 @@ class Router
      *
      * @return string|null
      * @throws RouterException
-     */
+ */
     public function getRoute($slug = '', $absolute = false, array $params = [])
     {
         $baseUrl = $absolute ? Request::getInstance()->getRootUrl() : '';
@@ -204,7 +202,7 @@ class Router
             return $baseUrl . '/';
         }
         if (!is_array($this->slugs) || !array_key_exists($slug, $this->slugs)) {
-            throw new RouterException(t('No existe la ruta especificada'));
+            throw new RouterException(t('Specified route does not exist'));
         }
         $url = $baseUrl . $this->slugs[$slug];
         if (!empty($params)) {
@@ -224,7 +222,7 @@ class Router
      * @param boolean $throwExceptions
      * @return void
      * @throws Exception
-     */
+ */
     public static function run($class, $method, $throwExceptions = false): void
     {
         Inspector::stats("[Router] Pre action invoked " . get_class($class) . "::{$method}", Inspector::SCOPE_DEBUG);
@@ -246,7 +244,7 @@ class Router
      * @param bool $isJson
      * @return string
      * @throws GeneratorException
-     */
+ */
     public function httpNotFound(\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);

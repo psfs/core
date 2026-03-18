@@ -55,9 +55,8 @@ class ResponseHelper
     }
 
     /**
-     * Method that sets the cookie headers
      * @param $cookies
-     */
+ */
     public static function setCookieHeaders($cookies): void
     {
         if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
@@ -88,9 +87,8 @@ class ResponseHelper
 
 
     /**
-     * Método que inyecta las cabeceras necesarias para la autenticación
      * @param boolean $isPublic
-     */
+ */
     public static function setAuthHeaders(bool $isPublic = true): void
     {
         if ($isPublic) {
@@ -103,9 +101,8 @@ class ResponseHelper
     }
 
     /**
-     * Método que establece el status code
      * @param string|null $statusCode
-     */
+ */
     public static function setStatusHeader(string $statusCode = null): void
     {
         if (NULL !== $statusCode && !self::isTest()) {
@@ -114,11 +111,10 @@ class ResponseHelper
     }
 
     /**
-     * Método que mete en las variables de las plantillas las cabeceras de debug
      * @param array $vars
      *
      * @return array
-     */
+ */
     public static function setDebugHeaders(array $vars): array
     {
         if ((Config::getParam('debug', true) || Config::getParam('profiling.enable', false)) && !self::isTest()) {

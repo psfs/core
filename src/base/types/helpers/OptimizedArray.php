@@ -9,19 +9,17 @@ use IteratorAggregate;
 use Traversable;
 use UnexpectedValueException;
 
-/**
- * Experimental iterable wrapper focused on lazy iteration with optional cached count.
- */
+
 class OptimizedArray implements IteratorAggregate, Countable
 {
-    /** @var callable */
+    
     private $iterableFactory;
     private ?int $countHint;
 
     /**
-     * @param callable $iterableFactory Factory returning an iterable for each iteration.
-     * @param int|null $countHint Optional count hint to avoid traversing.
-     */
+     * @param callable $iterableFactory
+     * @param int|null $countHint
+ */
     public function __construct(callable $iterableFactory, ?int $countHint = null)
     {
         $this->iterableFactory = $iterableFactory;
@@ -41,13 +39,11 @@ class OptimizedArray implements IteratorAggregate, Countable
     }
 
     /**
-     * Creates an OptimizedArray from any iterable.
-     * Iterator instances are materialized once to preserve re-iterability.
      *
      * @param iterable $items
      * @param int|null $countHint
      * @return self
-     */
+ */
     public static function fromIterable(iterable $items, ?int $countHint = null): self
     {
         if (is_array($items)) {
@@ -70,10 +66,10 @@ class OptimizedArray implements IteratorAggregate, Countable
     }
 
     /**
-     * @param callable $generatorFactory Callable returning iterable values.
+     * @param callable $generatorFactory
      * @param int|null $countHint
      * @return self
-     */
+ */
     public static function fromGenerator(callable $generatorFactory, ?int $countHint = null): self
     {
         return new self(

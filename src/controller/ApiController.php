@@ -33,7 +33,7 @@ class ApiController extends AuthAdminController
      * @GET
      * @route /admin/api/docs
      * @icon fa-books
-     * @label Documentación api
+     * @label API documentation
      * @return string HTML
      */
     #[HttpMethod('GET')]

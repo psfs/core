@@ -14,7 +14,6 @@ use PSFS\base\types\traits\Api\Crud\ApiListTrait;
 use PSFS\base\types\traits\Api\ManagerTrait;
 
 /**
- * Class Api
  * @package PSFS\base
  */
 abstract class Api extends Singleton
@@ -39,7 +38,7 @@ abstract class Api extends Singleton
 
     /**
      * @var string
-     */
+ */
     protected $domain;
 
     public function __construct(...$args)
@@ -48,9 +47,7 @@ abstract class Api extends Singleton
         parent::__construct();
     }
 
-    /**
-     * Initialize api
-     */
+    
     public function init()
     {
         parent::init();
@@ -98,7 +95,7 @@ abstract class Api extends Singleton
      * @ROUTE /{__DOMAIN__}/api/{__API__}
      *
      * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
-     */
+ */
     public function modelList()
     {
         $this->action = self::API_ACTION_LIST;
@@ -122,7 +119,7 @@ abstract class Api extends Singleton
      * @param int $pk
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
+ */
     public function get($pk)
     {
         $this->action = self::API_ACTION_GET;
@@ -131,7 +128,7 @@ abstract class Api extends Singleton
         $message = null;
         list($code, $return) = $this->getSingleResult($pk);
         if ($code !== 200) {
-            $message = t('No se ha encontrado el elemento solicitado');
+            $message = t('Requested item was not found');
         }
 
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
@@ -145,7 +142,7 @@ abstract class Api extends Singleton
      * @ROUTE /{__DOMAIN__}/api/{__API__}
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
+ */
     public function post()
     {
         $this->action = self::API_ACTION_POST;
@@ -160,13 +157,13 @@ abstract class Api extends Singleton
                 $saved = TRUE;
                 $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
             } else {
-                $message = t('No se ha podido guardar el modelo seleccionado');
+                $message = t('Selected model could not be saved');
             }
         } catch (\Exception $e) {
             if(Config::getParam('debug')) {
-                $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getMessage();
+                $message = t('An error occurred while saving the item: ') . '<br>' . $e->getMessage();
             } else {
-                $message = t('Ha ocurrido un error intentando guardar el elemento: ') . '<br>' . $e->getCode();
+                $message = t('An error occurred while saving the item: ') . '<br>' . $e->getCode();
             }
             $context = [];
             if (null !== $e->getPrevious()) {
@@ -189,7 +186,7 @@ abstract class Api extends Singleton
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
      *
-     */
+ */
     public function put($pk)
     {
         $this->action = self::API_ACTION_PUT;
@@ -206,13 +203,13 @@ abstract class Api extends Singleton
                     $status = 200;
                     $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
                 } else {
-                    $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs');
+                    $message = t('An error occurred while updating the item, please check logs');
                 }
             } catch (\Exception $e) {
                 if(Config::getParam('debug')) {
-                    $message = t('Ha ocurrido un error intentando actualizar el elemento: ') . '<br>' . $e->getMessage();
+                    $message = t('An error occurred while updating the item: ') . '<br>' . $e->getMessage();
                 } else {
-                    $message = t('Ha ocurrido un error intentando actualizar el elemento, por favor revisa los logs: ') . '<br>' . $e->getCode();
+                    $message = t('An error occurred while updating the item, please check logs: ') . '<br>' . $e->getCode();
                 }
                 $context = [];
                 if (null !== $e->getPrevious()) {
@@ -221,7 +218,7 @@ abstract class Api extends Singleton
                 Logger::log($e->getMessage(), LOG_CRIT, $context);
             }
         } else {
-            $message = t('No se ha encontrado el modelo al que se hace referencia para actualizar');
+            $message = t('Referenced model for update was not found');
         }
 
         return $this->json(new JsonResponse($model, $updated, $updated, 0, $message), $status);
@@ -236,7 +233,7 @@ abstract class Api extends Singleton
      * @param string $pk
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
+ */
     public function delete($pk = NULL)
     {
         $this->action = self::API_ACTION_DELETE;
@@ -274,7 +271,7 @@ abstract class Api extends Singleton
      *
      * @payload [{__API__}]
      * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
-     */
+ */
     public function bulk()
     {
         $this->action = self::API_ACTION_BULK;
@@ -305,7 +302,7 @@ abstract class Api extends Singleton
 
     /**
      * @return array
-     */
+ */
     private function getList()
     {
         $return = [];
@@ -340,7 +337,7 @@ abstract class Api extends Singleton
      * @param integer $pk
      *
      * @return array
-     */
+ */
     private function getSingleResult($pk)
     {
         $model = $this->_get($pk);

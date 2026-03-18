@@ -20,7 +20,6 @@ use PSFS\base\types\traits\Generator\PropelHelperTrait;
 use PSFS\base\types\traits\Generator\StructureTrait;
 
 /**
- * Class GeneratorService
  * @package PSFS\services
  */
 class GeneratorService extends SimpleService
@@ -31,19 +30,18 @@ class GeneratorService extends SimpleService
 
     /**
      * @Injectable
-     * @var \PSFS\base\config\Config Servicio de configuración
-     */
+     * @var \PSFS\base\config\Config
+ */
     #[Injectable]
     protected Config $config;
     /**
      * @Injectable
-     * @var \PSFS\base\Security Servicio de autenticación
-     */
+     * @var \PSFS\base\Security
+ */
     #[Injectable]
     protected Security $security;
 
     /**
-     * Servicio que genera la estructura de un módulo o lo actualiza en caso de ser necesario
      * @param string $module
      * @param boolean $force
      * @param string $type
@@ -51,7 +49,7 @@ class GeneratorService extends SimpleService
      * @param bool $skipMigration
      * @throws GeneratorException
      * @throws \ReflectionException
-     */
+ */
     public function createStructureModule(string $module, bool $force = false, string $type = "", string $apiClass = "", bool $skipMigration = false): void
     {
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
@@ -69,13 +67,12 @@ class GeneratorService extends SimpleService
     }
 
     /**
-     * Servicio que genera las plantillas básicas de ficheros del módulo
      * @param string $module
      * @param string $modPath
      * @param boolean $force
      * @param string $controllerType
      * @throws GeneratorException
-     */
+ */
     private function createModuleBaseFiles($module, $modPath, $force = false, $controllerType = '')
     {
         $modulePath = $modPath . $module;
@@ -93,7 +90,7 @@ class GeneratorService extends SimpleService
      * @param bool $force
      * @return void
      * @throws GeneratorException
-     */
+ */
     public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void
     {
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
@@ -108,10 +105,10 @@ class GeneratorService extends SimpleService
      * @param boolean $force
      * @param string $controllerType
      * @return boolean
-     */
+ */
     private function generateControllerTemplate($module, $modPath, $force = false, $controllerType = "")
     {
-        //Generamos el controlador base
+        // Generate base controller.
         Logger::log("Generating BASE controller");
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $controllerBody = $this->tpl->dump("generator/controller.template.twig", array(
@@ -152,11 +149,10 @@ class GeneratorService extends SimpleService
     }
 
     /**
-     * Servicio que ejecuta Propel y genera el modelo de datos
      * @param string $module
      * @param string $path
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     private function createModuleModels($module, $path)
     {
         $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
@@ -175,12 +171,12 @@ class GeneratorService extends SimpleService
 
     /**
      * @throws GeneratorException
-     */
+ */
     private function createModuleMigrations($module, $path)
     {
         $migrationService = MigrationService::getInstance();
-        /** @var $manager MigrationManager */
-        /** @var $generatorConfig GeneratorConfig */
+        
+        
         list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
 
         if ($manager->hasPendingMigrations()) {
@@ -205,13 +201,13 @@ class GeneratorService extends SimpleService
      * @param MigrationService $migrationService
      * @param bool $debugLogger
      * @return Schema
-     */
+ */
     private function buildReversedSchema(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, bool $debugLogger): Schema
     {
         $totalNbTables = 0;
         $reversedSchema = new Schema();
         $connections = $generatorConfig->getBuildConnections();
-        /** @var Database $appDatabase */
+        
         foreach ($manager->getDatabases() as $appDatabase) {
             list($database, $nbTables) = $migrationService->checkSourceDatabase($manager, $generatorConfig, $appDatabase, $connections, $debugLogger);
             if ($database) {
@@ -234,7 +230,7 @@ class GeneratorService extends SimpleService
      * @param Schema $reversedSchema
      * @param bool $debugLogger
      * @return array
-     */
+ */
     private function buildMigrationDiffs(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, Schema $reversedSchema, bool $debugLogger): array
     {
         Logger::log('Comparing models...');
@@ -272,10 +268,10 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
-     */
+ */
     private function generateConfigTemplate($modPath, $force = false)
     {
-        //Generamos el fichero de configuración
+        // Generate configuration file.
         Logger::log("Generating empty configuration file");
         return $this->writeTemplateToFile("<?php\n\t",
             $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php",
@@ -287,10 +283,10 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
-     */
+ */
     private function generateSchemaTemplate($module, $modPath, $force = false)
     {
-        //Generamos el autoloader del módulo
+        // Generate module autoloader.
         Logger::log("Generating schema");
         $schema = $this->tpl->dump("generator/schema.propel.twig", array(
             "module" => $module,
@@ -308,7 +304,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
-     */
+ */
     private function generatePropertiesTemplate($module, $modPath, $force = false)
     {
         Logger::log("Generating Propel configuration");
@@ -326,10 +322,10 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
-     */
+ */
     private function generateIndexTemplate($module, $modPath, $force = false)
     {
-        //Generamos la plantilla de index
+        // Generate index template.
         Logger::log("Generating default base template");
         $index = $this->tpl->dump("generator/index.template.twig", array(
             "module" => $module,

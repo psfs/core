@@ -5,29 +5,24 @@ namespace PSFS\base\dto;
 class JsonResponse extends Dto
 {
     /**
-     * Response message
-     * @var string $message
-     */
+     * @var string
+ */
     public $message = 'No message';
     /**
-     * Response result
-     * @var bool $success
-     */
+     * @var bool
+ */
     public $success = false;
     /**
-     * Data of response
-     * @var array $data
-     */
+     * @var array
+ */
     public $data = null;
     /**
-     * Number of total results
-     * @var int total
-     */
+     * @var int
+ */
     public $total = 0;
     /**
-     * Number of pages availables
-     * @var int pages
-     */
+     * @var int
+ */
     public $pages = 1;
 
     private function parseData($data) {
@@ -43,14 +38,13 @@ class JsonResponse extends Dto
     }
 
     /**
-     * JsonResponse constructor.
      * @param array $data
      * @param bool $result
      * @param integer $total
      * @param int $pages
      * @param string $message
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public function __construct($data = [], $result = false, $total = null, $pages = 1, $message = null)
     {
         parent::__construct(false);

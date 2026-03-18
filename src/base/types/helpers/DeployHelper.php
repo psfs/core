@@ -8,7 +8,6 @@ use Exception;
 use PSFS\base\config\Config;
 
 /**
- * Class DeployHelper
  * @package PSFS\base\types\helpers
  */
 final class DeployHelper
@@ -19,7 +18,7 @@ final class DeployHelper
     /**
      * @return string
      * @throws Exception
-     */
+ */
     public static function updateCacheVar(): string
     {
         $now = new DateTime();
@@ -33,10 +32,9 @@ final class DeployHelper
     }
 
     /**
-     * Updates cache.var and cleans generated cache artifacts.
      * @return array{version:string,config_files_cleaned:bool}
      * @throws Exception
-     */
+ */
     public static function refreshCacheState(): array
     {
         $version = self::updateCacheVar();

@@ -12,14 +12,13 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class GeneratorHelper
  * @package PSFS\base\types\helpers
  */
 class GeneratorHelper
 {
     /**
      * @param $dir
-     */
+ */
     public static function deleteDir($dir): void
     {
         if (is_dir($dir)) {
@@ -38,9 +37,7 @@ class GeneratorHelper
         }
     }
 
-    /**
-     * Method that remove all data in the document root path
-     */
+    
     public static function clearDocumentRoot(): void
     {
         $rootDirs = array("css", "js", "media", "font");
@@ -56,10 +53,9 @@ class GeneratorHelper
     }
 
     /**
-     * Method that creates any parametrized path
      * @param string $dir
      * @throws GeneratorException
-     */
+ */
     public static function createDir($dir): void
     {
         if (!empty($dir)) {
@@ -77,9 +73,8 @@ class GeneratorHelper
     }
 
     /**
-     * Method that returns the templates path
      * @return string
-     */
+ */
     public static function getTemplatePath(): string
     {
         $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
@@ -89,7 +84,7 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @return string
-     */
+ */
     public static function extractClassFromNamespace($namespace): string
     {
         $parts = preg_split('/(\\\|\\/)/', $namespace);
@@ -99,19 +94,19 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @throws GeneratorException
-     */
+ */
     public static function checkCustomNamespaceApi($namespace): void
     {
         if (!empty($namespace)) {
             if (class_exists($namespace)) {
                 $reflector = new ReflectionClass($namespace);
                 if (!$reflector->isSubclassOf(Api::class)) {
-                    throw new GeneratorException(t('La clase definida debe extender de PSFS\\\base\\\types\\\Api'), 501);
+                    throw new GeneratorException(t('The defined class must extend PSFS\\\base\\\types\\\Api'), 501);
                 } elseif (!$reflector->isAbstract()) {
-                    throw new GeneratorException(t('La clase definida debe ser abstracta'), 501);
+                    throw new GeneratorException(t('The defined class must be abstract'), 501);
                 }
             } else {
-                throw new GeneratorException(t('La clase definida para extender la API no existe'), 501);
+                throw new GeneratorException(t('The defined class for extending API does not exist'), 501);
             }
         }
     }
@@ -121,7 +116,7 @@ class GeneratorHelper
      * @param OutputInterface|null $output
      * @param boolean $quiet
      * @throws GeneratorException
-     */
+ */
     public static function createRoot($path = WEB_DIR, $output = null, $quiet = false): void
     {
         $output = $output ?? new ConsoleOutput();
@@ -183,13 +178,12 @@ class GeneratorHelper
     }
 
     /**
-     * Method that copy resources recursively
      * @param string $dest
      * @param boolean $force
      * @param string $filenamePath
      * @param boolean $debug
      * @throws GeneratorException
-     */
+ */
     public static function copyResources($dest, $force, $filenamePath, $debug): void
     {
         if (file_exists($filenamePath)) {
@@ -207,11 +201,10 @@ class GeneratorHelper
     }
 
     /**
-     * Method that copy a resource
      * @param string $src
      * @param string $dst
      * @throws GeneratorException
-     */
+ */
     public static function copyr($src, $dst): void
     {
         $dir = opendir($src);

@@ -11,7 +11,6 @@ use PSFS\base\types\traits\SingletonTrait;
 use PSFS\base\types\traits\TestTrait;
 
 /**
- * Class Config
  * @package PSFS\base\config
  */
 class Config
@@ -113,9 +112,8 @@ class Config
     public static array $cleanable_config_files = ['domains.json', 'urls.json'];
 
     /**
-     * Method that load the configuration data into the system
      * @return Config
-     */
+ */
     protected function init()
     {
         $this->repository = $this->createRepository();
@@ -127,26 +125,25 @@ class Config
 
     /**
      * @return bool
-     */
+ */
     public function isLoaded()
     {
         return !empty($this->config);
     }
 
     /**
-     * Method that saves the configuration
      * @param array $data
      * @param array $extra
      * @return array
-     */
+ */
     protected static function saveConfigParams(array $data, $extra = null)
     {
         Logger::log('Saving required config parameters');
-        //En caso de tener parámetros nuevos los guardamos
+        // Store newly provided configuration parameters.
         if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
                 if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
-                    /** @var $data array */
+                    
                     $data[$field] = $extra['value'][$index];
                 }
             }
@@ -155,10 +152,9 @@ class Config
     }
 
     /**
-     * Method that saves the extra parameters into the configuration
      * @param array $data
      * @return array
-     */
+ */
     protected static function saveExtraParams(array $data)
     {
         $finalData = array();
@@ -174,9 +170,8 @@ class Config
     }
 
     /**
-     * Method that returns if the system is in debug mode
      * @return boolean
-     */
+ */
     public function getDebugMode()
     {
         return $this->debug;
@@ -184,7 +179,7 @@ class Config
 
     /**
      * @param bool $debug
-     */
+ */
     public function setDebugMode($debug = true)
     {
         $this->debug = $debug;
@@ -192,9 +187,8 @@ class Config
     }
 
     /**
-     * Method that checks if the platform is proper configured
      * @return boolean
-     */
+ */
     public function isConfigured()
     {
         Inspector::stats('[Config] Checking configuration', Inspector::SCOPE_DEBUG);
@@ -211,9 +205,8 @@ class Config
     }
 
     /**
-     * Method that check if the user is trying to save the config
      * @return bool
-     */
+ */
     public function checkTryToSaveConfig()
     {
         $uri = Request::getInstance()->getRequestUri();
@@ -222,12 +215,11 @@ class Config
     }
 
     /**
-     * Method that saves all the configuration in the system
      *
      * @param array $data
      * @param array|null $extra
      * @return boolean
-     */
+ */
     public static function save(array $data, $extra = null)
     {
         $data = self::saveConfigParams($data, $extra);
@@ -248,29 +240,25 @@ class Config
     }
 
     /**
-     * Method that returns a config value
      * @param string $param
      * @param mixed|null $defaultValue
      *
      * @return mixed|null
-     */
+ */
     public function get($param, $defaultValue = null)
     {
         return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
     }
 
     /**
-     * Method that returns all the configuration
      * @return array
-     */
+ */
     public function dumpConfig(): array
     {
         return $this->config ?: [];
     }
 
-    /**
-     * Method that reloads config file
-     */
+    
     public function loadConfigData(bool $refresh = false): void
     {
         $this->config = $refresh ? $this->repository->refresh() : $this->repository->read();
@@ -280,21 +268,18 @@ class Config
         }
     }
 
-    /**
-     * Clear configuration set
-     */
+    
     public function clearConfig()
     {
         $this->config = [];
     }
 
     /**
-     * Static wrapper for extracting params
      * @param string $key
      * @param mixed|null $defaultValue
      * @param string|null $module
      * @return mixed|null
-     */
+ */
     public static function getParam($key, $defaultValue = null, $module = null)
     {
         if (null !== $module) {
@@ -338,10 +323,9 @@ class Config
     }
 
     /**
-     * Iterates config data lazily to keep memory stable in large payloads.
      * @param array $data
      * @return \Generator
-     */
+ */
     private static function iterateConfigEntries(array $data): \Generator
     {
         foreach ($data as $key => $value) {

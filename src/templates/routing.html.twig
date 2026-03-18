@@ -3,10 +3,10 @@
 {% block body_header %}
     <md-toolbar class="md-hue-2">
         <div class="md-toolbar-tools">
-            <h2 flex md-truncate>{{ "Rutas definidas en el sistema"|trans }}</h2>
-            <md-button aria-label="Generar ruta" ng-href="{{ path('admin-routes-gen') }}">
+            <h2 flex md-truncate>{{ "Routes defined in the system"|trans }}</h2>
+            <md-button aria-label="Generate route" ng-href="{{ path('admin-routes-gen') }}">
                 <i class="fa fa-map-signs"></i>
-                &nbsp;{{ "Generar rutas"|trans }}
+                &nbsp;{{ "Generate routes"|trans }}
                 <md-tooltip md-direction="bottom">{{ "Regenerate system routes"|trans }}</md-tooltip>
             </md-button>
         </div>
@@ -18,7 +18,7 @@
         {% set cleanRoute = route|split("#|#") %}
         <md-list-item flex ng-href="{{ cleanRoute[1] }}" target="_blank">
             <md-button class="md-raised md-primary" ng-href="{{ cleanRoute[1] }}" target="_blank">
-                <md-tooltip md-direction="top">{{ "Haz click para visitar la ruta"|trans }}</md-tooltip>
+                <md-tooltip md-direction="top">{{ "Click to open route"|trans }}</md-tooltip>
                 {{ cleanRoute[0] }}
             </md-button>&nbsp;
             <md-button class="md-raised" ng-click="null">{{ url }}</md-button>

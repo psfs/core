@@ -11,7 +11,6 @@ use PSFS\base\dto\Field;
 use PSFS\base\Router;
 
 /**
- * Trait FieldModelHelperTrait
  * @package PSFS\base\types\traits\Helper
  */
 trait FieldModelHelperTrait
@@ -22,7 +21,7 @@ trait FieldModelHelperTrait
      * @param string $domain
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function extractForeignModelsField(ColumnMap $mappedColumn, $field, $domain)
     {
         $fDto = new Field($field, t($field));
@@ -41,7 +40,7 @@ trait FieldModelHelperTrait
      * @param ColumnMap $column
      * @param ModelCriteria $query
      * @param mixed $value
-     */
+ */
     private static function addQueryFilter(ColumnMap $column, ModelCriteria &$query, $value = null)
     {
         $tableField = $column->getFullyQualifiedName();
@@ -65,12 +64,11 @@ trait FieldModelHelperTrait
     }
 
     /**
-     * Method that adds the fields for the model into the API Query
      * @param TableMap $tableMap
      * @param ModelCriteria $query
      * @param string $field
      * @param mixed $value
-     */
+ */
     public static function addModelField(TableMap $tableMap, ModelCriteria &$query, $field, $value = null)
     {
         if ($column = self::checkFieldExists($tableMap, $field)) {
@@ -83,11 +81,11 @@ trait FieldModelHelperTrait
      * @param ConnectionInterface|null $con
      * @return ModelCriteria
      * @throws \ReflectionException
-     */
+ */
     public static function extractQuery($modelNameNamespace, ConnectionInterface $con = null)
     {
         $queryReflector = new \ReflectionClass($modelNameNamespace . "Query");
-        /** @var \Propel\Runtime\ActiveQuery\ModelCriteria $query */
+        
         $query = $queryReflector->getMethod('create')->invoke($con);
 
         return $query;
@@ -98,7 +96,7 @@ trait FieldModelHelperTrait
      * @param ModelCriteria $query
      * @param array $extraColumns
      * @param mixed $value
-     */
+ */
     public static function composerComboField(TableMap $tableMap, ModelCriteria &$query, array $extraColumns = [], $value = null)
     {
         $exp = 'CONCAT(';
@@ -135,7 +133,7 @@ trait FieldModelHelperTrait
     /**
      * @param TableMap $tableMap
      * @return null|ColumnMap
-     */
+ */
     public static function extractPrimaryKeyColumnName(TableMap $tableMap)
     {
         $modelPk = null;

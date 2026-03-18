@@ -24,7 +24,7 @@ class DocumentorController extends Controller
     /**
      * @GET
      * @CACHE 600
-     * @label Generador de documentación API
+     * @label API documentation generator
      * @route /{domain}/api/doc
      * @param string $domain
      * @return mixed|string

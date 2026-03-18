@@ -3,7 +3,6 @@
 namespace PSFS\base\types\interfaces;
 
 /**
- * Interface ControllerInterface
  * @package PSFS\base\types\interfaces
  */
 interface ControllerInterface

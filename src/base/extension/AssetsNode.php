@@ -6,7 +6,6 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 /**
- * Class AssetsNode
  * @package PSFS\base\extension
  */
 #[\Twig\Attribute\YieldReady]
@@ -21,7 +20,7 @@ class AssetsNode extends Node
      * @param array $values
      * @param int $line
      * @param string $type
-     */
+ */
     public function __construct($name, $values, $line, $type = 'js')
     {
         parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line);
@@ -45,12 +44,12 @@ class AssetsNode extends Node
         $compiler->write('$parser->init(\'' . $this->type . '\')')
             ->raw(";\n");
 
-        //Asociamos los ficheros
+        // Register files for processing.
         foreach ($scripts->getAttribute("value") as $value) {
             $compiler->write('$parser->addFile(\'' . $value . '\')')->raw(";\n");
         }
 
-        //Procesamos los ficheros
+        // Process files.
         $compiler->write('$parser->compile()')
             ->raw(";\n");
 

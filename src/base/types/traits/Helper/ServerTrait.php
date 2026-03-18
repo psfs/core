@@ -5,21 +5,20 @@ namespace PSFS\base\types\traits\Helper;
 use PSFS\base\config\Config;
 
 /**
- * Trait ServerTrait
  * @package PSFS\base\types\traits\Helper
  */
 trait ServerTrait
 {
     /**
      * @var array
-     */
+ */
     private $server = [];
 
     /**
      * @param string $key
      * @param null|string $default
      * @return null|string
-     */
+ */
     public function getServer($key, $default = null)
     {
         $value = null;
@@ -32,7 +31,7 @@ trait ServerTrait
     /**
      * @param array $server
      * @return ServerTrait
-     */
+ */
     public function setServer(array $server)
     {
         $this->server = $server;
@@ -42,7 +41,7 @@ trait ServerTrait
     /**
      * @param bool $formatted
      * @return false|string|null
-     */
+ */
     public function getTs($formatted = false)
     {
         return $formatted ? date('Y-m-d H:i:s', $this->getServer('REQUEST_TIME_FLOAT')) : $this->getServer('REQUEST_TIME_FLOAT');
@@ -50,7 +49,7 @@ trait ServerTrait
 
     /**
      * @return string
-     */
+ */
     public function getServerName()
     {
         $serverName = $this->getServer('SERVER_NAME');
@@ -66,7 +65,7 @@ trait ServerTrait
 
     /**
      * @return string
-     */
+ */
     public function getProtocol(): string
     {
         if (Config::getParam('force.https', false)) {
@@ -77,7 +76,7 @@ trait ServerTrait
 
     /**
      * @return boolean
-     */
+ */
     public function isAjax()
     {
         $requested = $this->getServer('HTTP_X_REQUESTED_WITH');
@@ -86,7 +85,7 @@ trait ServerTrait
 
     /**
      * @return string
-     */
+ */
     public function getMethod()
     {
         return strtoupper($this->getServer('REQUEST_METHOD', 'GET'));
@@ -94,16 +93,15 @@ trait ServerTrait
 
     /**
      * @return string
-     */
+ */
     public function getRequestUri()
     {
         return $this->getServer('REQUEST_URI', '');
     }
 
     /**
-     * Método que devuelve el idioma de la petición
      * @return string
-     */
+ */
     public function getLanguage()
     {
         return $this->getServer('HTTP_ACCEPT_LANGUAGE', Config::getParam('default.language', 'en_US'));

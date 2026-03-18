@@ -16,7 +16,7 @@ if (!isset($console)) {
 $console
     ->register('psfs:create:root')
     ->setDefinition(array(
-        new InputArgument('path', InputArgument::OPTIONAL, 'Path en el que crear el Document Root'),
+        new InputArgument('path', InputArgument::OPTIONAL, 'Path where the Document Root will be created'),
     ))
     ->setDescription('Command to create the project Document Root')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
@@ -26,5 +26,5 @@ $console
 
         GeneratorHelper::createRoot($path, $output);
 
-        $output->writeln("Document root generado en " . $path);
+        $output->writeln("Document root generated at " . $path);
     });

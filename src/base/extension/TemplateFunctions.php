@@ -17,7 +17,6 @@ use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
- * Class TemplateFunctions
  * @package PSFS\base\extension
  */
 class TemplateFunctions
@@ -39,13 +38,12 @@ class TemplateFunctions
     const JWT_TOKEN_FUNCTION = '\PSFS\base\extension\TemplateFunctions::generateJWTToken';
 
     /**
-     * Función que copia los recursos de las carpetas Public al DocumentRoot
      * @param string $string
      * @param string|null $name
      * @param bool $return
      * @return string|null
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function asset(string $string, string $name = null, bool $return = true): ?string
     {
 
@@ -63,13 +61,12 @@ class TemplateFunctions
     }
 
     /**
-     * Función que devuelve una url correspondiente a una ruta
      * @param string $path
      * @param bool $absolute
      * @param array $params
      *
      * @return string|null
-     */
+ */
     public static function route(string $path = '', bool $absolute = false, array $params = []): ?string
     {
         $router = Router::getInstance();
@@ -82,23 +79,21 @@ class TemplateFunctions
     }
 
     /**
-     * Función que devuelve un parámetro de la configuración
      * @param string $param
      * @param string $default
      *
      * @return mixed|null
-     */
+ */
     public static function config(string $param, string $default = ''): mixed
     {
         return Config::getInstance()->get($param) ?: $default;
     }
 
     /**
-     * Función que devuelve un query string
      * @param string $query
      *
      * @return string
-     */
+ */
     public static function query(string $query): string
     {
         return Request::getInstance()->getQuery($query);
@@ -109,7 +104,7 @@ class TemplateFunctions
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     public static function button(array $button): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/button.html.twig', array(
@@ -123,7 +118,7 @@ class TemplateFunctions
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     public static function widget(array $field, string $label = null): void
     {
         if (null !== $label) {
@@ -142,12 +137,11 @@ class TemplateFunctions
     }
 
     /**
-     * Función que deveulve un formulario en html
      * @param Form $form
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     public static function form(Form $form): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/base.html.twig', array(
@@ -156,14 +150,13 @@ class TemplateFunctions
     }
 
     /**
-     * Función que copia un recurso directamente en el DocumentRoot
      * @param string $path
      * @param string $dest
      * @param bool|bool $force
      *
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function resource(string $path, string $dest, bool $force = false): string
     {
         $debug = Config::getParam('debug');
@@ -186,12 +179,11 @@ class TemplateFunctions
     }
 
     /**
-     * Método que extrae el pathname para un dominio
      * @param string $path
      * @param $domains
      *
      * @return string|array
-     */
+ */
     private static function extractPathname(string $path, $domains): string|array
     {
         $filenamePath = $path;
@@ -212,7 +204,7 @@ class TemplateFunctions
     /**
      * @param $filenamePath
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     private static function processCssLines($filenamePath): void
     {
         $handle = @fopen($filenamePath, 'r');
@@ -225,12 +217,11 @@ class TemplateFunctions
     }
 
     /**
-     * Método que copia el contenido de un recurso en su destino correspondiente
      * @param string|null $name
      * @param string $filenamePath
      * @param string $base
      * @param string $filePath
-     */
+ */
     private static function putResourceContent(string|null $name, string $filenamePath, string $base, string $filePath): void
     {
         $data = file_get_contents($filenamePath);
@@ -242,20 +233,19 @@ class TemplateFunctions
     }
 
     /**
-     * Método que procesa un recurso para su copia en el DocumentRoot
      * @param string $string
      * @param string|null $name
      * @param boolean $return
      * @param string $filenamePath
      * @return string
      * @throws GeneratorException
-     */
+ */
     private static function processAsset(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): string
     {
         $filePath = $filenamePath;
         if (file_exists($filenamePath)) {
             list($base, $htmlBase, $filePath) = AssetsHelper::calculateAssetPath($string, $name, $return, $filenamePath);
-            //Creamos el directorio si no existe
+            // Create directory when it does not exist.
             GeneratorHelper::createDir($base . $htmlBase);
             //Si se ha modificado
             if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($filenamePath)) {
@@ -270,30 +260,27 @@ class TemplateFunctions
     }
 
     /**
-     * Template function for get a session var
      * @param string $key
      * @return mixed
-     */
+ */
     public static function session(string $key): mixed
     {
         return Security::getInstance()->getSessionKey($key);
     }
 
     /**
-     * Template function that check if exists any flash session var
      * @param string $key
      * @return bool
-     */
+ */
     public static function existsFlash(string $key = ''): bool
     {
         return null !== Security::getInstance()->getFlash($key);
     }
 
     /**
-     * Template function that get a flash session var
      * @param string $key
      * @return mixed
-     */
+ */
     public static function getFlash(string $key): mixed
     {
         $var = Security::getInstance()->getFlash($key);

@@ -18,24 +18,22 @@ trait ApiListTrait
     const API_LIMIT_FIELD = '__limit';
 
     /**
-     * @var array $filters
-     */
+     * @var array
+ */
     protected $filters = array();
 
     /**
      * @Injectable
-     * @var \PSFS\base\dto\Order $order
-     */
+     * @var \PSFS\base\dto\Order
+ */
     protected $order;
 
     /**
-     * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager $list
-     */
+     * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager
+ */
     protected $list;
 
-    /**
-     * Hydrate order from request
-     */
+    
     protected function hydrateOrders()
     {
         if (count($this->query)) {
@@ -52,9 +50,8 @@ trait ApiListTrait
     }
 
     /**
-     * Extract pagination values
      * @return array
-     */
+ */
     protected function extractPagination()
     {
         Logger::log(static::class . ' extract pagination start', LOG_DEBUG);
@@ -65,10 +62,9 @@ trait ApiListTrait
     }
 
     /**
-     * Add order fields to query
      * @param ModelCriteria $query
      * @throws \PSFS\base\exception\ApiException
-     */
+ */
     protected function addOrders(ModelCriteria &$query)
     {
         Logger::log(static::class . ' extract orders start ', LOG_DEBUG);
@@ -94,10 +90,9 @@ trait ApiListTrait
     }
 
     /**
-     * Add filters fields to query
      *
      * @param ModelCriteria $query
-     */
+ */
     protected function addFilters(ModelCriteria &$query)
     {
         if (count($this->query) > 0) {
@@ -112,9 +107,7 @@ trait ApiListTrait
         }
     }
 
-    /**
-     * Generate list page for model
-     */
+    
     protected function paginate()
     {
         $this->list = null;

@@ -8,7 +8,6 @@ use PSFS\base\types\traits\Helper\OptionTrait;
 use PSFS\base\types\traits\Helper\ParameterTrait;
 
 /**
- * Trait CurlTrait
  * @package PSFS\base\types\traits
  */
 trait CurlTrait
@@ -17,34 +16,29 @@ trait CurlTrait
     use OptionTrait;
 
     /**
-     * Curl resource
      * @var \CurlHandle
-     */
+ */
     private $con;
     /**
-     * Curl destination
      * @var ?string
-     */
+ */
     private $url;
     /**
-     * Curl headers
      * @var array
-     */
+ */
     private $headers;
     /**
-     * Curl http verb
      * @var string
-     */
+ */
     private $type;
     /**
-     * Curl debug
      * @var bool
-     */
+ */
     private $debug = false;
 
     /**
      * @return \CurlHandle
-     */
+ */
     public function getCon()
     {
         return $this->con;
@@ -52,32 +46,32 @@ trait CurlTrait
 
     /**
      * @param \CurlHandle|null $con
-     */
+ */
     public function setCon(?\CurlHandle $con)
     {
         $this->con = $con;
     }
 
     /**
-     * @var mixed $result
-     */
+     * @var mixed
+ */
     private $result;
 
     /**
-     * @var string $rawResult
-     */
+     * @var string
+ */
     private $rawResult;
     /**
      * @var mixed
-     */
+ */
     private $info = [];
     /**
      * @var bool
-     */
+ */
     protected $isJson = true;
     /**
      * @var bool
-     */
+ */
     protected $isMultipart = false;
 
     protected function closeConnection()
@@ -115,7 +109,7 @@ trait CurlTrait
 
     /**
      * @return string|null
-     */
+ */
     public function getUrl()
     {
         return $this->url;
@@ -124,7 +118,7 @@ trait CurlTrait
     /**
      * @param String $url
      * @param bool $cleanContext
-     */
+ */
     public function setUrl(string $url, $cleanContext = true)
     {
         $this->url = $url;
@@ -135,7 +129,7 @@ trait CurlTrait
 
     /**
      * @return mixed
-     */
+ */
     public function getResult()
     {
         return $this->result;
@@ -143,7 +137,7 @@ trait CurlTrait
 
     /**
      * @param string $result
-     */
+ */
     public function setResult($result)
     {
         $this->result = $result;
@@ -151,7 +145,7 @@ trait CurlTrait
 
     /**
      * @return array
-     */
+ */
     public function getHeaders()
     {
         return $this->headers;
@@ -159,7 +153,7 @@ trait CurlTrait
 
     /**
      * @param array $headers
-     */
+ */
     public function setHeaders($headers)
     {
         $this->headers = $headers;
@@ -167,7 +161,7 @@ trait CurlTrait
 
     /**
      * @return string
-     */
+ */
     public function getType()
     {
         return $this->type;
@@ -175,7 +169,7 @@ trait CurlTrait
 
     /**
      * @param string $type
-     */
+ */
     public function setType($type)
     {
         $this->type = $type;
@@ -183,7 +177,7 @@ trait CurlTrait
 
     /**
      * @return mixed
-     */
+ */
     public function getInfo()
     {
         return $this->info;
@@ -191,7 +185,7 @@ trait CurlTrait
 
     /**
      * @param bool $isJson
-     */
+ */
     public function setIsJson($isJson = true)
     {
         $this->isJson = $isJson;
@@ -202,7 +196,7 @@ trait CurlTrait
 
     /**
      * @return bool
-     */
+ */
     public function getIsJson()
     {
         return $this->isJson;
@@ -210,7 +204,7 @@ trait CurlTrait
 
     /**
      * @param bool $isMultipart
-     */
+ */
     public function setIsMultipart($isMultipart = true)
     {
         $this->isMultipart = $isMultipart;
@@ -221,7 +215,7 @@ trait CurlTrait
 
     /**
      * @return bool
-     */
+ */
     public function getIsMultipart()
     {
         return $this->isMultipart;
@@ -229,7 +223,7 @@ trait CurlTrait
 
     /**
      * @param bool $debug
-     */
+ */
     public function setDebug(bool $debug = false)
     {
         $this->debug = $debug;
@@ -237,7 +231,7 @@ trait CurlTrait
 
     /**
      * @return bool
-     */
+ */
     public function isDebug()
     {
         return $this->debug;
@@ -245,7 +239,7 @@ trait CurlTrait
 
     /**
      * @return string
-     */
+ */
     public function getRawResult()
     {
         return $this->rawResult;
@@ -253,7 +247,7 @@ trait CurlTrait
 
     /**
      * @param string $rawResult
-     */
+ */
     public function setRawResult(string $rawResult)
     {
         $this->rawResult = $rawResult;

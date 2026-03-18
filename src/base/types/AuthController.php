@@ -8,7 +8,6 @@ use PSFS\base\types\interfaces\AuthInterface;
 use PSFS\base\types\traits\SecureTrait;
 
 /**
- * Class AuthController
  * @package PSFS\base\types
  */
 abstract class AuthController extends Controller implements AuthInterface
@@ -16,9 +15,8 @@ abstract class AuthController extends Controller implements AuthInterface
     use SecureTrait;
 
     /**
-     * Constructor por defecto
      * @throws AccessDeniedException|UserAuthException
-     */
+ */
     public function init()
     {
         parent::init();

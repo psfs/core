@@ -16,7 +16,6 @@ use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\I18nHelper;
 
 /**
- * Trait MutationTrait
  * @package PSFS\base\types\traits\Api
  */
 trait MutationTrait
@@ -26,7 +25,7 @@ trait MutationTrait
      * @header X-API-LANG
      * @label Locale for the API request
      * @default es
-     */
+ */
     protected $lang;
 
     /**
@@ -34,33 +33,30 @@ trait MutationTrait
      * @header X-FIELD-TYPE
      * @label Field type for API Dto
      * @default phpName
-     */
+ */
     protected $fieldType = TableMap::TYPE_PHPNAME;
 
     /**
-     * @var array extraColumns
-     */
+     * @var array
+ */
     protected $extraColumns = array();
 
     /**
-     * @var array $query
-     */
+     * @var array
+ */
     protected $query = array();
 
     /**
-     * @var array $data
-     */
+     * @var array
+ */
     protected $data = array();
 
     /**
-     * Extract Model TableMap
      * @return TableMap
-     */
+ */
     abstract function getModelTableMap();
 
-    /**
-     * Hydrate data from request
-     */
+    
     protected function hydrateRequestData()
     {
         $request = Request::getInstance();
@@ -69,19 +65,18 @@ trait MutationTrait
     }
 
     /**
-     * Extract model api namespace
      * @return mixed
-     */
+ */
     protected function getModelNamespace()
     {
-        /** @var TableMap $tableMap */
+        
         $tableMap = $this->getModelTableMap();
         return (null !== $tableMap) ? $tableMap::getOMClass(FALSE) : null;
     }
 
     /**
      * @return TableMap
-     */
+ */
     private function getTableMap()
     {
         $tableMapClass = $this->getModelTableMap();
@@ -91,10 +86,10 @@ trait MutationTrait
     /**
      * @return array
      * @throws ApiException
-     */
+ */
     protected function getPkDbName()
     {
-        /** @var TableMap $tableMap */
+        
         $tableMap = $this->getTableMap();
         $pks = $tableMap->getPrimaryKeys();
         if (count($pks) === 1) {
@@ -121,7 +116,7 @@ trait MutationTrait
 
     /**
      * @throws ApiException
-     */
+ */
     protected function addPkToList()
     {
         foreach ($this->getPkDbName() as $extraColumn => $columnName) {
@@ -131,7 +126,7 @@ trait MutationTrait
 
     /**
      * @param TableMap $tableMap
-     */
+ */
     private function addClassListName(TableMap $tableMap)
     {
         $pks = '';
@@ -143,15 +138,13 @@ trait MutationTrait
         $this->extraColumns['CONCAT("' . $tableMap->getPhpName() . ' #", ' . $pks . ')'] = Api::API_LIST_NAME_FIELD;
     }
 
-    /**
-     * Method that add a new field with the Label of the row
-     */
+    
     protected function addDefaultListField()
     {
         if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns))) {
-            /** @var TableMap $tableMap */
+            
             $tableMap = $this->getTableMap();
-            /** @var ColumnMap $column */
+            
             $column = null;
             if ($tableMap->hasColumn('NAME')) {
                 $column = $tableMap->getColumn('NAME');
@@ -172,7 +165,7 @@ trait MutationTrait
      * @param ModelCriteria $query
      * @param $action
      * @throws ApiException
-     */
+ */
     private function addExtraColumns(ModelCriteria &$query, $action)
     {
         if (Api::API_ACTION_LIST === $action) {
@@ -197,7 +190,7 @@ trait MutationTrait
 
     /**
      * @return array
-     */
+ */
     protected function parseExtraColumns()
     {
         $columns = [];
@@ -215,7 +208,7 @@ trait MutationTrait
 
     /**
      * @param ModelCriteria $query
-     */
+ */
     protected function checkI18n(ModelCriteria &$query)
     {
         $this->extractApiLang();
@@ -225,7 +218,7 @@ trait MutationTrait
             $query->useI18nQuery($this->lang);
             $modelParts = explode('\\', $modelI18n);
             $i18nMapClass = str_replace(end($modelParts), 'Map\\' . end($modelParts), $modelI18n) . 'TableMap';
-            /** @var TableMap $modelI18nTableMap */
+            
             $modelI18nTableMap = $i18nMapClass::getTableMap();
             foreach ($modelI18nTableMap->getColumns() as $columnMap) {
                 if (!$columnMap->isPrimaryKey()) {
@@ -250,7 +243,7 @@ trait MutationTrait
     /**
      * @param ActiveRecordInterface $model
      * @param array $data
-     */
+ */
     protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = [])
     {
         $this->cleanData($data);
@@ -276,9 +269,7 @@ trait MutationTrait
         }
     }
 
-    /**
-     * Check and change the fieldType for API dto
-     */
+    
     protected function checkFieldType()
     {
         $this->fieldType = ApiHelper::getFieldTypes();

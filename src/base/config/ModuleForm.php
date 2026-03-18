@@ -5,7 +5,6 @@ namespace PSFS\base\config;
 use PSFS\base\types\Form;
 
 /**
- * Class ModuleForm
  * @package PSFS\base\config
  */
 class ModuleForm extends Form
@@ -13,14 +12,14 @@ class ModuleForm extends Form
 
     /**
      * @Injectable
-     * @var \PSFS\base\Router $router
-     */
+     * @var \PSFS\base\Router
+ */
     protected $router;
 
     /**
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
-     */
+ */
     public function __construct()
     {
         parent::__construct();
@@ -36,16 +35,16 @@ class ModuleForm extends Form
         $this->add('module', array(
             'label' => t('Module Name'),
         ))->add('controllerType', array(
-            'label' => t('Tipo de controlador'),
+            'label' => t('Controller type'),
             'type' => 'select',
             'data' => $controllerTypes,
             'required' => false
         ))->add('api', array(
-            'label' => t('Clase personalizada para API'),
+            'label' => t('Custom API class'),
             'required' => false,
-            'placeholder' => t('Namespace de la clase completo'),
+            'placeholder' => t('Full class namespace'),
         ));
-        //Aplicamos estilo al formulario
+        // Apply form style.
         $this->setAttrs(array(
             'class' => 'col-md-6',
         ));
@@ -53,18 +52,16 @@ class ModuleForm extends Form
     }
 
     /**
-     * Método que devuelve el título del formulario
      * @return string
-     */
+ */
     public function getTitle()
     {
         return t('Module Management');
     }
 
     /**
-     * Método que devuelve el nombre del formulario
      * @return string
-     */
+ */
     public function getName()
     {
         return 'admin_modules';

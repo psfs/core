@@ -16,7 +16,6 @@ use ReflectionException;
 use ReflectionProperty;
 
 /**
- * Class Singleton
  * @package PSFS\base
  */
 class Singleton
@@ -24,11 +23,10 @@ class Singleton
     use SingletonTrait;
 
     /**
-     * Singleton constructor.
      * @throws Exception
      * @throws exception\GeneratorException
      * @throws ConfigException
-     */
+ */
     public function __construct()
     {
         Inspector::stats(static::class . ' constructor invoked');
@@ -38,7 +36,7 @@ class Singleton
     /**
      * @param string $variable
      * @param mixed $value
-     */
+ */
     public function __set($variable, $value)
     {
         if ($this->__isset($variable)) {
@@ -49,7 +47,7 @@ class Singleton
     /**
      * @param string $name
      * @return bool
-     */
+ */
     public function __isset($name)
     {
         return property_exists(get_class($this), $name);
@@ -58,20 +56,18 @@ class Singleton
     /**
      * @param string $variable
      * @return mixed
-     */
+ */
     public function __get($variable)
     {
         return $this->__isset($variable) ? $this->$variable : null;
     }
 
-    /**
-     * HELPERS
-     */
+    
 
     /**
      * @return string
      * @throws ReflectionException
-     */
+ */
     public function getShortName()
     {
         $reflector = new ReflectionClass(get_class($this));
@@ -84,7 +80,7 @@ class Singleton
      * @param string $classNameSpace
      * @return $this
      * @throws Exception
-     */
+ */
     public function load($variable, $singleton = true, $classNameSpace = null)
     {
         $calledClass = static::class;
@@ -107,11 +103,11 @@ class Singleton
      * @throws Exception
      * @throws exception\GeneratorException
      * @throws ConfigException
-     */
+ */
     public function init()
     {
         if (!$this->isLoaded()) {
-            /** @var Config $configService */
+            
             $configService = Config::getInstance();
             $repository = $this->createReflectionRepository(get_class($this));
             $properties = $repository->read();
@@ -119,7 +115,7 @@ class Singleton
                 $properties = InjectorHelper::getClassProperties(get_class($this));
                 $repository->save($properties);
             }
-            /** @var ReflectionProperty $property */
+            
             if (!empty($properties) && is_array($properties)) {
                 foreach ($properties as $property => $class) {
                     $this->load($property, true, $class);

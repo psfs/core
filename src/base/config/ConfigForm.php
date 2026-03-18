@@ -5,21 +5,19 @@ namespace PSFS\base\config;
 use PSFS\base\types\Form;
 
 /**
- * Class ConfigForm
  * @package PSFS\base\config
  */
 class ConfigForm extends Form
 {
 
     /**
-     * Constructor por defecto
      * @param string $route
      * @param array $required
      * @param array $optional
      * @param array $data
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
-     */
+ */
     public function __construct($route, array $required, array $optional = [], array $data = [])
     {
         parent::__construct();
@@ -118,18 +116,16 @@ class ConfigForm extends Form
     }
 
     /**
-     * Nombre del formulario
      * @return string
-     */
+ */
     public function getName()
     {
         return 'config';
     }
 
     /**
-     * Nombre del título del formulario
      * @return string
-     */
+ */
     public function getTitle()
     {
         return t('Required parameters to run PSFS');

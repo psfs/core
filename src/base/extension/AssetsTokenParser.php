@@ -8,7 +8,6 @@ use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
 
 /**
- * Class AssetsTokenParser
  * @package PSFS\base\extension
  */
 class AssetsTokenParser extends AbstractTokenParser
@@ -20,7 +19,7 @@ class AssetsTokenParser extends AbstractTokenParser
 
     /**
      * @param string $type
-     */
+ */
     public function __construct($type = 'js')
     {
         $this->type = $type;
@@ -30,7 +29,7 @@ class AssetsTokenParser extends AbstractTokenParser
      * @param Token $token
      * @return AssetsNode|\Twig\Node\Node
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     public function parse(Token $token)
     {
         $hash = substr(md5($this->parser->getStream()->getSourceContext()->getPath()), 0, 8);
@@ -41,9 +40,8 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * Método que devuelve el tag a buscar en la plantilla
      * @return string
-     */
+ */
     public function getTag()
     {
         switch ($this->type) {
@@ -62,7 +60,7 @@ class AssetsTokenParser extends AbstractTokenParser
      * @param TokenStream $stream
      * @return TokenStream
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     protected function checkTemplateLine(TokenStream $stream)
     {
         $value = $stream->getCurrent();
@@ -79,7 +77,7 @@ class AssetsTokenParser extends AbstractTokenParser
 
     /**
      * @throws \Twig\Error\SyntaxError
-     */
+ */
     protected function extractTemplateNodes()
     {
         $stream = $this->parser->getStream();
@@ -94,12 +92,12 @@ class AssetsTokenParser extends AbstractTokenParser
 
     /**
      * @return mixed|null
-     */
+ */
     protected function findTemplateNode()
     {
         $node = null;
         if (0 < count($this->values)) {
-            /** @var \Twig_Node_Expression|\Twig_Node_Expression_Conditional $value */
+            
             foreach ($this->values as $value) {
                 list($tmp, $node) = $this->extractTmpAttribute($node, $value);
                 $node->setAttribute('value', $tmp);
@@ -111,7 +109,7 @@ class AssetsTokenParser extends AbstractTokenParser
     /**
      * @param ConstantExpression $node
      * @return array
-     */
+ */
     protected function getTmpAttribute($node = null)
     {
         $tmp = [];
@@ -126,12 +124,11 @@ class AssetsTokenParser extends AbstractTokenParser
     }
 
     /**
-     * Método
      * @param $node
      * @param $value
      *
      * @return array
-     */
+ */
     protected function extractTmpAttribute($node = null, $value = null)
     {
         $tmp = [];

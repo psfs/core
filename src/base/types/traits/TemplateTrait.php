@@ -6,24 +6,22 @@ use PSFS\base\Cache;
 use PSFS\base\Logger;
 
 /**
- * Trait TemplateTrait
  * @package PSFS\base\types\traits
  */
 trait TemplateTrait
 {
     /**
      * @Injectable
-     * @var \PSFS\base\Template Servicio de gestión de plantillas
-     */
+     * @var \PSFS\base\Template
+ */
     protected $tpl;
 
     /**
-     * Método que graba el contenido de una plantilla en un fichero
      * @param string $fileContent
      * @param string $filename
      * @param boolean $force
      * @return boolean
-     */
+ */
     private function writeTemplateToFile($fileContent, $filename, $force = false)
     {
         $created = false;

@@ -3,7 +3,6 @@
 namespace PSFS\base\dto;
 
 /**
- * Class Field
  * @package PSFS\base\dto
  */
 class Field extends Dto
@@ -24,52 +23,52 @@ class Field extends Dto
     const TIMESTAMP = 'timestamp';
 
     /**
-     * @var string label
-     */
+     * @var string
+ */
     public $label;
     /**
-     * @var string name
-     */
+     * @var string
+ */
     public $name;
     /**
-     * @var string type
-     */
+     * @var string
+ */
     public $type = Field::TEXT_TYPE;
     /**
-     * @var array data
-     */
+     * @var array
+ */
     public $data = array();
     /**
-     * @var string url
-     */
+     * @var string
+ */
     public $url;
     /**
-     * @var Object value
-     */
+     * @var Object
+ */
     public $value;
     /**
-     * @var bool required
-     */
+     * @var bool
+ */
     public $required = true;
     /**
-     * @var string entity
-     */
+     * @var string
+ */
     public $entity;
     /**
-     * @var bool readonly
-     */
+     * @var bool
+ */
     public $readonly = false;
     /**
-     * @var bool pk
-     */
+     * @var bool
+ */
     public $pk = false;
     /**
      * @var string
-     */
+ */
     public $relatedField;
     /**
      * @var integer
-     */
+ */
     public $size;
 
     public function __construct($name, $label, $type = self::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)

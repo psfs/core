@@ -3,7 +3,6 @@
 namespace PSFS\base\types;
 
 /**
- * Class CustomApi
  * @package PSFS\base\types
  */
 abstract class CustomApi extends Api

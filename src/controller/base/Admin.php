@@ -28,7 +28,7 @@ abstract class Admin extends AuthAdminController
     protected $srv;
 
     /**
-     * Método estático de login de administrador
+     * Static administrator login method
      * @return string HTML
      * @throws UserAuthException
      * @throws \PSFS\base\exception\GeneratorException
@@ -46,7 +46,7 @@ abstract class Admin extends AuthAdminController
     }
 
     /**
-     * Método que gestiona el menú de administración
+     * Method that manages the administration menu
      * @GET
      * @route /admin
      * @visible false

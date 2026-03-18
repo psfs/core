@@ -10,9 +10,9 @@ trait AuthFlowTrait
 {
     /**
      * @param string|null $authorization
-     * @param string $scheme basic|bearer
+     * @param string $scheme
      * @return string|null
-     */
+ */
     private static function extractAuthorizationToken(?string $authorization, string $scheme): ?string
     {
         if (null === $authorization || '' === trim($authorization)) {

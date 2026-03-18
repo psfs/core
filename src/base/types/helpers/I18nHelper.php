@@ -12,7 +12,6 @@ use PSFS\base\types\traits\Helper\I18nLocaleTrait;
 use PSFS\base\types\traits\Helper\I18nProviderTrait;
 
 /**
- * Class I18nHelper
  * @package PSFS\base\types\helpers
  */
 class I18nHelper
@@ -30,7 +29,7 @@ class I18nHelper
      * @param string $absoluteFileName
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateTranslationsFile(string $absoluteFileName): array
     {
         $translations = array();
@@ -44,12 +43,11 @@ class I18nHelper
     }
 
     /**
-     * Method to set the locale
      * @param string|null $default
      * @param string|null $customKey
      * @param bool $force
      * @throws Exception
-     */
+ */
     public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
     {
         $locale = $force ? $default : self::extractLocale($default);
@@ -74,7 +72,7 @@ class I18nHelper
     /**
      * @param $data
      * @return mixed
-     */
+ */
     public static function utf8Encode($data): mixed
     {
         if (is_array($data)) {
@@ -97,7 +95,7 @@ class I18nHelper
     /**
      * @param string $namespace
      * @return bool
-     */
+ */
     public static function checkI18Class(string $namespace): bool
     {
         $isI18n = false;
@@ -113,16 +111,16 @@ class I18nHelper
     /**
      * @param $string
      * @return string
-     */
+ */
     public static function sanitize($string): string
     {
         $from = [
-            ['á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'],
-            ['é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'],
-            ['í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'],
-            ['ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'],
-            ['ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'],
-            ['ñ', 'Ñ', 'ç', 'Ç'],
+            ["\u{00E1}", "\u{00E0}", "\u{00E4}", "\u{00E2}", "\u{00AA}", "\u{00C1}", "\u{00C0}", "\u{00C2}", "\u{00C4}"],
+            ["\u{00E9}", "\u{00E8}", "\u{00EB}", "\u{00EA}", "\u{00C9}", "\u{00C8}", "\u{00CA}", "\u{00CB}"],
+            ["\u{00ED}", "\u{00EC}", "\u{00EF}", "\u{00EE}", "\u{00CD}", "\u{00CC}", "\u{00CF}", "\u{00CE}"],
+            ["\u{00F3}", "\u{00F2}", "\u{00F6}", "\u{00F4}", "\u{00D3}", "\u{00D2}", "\u{00D6}", "\u{00D4}"],
+            ["\u{00FA}", "\u{00F9}", "\u{00FC}", "\u{00FB}", "\u{00DA}", "\u{00D9}", "\u{00DB}", "\u{00DC}"],
+            ["\u{00F1}", "\u{00D1}", "\u{00E7}", "\u{00C7}"],
         ];
         $to = [
             ['a', 'a', 'a', 'a', 'a', 'A', 'A', 'A', 'A'],
@@ -144,7 +142,7 @@ class I18nHelper
     /**
      * @param string $string
      * @return string
-     */
+ */
     public static function cleanHtmlAttacks(string $string): string
     {
         $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $string);

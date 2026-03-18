@@ -95,6 +95,30 @@ class AuthApiTest extends TestCase
         $this->assertSame('', $this->callPrivate($api, 'resolveApiToken'));
     }
 
+    public function testResolveApiTokenUsesConfiguredCookieName(): void
+    {
+        $api = $this->newAuthApiWithoutConstructor();
+        Config::save(array_merge($this->configBackup, ['api.token.cookie' => 'PSFS_API_TOKEN']), []);
+        Config::getInstance()->loadConfigData(true);
+        $_COOKIE = ['PSFS_API_TOKEN' => 'cookie-token'];
+        Request::dropInstance();
+        Request::getInstance()->init();
+        Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => '']);
+
+        $this->assertSame('cookie-token', $this->callPrivate($api, 'resolveApiToken'));
+    }
+
+    public function testResolveApiTokenRejectsLegacyQueryByDefault(): void
+    {
+        $api = $this->newAuthApiWithoutConstructor();
+        Config::save(array_merge($this->configBackup, ['api.query_token.compat' => false]), []);
+        Config::getInstance()->loadConfigData(true);
+        $this->setQuery($api, ['API_TOKEN' => 'legacy-token']);
+        Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => '']);
+
+        $this->assertSame('', $this->callPrivate($api, 'resolveApiToken'));
+    }
+
     public function testCheckAuthAcceptsNoSecretOrAdminBypass(): void
     {
         $api = $this->newAuthApiWithoutConstructor();

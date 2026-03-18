@@ -8,7 +8,6 @@ use PSFS\base\types\helpers\AssetsHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
- * Trait JsTrait
  * @package PSFS\base\extension\traits
  */
 trait JsTrait
@@ -18,7 +17,7 @@ trait JsTrait
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     */
+ */
     protected function printJs(array $compiledFiles, $baseUrl, $hash)
     {
         if (Config::getParam('debug') && 0 < count($compiledFiles)) {
@@ -39,7 +38,7 @@ trait JsTrait
      * @param array $compiledFiles
      * @return false|string
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function putDebugJs($pathParts, $base, $file, $hash, array &$compiledFiles)
     {
         $filePath = $hash . "_" . $pathParts[count($pathParts) - 1];
@@ -53,14 +52,13 @@ trait JsTrait
     }
 
     /**
-     * Método que compila los ficheros javascript en función del modo de ejecución
      * @param array $files
      * @param string $basePath
      * @param string $hash
      * @param array $compiledFiles
      * @return $this
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function compileJs(array $files, $basePath, $hash, array &$compiledFiles)
     {
         $base = $basePath . "js" . DIRECTORY_SEPARATOR;
@@ -96,7 +94,7 @@ trait JsTrait
      * @param string $base
      * @param JS $minifier
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function dumpJs($hash, string $base, JS $minifier)
     {
         ini_set('max_execution_time', -1);

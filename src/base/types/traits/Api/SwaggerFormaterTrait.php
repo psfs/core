@@ -15,7 +15,6 @@ use ReflectionClass;
 use ReflectionMethod;
 
 /**
- * Trait SwaggerFormaterTrait
  * @package PSFS\base\types\traits\Api
  */
 trait SwaggerFormaterTrait
@@ -23,7 +22,7 @@ trait SwaggerFormaterTrait
 
     /**
      * @return array
-     */
+ */
     protected function swaggerResponses()
     {
         $codes = [200, 400, 404, 500];
@@ -74,12 +73,11 @@ trait SwaggerFormaterTrait
     }
 
     /**
-     * Method that export
      * @param array $module
      * @param array $endpoints
      *
      * @return array
-     */
+ */
     public function swaggerFormatter(array $module, array $endpoints)
     {
         $formatted = $this->buildSwaggerDocumentSkeleton($module);
@@ -111,7 +109,7 @@ trait SwaggerFormaterTrait
                 "title" => t('Module API documentation ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0.0'),
                 "contact" => [
-                    "name" => Config::getParam("author", "Fran López"),
+                    "name" => Config::getParam("author", "Fran Lopez"),
                     "email" => Config::getParam("author.email", "fran.lopez84@hotmail.es"),
                 ]
             ]
@@ -178,7 +176,7 @@ trait SwaggerFormaterTrait
      * @param $modelDto
      * @param $dtoName
      * @return array
-     */
+ */
     protected function checkDtoAttributes($dto, $modelDto, $dtoName)
     {
         foreach ($dto as $param => &$info) {
@@ -209,7 +207,6 @@ trait SwaggerFormaterTrait
     }
 
     /**
-     * Method that extract all the needed info for each method in each API
      *
      * @param string $namespace
      * @param ReflectionMethod $method
@@ -218,7 +215,7 @@ trait SwaggerFormaterTrait
      *
      * @return array
      * @throws \ReflectionException
-     */
+ */
     protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {
         $methodInfo = NULL;
@@ -256,7 +253,7 @@ trait SwaggerFormaterTrait
     /**
      * @param ReflectionMethod $method
      * @param $methodInfo
-     */
+ */
     protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
     {
         if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST]) && in_array($method->getShortName(), self::$nativeMethods)) {
@@ -291,7 +288,7 @@ trait SwaggerFormaterTrait
     /**
      * @param ReflectionClass $reflection
      * @param $methodInfo
-     */
+ */
     protected function setRequestHeaders(ReflectionClass $reflection, &$methodInfo)
     {
 
@@ -325,7 +322,7 @@ trait SwaggerFormaterTrait
      * @param array $methodInfo
      * @param string $modelNamespace
      * @param string $docComments
-     */
+ */
     protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {

@@ -3,7 +3,6 @@
 namespace PSFS\base\exception;
 
 /**
- * Class LoggerException
  * @package PSFS\base\exception
  */
 class LoggerException extends \Exception
@@ -11,7 +10,7 @@ class LoggerException extends \Exception
 
     /**
      * @return string
-     */
+ */
     public function getError()
     {
         $msg = $this->getMessage();

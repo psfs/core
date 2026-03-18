@@ -17,7 +17,7 @@ trait I18nProviderTrait
      * @param array $catalogLowerMap
      * @param bool $allowGettext
      * @return string
-     */
+ */
     public static function translateWithProviders(string $message, string $locale, array $catalog = [], array $catalogLowerMap = [], bool $allowGettext = true): string
     {
         $context = [

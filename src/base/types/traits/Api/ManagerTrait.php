@@ -14,7 +14,6 @@ use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\traits\RouteTrait;
 
 /**
- * Trait ManagerTrait
  * @package PSFS\base\types\traits\Api
  */
 trait ManagerTrait
@@ -23,9 +22,8 @@ trait ManagerTrait
     use ApiTrait;
 
     /**
-     * Return the admin menus
      * @return array
-     */
+ */
     protected function getMenu()
     {
         return Router::getInstance()->getAllRoutes();
@@ -36,9 +34,9 @@ trait ManagerTrait
      * @GET
      * @icon fa-database
      * @route /admin/{__DOMAIN__}/{__API__}
-     * @return string HTML
+     * @return string
      * @throws ApiException
-     */
+ */
     public function admin()
     {
         if (Security::getInstance()->isUser()) {
@@ -63,7 +61,7 @@ trait ManagerTrait
      * @return JsonResponse(data=\PSFS\base\dto\Form)
      * @throws GeneratorException
      * @throws \ReflectionException
-     */
+ */
     public function getForm()
     {
         $map = $this->getModelTableMap();

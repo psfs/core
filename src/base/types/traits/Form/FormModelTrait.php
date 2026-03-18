@@ -8,7 +8,6 @@ use Propel\Runtime\Collection\ObjectCollection;
 use PSFS\base\config\Config;
 
 /**
- * Trait FormModelTrait
  * @package PSFS\base\types\traits\Form
  */
 trait FormModelTrait
@@ -17,12 +16,12 @@ trait FormModelTrait
 
     /**
      * @var ActiveRecordInterface
-     */
+ */
     protected $model;
 
     /**
      * @return ActiveRecordInterface
-     */
+ */
     public function getHydratedModel()
     {
         $this->setModelLocale();
@@ -34,7 +33,7 @@ trait FormModelTrait
 
     /**
      * @return void
-     */
+ */
     public function hydrateFromModel()
     {
         $this->setModelLocale();
@@ -47,7 +46,7 @@ trait FormModelTrait
      * @param string $key
      * @param mixed $value
      * @return void
-     */
+ */
     private function hydrateModelField($key, $value)
     {
         $setter = 'set' . ucfirst($key);
@@ -70,10 +69,10 @@ trait FormModelTrait
      * @param string|array $val
      * @param array $data
      * @return array
-     */
+ */
     private function extractRelatedModelFieldValue($field, $val, $data)
     {
-        //Extraemos el dato del modelo relacionado si existe el getter
+        // Extract related model data when the getter exists.
         $method = null;
         if (array_key_exists('class_data', $field) && method_exists($val, 'get' . $field['class_data'])) {
             $classMethod = 'get' . $field['class_data'];
@@ -104,11 +103,11 @@ trait FormModelTrait
      * @param $value
      * @param $type
      * @return mixed
-     */
+ */
     private function computeModelFieldValue($field, $value, $type)
     {
         $value = $value->getData();
-        //Extraemos los datos en función del tipo de input
+        // Extract data according to input type.
         switch ($type) {
             case 'checkbox':
             case 'select':
@@ -132,21 +131,21 @@ trait FormModelTrait
      * @param string $key
      * @param array $field
      * @return array
-     */
+ */
     private function extractModelFieldValue($key, $field)
     {
-        //Extraemos el valor del campo del modelo
+        // Extract model field value.
         $method = 'get' . ucfirst($key);
         $type = (array_key_exists('type', $field)) ? $field['type'] : 'text';
-        //Extraemos los campos del modelo
+        // Extract model fields.
         if (method_exists($this->model, $method)) {
             $value = $this->model->$method();
-            //En caso de ser un objeto tenemos una lógica especial
+            // Object values require dedicated handling.
             if (is_object($value)) {
-                //Si es una relación múltiple
+                // Handle many relation.
                 if ($value instanceof ObjectCollection) {
                     $field = $this->computeModelFieldValue($field, $value, $type);
-                } else { //O una relación unitaria
+                } else { // Handle one relation.
                     if (method_exists($value, '__toString')) {
                         $field['value'] = $value;
                     } elseif ($value instanceof \DateTime) {
@@ -159,7 +158,7 @@ trait FormModelTrait
                 $field['value'] = $value;
             }
         }
-        //Si tenemos un campo tipo select o checkbox, lo forzamos a que siempre tenga un valor array
+        // Force select and checkbox fields to always hold an array value.
         if ((array_key_exists('value', $field) && !is_array($field['value']))
             && in_array($type, ['select', 'checkbox'])
         ) {

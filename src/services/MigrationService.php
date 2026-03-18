@@ -21,7 +21,7 @@ class MigrationService extends SimpleService
      * @param string $path
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public function getConnectionManager(string $module, string $path): array
     {
         $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
@@ -46,7 +46,7 @@ class MigrationService extends SimpleService
      * @param array $connections
      * @param bool $debugLogger
      * @return array
-     */
+ */
     public function checkSourceDatabase(MigrationManager $manager, GeneratorConfig $generatorConfig, Database $appDatabase, array $connections, bool $debugLogger = false): array
     {
         $name = $appDatabase->getName();
@@ -94,7 +94,7 @@ class MigrationService extends SimpleService
      * @param string|null $name
      * @param GeneratorConfig $generatorConfig
      * @return array
-     */
+ */
     public function getPlatformAndConnection(MigrationManager $manager, ?string $name, GeneratorConfig $generatorConfig): array
     {
         $conn = $manager->getAdapterConnection($name);
@@ -108,7 +108,7 @@ class MigrationService extends SimpleService
      * @param array $migrationsDown
      * @param GeneratorConfig $generatorConfig
      * @return void
-     */
+ */
     public function generateMigrationFile(MigrationManager $manager, array $migrationsUp, array $migrationsDown, GeneratorConfig $generatorConfig): void
     {
         $timestamp = time();

@@ -12,7 +12,6 @@ use PSFS\base\types\traits\JsonTrait;
 use PSFS\base\types\traits\RouteTrait;
 
 /**
- * Class Controller
  * @package PSFS\base\types
  */
 abstract class Controller extends Singleton implements ControllerInterface
@@ -22,21 +21,20 @@ abstract class Controller extends Singleton implements ControllerInterface
 
     /**
      * @Injectable
-     * @var \PSFS\base\Template $tpl
-     */
+     * @var \PSFS\base\Template
+ */
     #[Injectable]
     protected $tpl;
     protected $domain = 'ROOT';
 
     /**
-     * Método que renderiza una plantilla
      * @param string $template
      * @param array $vars
      * @param array $cookies
      * @param string $domain
      *
-     * @return string HTML
-     */
+     * @return string
+ */
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
@@ -48,9 +46,8 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método del controlador que añade los menús automáticamente a las vistas
      * @return array
-     */
+ */
     protected function getMenu()
     {
         return array();
@@ -64,13 +61,12 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método que renderiza una plantilla
      * @param string $template
      * @param array $vars
      * @param string $domain
      *
      * @return string
-     */
+ */
     public function dump($template, array $vars = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
@@ -79,10 +75,9 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método que añade la ruta del controlador a los path de plantillas Twig
      * @param string $path
      * @return $this
-     */
+ */
     protected function setTemplatePath($path)
     {
         $this->tpl->addPath($path, $this->domain);
@@ -90,11 +85,10 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método que setea el dominio del controlador para las plantillas
      * @param string $domain
      *
      * @return $this
-     */
+ */
     protected function setDomain($domain)
     {
         $this->domain = $domain;
@@ -102,9 +96,8 @@ abstract class Controller extends Singleton implements ControllerInterface
     }
 
     /**
-     * Método que devuelve el dominio del controlador
      * @return string
-     */
+ */
     public function getDomain()
     {
         return "@{$this->domain}/";

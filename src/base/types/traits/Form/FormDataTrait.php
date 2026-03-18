@@ -6,7 +6,6 @@ use PSFS\base\exception\FormException;
 use PSFS\base\Request;
 
 /**
- * Trait FormDataTrait
  * @package PSFS\base\types\traits\Form
  */
 trait FormDataTrait
@@ -15,18 +14,18 @@ trait FormDataTrait
 
     /**
      * @var array
-     */
+ */
     protected $fields = [];
     /**
      * @var array
-     */
+ */
     protected $extra = [];
 
     /**
      * @param $name
      * @param array $value
      * @return $this
-     */
+ */
     public function add($name, array $value = [])
     {
         $this->fields[$name] = $value;
@@ -41,7 +40,7 @@ trait FormDataTrait
      * @param string $name
      *
      * @return array|null
-     */
+ */
     public function getField($name)
     {
         return (null !== $name && array_key_exists($name, $this->fields)) ? $this->fields[$name] : null;
@@ -51,7 +50,7 @@ trait FormDataTrait
      * @param string $name
      *
      * @return mixed|null
-     */
+ */
     public function getFieldValue($name)
     {
         $value = null;
@@ -64,7 +63,7 @@ trait FormDataTrait
 
     /**
      * @return array
-     */
+ */
     public function getData()
     {
         $data = array();
@@ -83,7 +82,7 @@ trait FormDataTrait
 
     /**
      * @return array
-     */
+ */
     public function getExtraData()
     {
         return $this->extra ?: array();
@@ -93,13 +92,13 @@ trait FormDataTrait
      * @param array $data
      * @return void
      * @throws FormException
-     */
+ */
     public function setData(array $data = [])
     {
         if (count($this->fields) === 0) {
-            throw new FormException(t('Se tienen que configurar previamente los campos del formulario'), 400);
+            throw new FormException(t('Form fields must be configured first'), 400);
         }
-        /** @var $field array */
+        
         foreach ($this->fields as $key => &$field) {
             if (array_key_exists($key, $data)) {
                 $field['value'] = $data[$key];
@@ -113,7 +112,7 @@ trait FormDataTrait
      * @param string $key
      * @param string|array $field
      * @return array
-     */
+ */
     private function hydrateField($data, $formName, $key, $field)
     {
         if (array_key_exists($key, $data[$formName])) {
@@ -130,7 +129,7 @@ trait FormDataTrait
 
     /**
      * @return FormSchemaTrait
-     */
+ */
     public function hydrate()
     {
         $data = Request::getInstance()->getData() ?: [];

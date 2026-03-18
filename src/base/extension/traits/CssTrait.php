@@ -11,7 +11,6 @@ use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 
 /**
- * Trait CssTrait
  * @package PSFS\base\extension\traits
  */
 trait CssTrait
@@ -19,7 +18,7 @@ trait CssTrait
 
     /**
      * @var string
-     */
+ */
     protected $path;
 
     /**
@@ -28,7 +27,7 @@ trait CssTrait
      * @param bool $debug
      * @return $this
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function compileCss($basePath, $hash)
     {
         $debug = Config::getParam('debug');
@@ -57,13 +56,12 @@ trait CssTrait
     }
 
     /**
-     * Método que procesa cada línea de la hoja de estilos para copiar los recursos asociados
      * @param string $file
      * @param string $base
      * @param string $data
      * @return false|string
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function processCssLine($file, $base, $data, $hash)
     {
         if (file_exists($file)) {
@@ -71,7 +69,7 @@ trait CssTrait
             $pathParts = explode("/", $file);
             $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
             if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file) || $debug) {
-                //Si tenemos modificaciones tenemos que compilar de nuevo todos los ficheros modificados
+                // Recompile all modified files when any source changed.
                 if (file_exists($base . $hash . ".css") && @unlink($base . $hash . ".css") === false) {
                     throw new ConfigException("Can't unlink file " . $base . $hash . ".css");
                 }
@@ -91,7 +89,7 @@ trait CssTrait
 
     /**
      * @param string $file
-     */
+ */
     protected function loopCssLines($file)
     {
         $handle = @fopen($file, 'r');
@@ -112,7 +110,7 @@ trait CssTrait
     /**
      * @param string|array $source
      * @param string $file
-     */
+ */
     protected function extractCssResources($source, $file)
     {
         Inspector::stats('[CssTrait] Start collecting resources from ' . $file, Inspector::SCOPE_DEBUG);
@@ -140,7 +138,7 @@ trait CssTrait
      * @param array $compiledFiles
      * @param string $baseUrl
      * @param string $hash
-     */
+ */
     protected function printCss(array $compiledFiles, $baseUrl, $hash)
     {
         if (Config::getParam('debug') && 0 < count($compiledFiles)) {

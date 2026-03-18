@@ -7,14 +7,13 @@ use PSFS\base\Request;
 use PSFS\base\Service;
 
 /**
- * Class SlackHelper
  * @package PSFS\base\types\helpers
  */
 class SlackHelper extends Service
 {
     /**
      * @var string
-     */
+ */
     private static $hookUrl;
 
     public function __construct()

@@ -32,7 +32,7 @@ class MetadataReader
      * @param mixed $default
      * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
      * @return mixed
-     */
+ */
     public static function getTagValue(string $tag, ?string $doc = '', mixed $default = null, ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null): mixed
     {
         if (self::attributesEnabled()) {

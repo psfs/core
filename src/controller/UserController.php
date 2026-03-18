@@ -49,11 +49,11 @@ class UserController extends Admin
     }
 
     /**
-     * Método que gestiona los usuarios administradores de la plataforma
+     * Method that manages platform administrators
      * @GET
      * @route /admin/setup
      * @icon fa-users
-     * @label Gestor de usuarios PSFS
+     * @label PSFS user manager
      * @return string|null
      */
     public function adminers()
@@ -89,7 +89,7 @@ class UserController extends Admin
     }
 
     /**
-     * Servicio que guarda los usuarios de administración
+     * Service that stores administrator users
      * @POST
      * @route /admin/setup
      * @visible false
@@ -101,7 +101,7 @@ class UserController extends Admin
     }
 
     /**
-     * Acción que pinta un formulario genérico de login pra la zona restringida
+     * Action that renders a generic login form for the restricted area
      * @GET
      * @route /admin/login
      * @visible false

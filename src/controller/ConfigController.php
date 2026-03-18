@@ -73,7 +73,7 @@ class ConfigController extends Admin
     }
 
     /**
-     * Servicio que guarda la configuración de la plataforma
+     * Service that stores platform configuration
      * @POST
      * @route /admin/config
      * @visible false
@@ -92,11 +92,11 @@ class ConfigController extends Admin
             if (Config::save($form->getData(), $form->getExtraData())) {
                 Logger::log(t('Configuration saved successfully'));
                 $runtimeDebug = (bool)Config::getParam('debug', false);
-                // En producción (debug=0) siempre refrescamos cache.var e invalidamos artefactos de config.
+                // In production (debug=0) always refresh cache.var and invalidate config artifacts.
                 if (!$runtimeDebug) {
                     DeployHelper::refreshCacheState();
                 }
-                // Verificamos si tenemos que limpiar la cache del DocumentRoot.
+                // Check whether the DocumentRoot cache must be cleared.
                 if (boolval($debug) !== $runtimeDebug) {
                     GeneratorHelper::clearDocumentRoot();
                 }

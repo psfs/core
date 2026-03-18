@@ -17,7 +17,6 @@ defined('CSS_SRI_FILENAME') or define('CSS_SRI_FILENAME', CACHE_DIR . DIRECTORY_
 defined('JS_SRI_FILENAME') or define('JS_SRI_FILENAME', CACHE_DIR . DIRECTORY_SEPARATOR . 'js.sri.json');
 
 /**
- * Class AssetsParser
  * @package PSFS\base\extension
  */
 class AssetsParser
@@ -27,45 +26,45 @@ class AssetsParser
 
     /**
      * @var array
-     */
+ */
     protected $files = [];
     /**
      * @var string
-     */
+ */
     protected $hash;
     /**
      * @var array
-     */
+ */
     protected $compiledFiles = [];
     /**
      * @var string
-     */
+ */
     protected $type;
     /**
      * @var array
-     */
+ */
     protected $domains = [];
     /**
      * @var string
-     */
+ */
     private $cdnPath = null;
     /**
      * @var array
-     */
+ */
     protected $sri = [];
 
     /**
      * @var string
-     */
+ */
     protected $sriFilename;
 
     /**
      * @param string $type
-     */
+ */
     public function init($type)
     {
         $this->sriFilename = $type === 'js' ? JS_SRI_FILENAME : CSS_SRI_FILENAME;
-        /** @var Cache $cache */
+        
         $cache = Cache::getInstance();
         $this->sri = $cache->getDataFromFile($this->sriFilename, Cache::JSON, true);
         if (empty($this->sri)) {
@@ -74,10 +73,9 @@ class AssetsParser
     }
 
     /**
-     * Constructor por defecto
      *
      * @param string $type
-     */
+ */
     public function __construct($type = 'js')
     {
         $this->type = $type;
@@ -87,11 +85,10 @@ class AssetsParser
     }
 
     /**
-     * Método que añade un nuevo fichero al proceso de generación de los assets
      * @param $filename
      * @return AssetsParser
      * @internal param string $type
-     */
+ */
     public function addFile($filename)
     {
         if (file_exists($this->path . $filename) && preg_match('/\.' . $this->type . '$/i', $filename)) {
@@ -108,11 +105,10 @@ class AssetsParser
     }
 
     /**
-     * Método que establece el hash con el que compilar los assets
      * @param string $hash
      *
      * @return AssetsParser
-     */
+ */
     public function setHash($hash)
     {
         $cache = Config::getParam('cache.var', '');
@@ -121,15 +117,14 @@ class AssetsParser
     }
 
     /**
-     * Método que procesa los ficheros solicitados en función del modo de ejecución
      * @return AssetsParser
      * @throws ConfigException
      * @throws \PSFS\base\exception\GeneratorException
      * @internal param string $type
-     */
+ */
     public function compile()
     {
-        //Unificamos ficheros para que no se retarde mucho el proceso
+        // Deduplicate files to keep compilation time stable.
         $this->files = array_unique($this->files);
         switch ($this->type) {
             default:
@@ -144,9 +139,7 @@ class AssetsParser
         return $this;
     }
 
-    /**
-     * Método que imprime el resultado de la generación de los assets
-     */
+    
     public function printHtml()
     {
         $baseUrl = $this->cdnPath ?: '';
@@ -162,11 +155,10 @@ class AssetsParser
     }
 
     /**
-     * Método que calcula el path completo a copiar un recurso
      * @param string $filenamePath
      * @param string[] $source
      * @return string
-     */
+ */
     protected static function calculateResourcePathname($filenamePath, $source)
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
@@ -183,11 +175,10 @@ class AssetsParser
     }
 
     /**
-     * Método que extrae el recurso css de una línea de estilos css
      * @param $handle
      * @param string $filenamePath
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function extractCssLineResource($handle, $filenamePath)
     {
         $line = fgets($handle);
@@ -215,7 +206,7 @@ class AssetsParser
      * @param string $type
      * @return mixed|string
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     protected function getSriHash($hash, $type = 'js')
     {
         if (array_key_exists($hash, $this->sri)) {

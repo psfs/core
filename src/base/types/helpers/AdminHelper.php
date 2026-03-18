@@ -7,7 +7,6 @@ use PSFS\base\Request;
 use PSFS\base\Security;
 
 /**
- * Class AdminHelper
  * @package PSFS\base\types\helpers
  */
 class AdminHelper
@@ -17,7 +16,7 @@ class AdminHelper
      * @param array $elementA
      * @param array $elementB
      * @return int
-     */
+ */
     public static function sortByLabel(array $elementA, array $elementB): int
     {
         $labelA = array_key_exists('label', $elementA) ? $elementA['label'] : '';
@@ -31,7 +30,7 @@ class AdminHelper
     /**
      * @param array $systemRoutes
      * @return array
-     */
+ */
     public static function getAdminRoutes(array $systemRoutes): array
     {
         if (Security::getInstance()->isUser()) {
@@ -45,7 +44,7 @@ class AdminHelper
     /**
      * @param array $systemRoutes
      * @return array
-     */
+ */
     protected static function extractAdminRoutes(array $systemRoutes): array
     {
         $routes = [];
@@ -71,7 +70,7 @@ class AdminHelper
 
     /**
      * @param array $routes
-     */
+ */
     protected static function sortRoutes(array &$routes): void
     {
         foreach ($routes as &$route) {

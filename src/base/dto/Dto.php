@@ -9,14 +9,13 @@ use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\InjectorHelper;
 
 /**
- * Class Dto
  * @package PSFS\base\dto
  */
 class Dto extends Singleton implements \JsonSerializable
 {
     /**
      * @var array
-     */
+ */
     protected array $__cache = [];
 
     public function __construct($hydrate = true)
@@ -28,18 +27,16 @@ class Dto extends Singleton implements \JsonSerializable
     }
 
     /**
-     * ToArray wrapper
      * @return array
-     */
+ */
     public function toArray()
     {
         return $this->__toArray();
     }
 
     /**
-     * Convert dto to array representation
      * @return array
-     */
+ */
     public function __toArray()
     {
         $dto = [];
@@ -71,9 +68,8 @@ class Dto extends Singleton implements \JsonSerializable
     }
 
     /**
-     * Convert to string representation
      * @return string
-     */
+ */
     public function __toString()
     {
         return get_class($this);
@@ -83,7 +79,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param array $properties
      * @param string $key
      * @param mixed|null $value
-     */
+ */
     protected function parseDtoField(array $properties, string $key, $value = null)
     {
         list($type, $isArray) = $this->extractTypes($properties, $key);
@@ -113,10 +109,9 @@ class Dto extends Singleton implements \JsonSerializable
     }
 
     /**
-     * Hydrate object from array
      * @param array $object
      * @throws \ReflectionException
-     */
+ */
     public function fromArray(array $object = [])
     {
         if (count($object) > 0) {
@@ -133,7 +128,7 @@ class Dto extends Singleton implements \JsonSerializable
 
     /**
      * @return mixed
-     */
+ */
     public function jsonSerialize(): array|string|null
     {
         return $this->toArray();
@@ -143,7 +138,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param array $properties
      * @param string $key
      * @return array
-     */
+ */
     protected function extractTypes(array $properties, string $key): array
     {
         $type = 'string';
@@ -162,7 +157,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param string $key
      * @param mixed $value
      * @param string $type
-     */
+ */
     protected function castValue(string $key, mixed $value, string $type): void
     {
         $this->$key = $this->checkCastedValue($value, $type);
@@ -172,7 +167,7 @@ class Dto extends Singleton implements \JsonSerializable
      * @param mixed $rawValue
      * @param string $type
      * @return bool|float|int|string|null
-     */
+ */
     protected function checkCastedValue(mixed $rawValue, string $type)
     {
         if (null === $rawValue) {

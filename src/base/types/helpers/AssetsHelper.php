@@ -8,7 +8,6 @@ use PSFS\base\exception\GeneratorException;
 use PSFS\base\Template;
 
 /**
- * Class AssetsHelper
  * @package PSFS\base\types\helpers
  */
 class AssetsHelper
@@ -17,7 +16,7 @@ class AssetsHelper
     /**
      * @param string $source
      * @return string
-     */
+ */
     public static function extractSourceFilename($source): string
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
@@ -34,12 +33,11 @@ class AssetsHelper
     }
 
     /**
-     * Servicio que busca el path para un dominio dado
      * @param $string
      * @param string $filePath
      *
      * @return string|null
-     */
+ */
     public static function findDomainPath($string, string $filePath): ?string
     {
         $domains = Template::getDomains(TRUE);
@@ -58,14 +56,13 @@ class AssetsHelper
     }
 
     /**
-     * Método que calcula el path de un recurso web
      * @param string $string
      * @param string $name
      * @param boolean $return
      * @param string $filenamePath
      *
      * @return string[]
-     */
+ */
     public static function calculateAssetPath(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): array
     {
         $path = explode("/", $string);
@@ -74,7 +71,7 @@ class AssetsHelper
         $debug = Config::getParam('debug');
         $cache = Config::getParam('cache.var');
         $cache = $cache ? '.' . $cache : '';
-        $finfo = finfo_open(FILEINFO_MIME_TYPE); // devuelve el tipo mime de su extensión
+        $finfo = finfo_open(FILEINFO_MIME_TYPE); // Returns MIME type from the file extension.
         $mime = finfo_file($finfo, $filenamePath);
         $extension = explode(".", $string);
         $extension = end($extension);
@@ -107,16 +104,15 @@ class AssetsHelper
     }
 
     /**
-     * Método para guardar cualquier contenido y controlar que existe el directorio y se guarda correctamente
      * @param string $path
      * @param string $content
      * @throws GeneratorException
-     */
+ */
     public static function storeContents(string $path, string $content = ""): void
     {
         GeneratorHelper::createDir(dirname($path));
         if ("" !== $content && false === file_put_contents($path, $content)) {
-            throw new ConfigException(t('No se tienen permisos para escribir en ' . $path));
+            throw new ConfigException(t('Write permission denied on ' . $path));
         }
     }
 }

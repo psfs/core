@@ -13,7 +13,7 @@ trait ApiGenerationTrait
      * @param string $apiClass
      * @return boolean
      * @throws \ReflectionException
-     */
+ */
     private function generateBaseApiTemplate($module, $modPath, $force = false, $apiClass = "")
     {
         $created = true;
@@ -27,7 +27,6 @@ trait ApiGenerationTrait
     }
 
     /**
-     * Create ApiBase
      * @param string $module
      * @param string $modPath
      * @param string $api
@@ -35,7 +34,7 @@ trait ApiGenerationTrait
      * @param string $package
      *
      * @return bool
-     */
+ */
     private function createApiBaseFile($module, $modPath, $api, $apiClass = '', $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
@@ -56,7 +55,6 @@ trait ApiGenerationTrait
     }
 
     /**
-     * Create Api
      * @param string $module
      * @param string $modPath
      * @param bool $force
@@ -64,7 +62,7 @@ trait ApiGenerationTrait
      * @param string $package
      *
      * @return bool
-     */
+ */
     private function createApi($module, $modPath, $force, $api, $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
@@ -88,7 +86,7 @@ trait ApiGenerationTrait
      * @param string $apiPath
      * @param string $package
      * @throws \ReflectionException
-     */
+ */
     private function generateApiFiles($module, $force, $apiClass, \Directory $dir, string $apiPath, $package = null)
     {
         $base = $dir->path;
@@ -101,7 +99,7 @@ trait ApiGenerationTrait
                     && preg_match('/\.php$/i', $file)
                 ) {
                     $filename = str_replace(".php", "", $file);
-                    $this->log->addLog("Generamos Api BASES para {$filename}");
+                    $this->log->addLog("Generating BASE APIs for {$filename}");
                     if ($this->checkIfIsModel($module, $filename, $package)) {
                         $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
                         $this->createApi($module, $apiPath, $force, $filename, $package);
@@ -117,7 +115,7 @@ trait ApiGenerationTrait
      * @param string $filename
      * @return bool
      * @throws \ReflectionException
-     */
+ */
     private function checkIfIsModel($module, $filename, $package = null)
     {
         $parts = [$module, 'Models'];

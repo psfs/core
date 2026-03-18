@@ -7,7 +7,6 @@ use PSFS\base\Security;
 use PSFS\base\types\traits\SecureTrait;
 
 /**
- * Class CustomAuthApi
  * @package PSFS\base\types
  */
 abstract class CustomAuthApi extends CustomApi

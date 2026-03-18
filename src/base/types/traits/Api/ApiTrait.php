@@ -15,7 +15,6 @@ use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\traits\JsonTrait;
 
 /**
- * Trait ApiCrudTrait
  * @package PSFS\base\types\traits
  */
 trait ApiTrait
@@ -27,19 +26,18 @@ trait ApiTrait
     }
 
     /**
-     * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface $model
-     */
+     * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface
+ */
     protected $model;
 
     /**
      * @var string
-     */
+ */
     protected $action;
 
     /**
-     * Method that extract the Api name
      * @return mixed
-     */
+ */
     public function getApi()
     {
         $model = explode("\\", $this->getModelNamespace());
@@ -48,9 +46,8 @@ trait ApiTrait
     }
 
     /**
-     * Method that extract the Domain name
      * @return mixed
-     */
+ */
     public function getDomain()
     {
         $model = explode("\\", $this->getModelNamespace() ?? '');
@@ -58,18 +55,16 @@ trait ApiTrait
     }
 
     /**
-     * Returns active model
      * @return \Propel\Runtime\ActiveRecord\ActiveRecordInterface
-     */
+ */
     protected function getModel()
     {
         return $this->model;
     }
 
     /**
-     * Returns an array conversion of Api Model
      * @return array
-     */
+ */
     protected function renderModel()
     {
         return (NULL !== $this->model) ? $this->model->toArray() : [];
@@ -79,9 +74,7 @@ trait ApiTrait
     {
     }
 
-    /**
-     * Hydrate fields from request
-     */
+    
     protected function hydrateFromRequest()
     {
         $class = new \ReflectionClass($this->getModelNamespace());
@@ -89,9 +82,7 @@ trait ApiTrait
         $this->hydrateModelFromRequest($this->model, $this->data);
     }
 
-    /**
-     * Hydrate list elements for bulk insert
-     */
+    
     protected function hydrateBulkRequest()
     {
         $class = new \ReflectionClass($this->getModelNamespace());
@@ -99,7 +90,7 @@ trait ApiTrait
         foreach ($this->data as $item) {
             if (is_array($item)) {
                 if (count($this->list) < Config::getParam('api.block.limit', 1000)) {
-                    /** @var ActiveRecordInterface $model */
+                    
                     $model = $class->newInstance();
                     $this->hydrateModelFromRequest($model, $item);
                     $this->list[] = $model;
@@ -110,9 +101,7 @@ trait ApiTrait
         }
     }
 
-    /**
-     * Save the list of items
-     */
+    
     protected function saveBulk()
     {
         $tablemap = $this->getTableMap();
@@ -130,11 +119,11 @@ trait ApiTrait
 
     /**
      * @return array
-     */
+ */
     protected function exportList()
     {
         $list = [];
-        /** @var ActiveRecordInterface $item */
+        
         foreach ($this->list as $item) {
             $list[] = $item->toArray();
         }
@@ -142,10 +131,9 @@ trait ApiTrait
     }
 
     /**
-     * Method that allow joins between models
      *
      * @param ModelCriteria $query
-     */
+ */
     protected function joinTables(ModelCriteria &$query)
     {
         //TODO for specific implementations
@@ -156,7 +144,7 @@ trait ApiTrait
      * @param string $primaryKey
      * @return ActiveRecordInterface|null
      * @throws ApiException
-     */
+ */
     protected function findPk(ModelCriteria $query, $primaryKey)
     {
         $pks = explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
@@ -182,7 +170,7 @@ trait ApiTrait
 
     /**
      * @return ModelCriteria
-     */
+ */
     protected function prepareQuery()
     {
         $query = ApiHelper::extractQuery($this->getModelNamespace(), $this->con);
@@ -193,10 +181,9 @@ trait ApiTrait
     }
 
     /**
-     * Hydrate model from pk
      *
      * @param string $primaryKey
-     */
+ */
     protected function hydrateModel($primaryKey)
     {
         try {
@@ -208,12 +195,11 @@ trait ApiTrait
     }
 
     /**
-     * Extract specific entity
      *
      * @param integer $primaryKey
      *
      * @return null|ActiveRecordInterface
-     */
+ */
     protected function _get($primaryKey)
     {
         $this->hydrateModel($primaryKey);
@@ -223,14 +209,14 @@ trait ApiTrait
 
     /**
      * @param ModelCriteria $query
-     */
+ */
     protected function checkReturnFields(ModelCriteria &$query)
     {
         $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
         if (null !== $returnFields) {
             $fields = explode(',', $returnFields);
             $select = [];
-            /** @var TableMap $tablemap */
+            
             $tablemap = $this->getTableMap();
             foreach ($fields as $field) {
                 if (in_array($field, $this->extraColumns)) {
@@ -246,12 +232,11 @@ trait ApiTrait
     }
 
     /**
-     * Wrapper for json parent method with close transactions and close connections tasks
      *
      * @param \PSFS\base\dto\JsonResponse $response
      * @param int $status
      *
-     */
+ */
     public function json($response, $status = 200)
     {
         $this->closeTransaction($status);

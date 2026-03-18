@@ -10,26 +10,24 @@ use PSFS\base\Logger;
 use PSFS\base\types\traits\DebugTrait;
 
 /**
- * Trait ConnectionTrait
  * @package PSFS\base\types\traits\Api
  */
 trait ConnectionTrait
 {
 
     /**
-     * @var ConnectionInterface con
-     */
+     * @var ConnectionInterface
+ */
     protected $con = null;
 
     /**
      * @var int
-     */
+ */
     protected $items = 0;
 
     /**
-     * Initialize db connection
      * @param TableMap $tableMap
-     */
+ */
     protected function createConnection(TableMap $tableMap)
     {
         $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
@@ -41,10 +39,9 @@ trait ConnectionTrait
     }
 
     /**
-     * Close transactions if are requireds
      *
      * @param int $status
-     */
+ */
     protected function closeTransaction($status)
     {
         if (null !== $this->con) {
@@ -60,9 +57,7 @@ trait ConnectionTrait
         }
     }
 
-    /**
-     * Trace debug query
-     */
+    
     protected function traceDebugQuery()
     {
         if (Config::getParam('debug')) {
@@ -70,9 +65,7 @@ trait ConnectionTrait
         }
     }
 
-    /**
-     * Checks if the connection has a transaction initialized
-     */
+    
     protected function checkTransaction()
     {
         if (null !== $this->con && !$this->con->inTransaction()) {

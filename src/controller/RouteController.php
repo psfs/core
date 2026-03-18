@@ -20,9 +20,9 @@ use PSFS\controller\base\Admin;
 class RouteController extends Admin
 {
     /**
-     * Método que pinta por pantalla todas las rutas del sistema
+     * Method that renders all system routes
      * @GET
-     * @label Visor de rutas del sistema
+     * @label System routes viewer
      * @icon fa-folder-tree
      * @route /admin/routes
      */
@@ -38,10 +38,10 @@ class RouteController extends Admin
     }
 
     /**
-     * Servicio que devuelve los parámetros disponibles
+     * Service that returns available parameters
      * @GET
      * @route /admin/routes/show
-     * @label Servicio de rutas del sistema
+     * @label System routes service
      * @visible false
      * @return mixed
      */
@@ -59,7 +59,7 @@ class RouteController extends Admin
      * Service to regenerate routes
      * @GET
      * @route /admin/routes/gen
-     * @label Regenerar rutas
+     * @label Regenerate routes
      * @visible false
      * @return string HTML
      */
@@ -73,11 +73,11 @@ class RouteController extends Admin
         try {
             $router->hydrateRouting();
             $router->simpatize();
-            Security::getInstance()->setFlash("callback_message", t("Rutas generadas correctamente"));
+            Security::getInstance()->setFlash("callback_message", t("Routes generated successfully"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
-            Security::getInstance()->setFlash("callback_message", t("Algo no ha salido bien, revisa los logs"));
+            Security::getInstance()->setFlash("callback_message", t("Something went wrong, check the logs"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
         }
         return $this->redirect('admin-routes');

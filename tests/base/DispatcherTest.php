@@ -24,7 +24,7 @@ class DispatcherTest extends TestCase
 {
 
     /**
-     * Método que devuelve una instancia del Dspatcher
+     * Returns a dispatcher instance.
      * @param MockObject|Config|null $config
      * @param MockObject|Router|null $router
      * @param MockObject|Security|null $security
@@ -47,7 +47,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * Método que crea un objeto Mock seteado a debug
+     * Creates a mock Config object in debug mode.
      * @param boolean $configured
      * @param boolean $debug
      * @return MockObject
@@ -62,7 +62,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * Método que mockea la clase Router
+     * Creates a Router mock.
      * @return MockObject
      * @throws Exception
      */
@@ -72,7 +72,7 @@ class DispatcherTest extends TestCase
     }
 
     /**
-     * Método que mockea la clase Router
+     * Creates a Security mock.
      * @return MockObject
      * @throws Exception
      */

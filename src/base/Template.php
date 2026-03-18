@@ -16,7 +16,6 @@ use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
 
 /**
- * Class Template
  * @package PSFS\base
  */
 class Template
@@ -27,14 +26,12 @@ class Template
 
     const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
-     * @var \Twig\Environment tpl
-     */
+     * @var \Twig\Environment
+ */
     protected $tpl;
     protected $filters = array();
 
-    /**
-     * Constructor por defecto
-     */
+    
     public function __construct()
     {
         $this->setup();
@@ -44,20 +41,18 @@ class Template
     }
 
     /**
-     * Método que devuelve el loader del Template
      * @return \Twig\Loader\LoaderInterface
-     */
+ */
     public function getLoader()
     {
         return $this->tpl->getLoader();
     }
 
     /**
-     * Método que activa la zona pública
      * @param bool $public
      *
      * @return Template
-     */
+ */
     public function setPublicZone($public = true)
     {
         $this->public_zone = $public;
@@ -66,7 +61,7 @@ class Template
 
     /**
      * @return bool
-     */
+ */
     public function isPublicZone()
     {
         return $this->public_zone;
@@ -76,9 +71,9 @@ class Template
      * @param string $tpl
      * @param array $vars
      * @param array $cookies
-     * @return string HTML
+     * @return string
      * @throws exception\GeneratorException
-     */
+ */
     public function render($tpl, array $vars = array(), array $cookies = array())
     {
         Logger::log('Start render response');
@@ -89,12 +84,11 @@ class Template
     }
 
     /**
-     * Método que añade una nueva ruta al path de Twig
      * @param $path
      * @param $domain
      *
      * @return Template
-     */
+ */
     public function addPath($path, $domain = '')
     {
         if (file_exists($path)) {
@@ -104,11 +98,10 @@ class Template
     }
 
     /**
-     * Método que devuelve el contenido de una plantilla
      * @param string $tpl
      * @param array $vars
      * @return string
-     */
+ */
     public function dump($tpl, array $vars = array())
     {
         $vars['__user__'] = Security::getInstance()->getUser();
@@ -127,12 +120,11 @@ class Template
     }
 
     /**
-     * Método que añade una función al motor de plantillas
      * @param string $templateFunction
      * @param $functionName
      *
      * @return Template
-     */
+ */
     protected function addTemplateFunction($templateFunction, $functionName)
     {
         $function = new TwigFunction($templateFunction, $functionName);
@@ -141,9 +133,8 @@ class Template
     }
 
     /**
-     * Servicio que regenera todas las plantillas
      * @return array
-     */
+ */
     public function regenerateTemplates()
     {
         $this->generateTemplatesCache();
@@ -152,7 +143,7 @@ class Template
         if (is_array($domains)) {
             $translations = $this->parsePathTranslations($domains);
         }
-        $translations[] = t('Plantillas regeneradas correctamente');
+        $translations[] = t('Templates regenerated successfully');
         return $translations;
     }
 
@@ -161,11 +152,11 @@ class Template
      * @param string $domain
      *
      * @return mixed
-     */
+ */
     protected function generateTemplate($tplDir, $domain = '')
     {
         if (!file_exists($tplDir)) {
-            return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Path "%s" no existe para el dominio "%d"'));
+            return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Path "%s" does not exist for domain "%d"'));
         }
         $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
         foreach ($templatesDir as $file) {
@@ -178,15 +169,14 @@ class Template
                 }
             }
         }
-        return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Generando plantillas en path "%s" para el dominio "%d"'));
+        return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Generating templates in path "%s" for domain "%d"'));
     }
 
     /**
-     * Método que extrae el path de un string
      * @param $path
      *
      * @return string
-     */
+ */
     public static function extractPath($path)
     {
         $explodePath = explode(DIRECTORY_SEPARATOR, $path);
@@ -198,10 +188,9 @@ class Template
     }
 
     /**
-     * Método que devuelve los dominios de una plataforma
      * @param bool $append
      * @return array
-     */
+ */
     static public function getDomains($append = false)
     {
         $domains = Router::getInstance()->getDomains();
@@ -215,12 +204,10 @@ class Template
         return $domains;
     }
 
-    /**
-     * Método que añade todas las funciones de las plantillas
-     */
+    
     private function addTemplateFunctions()
     {
-        //Asignamos las funciones especiales
+        // Register template helper functions.
         $functions = [
             'asset' => TemplateFunctions::ASSETS_FUNCTION,
             'form' => TemplateFunctions::FORM_FUNCTION,
@@ -243,17 +230,14 @@ class Template
     }
 
     /**
-     * Método que devuelve el motod de plantillas
      * @return \Twig\Environment
-     */
+ */
     public function getTemplateEngine()
     {
         return $this->tpl;
     }
 
-    /**
-     * Method that extract all domains for using them with the templates
-     */
+    
     private function loadDomains()
     {
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
@@ -264,9 +248,7 @@ class Template
         }
     }
 
-    /**
-     * Método que inicializa el motor de plantillas
-     */
+    
     private function setup()
     {
         $loader = new FilesystemLoader(GeneratorHelper::getTemplatePath());
@@ -278,31 +260,26 @@ class Template
         $this->loadDomains();
     }
 
-    /**
-     * Método que inyecta los parseadores
-     */
+    
     private function addTemplateTokens()
     {
-        //Añadimos las extensiones de los tags
+        // Add token parser extensions.
         $this->tpl->addTokenParser(new AssetsTokenParser('css'));
         $this->tpl->addTokenParser(new AssetsTokenParser('js'));
     }
 
-    /**
-     * Método que inyecta las optimizaciones al motor de la plantilla
-     */
+    
     private function optimizeTemplates()
     {
-        //Optimizamos
+        // Enable template optimizations.
         $this->tpl->addExtension(new CustomTranslateExtension());
     }
 
     /**
-     * Method that extract all path tag for extracting translations
      * @param array $domains
      *
      * @return array
-     */
+ */
     private function parsePathTranslations($domains)
     {
         $translations = array();
@@ -318,12 +295,10 @@ class Template
         return $translations;
     }
 
-    /**
-     * Method that generate all template caches
-     */
+    
     private function generateTemplatesCache()
     {
-        /** @var \Twig\Loader\FilesystemLoader $loader */
+        
         $loader = $this->tpl->getLoader();
         $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {

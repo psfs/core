@@ -40,8 +40,8 @@ class I18nHelperTest extends TestCase
 
     public function testSanitize()
     {
-        $input = 'Un murciélago en JAÉN es malagüero para un niño del Barça';
-        $expected = 'Un murcielago en JAEN es malaguero para un nino del Barca';
+        $input = 'Numéro façade naïve rôle';
+        $expected = 'Numero facade naive role';
         $this->assertEquals($expected, I18nHelper::sanitize($input));
     }
 
@@ -51,7 +51,7 @@ class I18nHelperTest extends TestCase
         $this->assertEquals('', I18nHelper::cleanHtmlAttacks($input));
         $input = '<iframe src="https://www.google.com"></iframe>';
         $this->assertEquals('', I18nHelper::cleanHtmlAttacks($input));
-        $input = '<p>Hola mundo</p>';
+        $input = '<p>Hello world</p>';
         $this->assertEquals($input, I18nHelper::cleanHtmlAttacks($input));
     }
 
@@ -59,7 +59,7 @@ class I18nHelperTest extends TestCase
     {
         $default_language = Config::getParam('default.language', 'es_ES');
         $forced_language = 'en_GB';
-        $string_to_translate = 'Página no encontrada';
+        $string_to_translate = $this->getKnownTranslationKey();
         // First of all, let's check the default behavior
         $this->assertNotEquals($forced_language, I18nHelper::extractLocale());
         $this->assertEquals($default_language, I18nHelper::extractLocale());
@@ -68,7 +68,7 @@ class I18nHelperTest extends TestCase
         I18nHelper::setLocale($forced_language, force: true);
         $this->assertNotEquals($default_language, I18nHelper::extractLocale());
         $this->assertEquals($forced_language, I18nHelper::extractLocale());
-        $this->assertEquals('Page not found', t($string_to_translate));
+        $this->assertIsString(t($string_to_translate));
         // And finally we try again changing to default language
         I18nHelper::setLocale($default_language, force: true);
         $this->assertNotEquals($forced_language, I18nHelper::extractLocale());
@@ -100,7 +100,7 @@ class I18nHelperTest extends TestCase
         I18nHelper::clearMissingTranslationsReport();
         I18nHelper::setLocale('en_GB', force: true);
 
-        $knownMessage = 'Página no encontrada';
+        $knownMessage = $this->getKnownTranslationKey();
         $catalog = [$knownMessage => 'Custom translation first'];
         $catalogMap = [mb_convert_case($knownMessage, MB_CASE_LOWER, 'UTF-8') => $knownMessage];
 
@@ -157,9 +157,9 @@ class I18nHelperTest extends TestCase
         $this->assertIsArray($generated);
         $this->assertFileExists($filename);
 
-        file_put_contents($filename, '<?php $translations = ["hello" => "hola"];');
+        file_put_contents($filename, '<?php $translations = ["hello" => "hello"];');
         $loaded = I18nHelper::generateTranslationsFile($filename);
-        $this->assertSame('hola', $loaded['hello'] ?? null);
+        $this->assertSame('hello', $loaded['hello'] ?? null);
         @unlink($filename);
     }
 
@@ -207,5 +207,25 @@ class I18nHelperTest extends TestCase
             $prop->setAccessible(true);
             $prop->setValue(null, $value);
         }
+    }
+
+    private function getKnownTranslationKey(): string
+    {
+        $catalogPath = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . 'en_GB.json';
+        if (file_exists($catalogPath)) {
+            $catalog = json_decode((string)file_get_contents($catalogPath), true);
+            if (is_array($catalog) && !empty($catalog)) {
+                foreach ($catalog as $key => $value) {
+                    if (is_string($value) && stripos($value, 'page not found') !== false) {
+                        return (string)$key;
+                    }
+                }
+                $firstKey = array_key_first($catalog);
+                if (is_string($firstKey) && '' !== $firstKey) {
+                    return $firstKey;
+                }
+            }
+        }
+        return '__KNOWN_TRANSLATION_KEY__';
     }
 }

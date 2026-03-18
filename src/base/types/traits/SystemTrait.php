@@ -9,7 +9,6 @@ use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\helpers\SlackHelper;
 
 /**
- * Class SystemTrait
  * @package PSFS\base\types\traits
  */
 trait SystemTrait
@@ -18,20 +17,19 @@ trait SystemTrait
 
     /**
      * @var integer
-     */
+ */
     protected $ts;
     /**
      * @var integer
-     */
+ */
     protected $mem;
 
     /**
-     * Method that returns the memory used at this specific moment
      *
      * @param $unit string
      *
      * @return int
-     */
+ */
     public function getMem($unit = "Bytes")
     {
         // Keep same mode as bootstrap baseline (PSFS_START_MEM uses memory_get_usage(true)).
@@ -51,17 +49,14 @@ trait SystemTrait
     }
 
     /**
-     * Method that returns the seconds spent with the script
      * @return double
-     */
+ */
     public function getTs()
     {
         return microtime(TRUE) - $this->ts;
     }
 
-    /**
-     * Debug function to catch warnings as exceptions
-     */
+    
     protected function bindWarningAsExceptions()
     {
         Inspector::stats('[SystemTrait] Added handlers for errors', Inspector::SCOPE_DEBUG);
@@ -99,9 +94,7 @@ trait SystemTrait
         });
     }
 
-    /**
-     * Stats initializer
-     */
+    
     protected function initiateStats(): void
     {
         Inspector::stats('[SystemTrait] Initializing stats (mem + ts)');

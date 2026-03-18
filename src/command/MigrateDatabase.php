@@ -20,7 +20,7 @@ $console
     ->addUsage('psfs:migrate --module=TEST')
     ->addUsage('psfs:migrate --simulate=1')
     ->addUsage('psfs:migrate --module=TEST --simulate=1')
-    ->setDescription('Ejecutar las migraciones de base de datos')
+    ->setDescription('Run database migrations')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $module = $input->getOption('module');

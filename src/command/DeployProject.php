@@ -18,9 +18,9 @@ if (!isset($console)) {
 $console
     ->register('psfs:deploy:project')
     ->setDefinition(array(
-        new InputArgument('path', InputArgument::OPTIONAL, t('Path en el que crear el Document Root')),
+        new InputArgument('path', InputArgument::OPTIONAL, t('Path where the Document Root will be created')),
     ))
-    ->setDescription(t('Comando de despliegue de proyectos basados en PSFS'))
+    ->setDescription(t('Deployment command for PSFS-based projects'))
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $path = $input->getArgument('path');
@@ -29,7 +29,7 @@ $console
         }
 
         GeneratorHelper::createRoot($path, $output);
-        $output->writeln(str_replace('%path', $path, t("Document root re-generado en %path")));
+        $output->writeln(str_replace('%path', $path, t("Document root regenerated at %path")));
 
         $cacheState = DeployHelper::refreshCacheState();
         $output->writeln(str_replace('%version', $cacheState['version'], t("Cache version updated to %version")));

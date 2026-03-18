@@ -20,12 +20,12 @@ class GeneratorController extends Admin
 {
     /**
      * @Injectable
-     * @var \PSFS\services\GeneratorService Servicio de generación de estructura de directorios
+     * @var \PSFS\services\GeneratorService Service that generates directory structures
      */
     protected $gen;
 
     /**
-     * @label Método que genera un nuevo módulo
+     * @label Generate new module
      * @GET
      * @route /admin/module
      * @icon fa-layer-plus

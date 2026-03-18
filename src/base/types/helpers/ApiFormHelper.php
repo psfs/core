@@ -8,7 +8,6 @@ use ReflectionException;
 use ReflectionMethod;
 
 /**
- * Class ApiFormHelper
  * @package PSFS\base\types\helpers
  */
 class ApiFormHelper
@@ -19,7 +18,7 @@ class ApiFormHelper
      * @param string $api
      * @return FormAction[]
      * @throws ReflectionException
-     */
+ */
     public static function checkApiActions(string $namespace, string $domain, string $api): array
     {
         $actions = [];

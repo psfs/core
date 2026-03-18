@@ -6,14 +6,13 @@ use PSFS\base\Logger;
 use PSFS\base\types\helpers\AuthHelper;
 
 /**
- * Trait SessionTrait
  * @package PSFS\base\types\traits\Security
  */
 trait SessionTrait
 {
     /**
-     * @var array $session
-     */
+     * @var array
+ */
     protected $session;
 
     /**
@@ -21,7 +20,7 @@ trait SessionTrait
      * @param string $key
      *
      * @return mixed
-     */
+ */
     public function getSessionKey($key)
     {
         $data = NULL;
@@ -47,7 +46,7 @@ trait SessionTrait
      * @param mixed $data
      *
      * @return $this
-     */
+ */
     public function setSessionKey($key, $data = NULL)
     {
         $this->session[$key] = $data;
@@ -72,7 +71,7 @@ trait SessionTrait
      * @param boolean $closeSession
      *
      * @return $this
-     */
+ */
     public function updateSession($closeSession = FALSE)
     {
         Logger::log('Update session');
@@ -81,9 +80,9 @@ trait SessionTrait
         $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = is_array($this->admin) ? $this->admin : null;
         if ($closeSession) {
             Logger::log('Close session');
-            /** @scrutinizer ignore-unhandled */
+            
             @session_write_close();
-            /** @scrutinizer ignore-unhandled */
+            
             @session_start();
         }
         Logger::log('Session updated');
@@ -93,11 +92,11 @@ trait SessionTrait
     public function closeSession()
     {
         unset($_SESSION);
-        /** @scrutinizer ignore-unhandled */
+        
         @session_destroy();
-        /** @scrutinizer ignore-unhandled */
+        
         @session_regenerate_id(TRUE);
-        /** @scrutinizer ignore-unhandled */
+        
         @session_start();
     }
 

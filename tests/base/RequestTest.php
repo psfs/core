@@ -42,6 +42,19 @@ class RequestTest extends TestCase
         $this->assertSame('Bearer direct', $request->getHeader('X-API-SEC-TOKEN'));
     }
 
+    public function testAuthorizationHeaderFallsBackToQueryOnlyWhenServerHeaderMissing(): void
+    {
+        $request = Request::getInstance();
+        $request->setServer(['HTTP_AUTHORIZATION' => '']);
+        $queryProperty = new \ReflectionProperty($request, 'query');
+        $queryProperty->setAccessible(true);
+        $queryProperty->setValue($request, [
+            'h_authorization' => 'Bearer query-fallback',
+        ]);
+
+        $this->assertSame('Bearer query-fallback', $request->getHeader('Authorization'));
+    }
+
     public function testRequestDataExtractionAndCollections(): void
     {
         $request = Request::getInstance();

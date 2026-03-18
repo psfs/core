@@ -15,7 +15,6 @@ use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
 
 /**
- * Class OutputTrait
  * @package PSFS\base\types\traits
  */
 trait OutputTrait
@@ -25,15 +24,15 @@ trait OutputTrait
 
     /**
      * @var bool
-     */
+ */
     protected $public_zone = true;
     /**
      * @var string
-     */
+ */
     protected $status_code = Template::STATUS_OK;
     /**
      * @var bool
-     */
+ */
     protected $debug = true;
 
     public function __construct()
@@ -43,7 +42,7 @@ trait OutputTrait
 
     /**
      * @return bool
-     */
+ */
     public function isPublicZone()
     {
         return $this->public_zone;
@@ -52,7 +51,7 @@ trait OutputTrait
     /**
      * @param bool $publicZone
      * @return OutputTrait
-     */
+ */
     public function setPublicZone($publicZone)
     {
         $this->public_zone = $publicZone;
@@ -61,7 +60,7 @@ trait OutputTrait
 
     /**
      * @return string
-     */
+ */
     public function getStatusCode()
     {
         return $this->status_code;
@@ -70,7 +69,7 @@ trait OutputTrait
     /**
      * @param string $statusCode
      * @return OutputTrait
-     */
+ */
     public function setStatusCode($statusCode)
     {
         $this->status_code = $statusCode;
@@ -79,7 +78,7 @@ trait OutputTrait
 
     /**
      * @return bool
-     */
+ */
     public function isDebug()
     {
         return $this->debug;
@@ -88,7 +87,7 @@ trait OutputTrait
     /**
      * @param bool $debug
      * @return OutputTrait
-     */
+ */
     public function setDebug($debug)
     {
         $this->debug = $debug;
@@ -96,11 +95,10 @@ trait OutputTrait
     }
 
     /**
-     * Método que establece un header de http status code
      * @param string $status
      *
      * @return $this
-     */
+ */
     public function setStatus($status = null)
     {
         switch ($status) {
@@ -134,10 +132,9 @@ trait OutputTrait
     }
 
     /**
-     * Servicio que establece las cabeceras de la respuesta
      * @param string $contentType
      * @param array $cookies
-     */
+ */
     private function setResponseHeaders($contentType = 'text/html', array $cookies = array()): void
     {
         ResponseHelper::setHeader('X-Powered-By: ' . Config::getParam('poweredBy', 'PSFS'));
@@ -149,13 +146,12 @@ trait OutputTrait
     }
 
     /**
-     * Servicio que devuelve el output
      * @param string $output
      * @param string $contentType
      * @param array $cookies
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public function output($output = '', $contentType = 'text/html', array $cookies = array())
     {
         if (!self::isTest()) {
@@ -186,9 +182,7 @@ trait OutputTrait
         }
     }
 
-    /**
-     * Método que cierra y limpia los buffers de salida
-     */
+    
     #[NoReturn] public function closeRender(): void
     {
         Logger::log('Close template render');
@@ -204,10 +198,9 @@ trait OutputTrait
     }
 
     /**
-     * Método que devuelve los datos cacheados con las cabeceras que tenía por entonces
      * @param string $data
      * @param array $headers
-     */
+ */
     public function renderCache($data, $headers = array()): void
     {
         Inspector::stats('[OutputTrait] Rendering cache', Inspector::SCOPE_DEBUG);
@@ -223,11 +216,10 @@ trait OutputTrait
     }
 
     /**
-     * Método que fuerza la descarga de un fichero
      * @param $data
      * @param string $content
      * @param string $filename
-     */
+ */
     public function download($data, $content = 'text/html', $filename = 'data.txt'): void
     {
         ob_start();
@@ -255,11 +247,10 @@ trait OutputTrait
     }
 
     /**
-     * Método que devuelve una respuesta con formato
      * @param string $response
      * @param string $type
      * @throws GeneratorException
-     */
+ */
     public function response($response, $type = 'text/html'): void
     {
         $this->output($response, $type);

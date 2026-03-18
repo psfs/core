@@ -17,7 +17,7 @@ $console
     ->register('psfs:migrate:rollback')
     ->addOption('module', 'm', InputArgument::OPTIONAL, 'Specific module to rollback')
     ->addUsage('psfs:migrate:rollback --module=TEST')
-    ->setDescription('Deshacer las migraciones de base de datos')
+    ->setDescription('Rollback database migrations')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $module = $input->getOption('module');

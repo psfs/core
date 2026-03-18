@@ -3,7 +3,6 @@
 namespace PSFS\base\types\helpers;
 
 /**
- * Class ServiceHelper
  * @package PSFS\base\types\helpers
  */
 class ServiceHelper

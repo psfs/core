@@ -8,12 +8,11 @@ use PSFS\base\types\helpers\GeneratorHelper;
 trait I18nDiscoveryTrait
 {
     /**
-     * Método que revisa las traducciones directorio a directorio
      * @param string $path
      * @param string $locale
      * @return array
      * @throws GeneratorException
-     */
+ */
     public static function findTranslations(string $path, string $locale): array
     {
         if (!self::isValidLocale($locale)) {
@@ -25,10 +24,9 @@ trait I18nDiscoveryTrait
     }
 
     /**
-     * Compile locale PO into MO safely.
      * @param string $localePath
      * @return string
-     */
+ */
     public static function compileTranslations(string $localePath): string
     {
         $poPath = escapeshellarg($localePath . 'translations.po');
@@ -38,12 +36,11 @@ trait I18nDiscoveryTrait
     }
 
     /**
-     * Iterates recursively through source folders yielding translation extraction output.
      * @param string $path
      * @param string $localePath
      * @return \Generator
      * @throws GeneratorException
-     */
+ */
     private static function yieldTranslations(string $path, string $localePath): \Generator
     {
         if (!file_exists($path)) {
@@ -72,8 +69,8 @@ trait I18nDiscoveryTrait
                             " --from-code=UTF-8 -j -L PHP --debug --force-po -o {$outputPo}";
                         $commandOutput = shell_exec($cmdPhp) ?: '';
                     }
-                    $res = t('Revisando directorio: ') . $inspectPath;
-                    $res .= t('Comando ejecutado: ') . $cmdPhp;
+                    $res = t('Reviewing directory: ') . $inspectPath;
+                    $res .= t('Executed command: ') . $cmdPhp;
                     $res .= $commandOutput;
                     usleep(10);
                     yield $res;

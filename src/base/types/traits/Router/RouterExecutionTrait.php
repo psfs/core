@@ -21,7 +21,7 @@ trait RouterExecutionTrait
     /**
      * @param string $class
      * @param string $method
-     */
+ */
     private function checkPreActions($class, $method)
     {
         if ($this->hasToRunPreChecks($class)) {
@@ -34,10 +34,9 @@ trait RouterExecutionTrait
     }
 
     /**
-     * Check if class to run route implements the PreConditionedRunInterface
      * @param string $class
      * @return bool
-     */
+ */
     private function hasToRunPreChecks($class)
     {
         return in_array(PreConditionedRunInterface::class, class_implements($class));
@@ -49,7 +48,7 @@ trait RouterExecutionTrait
      * @param string $class
      * @param array $params
      * @return mixed
-     */
+ */
     protected function executeCachedRoute($route, $action, $class, $params = NULL)
     {
         Inspector::stats('[Router] Executing route ' . $route, Inspector::SCOPE_DEBUG);
@@ -84,14 +83,14 @@ trait RouterExecutionTrait
      * @param array $action
      * @return mixed
      * @throws Exception
-     */
+ */
     private function executeMatchedRoute(string $route, string $pattern, array $action): mixed
     {
         [, $routePattern] = RouterHelper::extractHttpRoute($pattern);
         self::setCheckedRoute($action);
         SecurityHelper::checkRestrictedAccess($route);
         $params = RouterHelper::extractComponents($route, $routePattern);
-        /** @var Controller $class */
+        
         $class = RouterHelper::getClassToCall($action);
         try {
             if ($this->checkRequirements($action, $params)) {

@@ -10,7 +10,6 @@ use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SecureTrait;
 
 /**
- * Class AuthApi
  * @package PSFS\base\types
  */
 abstract class AuthApi extends Api
@@ -29,9 +28,8 @@ abstract class AuthApi extends Api
     }
 
     /**
-     * Check service authentication
      * @return bool
-     */
+ */
     private function checkAuth()
     {
         $namespace = explode('\\', $this->getModelTableMap());
@@ -51,10 +49,8 @@ abstract class AuthApi extends Api
     }
 
     /**
-     * Resolve API token from secure transport first.
-     * Header and secure cookies are preferred. Query string token is deprecated and controlled.
      * @return string
-     */
+ */
     private function resolveApiToken(): string
     {
         $request = Request::getInstance();
@@ -96,10 +92,9 @@ abstract class AuthApi extends Api
     }
 
     /**
-     * Read header only from transport headers/server vars, not from query parameter shims.
      * @param Request $request
      * @return string
-     */
+ */
     private function extractHeaderToken(Request $request): string
     {
         $token = $request->getServer('HTTP_X_API_SEC_TOKEN');

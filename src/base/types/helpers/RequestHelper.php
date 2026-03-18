@@ -7,7 +7,6 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 
 /**
- * Class RequestHelper
  * @package PSFS\base\types\helpers
  */
 class RequestHelper
@@ -43,10 +42,7 @@ class RequestHelper
         return array_unique($headers);
     }
 
-    /**
-     * Resolves if an origin is allowed by current cors.enabled configuration.
-     * Returns the origin to expose, '*' for wildcard or null when denied.
-     */
+    
     public static function resolveAllowedOrigin(?string $origin, mixed $corsEnabled): ?string
     {
         $normalizedOrigin = self::normalizeOrigin($origin);
@@ -75,9 +71,7 @@ class RequestHelper
         return self::resolveOriginFromCsvAllowlist($normalizedOrigin, $corsEnabled);
     }
 
-    /**
-     * Returns origin with scheme + host (+ optional port), without path/query/fragment.
-     */
+    
     public static function normalizeOrigin(?string $origin): ?string
     {
         if (empty($origin)) {
@@ -106,7 +100,7 @@ class RequestHelper
      * @param string $normalizedOrigin
      * @param array $allowlist
      * @return string|null
-     */
+ */
     private static function resolveOriginFromArray(string $normalizedOrigin, array $allowlist): ?string
     {
         foreach ($allowlist as $allowedOrigin) {
@@ -122,7 +116,7 @@ class RequestHelper
      * @param string $normalizedOrigin
      * @param string $csvAllowlist
      * @return string|null
-     */
+ */
     private static function resolveOriginFromCsvAllowlist(string $normalizedOrigin, string $csvAllowlist): ?string
     {
         $entries = explode(',', $csvAllowlist);
@@ -142,7 +136,7 @@ class RequestHelper
      * @param string $entry
      * @param string $normalizedOrigin
      * @return bool
-     */
+ */
     private static function entryMatchesOrigin(string $entry, string $normalizedOrigin): bool
     {
         // Wildcard pattern support: https://*.example.com
@@ -155,9 +149,7 @@ class RequestHelper
         return !empty($normalizedAllowed) && $normalizedAllowed === $normalizedOrigin;
     }
 
-    /**
-     * Check CORS requests
-     */
+    
     public static function checkCORS(): void
     {
         Inspector::stats('[RequestHelper] Checking CORS', Inspector::SCOPE_DEBUG);
@@ -190,7 +182,7 @@ class RequestHelper
 
     /**
      * @return mixed
-     */
+ */
     public static function getIpAddress(): mixed
     {
         $directClientIp = self::extractSingleValidIp('HTTP_CLIENT_IP');
@@ -241,24 +233,24 @@ class RequestHelper
      * @param string $startRange
      * @param string $endRange
      * @return bool
-     */
+ */
     public static function validateIpAddress(string $ipAddress, string $startRange = '0.0.0.0', string $endRange = '255.255.255.255'): bool
     {
-        // Utiliza FILTER_VALIDATE_IP para validar el formato de la dirección IP
+        // Use FILTER_VALIDATE_IP to validate IP format.
         if (filter_var($ipAddress, FILTER_VALIDATE_IP) === false) {
-            return false; // La IP no es válida
+            return false; // Invalid IP.
         }
 
-        // Convierte las IP a números enteros
+        // Convert IP addresses to integers.
         $ipNum = ip2long($ipAddress);
         $rangoInicioNum = ip2long($startRange);
         $rangoFinNum = ip2long($endRange);
 
-        // Verifica si la IP está en el rango válido
+        // Validate that IP is inside the accepted range.
         if ($ipNum >= $rangoInicioNum && $ipNum <= $rangoFinNum) {
-            return true; // La IP está en el rango válido
+            return true; // IP is in range.
         } else {
-            return false; // La IP está fuera del rango válido
+            return false; // IP is out of range.
         }
     }
 }

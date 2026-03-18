@@ -5,6 +5,7 @@ namespace PSFS\tests\base;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Request;
 use PSFS\base\Router;
@@ -141,6 +142,55 @@ class RouterFlowContractTest extends TestCase
         $this->assertSame(120, $sessionAction['cache']);
         $this->assertArrayHasKey('id', $sessionAction['params']);
         $this->assertSame('42', $sessionAction['params']['id']);
+    }
+
+    public function testRouteParamIntegrityIsNotOverriddenByQueryString(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/integrity/{id}' => $this->buildAction('cached', RouterFlowController::class, 'GET', 0, ['id']),
+        ]);
+
+        $this->bootstrapRequest('/contract/integrity/42', 'GET', ['id' => '999']);
+        $result = $router->execute('/contract/integrity/42');
+
+        $this->assertSame('cached:42', $result);
+    }
+
+    public function testRestrictedRouteDenialStopsActionExecution(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/admin/private' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+        ]);
+        $this->bootstrapRequest('/admin/private', 'GET');
+
+        $adminsPath = CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json';
+        $adminsBackup = file_exists($adminsPath) ? file_get_contents($adminsPath) : null;
+        Cache::getInstance()->storeData($adminsPath, [
+            'root' => [
+                'hash' => sha1('root:secret'),
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ], Cache::JSONGZ, true);
+
+        try {
+            $method = new \ReflectionMethod(Router::class, 'executeMatchedRoute');
+            $method->setAccessible(true);
+            $action = $this->buildAction('get', RouterFlowController::class, 'GET');
+            try {
+                $method->invoke($router, '/admin/private', 'GET#|#/admin/private', $action);
+                $this->fail('Expected AccessDeniedException was not thrown');
+            } catch (AccessDeniedException) {
+                $this->assertSame([], RouterFlowController::$calls);
+            }
+        } finally {
+            if (null === $adminsBackup) {
+                @unlink($adminsPath);
+            } else {
+                file_put_contents($adminsPath, $adminsBackup);
+            }
+        }
     }
 
     public function testNotFoundMappingForUnknownRoute(): void

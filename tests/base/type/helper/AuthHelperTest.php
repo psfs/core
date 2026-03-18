@@ -10,7 +10,7 @@ use PSFS\base\types\helpers\AuthHelper;
 
 class AuthHelperTest extends TestCase
 {
-    const TEXT_EXAMPLE = 'Lorem fistrum me cago en tus muelas no puedor a gramenawer. Diodenoo papaar papaar pupita a peich. Al ataquerl sexuarl diodenoo apetecan está la cosa muy malar se calle ustée te voy a borrar el cerito ese hombree al ataquerl. Ese que llega a peich a gramenawer amatomaa va usté muy cargadoo pecador la caidita condemor ese hombree tiene musho peligro amatomaa. Qué dise usteer se calle ustée por la gloria de mi madre llevame al sircoo hasta luego Lucas llevame al sircoo.';
+    const TEXT_EXAMPLE = 'Long sample text for encryption round-trip checks. This payload intentionally includes enough entropy and length to validate compatibility between modern and legacy crypto paths.';
 
     private array $serverBackup = [];
     private array $cookieBackup = [];

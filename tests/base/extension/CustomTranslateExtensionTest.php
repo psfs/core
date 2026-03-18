@@ -52,11 +52,12 @@ class CustomTranslateExtensionTest extends TestCase
 
         $override = 'Page overridden by custom';
         $customLocaleFile = $customPath . DIRECTORY_SEPARATOR . 'en_GB.json';
+        $knownMessage = $this->getKnownTranslationKey();
         file_put_contents($customLocaleFile, json_encode([
-            'Página no encontrada' => $override,
+            $knownMessage => $override,
         ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
-        $translated = CustomTranslateExtension::_('Página no encontrada', $customKey, true);
+        $translated = CustomTranslateExtension::_($knownMessage, $customKey, true);
         $this->assertSame($override, $translated);
     }
 
@@ -114,7 +115,7 @@ class CustomTranslateExtensionTest extends TestCase
         I18nHelper::setLocale('en_GB', force: true);
         I18nHelper::clearMissingTranslationsReport();
 
-        $knownMessage = 'Página no encontrada';
+        $knownMessage = $this->getKnownTranslationKey();
         $this->setRuntimeCatalog('en_GB', [
             $knownMessage => 'Custom provider wins',
         ]);
@@ -175,7 +176,7 @@ class CustomTranslateExtensionTest extends TestCase
         $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'en');
         $security->setSessionKey(CustomTranslateExtension::CUSTOM_LOCALE_SESSION_KEY, '__missing_custom_key__');
 
-        $translated = CustomTranslateExtension::_('Página no encontrada', null, true);
+        $translated = CustomTranslateExtension::_($this->getKnownTranslationKey(), null, true);
         $this->assertIsString($translated);
         $this->assertNotSame('', $translated);
     }
@@ -235,5 +236,25 @@ class CustomTranslateExtensionTest extends TestCase
         $localeProperty = $reflection->getProperty('locale');
         $localeProperty->setAccessible(true);
         $localeProperty->setValue(null, $locale);
+    }
+
+    private function getKnownTranslationKey(): string
+    {
+        $catalogPath = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . 'en_GB.json';
+        if (file_exists($catalogPath)) {
+            $catalog = json_decode((string)file_get_contents($catalogPath), true);
+            if (is_array($catalog) && !empty($catalog)) {
+                foreach ($catalog as $key => $value) {
+                    if (is_string($value) && stripos($value, 'page not found') !== false) {
+                        return (string)$key;
+                    }
+                }
+                $firstKey = array_key_first($catalog);
+                if (is_string($firstKey) && '' !== $firstKey) {
+                    return $firstKey;
+                }
+            }
+        }
+        return '__KNOWN_TRANSLATION_KEY__';
     }
 }

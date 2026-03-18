@@ -7,16 +7,14 @@ use PSFS\base\Security;
 use PSFS\base\types\Form;
 
 /**
- * Class AdminForm
  * @package PSFS\base\config
  */
 class AdminForm extends Form
 {
 
     /**
-     * AdminForm constructor.
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public function __construct()
     {
         parent::__construct();
@@ -45,18 +43,16 @@ class AdminForm extends Form
     }
 
     /**
-     * Method that returns the form's title
      * @return string
-     */
+ */
     public function getTitle()
     {
         return t("Admin user control panel");
     }
 
     /**
-     * Method that returns the form's name
      * @return string
-     */
+ */
     public function getName()
     {
         return "admin_setup";

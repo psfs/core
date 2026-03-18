@@ -19,7 +19,7 @@ trait ResponseNotFoundTrait
      * @param bool $isJson
      * @return int|string
      * @throws GeneratorException
-     */
+ */
     public static function httpNotFound(\Throwable $exception = null, bool $isJson = false): int|string
     {
         if (self::isTest()) {

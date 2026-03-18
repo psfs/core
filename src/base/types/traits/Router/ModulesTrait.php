@@ -18,7 +18,6 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Trait ModulesTrait
  * @package PSFS\base\types\traits\Router
  */
 trait ModulesTrait
@@ -27,17 +26,17 @@ trait ModulesTrait
 
     /**
      * @Injectable
-     * @var Finder $finder
-     */
+     * @var Finder
+ */
     private $finder;
     /**
      * @var array
-     */
+ */
     private $domains = [];
 
     /**
      *
-     */
+ */
     public function initializeFinder()
     {
         $this->finder = new Finder();
@@ -51,7 +50,7 @@ trait ModulesTrait
      * @throws ReflectionException
      * @throws ConfigException
      * @throws InvalidArgumentException
-     */
+ */
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
         foreach ($this->iterateControllerFiles($origen) as $file) {
@@ -72,7 +71,7 @@ trait ModulesTrait
      * @param string $module
      * @return array
      * @throws ReflectionException
-     */
+ */
     private function addRouting($namespace, &$routing, $module = Router::PSFS_BASE_NAMESPACE)
     {
         if (self::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
@@ -97,10 +96,10 @@ trait ModulesTrait
      *
      * @return $this
      * @throws ConfigException
-     */
+ */
     protected function extractDomain(ReflectionClass $class)
     {
-        //Calculamos los dominios para las plantillas
+        // Resolve template domains.
         if ($class->hasConstant('DOMAIN') && !$class->isAbstract()) {
             if (!is_array($this->domains)) {
                 $this->domains = [];
@@ -116,7 +115,7 @@ trait ModulesTrait
 
     /**
      * @return array
-     */
+ */
     public function getDomains()
     {
         return $this->domains ?: [];
@@ -128,7 +127,7 @@ trait ModulesTrait
      * @param string $externalModulePath
      * @param array $routing
      * @throws ReflectionException
-     */
+ */
     private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath, &$routing = [])
     {
         $extModule = $modulePath->getBasename();
@@ -146,7 +145,7 @@ trait ModulesTrait
      * @param string $module
      * @param array $routing
      * @return mixed
-     */
+ */
     private function loadExternalModule($hydrateRoute, $module, &$routing = [])
     {
         $modulesToIgnore = explode(',', Config::getParam('hide.modules', ''));
@@ -171,7 +170,7 @@ trait ModulesTrait
     /**
      * @param string $domainToCheck
      * @return bool
-     */
+ */
     public function domainExists($domainToCheck)
     {
         $exists = false;
@@ -188,7 +187,7 @@ trait ModulesTrait
 
     /**
      * @return string|null
-     */
+ */
     private function getExternalModules()
     {
         $externalModules = Config::getParam('modules.extend', '');
@@ -198,7 +197,7 @@ trait ModulesTrait
 
     /**
      * @param boolean $hydrateRoute
-     */
+ */
     private function checkExternalModules($hydrateRoute = true)
     {
         $externalModules = $this->getExternalModules();
@@ -211,10 +210,9 @@ trait ModulesTrait
     }
 
     /**
-     * Iterates controller/api files lazily to reduce scan memory pressure.
      * @param string $origin
      * @return \Generator
-     */
+ */
     private function iterateControllerFiles(string $origin): \Generator
     {
         $files = $this->finder->files()->in($origin)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
@@ -227,14 +225,13 @@ trait ModulesTrait
     }
 
     /**
-     * Iterates route definitions lazily per class.
      * @param ReflectionClass $reflection
      * @param string $api
      * @param string $module
      * @param string $namespace
      * @return \Generator
      * @throws ReflectionException
-     */
+ */
     private function iterateRoutesFromClass(ReflectionClass $reflection, string $api, string $module, string $namespace): \Generator
     {
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
@@ -250,10 +247,7 @@ trait ModulesTrait
         }
     }
 
-    /**
-     * Builds a lightweight routing fingerprint from controller/api PHP files.
-     * Used in debug mode to skip full route regeneration when nothing changed.
-     */
+    
     protected function calculateRoutingFingerprint(): string
     {
         $seedParts = [];

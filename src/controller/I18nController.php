@@ -17,7 +17,7 @@ class I18nController extends Admin
      * @GET
      * @route /admin/translations
      * @icon fa-language
-     * @label Generador de locales
+     * @label Locale generator
      * @return string
      */
     public function defaultTranslations()
@@ -30,7 +30,7 @@ class I18nController extends Admin
      * @GET
      * @param $locale string
      * @route /admin/translations/{locale}
-     * @label Generador de locales
+     * @label Locale generator
      * @visible false
      * @return string HTML
      */

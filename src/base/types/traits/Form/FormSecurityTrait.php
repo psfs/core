@@ -8,7 +8,6 @@ use PSFS\base\Security;
 use PSFS\base\types\Form;
 
 /**
- * Trait FormSecurityTrait
  * @package PSFS\base\types\traits\Form
  */
 trait FormSecurityTrait
@@ -19,13 +18,12 @@ trait FormSecurityTrait
 
     /**
      * @var
-     */
+ */
     protected $crfs;
 
     /**
-     * Método que genera un CRFS token para los formularios
      * @return Form
-     */
+ */
     private function genCrfsToken()
     {
         if (empty($this->fields)) {
@@ -78,7 +76,7 @@ trait FormSecurityTrait
 
     /**
      * @return bool
-     */
+ */
     public function isValid()
     {
         $valid = true;
@@ -105,7 +103,7 @@ trait FormSecurityTrait
     /**
      * @param string $tokenField
      * @return bool
-     */
+ */
     protected function existsFormToken($tokenField)
     {
         if ($this->method !== 'POST') {
@@ -162,7 +160,7 @@ trait FormSecurityTrait
 
     /**
      * @return string
-     */
+ */
     private function getCsrfFormKey(): string
     {
         return $this->getName();
@@ -170,7 +168,7 @@ trait FormSecurityTrait
 
     /**
      * @return int
-     */
+ */
     private function getCsrfExpiration(): int
     {
         $expiration = (int)Config::getParam('csrf.expiration', self::CSRF_DEFAULT_EXPIRATION_SECONDS);
@@ -179,7 +177,7 @@ trait FormSecurityTrait
 
     /**
      * @return string
-     */
+ */
     private function generateRandomToken(): string
     {
         try {
@@ -191,7 +189,7 @@ trait FormSecurityTrait
 
     /**
      * @return string
-     */
+ */
     private function generateTokenKey(): string
     {
         return hash('sha256', microtime(true) . ':' . $this->generateRandomToken() . ':' . mt_rand());
@@ -199,7 +197,7 @@ trait FormSecurityTrait
 
     /**
      * @return array
-     */
+ */
     private function getCsrfStorage(): array
     {
         $storage = Security::getInstance()->getSessionKey(self::CSRF_SESSION_TOKEN_KEY);
@@ -209,7 +207,7 @@ trait FormSecurityTrait
     /**
      * @param array $storage
      * @return void
-     */
+ */
     private function setCsrfStorage(array $storage): void
     {
         $security = Security::getInstance();
@@ -221,7 +219,7 @@ trait FormSecurityTrait
     /**
      * @param array $storage
      * @return array
-     */
+ */
     private function purgeExpiredCsrfStorage(array $storage): array
     {
         if (empty($storage)) {
@@ -240,7 +238,7 @@ trait FormSecurityTrait
     /**
      * @param string $tokenField
      * @return string
-     */
+ */
     private function extractSubmittedToken(string $tokenField): string
     {
         $requestData = Request::getInstance()->getData();

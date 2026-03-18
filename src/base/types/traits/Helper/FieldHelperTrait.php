@@ -9,7 +9,6 @@ use PSFS\base\dto\Form;
 use PSFS\base\Logger;
 
 /**
- * Trait FieldHelperTrait
  * @package PSFS\base\types\traits\Helper
  */
 trait FieldHelperTrait
@@ -21,7 +20,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     private static function createField($field, $type = Field::TEXT_TYPE, $required = false)
     {
         $fDto = new Field($field, t($field));
@@ -35,7 +34,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generatePrimaryKeyField($field, $required = false)
     {
         $fDto = self::createField($field, Field::HIDDEN_TYPE, $required);
@@ -49,7 +48,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateNumericField($field, $required = false)
     {
         return self::createField($field, Field::NUMBER_TYPE, $required);
@@ -60,7 +59,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateStringField($field, $required = false)
     {
         return self::createField($field, Field::TEXT_TYPE, $required);
@@ -71,7 +70,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateBooleanField($field, $required = false)
     {
         return self::createField($field, Field::SWITCH_TYPE, $required);
@@ -82,7 +81,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generatePasswordField($field, $required = false)
     {
         return self::createField($field, Field::PASSWORD_FIELD, $required);
@@ -93,7 +92,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateDateField($field, $required = false)
     {
         return self::createField($field, Field::DATE, $required);
@@ -104,7 +103,7 @@ trait FieldHelperTrait
      * @param bool $required
      * @return Field
      * @throws \PSFS\base\exception\GeneratorException
-     */
+ */
     public static function generateEnumField($field, $required = false)
     {
         return self::createField($field, Field::COMBO_TYPE, $required);
@@ -115,11 +114,11 @@ trait FieldHelperTrait
      * @param string $domain
      * @return Form
      * @throws \Exception
-     */
+ */
     public static function generateFormFields($map, $domain)
     {
         $form = new Form(false);
-        /** @var TableMap $tableMap */
+        
         $tableMap = $map::getTableMap();
         $behaviors = $tableMap->getBehaviors();
         foreach ($map::getFieldNames() as $field) {
@@ -136,7 +135,7 @@ trait FieldHelperTrait
                 foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $columnName = self::getColumnMapName($columnMap);
                     if (!$form->fieldExists($columnName)) {
-                        /** @var Field $fDto */
+                        
                         $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
                         if (null !== $fDto) {
                             $fDto->pk = false;
@@ -162,11 +161,10 @@ trait FieldHelperTrait
     }
 
     /**
-     * Check if parametrized field exists in api model
      * @param TableMap $tableMap
      * @param $field
      * @return \Propel\Runtime\Map\ColumnMap|null
-     */
+ */
     public static function checkFieldExists(TableMap $tableMap, $field)
     {
         $column = null;
@@ -186,7 +184,7 @@ trait FieldHelperTrait
 
     /**
      * @return string
-     */
+ */
     public static function getFieldTypes()
     {
         $configType = Config::getParam('api.field.case', TableMap::TYPE_PHPNAME);
