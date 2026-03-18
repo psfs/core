@@ -19,32 +19,38 @@ checks:
 
 build:
   nodes:
-    analysis:
-      tests:
-        override:
-          - php-scrutinizer-run --enable-security-analysis
     docker-tests:
       environment:
-        docker:
-          remote_engine: true
+        php:
+          version: "8.3"
+        docker: true
         variables:
           APP_ENVIRONMENT: "test"
           HOST_PORT: "8008"
           DEBUG: "-xdebug"
           PHP_OPCACHE: "0"
+      dependencies:
+        override:
+          - true
+      project_setup:
+        override:
+          - true
       tests:
+        stop_on_failure: true
         override:
           - command: |
+              set -euo pipefail
               cat > .env <<'EOF'
               HOST_PORT=8008
               DEBUG=-xdebug
               PHP_OPCACHE=0
               EOF
+              trap 'docker compose down -v --remove-orphans || true' EXIT
               docker compose down -v --remove-orphans || true
               docker compose up -d --wait db redis php
-              docker compose exec -T php sh -lc 'cd /var/www && composer install --no-interaction --no-progress'
-              docker compose exec -T php sh -lc 'cd /var/www && XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never'
-              docker compose down -v --remove-orphans
+              docker compose exec -T php sh -lc 'cd /var/www && composer install --no-interaction --no-progress --prefer-dist'
+              docker compose exec -T php sh -lc 'cd /var/www && mkdir -p cache/coverage'
+              docker compose exec -T php sh -lc 'cd /var/www && XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --coverage-clover cache/coverage/coverage.xml --colors=never'
             coverage:
               file: "cache/coverage/coverage.xml"
               format: "clover"
