@@ -61,10 +61,16 @@ class FileReflectionCacheRepository implements ReflectionCacheRepositoryInterfac
         $cacheFile = $this->getCachePath();
         $signatureFile = $this->getSignaturePath();
         if (file_exists($cacheFile) && @unlink($cacheFile) === false) {
-            Logger::log('[FileReflectionCacheRepositori::invalidate] Failed to delete cache file: ' . $cacheFile, LOG_WARNING);
+            Logger::log(
+                '[FileReflectionCacheRepositori::invalidate] Failed to delete cache file: ' . $cacheFile,
+                LOG_WARNING
+            );
         }
         if (file_exists($signatureFile) && @unlink($signatureFile) === false) {
-            Logger::log('[FileReflectionCacheRepositori::invalidate] Failed to delete signature file: ' . $signatureFile, LOG_WARNING);
+            Logger::log(
+                '[FileReflectionCacheRepositori::invalidate] Failed to delete signature file: ' . $signatureFile,
+                LOG_WARNING
+            );
         }
     }
 
@@ -99,6 +105,10 @@ class FileReflectionCacheRepository implements ReflectionCacheRepositoryInterfac
     private function buildCacheFilename(string $className): string
     {
         $hash = sha1($className);
-        return 'reflections' . DIRECTORY_SEPARATOR . substr($hash, 0, 2) . DIRECTORY_SEPARATOR . substr($hash, 2, 2) . DIRECTORY_SEPARATOR . $hash . '.json';
+        return 'reflections' . DIRECTORY_SEPARATOR . substr($hash, 0, 2) . DIRECTORY_SEPARATOR . substr(
+                $hash,
+                2,
+                2
+            ) . DIRECTORY_SEPARATOR . $hash . '.json';
     }
 }

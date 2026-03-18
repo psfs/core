@@ -112,7 +112,10 @@ class RedisReadThroughReflectionCacheRepository implements ReflectionCacheReposi
             '127.0.0.1',
         ])));
         $port = (int)(getenv('PSFS_REDIS_PORT') ?: Config::getParam('redis.port', self::REDIS_DEFAULT_PORT));
-        $timeout = (float)(getenv('PSFS_REDIS_TIMEOUT') ?: Config::getParam('redis.timeout', self::REDIS_DEFAULT_TIMEOUT));
+        $timeout = (float)(getenv('PSFS_REDIS_TIMEOUT') ?: Config::getParam(
+            'redis.timeout',
+            self::REDIS_DEFAULT_TIMEOUT
+        ));
 
         foreach ($hosts as $host) {
             try {

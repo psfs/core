@@ -90,10 +90,15 @@ trait PropelHelperTrait
      * @param AbstractManager $manager
      * @param string $workingDir
      */
-    private function setupManager(GeneratorConfig $configGenerator, AbstractManager &$manager, string $workingDir = CORE_DIR): void
-    {
+    private function setupManager(
+        GeneratorConfig $configGenerator,
+        AbstractManager &$manager,
+        string $workingDir = CORE_DIR
+    ): void {
         $manager->setGeneratorConfig($configGenerator);
-        $schemaFile = new \SplFileInfo($configGenerator->getSection('paths')['schemaDir'] . DIRECTORY_SEPARATOR . 'schema.xml');
+        $schemaFile = new \SplFileInfo(
+            $configGenerator->getSection('paths')['schemaDir'] . DIRECTORY_SEPARATOR . 'schema.xml'
+        );
         $manager->setSchemas([$schemaFile]);
         $manager->setLoggerClosure(function ($message) {
             Logger::log($message, LOG_INFO);

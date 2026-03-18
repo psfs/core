@@ -19,8 +19,13 @@ trait I18nProviderTrait
      * @param bool $allowGettext
      * @return string
      */
-    public static function translateWithProviders(string $message, string $locale, array $catalog = [], array $catalogLowerMap = [], bool $allowGettext = true): string
-    {
+    public static function translateWithProviders(
+        string $message,
+        string $locale,
+        array $catalog = [],
+        array $catalogLowerMap = [],
+        bool $allowGettext = true
+    ): string {
         $context = [
             'catalog' => $catalog,
             'catalog_lowercase_map' => $catalogLowerMap,
@@ -65,9 +70,18 @@ trait I18nProviderTrait
         if (!in_array($message, self::$missingTranslations[$locale], true)) {
             self::$missingTranslations[$locale][] = $message;
         }
-        $reportPath = Config::getParam('i18n.missing.report.path', CACHE_DIR . DIRECTORY_SEPARATOR . 'i18n_missing.json');
-        if (@file_put_contents($reportPath, json_encode(self::$missingTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
-            Logger::log('[I18nProviderTrait::reportMissingTranslation] Unable to save the file: ' . $reportPath, LOG_WARNING);
+        $reportPath = Config::getParam(
+            'i18n.missing.report.path',
+            CACHE_DIR . DIRECTORY_SEPARATOR . 'i18n_missing.json'
+        );
+        if (@file_put_contents(
+                $reportPath,
+                json_encode(self::$missingTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ) === false) {
+            Logger::log(
+                '[I18nProviderTrait::reportMissingTranslation] Unable to save the file: ' . $reportPath,
+                LOG_WARNING
+            );
         }
     }
 }

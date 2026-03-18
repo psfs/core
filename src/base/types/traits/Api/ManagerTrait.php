@@ -47,8 +47,16 @@ trait ManagerTrait
             "domain" => $this->getDomain(),
             "listLabel" => Api::API_LIST_NAME_FIELD,
             'modelId' => Api::API_MODEL_KEY_FIELD,
-            'formUrl' => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower('admin-api-form-' . $this->getDomain() . '-' . $this->getApi()), TRUE)),
-            "url" => preg_replace('/\/\{(.*)\}$/i', '', $this->getRoute(strtolower($this->getDomain() . '-' . 'api-' . $this->getApi() . "-pk"), TRUE)),
+            'formUrl' => preg_replace(
+                '/\/\{(.*)\}$/i',
+                '',
+                $this->getRoute(strtolower('admin-api-form-' . $this->getDomain() . '-' . $this->getApi()), true)
+            ),
+            "url" => preg_replace(
+                '/\/\{(.*)\}$/i',
+                '',
+                $this->getRoute(strtolower($this->getDomain() . '-' . 'api-' . $this->getApi() . "-pk"), true)
+            ),
         ), [], '');
     }
 
@@ -68,7 +76,7 @@ trait ManagerTrait
         $form = ApiHelper::generateFormFields($map, $this->getDomain());
         $form->actions = ApiFormHelper::checkApiActions(get_class($this), $this->getDomain(), $this->getApi());
 
-        return $this->_json(new JsonResponse($form->toArray(), TRUE), 200);
+        return $this->_json(new JsonResponse($form->toArray(), true), 200);
     }
 
 }

@@ -37,7 +37,7 @@ trait ParameterTrait
      *
      * @return ParameterTrait
      */
-    public function addParam($key, $value = NULL)
+    public function addParam($key, $value = null)
     {
         $this->params[$key] = $value;
         return $this;

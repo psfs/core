@@ -49,7 +49,7 @@ abstract class CurlService extends SimpleService
      *
      * @return $this
      */
-    public function addHeader($header, $content = NULL)
+    public function addHeader($header, $content = null)
     {
         $this->headers[$header] = $content;
         return $this;
@@ -146,7 +146,11 @@ abstract class CurlService extends SimpleService
         if ($this->isDebug() && is_resource($verbose)) {
             $this->dumpVerboseLogs($verbose);
         }
-        Logger::log($this->getUrl() . ' response: ', LOG_DEBUG, is_array($this->getRawResult()) ? $this->getRawResult() : [$this->getRawResult()]);
+        Logger::log(
+            $this->getUrl() . ' response: ',
+            LOG_DEBUG,
+            is_array($this->getRawResult()) ? $this->getRawResult() : [$this->getRawResult()]
+        );
         $this->info = array_merge($this->info, curl_getinfo($this->con));
     }
 
@@ -155,11 +159,18 @@ abstract class CurlService extends SimpleService
      * @param bool $followLocation
      * @param bool $sslVerifyPeer
      */
-    protected function applyCurlBehavior($returnTransfer = true, $followLocation = true, $sslVerifyHost = false, $sslVerifyPeer = false)
-    {
+    protected function applyCurlBehavior(
+        $returnTransfer = true,
+        $followLocation = true,
+        $sslVerifyHost = false,
+        $sslVerifyPeer = false
+    ) {
         $this->addOption(CURLOPT_RETURNTRANSFER, Config::getParam('curl.returnTransfer', $returnTransfer));
         $this->addOption(CURLOPT_FOLLOWLOCATION, Config::getParam('curl.followLocation', $followLocation));
-        $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('curl.followLocation', Config::getParam('debug') ? 0 : 2));
+        $this->addOption(
+            CURLOPT_SSL_VERIFYHOST,
+            Config::getParam('curl.followLocation', Config::getParam('debug') ? 0 : 2)
+        );
         $this->addOption(CURLOPT_SSL_VERIFYPEER, Config::getParam('curl.sslVerifyPeer', $sslVerifyPeer));
         $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('curl.sslVerifyHost', $sslVerifyHost));
     }

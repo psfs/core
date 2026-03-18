@@ -76,11 +76,18 @@ trait ModulesTrait
     {
         if (self::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
             $reflection = new ReflectionClass($namespace);
-            if (false === $reflection->isAbstract() && FALSE === $reflection->isInterface()) {
+            if (false === $reflection->isAbstract() && false === $reflection->isInterface()) {
                 $this->extractDomain($reflection);
                 $classComments = $reflection->getDocComment();
                 $api = AnnotationHelper::extractApi($classComments ?: '', $reflection);
-                foreach ($this->iterateRoutesFromClass($reflection, (string)$api, (string)$module, $namespace) as $routeData) {
+                foreach (
+                    $this->iterateRoutesFromClass(
+                        $reflection,
+                        (string)$api,
+                        (string)$module,
+                        $namespace
+                    ) as $routeData
+                ) {
                     list($route, $info) = $routeData;
                     $routing[$route] = $info;
                 }
@@ -131,11 +138,17 @@ trait ModulesTrait
     private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath, &$routing = [])
     {
         $extModule = $modulePath->getBasename();
-        $moduleAutoloader = realpath($externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php');
+        $moduleAutoloader = realpath(
+            $externalModulePath . DIRECTORY_SEPARATOR . $extModule . DIRECTORY_SEPARATOR . 'autoload.php'
+        );
         if (file_exists($moduleAutoloader)) {
             include_once $moduleAutoloader;
             if ($hydrateRoute) {
-                $routing = $this->inspectDir($externalModulePath . DIRECTORY_SEPARATOR . $extModule, '\\' . $extModule, $routing);
+                $routing = $this->inspectDir(
+                    $externalModulePath . DIRECTORY_SEPARATOR . $extModule,
+                    '\\' . $extModule,
+                    $routing
+                );
             }
         }
     }
@@ -232,14 +245,22 @@ trait ModulesTrait
      * @return \Generator
      * @throws ReflectionException
      */
-    private function iterateRoutesFromClass(ReflectionClass $reflection, string $api, string $module, string $namespace): \Generator
-    {
+    private function iterateRoutesFromClass(
+        ReflectionClass $reflection,
+        string $api,
+        string $module,
+        string $namespace
+    ): \Generator {
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $route = AnnotationHelper::extractRoute($method->getDocComment() ?: '', $method);
             if (null === $route) {
                 continue;
             }
-            list($route, $info) = RouterHelper::extractRouteInfo($method, str_replace('\\', '', $api), str_replace('\\', '', $module));
+            list($route, $info) = RouterHelper::extractRouteInfo(
+                $method,
+                str_replace('\\', '', $api),
+                str_replace('\\', '', $module)
+            );
             if (null !== $route && null !== $info) {
                 $info['class'] = $namespace;
                 yield [$route, $info];

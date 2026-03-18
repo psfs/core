@@ -128,7 +128,10 @@ class Logger
     private function createLoggerPath(): string
     {
         $logger = $this->setLoggerName();
-        $path = Config::getParam('default.log.path', LOG_DIR) . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
+        $path = Config::getParam(
+                'default.log.path',
+                LOG_DIR
+            ) . DIRECTORY_SEPARATOR . $logger . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
         GeneratorHelper::createDir($path);
         return $path;
     }
@@ -142,7 +145,11 @@ class Logger
      */
     public function addLog($msg, $type = \Monolog\Level::Notice, $context = [], $force = false)
     {
-        return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord($type, $msg, LogHelper::addMinimalContext($context));
+        return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord(
+                $type,
+                $msg,
+                LogHelper::addMinimalContext($context)
+            );
     }
 
     /**

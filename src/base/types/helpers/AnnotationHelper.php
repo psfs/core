@@ -21,8 +21,10 @@ final class AnnotationHelper
      * @param string $docComments
      * @return bool
      */
-    public static function extractReflectionVisibility(string $docComments, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): bool
-    {
+    public static function extractReflectionVisibility(
+        string $docComments,
+        \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null
+    ): bool {
         return (bool)MetadataReader::getTagValue('visible', $docComments, true, $reflector);
     }
 
@@ -39,8 +41,10 @@ final class AnnotationHelper
      * @param string $docComments
      * @return string
      */
-    public static function extractReflectionLabel(string $docComments, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): ?string
-    {
+    public static function extractReflectionLabel(
+        string $docComments,
+        \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null
+    ): ?string {
         return MetadataReader::getTagValue('label', $docComments, 'Undefined action', $reflector);
     }
 
@@ -86,8 +90,12 @@ final class AnnotationHelper
      * @param string|null $default
      * @return string|null
      */
-    public static function extractFromDoc(string $needle, string $comments, string $default = null, \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null): mixed
-    {
+    public static function extractFromDoc(
+        string $needle,
+        string $comments,
+        string $default = null,
+        \ReflectionClass|\ReflectionMethod|\ReflectionProperty|null $reflector = null
+    ): mixed {
         return MetadataReader::getTagValue($needle, $comments, $default, $reflector);
     }
 }

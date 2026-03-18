@@ -71,7 +71,9 @@ class DocumentorHelper
     {
         if (class_exists($name)) {
             $class = GeneratorHelper::extractClassFromNamespace($name);
-            if (array_key_exists('data', $endpoint['return']) && count(array_keys($object)) === count(array_keys($endpoint['return']['data']))) {
+            if (array_key_exists('data', $endpoint['return']) && count(array_keys($object)) === count(
+                    array_keys($endpoint['return']['data'])
+                )) {
                 $classDefinition = [
                     'type' => 'object',
                     '$ref' => '#/definitions/' . $class,

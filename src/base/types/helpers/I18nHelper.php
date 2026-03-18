@@ -36,7 +36,7 @@ class I18nHelper
         if (file_exists($absoluteFileName)) {
             @include($absoluteFileName);
         } else {
-            Cache::getInstance()->storeData($absoluteFileName, "<?php \$translations = array();\n", Cache::TEXT, TRUE);
+            Cache::getInstance()->storeData($absoluteFileName, "<?php \$translations = array();\n", Cache::TEXT, true);
         }
 
         return $translations;
@@ -115,7 +115,17 @@ class I18nHelper
     public static function sanitize($string): string
     {
         $from = [
-            ["\u{00E1}", "\u{00E0}", "\u{00E4}", "\u{00E2}", "\u{00AA}", "\u{00C1}", "\u{00C0}", "\u{00C2}", "\u{00C4}"],
+            [
+                "\u{00E1}",
+                "\u{00E0}",
+                "\u{00E4}",
+                "\u{00E2}",
+                "\u{00AA}",
+                "\u{00C1}",
+                "\u{00C0}",
+                "\u{00C2}",
+                "\u{00C4}"
+            ],
             ["\u{00E9}", "\u{00E8}", "\u{00EB}", "\u{00EA}", "\u{00C9}", "\u{00C8}", "\u{00CA}", "\u{00CB}"],
             ["\u{00ED}", "\u{00EC}", "\u{00EF}", "\u{00EE}", "\u{00CD}", "\u{00CC}", "\u{00CF}", "\u{00CE}"],
             ["\u{00F3}", "\u{00F2}", "\u{00F6}", "\u{00F4}", "\u{00D3}", "\u{00D2}", "\u{00D6}", "\u{00D4}"],

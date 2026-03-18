@@ -29,13 +29,19 @@ trait I18nLocaleTrait
             $session = Security::getInstance();
             $sessionLocale = $session->getSessionKey(self::PSFS_SESSION_LOCALE_KEY);
             $sessionLanguage = $session->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
-            if (!empty($sessionLanguage) && (empty($sessionLocale) || stripos((string)$sessionLocale, (string)$sessionLanguage . '_') !== 0)) {
+            if (!empty($sessionLanguage) && (empty($sessionLocale) || stripos(
+                        (string)$sessionLocale,
+                        (string)$sessionLanguage . '_'
+                    ) !== 0)) {
                 $locale = $sessionLanguage;
             } else {
                 $locale = $sessionLocale ?: $sessionLanguage;
             }
             if (empty($locale) && ServerHelper::hasServerValue('HTTP_ACCEPT_LANGUAGE')) {
-                $browserLocales = explode(",", str_replace("-", "_", ServerHelper::getServerValue("HTTP_ACCEPT_LANGUAGE"))); // brosers use en-US, Linux uses en_US
+                $browserLocales = explode(
+                    ",",
+                    str_replace("-", "_", ServerHelper::getServerValue("HTTP_ACCEPT_LANGUAGE"))
+                ); // brosers use en-US, Linux uses en_US
                 for ($i = 0, $ct = count($browserLocales); $i < $ct; $i++) {
                     list($browserLocales[$i]) = explode(";", $browserLocales[$i]); //trick for "en;q=0.8"
                 }

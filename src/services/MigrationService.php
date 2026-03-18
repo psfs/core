@@ -29,9 +29,11 @@ class MigrationService extends SimpleService
 
         $manager = new MigrationManager();
         $manager->setGeneratorConfig($generatorConfig);
-        $manager->setSchemas($this->getSchemas(
-            $generatorConfig->getSection('paths')['schemaDir'],
-            $generatorConfig->getSection('generator')['recursive'])
+        $manager->setSchemas(
+            $this->getSchemas(
+                $generatorConfig->getSection('paths')['schemaDir'],
+                $generatorConfig->getSection('generator')['recursive']
+            )
         );
         $manager->setConnections($generatorConfig->getBuildConnections());
         $manager->setMigrationTable($generatorConfig->getConfigProperty('migrations.tableName'));
@@ -47,8 +49,13 @@ class MigrationService extends SimpleService
      * @param bool $debugLogger
      * @return array
      */
-    public function checkSourceDatabase(MigrationManager $manager, GeneratorConfig $generatorConfig, Database $appDatabase, array $connections, bool $debugLogger = false): array
-    {
+    public function checkSourceDatabase(
+        MigrationManager $manager,
+        GeneratorConfig $generatorConfig,
+        Database $appDatabase,
+        array $connections,
+        bool $debugLogger = false
+    ): array {
         $name = $appDatabase->getName();
         $params = $connections[$name] ?? [];
         if (!$params) {
@@ -64,7 +71,13 @@ class MigrationService extends SimpleService
         $appDatabase->setPlatform($platform);
 
         if ($platform && !$platform->supportsMigrations()) {
-            Logger::log(sprintf('Skipping database "%s" since vendor "%s" does not support migrations', $name, $platform->getDatabaseType()));
+            Logger::log(
+                sprintf(
+                    'Skipping database "%s" since vendor "%s" does not support migrations',
+                    $name,
+                    $platform->getDatabaseType()
+                )
+            );
             return [null, 0];
         }
 
@@ -95,8 +108,11 @@ class MigrationService extends SimpleService
      * @param GeneratorConfig $generatorConfig
      * @return array
      */
-    public function getPlatformAndConnection(MigrationManager $manager, ?string $name, GeneratorConfig $generatorConfig): array
-    {
+    public function getPlatformAndConnection(
+        MigrationManager $manager,
+        ?string $name,
+        GeneratorConfig $generatorConfig
+    ): array {
         $conn = $manager->getAdapterConnection($name);
         $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
         return [$conn, $platform];
@@ -109,8 +125,12 @@ class MigrationService extends SimpleService
      * @param GeneratorConfig $generatorConfig
      * @return void
      */
-    public function generateMigrationFile(MigrationManager $manager, array $migrationsUp, array $migrationsDown, GeneratorConfig $generatorConfig): void
-    {
+    public function generateMigrationFile(
+        MigrationManager $manager,
+        array $migrationsUp,
+        array $migrationsDown,
+        GeneratorConfig $generatorConfig
+    ): void {
         $timestamp = time();
         $migrationFileName = $manager->getMigrationFileName($timestamp);
         $migrationClassBody = $manager->getMigrationClassBody($migrationsUp, $migrationsDown, $timestamp);

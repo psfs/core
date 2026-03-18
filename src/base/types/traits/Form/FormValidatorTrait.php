@@ -48,11 +48,15 @@ trait FormValidatorTrait
         if (null === $value) {
             $isEmpty = true;
             // Empty Array check
-        } else if (is_array($value) && 0 === count($value)) {
-            $isEmpty = true;
-            // Empty string check
-        } else if ('' === preg_replace('/(\ |\r|\n)/m', '', $value)) {
-            $isEmpty = true;
+        } else {
+            if (is_array($value) && 0 === count($value)) {
+                $isEmpty = true;
+                // Empty string check
+            } else {
+                if ('' === preg_replace('/(\ |\r|\n)/m', '', $value)) {
+                    $isEmpty = true;
+                }
+            }
         }
 
         return $isEmpty;
@@ -67,7 +71,9 @@ trait FormValidatorTrait
     {
         // Check if required
         $valid = true;
-        if ((!array_key_exists('required', $field) || false !== (bool)$field['required']) && $this->checkEmpty($field['value'])) {
+        if ((!array_key_exists('required', $field) || false !== (bool)$field['required']) && $this->checkEmpty(
+                $field['value']
+            )) {
             $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('Field %s is required')));
             $field['error'] = $this->getError($key);
             $valid = false;

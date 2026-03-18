@@ -194,7 +194,7 @@ trait DocumentorHelperTrait
         try {
             $reflector = new ReflectionClass($namespace);
             // Checks if reflector is a subclass of propel ActiveRecords
-            if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
+            if (null !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                 $tableMap = $namespace::TABLE_MAP;
                 $tableMap = $tableMap::getTableMap();
 

@@ -33,8 +33,12 @@ class MetadataReader
      * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
      * @return mixed
      */
-    public static function getTagValue(string $tag, ?string $doc = '', mixed $default = null, ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null): mixed
-    {
+    public static function getTagValue(
+        string $tag,
+        ?string $doc = '',
+        mixed $default = null,
+        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
+    ): mixed {
         if (self::attributesEnabled()) {
             $value = self::readFromAttributes($tag, $reflector);
             if (null !== $value) {
@@ -94,8 +98,10 @@ class MetadataReader
         return (bool)Config::getParam('metadata.attributes.enabled', false);
     }
 
-    private static function readFromAttributes(string $tag, ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null): mixed
-    {
+    private static function readFromAttributes(
+        string $tag,
+        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
+    ): mixed {
         if (null === $reflector) {
             return null;
         }
@@ -116,8 +122,10 @@ class MetadataReader
         };
     }
 
-    private static function readAttributeValue(ReflectionClass|ReflectionMethod|ReflectionProperty $reflector, string $attributeClass): mixed
-    {
+    private static function readAttributeValue(
+        ReflectionClass|ReflectionMethod|ReflectionProperty $reflector,
+        string $attributeClass
+    ): mixed {
         $attributes = $reflector->getAttributes($attributeClass);
         if (empty($attributes)) {
             return null;

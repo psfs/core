@@ -67,7 +67,7 @@ trait ApiTrait
      */
     protected function renderModel()
     {
-        return (NULL !== $this->model) ? $this->model->toArray() : [];
+        return (null !== $this->model) ? $this->model->toArray() : [];
     }
 
     protected function extractFields()
@@ -90,12 +90,11 @@ trait ApiTrait
         foreach ($this->data as $item) {
             if (is_array($item)) {
                 if (count($this->list) < Config::getParam('api.block.limit', 1000)) {
-
                     $model = $class->newInstance();
                     $this->hydrateModelFromRequest($model, $item);
                     $this->list[] = $model;
                 } else {
-                    Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, count($this->data) . t('items'));
+                    Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, [count($this->data) . t('items')]);
                 }
             }
         }
@@ -149,22 +148,11 @@ trait ApiTrait
      */
     protected function findPk(ModelCriteria $query, $primaryKey)
     {
-        $pks = explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
-        if (count($pks) === 1 && !empty($pks[0])) {
-            $query->filterByPrimaryKey($pks[0]);
+        $pkTokens = $this->parsePrimaryKeyTokens($primaryKey);
+        if ($this->hasSinglePrimaryKeyToken($pkTokens)) {
+            $query->filterByPrimaryKey($pkTokens[0]);
         } else {
-            $item = 0;
-            foreach ($this->getPkDbName() as $phpName) {
-                try {
-                    $query->filterBy($phpName, $pks[$item]);
-                    $item++;
-                    if ($item >= count($pks)) {
-                        break;
-                    }
-                } catch (\Exception $e) {
-                    Logger::log($e->getMessage(), LOG_DEBUG);
-                }
-            }
+            $this->applyCompositePrimaryKeyFilters($query, $pkTokens);
         }
         $results = $query->find($this->con);
         return $results->getFirst();
@@ -206,7 +194,7 @@ trait ApiTrait
     {
         $this->hydrateModel($primaryKey);
 
-        return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : NULL;
+        return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : null;
     }
 
     /**
@@ -216,17 +204,7 @@ trait ApiTrait
     {
         $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
         if (null !== $returnFields) {
-            $fields = explode(',', $returnFields);
-            $select = [];
-
-            $tablemap = $this->getTableMap();
-            foreach ($fields as $field) {
-                if (in_array($field, $this->extraColumns)) {
-                    $select[] = $field;
-                } elseif (null !== ApiHelper::checkFieldExists($tablemap, $field)) {
-                    $select[] = $field;
-                }
-            }
+            $select = $this->resolveReturnFields($returnFields);
             if (count($select) > 0) {
                 $query->select($select);
             }
@@ -243,5 +221,63 @@ trait ApiTrait
     {
         $this->closeTransaction($status);
         return $this->_json($response, $status);
+    }
+
+    /**
+     * @param string $primaryKey
+     * @return array<int, string>
+     */
+    protected function parsePrimaryKeyTokens(string $primaryKey): array
+    {
+        return explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
+    }
+
+    /**
+     * @param array<int, string> $pkTokens
+     */
+    protected function hasSinglePrimaryKeyToken(array $pkTokens): bool
+    {
+        return count($pkTokens) === 1 && !empty($pkTokens[0]);
+    }
+
+    /**
+     * @param ModelCriteria $query
+     * @param array<int, string> $pkTokens
+     */
+    protected function applyCompositePrimaryKeyFilters(ModelCriteria $query, array $pkTokens): void
+    {
+        $item = 0;
+        foreach ($this->getPkDbName() as $phpName) {
+            try {
+                $query->filterBy($phpName, $pkTokens[$item]);
+                $item++;
+                if ($item >= count($pkTokens)) {
+                    break;
+                }
+            } catch (\Exception $e) {
+                Logger::log($e->getMessage(), LOG_DEBUG);
+            }
+        }
+    }
+
+    /**
+     * @param string $returnFields
+     * @return array<int, string>
+     */
+    protected function resolveReturnFields(string $returnFields): array
+    {
+        $fields = explode(',', $returnFields);
+        $select = [];
+        $tablemap = $this->getTableMap();
+        foreach ($fields as $field) {
+            if (in_array($field, $this->extraColumns, true)) {
+                $select[] = $field;
+                continue;
+            }
+            if (null !== ApiHelper::checkFieldExists($tablemap, $field)) {
+                $select[] = $field;
+            }
+        }
+        return $select;
     }
 }

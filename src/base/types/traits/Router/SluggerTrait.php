@@ -51,7 +51,12 @@ trait SluggerTrait
     {
         $this->generateSlugs();
         GeneratorHelper::createDir(CONFIG_DIR);
-        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json', [$this->routing, $this->getSlugs()], Cache::JSON, TRUE);
+        Cache::getInstance()->storeData(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'urls.json',
+            [$this->routing, $this->getSlugs()],
+            Cache::JSON,
+            true
+        );
 
         return $this;
     }

@@ -96,7 +96,10 @@ abstract class AuthApi extends Api
             self::$legacyTokenWarningLogged = true;
         }
 
-        $legacyToken = $this->sanitizeToken((string)$this->query[self::LEGACY_QUERY_TOKEN_PARAM], self::TOKEN_SOURCE_QUERY_LEGACY);
+        $legacyToken = $this->sanitizeToken(
+            (string)$this->query[self::LEGACY_QUERY_TOKEN_PARAM],
+            self::TOKEN_SOURCE_QUERY_LEGACY
+        );
         if ($legacyToken !== '') {
             self::trackTokenSource(self::TOKEN_SOURCE_QUERY_LEGACY);
         }

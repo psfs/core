@@ -84,7 +84,12 @@ class Singleton
     {
         $calledClass = static::class;
         try {
-            $instance = InjectorHelper::constructInjectableInstance($variable, $singleton, $classNameSpace, $calledClass);
+            $instance = InjectorHelper::constructInjectableInstance(
+                $variable,
+                $singleton,
+                $classNameSpace,
+                $calledClass
+            );
             $setter = 'set' . ucfirst($variable);
             if (method_exists($calledClass, $setter)) {
                 $this->$setter($instance);
@@ -106,7 +111,6 @@ class Singleton
     public function init()
     {
         if (!$this->isLoaded()) {
-
             $configService = Config::getInstance();
             $repository = $this->createReflectionRepository(get_class($this));
             $properties = $repository->read();

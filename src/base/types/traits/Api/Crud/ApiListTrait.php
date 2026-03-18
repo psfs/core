@@ -68,11 +68,11 @@ trait ApiListTrait
     protected function addOrders(ModelCriteria &$query)
     {
         Logger::log(static::class . ' extract orders start ', LOG_DEBUG);
-        $orderAdded = FALSE;
+        $orderAdded = false;
         $tableMap = $this->getTableMap();
         foreach ($this->order->getOrders() as $field => $direction) {
             if ($column = ApiHelper::checkFieldExists($tableMap, $field)) {
-                $orderAdded = TRUE;
+                $orderAdded = true;
                 if ($direction === Order::ASC) {
                     $query->addAscendingOrderByColumn($column->getPhpName());
                 } else {

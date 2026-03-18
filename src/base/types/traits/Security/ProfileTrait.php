@@ -86,7 +86,11 @@ trait ProfileTrait
     public static function save($user)
     {
         $saved = true;
-        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
+        $admins = Cache::getInstance()->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json',
+            Cache::JSONGZ,
+            true
+        ) ?: [];
         $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
         $admins[$user['username']]['profile'] = $user['profile'];
 
@@ -110,7 +114,11 @@ trait ProfileTrait
 
     public function deleteUser($user)
     {
-        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true) ?: [];
+        $admins = Cache::getInstance()->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json',
+            Cache::JSONGZ,
+            true
+        ) ?: [];
         unset($admins[$user]);
         Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
     }

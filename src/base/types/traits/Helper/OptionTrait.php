@@ -37,7 +37,7 @@ trait OptionTrait
      *
      * @return OptionTrait
      */
-    public function addOption($key, $value = NULL)
+    public function addOption($key, $value = null)
     {
         $this->options[$key] = $value;
         return $this;

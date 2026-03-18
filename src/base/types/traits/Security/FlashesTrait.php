@@ -16,7 +16,7 @@ trait FlashesTrait
     {
         $flashes = $this->getSessionKey(self::FLASH_MESSAGE_TOKEN);
 
-        return (NULL !== $flashes) ? $flashes : array();
+        return (null !== $flashes) ? $flashes : array();
     }
 
     /**
@@ -24,7 +24,7 @@ trait FlashesTrait
      */
     public function clearFlashes()
     {
-        $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, NULL);
+        $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, null);
 
         return $this;
     }
@@ -34,7 +34,7 @@ trait FlashesTrait
      * @param string $key
      * @param mixed $data
      */
-    public function setFlash($key, $data = NULL)
+    public function setFlash($key, $data = null)
     {
         $flashes = $this->getFlashes();
         if (!is_array($flashes)) {
@@ -54,6 +54,6 @@ trait FlashesTrait
     {
         $flashes = $this->getFlashes();
 
-        return (NULL !== $key && array_key_exists($key, $flashes)) ? $flashes[$key] : NULL;
+        return (null !== $key && array_key_exists($key, $flashes)) ? $flashes[$key] : null;
     }
 }

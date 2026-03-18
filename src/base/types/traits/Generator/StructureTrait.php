@@ -38,8 +38,18 @@ trait StructureTrait
         // Create core module folders.
         Logger::log("Generating structure");
         $paths = [
-            "Api", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
-            "Locale", "Locale/" . Config::getParam('default.locale', 'en_US'), "Locale/" . Config::getParam('default.locale', 'en_US') . "/LC_MESSAGES"
+            "Api",
+            "Config",
+            "Controller",
+            "Models",
+            "Public",
+            "Templates",
+            "Services",
+            "Test",
+            "Doc",
+            "Locale",
+            "Locale/" . Config::getParam('default.locale', 'en_US'),
+            "Locale/" . Config::getParam('default.locale', 'en_US') . "/LC_MESSAGES"
         ];
         $modulePath = $modPath . $module;
         foreach ($paths as $path) {
@@ -62,12 +72,16 @@ trait StructureTrait
     {
         // Generate base asset files.
         Logger::log("Generating files for base assets");
-        $css = $this->writeTemplateToFile("/* CSS3 STYLES */\n\n",
+        $css = $this->writeTemplateToFile(
+            "/* CSS3 STYLES */\n\n",
             $modPath . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "css" . DIRECTORY_SEPARATOR . "styles.css",
-            $force);
-        $js = $this->writeTemplateToFile("/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();",
+            $force
+        );
+        $js = $this->writeTemplateToFile(
+            "/* APP MODULE JS */\n\n(function() {\n\t'use strict';\n})();",
             $modPath . DIRECTORY_SEPARATOR . "Public" . DIRECTORY_SEPARATOR . "js" . DIRECTORY_SEPARATOR . "app.js",
-            $force);
+            $force
+        );
         return ($css && $js);
     }
 
@@ -87,9 +101,11 @@ trait StructureTrait
             "namespace" => preg_replace('/(\\\|\/)/', '\\', $module),
             "class" => $class,
         ));
-        return $this->writeTemplateToFile($controller,
+        return $this->writeTemplateToFile(
+            $controller,
             $modPath . DIRECTORY_SEPARATOR . "Services" . DIRECTORY_SEPARATOR . "{$class}Service.php",
-            $force);
+            $force
+        );
     }
 
     /**
@@ -113,7 +129,11 @@ trait StructureTrait
         $phpUnitTemplate = $this->tpl->dump("generator/phpunit.template.twig", array(
             "module" => $module,
         ));
-        $phpunit = $this->writeTemplateToFile($phpUnitTemplate, $mod_path . DIRECTORY_SEPARATOR . "phpunit.xml.dist", $force);
+        $phpunit = $this->writeTemplateToFile(
+            $phpUnitTemplate,
+            $mod_path . DIRECTORY_SEPARATOR . "phpunit.xml.dist",
+            $force
+        );
         return $autoload && $phpunit;
     }
 }

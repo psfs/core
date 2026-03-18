@@ -43,7 +43,11 @@ trait RouterCacheFlowTrait
 
     private function loadDomainsCache(): array
     {
-        $domains = $this->cache->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', $this->cacheType, true);
+        $domains = $this->cache->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json',
+            $this->cacheType,
+            true
+        );
         return is_array($domains) ? $domains : [];
     }
 
@@ -79,7 +83,10 @@ trait RouterCacheFlowTrait
         $bestFallbackScore = PHP_INT_MIN;
         foreach ($this->routing as $pattern => $action) {
             [$httpMethod, $routePattern] = RouterHelper::extractHttpRoute($pattern);
-            if (!RouterHelper::matchRoutePattern($routePattern, $path) || !RouterHelper::compareSlashes($routePattern, $path)) {
+            if (!RouterHelper::matchRoutePattern($routePattern, $path) || !RouterHelper::compareSlashes(
+                    $routePattern,
+                    $path
+                )) {
                 continue;
             }
             $score = $this->calculateRouteSpecificity($routePattern);

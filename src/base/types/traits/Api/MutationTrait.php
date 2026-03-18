@@ -76,9 +76,8 @@ trait MutationTrait
      */
     protected function getModelNamespace()
     {
-
         $tableMap = $this->getModelTableMap();
-        return (null !== $tableMap) ? $tableMap::getOMClass(FALSE) : null;
+        return (null !== $tableMap) ? $tableMap::getOMClass(false) : null;
     }
 
     /**
@@ -96,7 +95,6 @@ trait MutationTrait
      */
     protected function getPkDbName()
     {
-
         $tableMap = $this->getTableMap();
         $pks = $tableMap->getPrimaryKeys();
         if (count($pks) === 1) {
@@ -149,7 +147,6 @@ trait MutationTrait
     protected function addDefaultListField()
     {
         if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns))) {
-
             $tableMap = $this->getTableMap();
 
             $column = null;
@@ -182,13 +179,7 @@ trait MutationTrait
             $this->addPkToList();
         }
         if (!empty($this->extraColumns)) {
-            if (Config::getParam('api.extrafields.compat', true)) {
-                $fields = array_values($this->extraColumns);
-            } else {
-                $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
-                $fields = explode(',', $returnFields ?: '');
-                $fields[] = self::API_MODEL_KEY_FIELD;
-            }
+            $fields = $this->resolveRequestedExtraFields();
             foreach ($this->extraColumns as $expression => $columnName) {
                 if (empty($fields) || in_array($columnName, $fields)) {
                     $query->withColumn($expression, $columnName);
@@ -233,7 +224,10 @@ trait MutationTrait
                 if (!$columnMap->isPrimaryKey()) {
                     $query->withColumn($columnMap->getFullyQualifiedName(), ApiHelper::getColumnMapName($columnMap));
                 } elseif (!$columnMap->isForeignKey()) {
-                    $query->withColumn('IFNULL(' . $columnMap->getFullyQualifiedName() . ', "' . $this->lang . '")', ApiHelper::getColumnMapName($columnMap));
+                    $query->withColumn(
+                        'IFNULL(' . $columnMap->getFullyQualifiedName() . ', "' . $this->lang . '")',
+                        ApiHelper::getColumnMapName($columnMap)
+                    );
                 }
             }
         }
@@ -241,11 +235,13 @@ trait MutationTrait
 
     protected function cleanData(array &$data)
     {
-        foreach ($data as $key => &$value) {
+        foreach ($data as &$value) {
             if (is_array($value)) {
                 $this->cleanData($value);
-            } else if (is_string($value)) {
-                $value = I18nHelper::cleanHtmlAttacks($value);
+            } else {
+                if (is_string($value)) {
+                    $value = $this->sanitizeString($value);
+                }
             }
         }
     }
@@ -263,8 +259,7 @@ trait MutationTrait
             if ($tableMap->hasRelation($tableMap->getPhpName() . 'I18n')) {
                 $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
-                $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
-                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, $defaultLanguage)));
+                $model->setLocale($this->resolveLocaleFromInput($data));
                 foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
                     $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
@@ -289,5 +284,39 @@ trait MutationTrait
     protected function getBulkSavedCount(): int
     {
         return $this->bulkSavedCount;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function resolveRequestedExtraFields(): array
+    {
+        if (Config::getParam('api.extrafields.compat', true)) {
+            return array_values($this->extraColumns);
+        }
+        $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
+        $fields = explode(',', $returnFields ?: '');
+        $fields[] = self::API_MODEL_KEY_FIELD;
+        return $fields;
+    }
+
+    protected function sanitizeString(string $value): string
+    {
+        return I18nHelper::cleanHtmlAttacks($value);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    protected function resolveLocaleFromInput(array $data): string
+    {
+        if (array_key_exists('Locale', $data)) {
+            return (string)$data['Locale'];
+        }
+        if (array_key_exists('locale', $data)) {
+            return (string)$data['locale'];
+        }
+        $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
+        return (string)Request::header(Api::HEADER_API_LANG, $defaultLanguage);
     }
 }

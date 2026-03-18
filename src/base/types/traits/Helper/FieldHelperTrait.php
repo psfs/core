@@ -135,14 +135,21 @@ trait FieldHelperTrait
                 foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $columnName = self::getColumnMapName($columnMap);
                     if (!$form->fieldExists($columnName)) {
-
-                        $fDto = self::parseFormField($domain, $i18NTableMap, $columnMap->getPhpName(), $i18NTableMap->getBehaviors());
+                        $fDto = self::parseFormField(
+                            $domain,
+                            $i18NTableMap,
+                            $columnMap->getPhpName(),
+                            $i18NTableMap->getBehaviors()
+                        );
                         if (null !== $fDto) {
                             $fDto->pk = false;
                             $fDto->required = true;
                             if (strtolower($fDto->name) === 'locale') {
                                 $fDto->type = Field::COMBO_TYPE;
-                                $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'en_US')));
+                                $languages = explode(
+                                    ',',
+                                    Config::getParam('i18n.locales', Config::getParam('default.language', 'en_US'))
+                                );
                                 foreach ($languages as $language) {
                                     $fDto->data[] = [
                                         $fDto->name => $language,

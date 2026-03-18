@@ -50,8 +50,11 @@ trait ApiGenerationTrait
             'package' => $package,
         ));
 
-        return $this->writeTemplateToFile($controller,
-            $modPath . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$api}BaseApi.php", true);
+        return $this->writeTemplateToFile(
+            $controller,
+            $modPath . DIRECTORY_SEPARATOR . 'base' . DIRECTORY_SEPARATOR . "{$api}BaseApi.php",
+            true
+        );
     }
 
     /**
@@ -93,16 +96,25 @@ trait ApiGenerationTrait
         while ($file = $dir->read()) {
             if (!in_array(strtolower($file), ['.', '..', 'base', 'map'])) {
                 if (is_dir($base . DIRECTORY_SEPARATOR . $file)) {
-                    $this->generateApiFiles($module, $force, $apiClass, dir($base . DIRECTORY_SEPARATOR . $file), $apiPath . DIRECTORY_SEPARATOR . $file, $file);
-                } else if (!preg_match('/Query\.php$/i', $file)
-                    && !preg_match('/I18n\.php$/i', $file)
-                    && preg_match('/\.php$/i', $file)
-                ) {
-                    $filename = str_replace(".php", "", $file);
-                    $this->log->addLog("Generating BASE APIs for {$filename}");
-                    if ($this->checkIfIsModel($module, $filename, $package)) {
-                        $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
-                        $this->createApi($module, $apiPath, $force, $filename, $package);
+                    $this->generateApiFiles(
+                        $module,
+                        $force,
+                        $apiClass,
+                        dir($base . DIRECTORY_SEPARATOR . $file),
+                        $apiPath . DIRECTORY_SEPARATOR . $file,
+                        $file
+                    );
+                } else {
+                    if (!preg_match('/Query\.php$/i', $file)
+                        && !preg_match('/I18n\.php$/i', $file)
+                        && preg_match('/\.php$/i', $file)
+                    ) {
+                        $filename = str_replace(".php", "", $file);
+                        $this->log->addLog("Generating BASE APIs for {$filename}");
+                        if ($this->checkIfIsModel($module, $filename, $package)) {
+                            $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
+                            $this->createApi($module, $apiPath, $force, $filename, $package);
+                        }
                     }
                 }
             }

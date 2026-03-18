@@ -46,7 +46,6 @@ class TemplateFunctions
      */
     public static function asset(string $string, string $name = null, bool $return = true): ?string
     {
-
         $filePath = $returnPath = '';
         if (!file_exists($filePath)) {
             $filePath = BASE_DIR . $string;
@@ -165,8 +164,13 @@ class TemplateFunctions
         // Check if resources has been copied to public folders
         if (!$debug) {
             $cacheFilename = Config::getParam('cache.var', '__initial__') . '.file.cache';
-            $cachedFiles = Cache::getInstance()->readFromCache($cacheFilename,
-                1, fn() => [], Cache::JSON, true) ?: [];
+            $cachedFiles = Cache::getInstance()->readFromCache(
+                $cacheFilename,
+                1,
+                fn() => [],
+                Cache::JSON,
+                true
+            ) ?: [];
             // Force the resource copy
             if (!in_array($filenamePath, $cachedFiles) || $force) {
                 $force = true;
@@ -195,7 +199,6 @@ class TemplateFunctions
                     break;
                 }
             }
-
         }
 
         return $filenamePath;
@@ -222,8 +225,12 @@ class TemplateFunctions
      * @param string $base
      * @param string $filePath
      */
-    private static function putResourceContent(string|null $name, string $filenamePath, string $base, string $filePath): void
-    {
+    private static function putResourceContent(
+        string|null $name,
+        string $filenamePath,
+        string $base,
+        string $filePath
+    ): void {
         $data = file_get_contents($filenamePath);
         if (!empty($name)) {
             file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
@@ -240,11 +247,20 @@ class TemplateFunctions
      * @return string
      * @throws GeneratorException
      */
-    private static function processAsset(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): string
-    {
+    private static function processAsset(
+        string $string,
+        string|null $name = null,
+        bool $return = true,
+        string $filenamePath = ''
+    ): string {
         $filePath = $filenamePath;
         if (file_exists($filenamePath)) {
-            list($base, $htmlBase, $filePath) = AssetsHelper::calculateAssetPath($string, $name, $return, $filenamePath);
+            list($base, $htmlBase, $filePath) = AssetsHelper::calculateAssetPath(
+                $string,
+                $name,
+                $return,
+                $filenamePath
+            );
             // Create directory when it does not exist.
             GeneratorHelper::createDir($base . $htmlBase);
             //Si se ha modificado

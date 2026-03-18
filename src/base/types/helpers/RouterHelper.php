@@ -21,7 +21,10 @@ class RouterHelper
      */
     public static function getClassToCall(array $action): mixed
     {
-        Inspector::stats('[RouterHelper] Getting class to call for executing the request action', Inspector::SCOPE_DEBUG);
+        Inspector::stats(
+            '[RouterHelper] Getting class to call for executing the request action',
+            Inspector::SCOPE_DEBUG
+        );
         Logger::log('Getting class to call for executing the request action', LOG_DEBUG, $action);
         $actionClass = class_exists($action['class']) ? $action['class'] : "\\" . $action['class'];
         $reflectionClass = new ReflectionClass($actionClass);
@@ -171,7 +174,11 @@ class RouterHelper
             foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                     $params[$param->getName()] = $param->getDefaultValue();
-                    $default = str_replace('{' . $param->getName() . '}', $param->getDefaultValue() ?: '', $regex ?: '');
+                    $default = str_replace(
+                        '{' . $param->getName() . '}',
+                        $param->getDefaultValue() ?: '',
+                        $regex ?: ''
+                    );
                 } elseif (!$param->isOptional()) {
                     $requirements[] = $param->getName();
                 }
@@ -196,7 +203,10 @@ class RouterHelper
         $docComments = $method->getDocComment();
         $regexpRoute = AnnotationHelper::extractRoute($docComments ?: '', $method);
         if (null !== $regexpRoute) {
-            list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams($regexpRoute, $method);
+            list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams(
+                $regexpRoute,
+                $method
+            );
             $originalRegex = $regex;
             if ('' !== $api && str_contains($regex, '__API__')) {
                 $regex = str_replace('{__API__}', $api, $regex);
@@ -206,7 +216,10 @@ class RouterHelper
             $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments ?: '', $method);
             $icon = AnnotationHelper::extractDocIcon($docComments ?: '', $method);
-            $label = AnnotationHelper::extractReflectionLabel(str_replace('{__API__}', $api, $docComments ?: ''), $method);
+            $label = AnnotationHelper::extractReflectionLabel(
+                str_replace('{__API__}', $api, $docComments ?: ''),
+                $method
+            );
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [

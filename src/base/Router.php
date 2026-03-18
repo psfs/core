@@ -105,7 +105,11 @@ class Router
         try {
             return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
-            Logger::log(t('Requesting credentials for restricted area access'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
+            Logger::log(
+                t('Requesting credentials for restricted area access'),
+                LOG_WARNING,
+                ['file' => $e->getFile() . '[' . $e->getLine() . ']']
+            );
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
             throw $this->stageMapNotFoundException($r);
@@ -201,7 +205,11 @@ class Router
             if ($modules->hasResults()) {
                 foreach ($modules->getIterator() as $modulePath) {
                     $module = $modulePath->getBasename();
-                    $this->routing = $this->inspectDir($modulesPath . DIRECTORY_SEPARATOR . $module, $module, $this->routing);
+                    $this->routing = $this->inspectDir(
+                        $modulesPath . DIRECTORY_SEPARATOR . $module,
+                        $module,
+                        $this->routing
+                    );
                 }
             }
         }
@@ -277,7 +285,11 @@ class Router
         Inspector::stats("[Router] Pre action invoked " . get_class($class) . "::{$method}", Inspector::SCOPE_DEBUG);
         try {
             if (false === call_user_func_array([$class, $method], [])) {
-                Logger::log(t("[Router] action " . get_class($class) . "::{$method} failed"), LOG_ERR, [error_get_last()]);
+                Logger::log(
+                    t("[Router] action " . get_class($class) . "::{$method} failed"),
+                    LOG_ERR,
+                    [error_get_last()]
+                );
                 error_clear_last();
             }
         } catch (Exception $e) {

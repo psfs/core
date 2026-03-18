@@ -82,7 +82,9 @@ class CustomTranslateExtension extends AbstractExtension
     {
         Inspector::stats('[translationsCheckLoad] Start checking translations load', Inspector::SCOPE_DEBUG);
         $session = Security::getInstance();
-        $sessionLocale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY) ?? $session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY);
+        $sessionLocale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY) ?? $session->getSessionKey(
+            I18nHelper::PSFS_SESSION_LANGUAGE_KEY
+        );
         self::$locale = self::resolveLocale($sessionLocale, $forceReload);
         $locale = self::$locale;
         $version = $session->getSessionKey(self::LOCALE_CACHED_VERSION);
@@ -150,8 +152,12 @@ class CustomTranslateExtension extends AbstractExtension
         return $customKey ?: $session->getSessionKey(self::CUSTOM_LOCALE_SESSION_KEY);
     }
 
-    private static function loadTranslationsFromCatalog(string $locale, ?string $customKey, Security $session, string $configVersion): bool
-    {
+    private static function loadTranslationsFromCatalog(
+        string $locale,
+        ?string $customKey,
+        Security $session,
+        string $configVersion
+    ): bool {
         $standardTranslations = self::extractBaseTranslations();
         self::setCustomCatalogFilename($locale, $customKey);
         if (null === $customKey && !empty($standardTranslations)) {
@@ -219,7 +225,10 @@ class CustomTranslateExtension extends AbstractExtension
         // Set default translation to catch missing strings
         $isDebugMode = (bool)Config::getParam('debug', false);
         $catalog = array_key_exists(self::$locale, self::$translations) ? self::$translations[self::$locale] : [];
-        $catalogKeys = array_key_exists(self::$locale, self::$translationsKeys) ? self::$translationsKeys[self::$locale] : [];
+        $catalogKeys = array_key_exists(
+            self::$locale,
+            self::$translationsKeys
+        ) ? self::$translationsKeys[self::$locale] : [];
         $translation = I18nHelper::translateWithProviders(
             $message,
             self::$locale,
@@ -250,7 +259,10 @@ class CustomTranslateExtension extends AbstractExtension
         if (!self::shouldPersistGeneratedTranslation()) {
             return;
         }
-        file_put_contents(self::$filename, json_encode(self::$translations[self::$locale], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents(
+            self::$filename,
+            json_encode(self::$translations[self::$locale], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+        );
     }
 
     private static function shouldPersistGeneratedTranslation(): bool

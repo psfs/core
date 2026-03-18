@@ -53,7 +53,7 @@ trait SystemTrait
      */
     public function getTs()
     {
-        return microtime(TRUE) - $this->ts;
+        return microtime(true) - $this->ts;
     }
 
 
@@ -73,7 +73,7 @@ trait SystemTrait
 
         register_shutdown_function(function () {
             $error = error_get_last() or json_last_error() or preg_last_error() or \DateTime::getLastErrors();
-            if ($error !== NULL) {
+            if ($error !== null) {
                 $errno = $error["type"];
                 $errfile = $error["file"];
                 $errline = $error["line"];

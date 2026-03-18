@@ -33,7 +33,9 @@ class AssetsNode extends Node
         $scripts = $this->getNode("scripts");
 
         //Creamos el parser
-        $compiler->addDebugInfo($scripts)->write('$parser = new \\PSFS\\base\\extension\\AssetsParser(\'' . $this->type . '\')')
+        $compiler->addDebugInfo($scripts)->write(
+            '$parser = new \\PSFS\\base\\extension\\AssetsParser(\'' . $this->type . '\')'
+        )
             ->raw(";\n");
 
         //Asociamos el hash

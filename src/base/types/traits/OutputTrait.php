@@ -142,7 +142,6 @@ trait OutputTrait
         ResponseHelper::setAuthHeaders($this->isPublicZone());
         ResponseHelper::setCookieHeaders($cookies);
         ResponseHelper::setHeader('Content-type: ' . $contentType);
-
     }
 
     /**
@@ -167,7 +166,11 @@ trait OutputTrait
             if (null !== $cacheDataName && false !== $needCache && $this->getStatusCode() === Template::STATUS_OK) {
                 Logger::log('Saving output response into cache');
                 $cache->storeData('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $output);
-                $cache->storeData('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers', headers_list(), Cache::JSON);
+                $cache->storeData(
+                    'json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers',
+                    headers_list(),
+                    Cache::JSON
+                );
             } elseif (Request::getInstance()->getMethod() !== 'GET') {
                 $cache->flushCache();
             }

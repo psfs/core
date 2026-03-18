@@ -23,7 +23,7 @@ trait SessionTrait
      */
     public function getSessionKey($key)
     {
-        $data = NULL;
+        $data = null;
         if ($this->hasSessionKey($key)) {
             $data = $this->session[$key];
         }
@@ -47,7 +47,7 @@ trait SessionTrait
      *
      * @return $this
      */
-    public function setSessionKey($key, $data = NULL)
+    public function setSessionKey($key, $data = null)
     {
         $this->session[$key] = $data;
 
@@ -72,7 +72,7 @@ trait SessionTrait
      *
      * @return $this
      */
-    public function updateSession($closeSession = FALSE)
+    public function updateSession($closeSession = false)
     {
         Logger::log('Update session');
         $_SESSION = $this->session;
@@ -101,7 +101,7 @@ trait SessionTrait
             Logger::log('[SessionTrait::closeSession] Unable to destroy session');
         }
 
-        if (@session_regenerate_id(TRUE) === false) {
+        if (@session_regenerate_id(true) === false) {
             Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
         }
 

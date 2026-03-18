@@ -123,7 +123,7 @@ abstract class Api extends Singleton
     public function get($pk)
     {
         $this->action = self::API_ACTION_GET;
-        $total = NULL;
+        $total = null;
         $pages = 1;
         $message = null;
         list($code, $return) = $this->getSingleResult($pk);
@@ -146,15 +146,15 @@ abstract class Api extends Singleton
     public function post()
     {
         $this->action = self::API_ACTION_POST;
-        $saved = FALSE;
+        $saved = false;
         $status = 400;
-        $model = NULL;
+        $model = null;
         $message = null;
         try {
             $this->hydrateFromRequest();
             if (false !== $this->model->save($this->con)) {
                 $status = 200;
-                $saved = TRUE;
+                $saved = true;
                 $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
             } else {
                 $message = t('Selected model could not be saved');
@@ -192,14 +192,14 @@ abstract class Api extends Singleton
         $this->action = self::API_ACTION_PUT;
         $this->hydrateModel($pk);
         $status = 400;
-        $updated = FALSE;
-        $model = NULL;
+        $updated = false;
+        $model = null;
         $message = null;
-        if (NULL !== $this->model) {
+        if (null !== $this->model) {
             try {
                 $this->hydrateModelFromRequest($this->model, $this->data);
-                if ($this->model->save($this->con) !== FALSE) {
-                    $updated = TRUE;
+                if ($this->model->save($this->con) !== false) {
+                    $updated = true;
                     $status = 200;
                     $model = $this->model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);
                 } else {
@@ -209,7 +209,9 @@ abstract class Api extends Singleton
                 if (Config::getParam('debug')) {
                     $message = t('An error occurred while updating the item: ') . '<br>' . $e->getMessage();
                 } else {
-                    $message = t('An error occurred while updating the item, please check logs: ') . '<br>' . $e->getCode();
+                    $message = t(
+                            'An error occurred while updating the item, please check logs: '
+                        ) . '<br>' . $e->getCode();
                 }
                 $context = [];
                 if (null !== $e->getPrevious()) {
@@ -234,22 +236,22 @@ abstract class Api extends Singleton
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
      */
-    public function delete($pk = NULL)
+    public function delete($pk = null)
     {
         $this->action = self::API_ACTION_DELETE;
         $this->closeTransaction(200);
-        $deleted = FALSE;
+        $deleted = false;
         $message = null;
-        if (NULL !== $pk) {
+        if (null !== $pk) {
             try {
                 $this->con->beginTransaction();
                 $this->hydrateModel($pk);
-                if (NULL !== $this->model) {
-                    if (method_exists('clearAllReferences', $this->model)) {
+                if (null !== $this->model) {
+                    if (method_exists($this->model, 'clearAllReferences')) {
                         $this->model->clearAllReferences(true);
                     }
                     $this->model->delete($this->con);
-                    $deleted = TRUE;
+                    $deleted = true;
                 }
             } catch (\Exception $e) {
                 $context = [];
@@ -257,7 +259,6 @@ abstract class Api extends Singleton
                     $context[] = $e->getPrevious()->getMessage();
                 }
                 Logger::log($e->getMessage(), LOG_CRIT, $context);
-
             }
         }
 
@@ -275,7 +276,7 @@ abstract class Api extends Singleton
     public function bulk()
     {
         $this->action = self::API_ACTION_BULK;
-        $saved = FALSE;
+        $saved = false;
         $status = 400;
         $message = null;
         $savedCount = 0;
@@ -313,7 +314,9 @@ abstract class Api extends Singleton
         try {
             $this->paginate();
             if (null !== $this->list) {
-                if (array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam('api.field.types')) {
+                if (array_key_exists(self::API_FIELDS_RESULT_FIELD, $this->query) && Config::getParam(
+                        'api.field.types'
+                    )) {
                     $return = $this->extractDataWithFormat();
                 } else {
                     $return = $this->list->toArray(null, false, $this->fieldType ?: TableMap::TYPE_PHPNAME, false);
@@ -345,7 +348,7 @@ abstract class Api extends Singleton
         $model = $this->_get($pk);
         $code = 200;
         $return = array();
-        if (NULL === $model || !method_exists($model, 'toArray')) {
+        if (null === $model || !method_exists($model, 'toArray')) {
             $code = 404;
         } else {
             $return = $model->toArray($this->fieldType ?: TableMap::TYPE_PHPNAME, true, [], true);

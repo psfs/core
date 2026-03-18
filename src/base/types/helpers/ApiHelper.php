@@ -32,8 +32,12 @@ class ApiHelper
      * @return Field|null
      * @throws GeneratorException
      */
-    public static function buildFieldDto(string $domain, TableMap $tableMap, string $field, array $behaviors = []): ?Field
-    {
+    public static function buildFieldDto(
+        string $domain,
+        TableMap $tableMap,
+        string $field,
+        array $behaviors = []
+    ): ?Field {
         return self::parseFormField($domain, $tableMap, $field, $behaviors);
     }
 
@@ -47,7 +51,6 @@ class ApiHelper
      */
     protected static function parseFormField($domain, TableMap $tableMap, $field, array $behaviors = [])
     {
-
         $mappedColumn = $tableMap->getColumnByPhpName($field);
         $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
         $fDto = self::parseFieldType($domain, $field, $behaviors, $mappedColumn, $required);
@@ -138,7 +141,10 @@ class ApiHelper
             $fDto = self::generateBooleanField($field, $required);
         } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
             $fDto = self::generatePasswordField($field, $required);
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP])) {
+        } elseif (in_array(
+            $mappedColumn->getType(),
+            [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP]
+        )) {
             $fDto = self::generateTimestampField($field, $behaviors, $mappedColumn, $required);
         } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
             $fDto = self::parseEnumField($field, $required, $mappedColumn);
@@ -173,8 +179,15 @@ class ApiHelper
      */
     protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {
-        $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);
-        if (array_key_exists('timestampable', $behaviors) && false !== array_search($mappedColumn->getName(), $behaviors['timestampable'])) {
+        $fDto = self::createField(
+            $field,
+            $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE,
+            $required
+        );
+        if (array_key_exists('timestampable', $behaviors) && false !== array_search(
+                $mappedColumn->getName(),
+                $behaviors['timestampable']
+            )) {
             $fDto->required = false;
             $fDto->type = Field::TIMESTAMP;
         }

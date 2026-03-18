@@ -127,5 +127,74 @@ final class ApiHelperTest extends TestCase
         $this->assertInstanceOf(Field::class, $field);
         $this->assertSame(Field::PASSWORD_FIELD, $field->type);
     }
-}
 
+    public function testParseFieldTypeResolvesBooleanNumericTextAndEnum(): void
+    {
+        $numericColumn = $this->createMock(ColumnMap::class);
+        $numericColumn->method('isForeignKey')->willReturn(false);
+        $numericColumn->method('isPrimaryKey')->willReturn(false);
+        $numericColumn->method('isNumeric')->willReturn(true);
+        $numericColumn->method('isText')->willReturn(false);
+        $numericColumn->method('getType')->willReturn(PropelTypes::INTEGER);
+        $numericField = ApiHelperTestProxy::parseFieldTypePublic('demo', 'Amount', [], $numericColumn, true);
+        $this->assertSame(Field::NUMBER_TYPE, $numericField?->type);
+
+        $booleanColumn = $this->createMock(ColumnMap::class);
+        $booleanColumn->method('isForeignKey')->willReturn(false);
+        $booleanColumn->method('isPrimaryKey')->willReturn(false);
+        $booleanColumn->method('isNumeric')->willReturn(false);
+        $booleanColumn->method('isText')->willReturn(false);
+        $booleanColumn->method('getType')->willReturn(PropelTypes::BOOLEAN);
+        $booleanField = ApiHelperTestProxy::parseFieldTypePublic('demo', 'Enabled', [], $booleanColumn, true);
+        $this->assertSame(Field::SWITCH_TYPE, $booleanField?->type);
+
+        $textColumn = $this->createMock(ColumnMap::class);
+        $textColumn->method('isForeignKey')->willReturn(false);
+        $textColumn->method('isPrimaryKey')->willReturn(false);
+        $textColumn->method('isNumeric')->willReturn(false);
+        $textColumn->method('isText')->willReturn(true);
+        $textColumn->method('getType')->willReturn(PropelTypes::LONGVARCHAR);
+        $textColumn->method('getSize')->willReturn(150);
+        $textField = ApiHelperTestProxy::parseFieldTypePublic('demo', 'Description', [], $textColumn, true);
+        $this->assertSame(Field::TEXTAREA_TYPE, $textField?->type);
+
+        $enumColumn = $this->createMock(ColumnMap::class);
+        $enumColumn->method('isForeignKey')->willReturn(false);
+        $enumColumn->method('isPrimaryKey')->willReturn(false);
+        $enumColumn->method('isNumeric')->willReturn(false);
+        $enumColumn->method('isText')->willReturn(false);
+        $enumColumn->method('getType')->willReturn(PropelTypes::ENUM);
+        $enumColumn->method('getValueSet')->willReturn(['ONE', 'TWO']);
+        $enumColumn->method('getPhpName')->willReturn('Type');
+        $enumColumn->method('getFullyQualifiedName')->willReturn('demo.type');
+        $enumField = ApiHelperTestProxy::parseFieldTypePublic('demo', 'Type', [], $enumColumn, true);
+        $this->assertSame(Field::COMBO_TYPE, $enumField?->type);
+        $this->assertCount(2, $enumField?->data ?? []);
+    }
+
+    public function testParseFormFieldAppliesColNameCaseAndLabel(): void
+    {
+        Config::save(array_merge($this->configBackup, ['api.field.case' => TableMap::TYPE_COLNAME]), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $column = $this->createMock(ColumnMap::class);
+        $column->method('isNotNull')->willReturn(false);
+        $column->method('getDefaultValue')->willReturn(null);
+        $column->method('isForeignKey')->willReturn(false);
+        $column->method('isPrimaryKey')->willReturn(false);
+        $column->method('isNumeric')->willReturn(false);
+        $column->method('isText')->willReturn(true);
+        $column->method('getType')->willReturn(PropelTypes::LONGVARCHAR);
+        $column->method('getSize')->willReturn(50);
+        $column->method('getPhpName')->willReturn('Title');
+        $column->method('getFullyQualifiedName')->willReturn('demo.title');
+
+        $table = $this->createMock(TableMap::class);
+        $table->method('getColumnByPhpName')->with('Title')->willReturn($column);
+
+        $field = ApiHelperTestProxy::parseFormFieldPublic('demo', $table, 'Title');
+
+        $this->assertSame('demo.title', $field?->name);
+        $this->assertSame('demo.title', $field?->label);
+    }
+}

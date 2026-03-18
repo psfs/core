@@ -49,7 +49,7 @@ trait RouterExecutionTrait
      * @param array $params
      * @return mixed
      */
-    protected function executeCachedRoute($route, $action, $class, $params = NULL)
+    protected function executeCachedRoute($route, $action, $class, $params = null)
     {
         Inspector::stats('[Router] Executing route ' . $route, Inspector::SCOPE_DEBUG);
         $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
@@ -60,8 +60,13 @@ trait RouterExecutionTrait
         if (false !== $cache && $action['http'] === 'GET' && Config::getParam('debug') === false) {
             list($path, $cacheDataName) = $this->cache->getRequestCacheHash();
             $cachedData = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName, $cache);
-            if (NULL !== $cachedData) {
-                $headers = $this->cache->readFromCache('json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers', $cache, null, Cache::JSON);
+            if (null !== $cachedData) {
+                $headers = $this->cache->readFromCache(
+                    'json' . DIRECTORY_SEPARATOR . $path . $cacheDataName . '.headers',
+                    $cache,
+                    null,
+                    Cache::JSON
+                );
                 Template::getInstance()->renderCache($cachedData, $headers);
                 $execute = false;
             }

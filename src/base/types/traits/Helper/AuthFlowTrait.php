@@ -109,8 +109,12 @@ trait AuthFlowTrait
         }
     }
 
-    private static function isValidComplexTokenPayload(?string $user, ?string $timestamp, ?string $userAgent, string $requestUserAgent): bool
-    {
+    private static function isValidComplexTokenPayload(
+        ?string $user,
+        ?string $timestamp,
+        ?string $userAgent,
+        string $requestUserAgent
+    ): bool {
         if (null === $user || null === $timestamp) {
             return false;
         }
@@ -131,8 +135,11 @@ trait AuthFlowTrait
         return [$user, $token];
     }
 
-    private static function tokenTuple(?string $user = null, ?string $timestamp = null, ?string $userAgent = null): array
-    {
+    private static function tokenTuple(
+        ?string $user = null,
+        ?string $timestamp = null,
+        ?string $userAgent = null
+    ): array {
         return [$user, $timestamp, $userAgent];
     }
 }

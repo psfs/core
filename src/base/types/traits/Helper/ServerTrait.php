@@ -44,7 +44,9 @@ trait ServerTrait
      */
     public function getTs($formatted = false)
     {
-        return $formatted ? date('Y-m-d H:i:s', $this->getServer('REQUEST_TIME_FLOAT')) : $this->getServer('REQUEST_TIME_FLOAT');
+        return $formatted ? date('Y-m-d H:i:s', $this->getServer('REQUEST_TIME_FLOAT')) : $this->getServer(
+            'REQUEST_TIME_FLOAT'
+        );
     }
 
     /**
@@ -60,7 +62,8 @@ trait ServerTrait
             $pieces = explode(':', $serverName);
             $serverName = $pieces[0];
         }
-        return true === in_array($serverName, ['0.0.0.0', '127.0.0.1', 'docker.host.internal']) ? 'localhost' : $serverName;
+        return true === in_array($serverName, ['0.0.0.0', '127.0.0.1', 'docker.host.internal']
+        ) ? 'localhost' : $serverName;
     }
 
     /**

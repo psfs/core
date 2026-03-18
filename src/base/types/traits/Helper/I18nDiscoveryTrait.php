@@ -57,7 +57,10 @@ trait I18nDiscoveryTrait
                     file_put_contents($localePath . 'translations.po', '');
                 }
                 $inspectPath = realpath($path . DIRECTORY_SEPARATOR . $fileName);
-                if (false !== $inspectPath && is_dir($path . DIRECTORY_SEPARATOR . $fileName) && preg_match('/^\./', $fileName) == 0) {
+                if (false !== $inspectPath && is_dir($path . DIRECTORY_SEPARATOR . $fileName) && preg_match(
+                        '/^\./',
+                        $fileName
+                    ) == 0) {
                     $phpFiles = glob($inspectPath . DIRECTORY_SEPARATOR . '*.php') ?: [];
                     $outputPo = escapeshellarg($localePath . 'translations.po');
                     $commandOutput = '';

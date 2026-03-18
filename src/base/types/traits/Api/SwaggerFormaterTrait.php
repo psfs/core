@@ -218,7 +218,7 @@ trait SwaggerFormaterTrait
      */
     protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {
-        $methodInfo = NULL;
+        $methodInfo = null;
         $docComments = $method->getDocComment() ?: '';
         if (null !== AnnotationHelper::extractRoute($docComments, $method)) {
             $api = $this->extractApi($reflection->getDocComment());
@@ -256,7 +256,10 @@ trait SwaggerFormaterTrait
      */
     protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
     {
-        if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST]) && in_array($method->getShortName(), self::$nativeMethods)) {
+        if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST]) && in_array(
+                $method->getShortName(),
+                self::$nativeMethods
+            )) {
             $methodInfo['query'] = [];
             $methodInfo['query'][] = [
                 "name" => "__limit",
@@ -291,7 +294,6 @@ trait SwaggerFormaterTrait
      */
     protected function setRequestHeaders(ReflectionClass $reflection, &$methodInfo)
     {
-
         $methodInfo['headers'] = [];
         foreach ($reflection->getProperties() as $property) {
             $doc = $property->getDocComment();
@@ -326,7 +328,10 @@ trait SwaggerFormaterTrait
     protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
-            list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload($modelNamespace, $docComments);
+            list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload(
+                $modelNamespace,
+                $docComments
+            );
             if (count($payloadDto)) {
                 $methodInfo['payload'] = [
                     'type' => $payloadNamespaceShortName,

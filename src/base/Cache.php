@@ -178,8 +178,13 @@ class Cache
      * @throws GeneratorException
      * @throws ConfigException
      */
-    public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT, $ignoreExpiration = false)
-    {
+    public function readFromCache(
+        $path,
+        $expires = 300,
+        $function = null,
+        $transform = Cache::TEXT,
+        $ignoreExpiration = false
+    ) {
         $data = null;
         Inspector::stats('[Cache] Reading data from cache: ' . json_encode(['path' => $path]), Inspector::SCOPE_DEBUG);
         if (file_exists(CACHE_DIR . DIRECTORY_SEPARATOR . $path)) {
@@ -232,7 +237,10 @@ class Cache
             $query[Api::HEADER_API_LANG] = Request::header(Api::HEADER_API_LANG, 'en');
             $filename = FileHelper::generateHashFilename($action['http'], $action['slug'], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
-            Inspector::stats('[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]), Inspector::SCOPE_DEBUG);
+            Inspector::stats(
+                '[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]),
+                Inspector::SCOPE_DEBUG
+            );
             Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath]);
         }
         return [$hashPath, $filename];
@@ -244,7 +252,10 @@ class Cache
             Inspector::stats('[Cache] Flushing cache', Inspector::SCOPE_DEBUG);
             $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
             if (is_array($action)) {
-                $hashPath = FileHelper::generateCachePath($action, $action['params']) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+                $hashPath = FileHelper::generateCachePath(
+                        $action,
+                        $action['params']
+                    ) . '..' . DIRECTORY_SEPARATOR . ' .. ' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
                 if (!file_exists($hashPath)) {
                     $hashPath = CACHE_DIR . DIRECTORY_SEPARATOR . $hashPath;
                 }

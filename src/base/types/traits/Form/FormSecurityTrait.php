@@ -52,7 +52,10 @@ trait FormSecurityTrait
             );
         }
 
-        if ($this->isValidCsrfTokenValue($submittedToken) && $storedValid && hash_equals($storedToken, $submittedToken)) {
+        if ($this->isValidCsrfTokenValue($submittedToken) && $storedValid && hash_equals(
+                $storedToken,
+                $submittedToken
+            )) {
             // Keep the same token during POST build to preserve legacy form flow: build() -> hydrate() -> isValid().
             $this->crfs = $storedToken;
             $tokenKey = $submittedTokenKey;

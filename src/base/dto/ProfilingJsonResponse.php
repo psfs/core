@@ -18,7 +18,13 @@ class ProfilingJsonResponse extends JsonResponse
      */
     public static function createFromPrevious(JsonResponse $jsonResponse, array $data)
     {
-        $profiling = new ProfilingJsonResponse($jsonResponse->data, $jsonResponse->success, $jsonResponse->total, $jsonResponse->pages, $jsonResponse->message);
+        $profiling = new ProfilingJsonResponse(
+            $jsonResponse->data,
+            $jsonResponse->success,
+            $jsonResponse->total,
+            $jsonResponse->pages,
+            $jsonResponse->message
+        );
         $profiling->setProfile($data);
         return $profiling;
     }

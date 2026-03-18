@@ -41,9 +41,9 @@ class Security
     public function init()
     {
         $this->initSession();
-        if (NULL === $this->getSessionKey('__FLASH_CLEAR__')) {
+        if (null === $this->getSessionKey('__FLASH_CLEAR__')) {
             $this->clearFlashes();
-            $this->setSessionKey('__FLASH_CLEAR__', microtime(TRUE));
+            $this->setSessionKey('__FLASH_CLEAR__', microtime(true));
         }
         $this->user = $this->readIdentityFromSession(AuthHelper::USER_ID_TOKEN);
         $this->admin = $this->readIdentityFromSession(AuthHelper::ADMIN_ID_TOKEN);
@@ -58,7 +58,11 @@ class Security
      */
     public function getAdmins(): array
     {
-        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true);
+        $admins = Cache::getInstance()->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json',
+            Cache::JSONGZ,
+            true
+        );
         return is_array($admins) ? $admins : [];
     }
 
@@ -69,7 +73,7 @@ class Security
      *
      * @return bool
      */
-    public function checkAdmin($user = NULL, $pass = NULL, $force = false)
+    public function checkAdmin($user = null, $pass = null, $force = false)
     {
         Logger::log('Checking admin session');
         if (!$this->shouldCheckAdmin($force)) {
@@ -186,7 +190,7 @@ class Security
             return AuthHelper::ADMIN_ID_TOKEN === $security;
         }
 
-        return FALSE;
+        return false;
     }
 
     /**

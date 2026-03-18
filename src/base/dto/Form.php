@@ -76,10 +76,18 @@ class Form extends Dto
         if ($type === Field::HIDDEN_TYPE) {
             return 0;
         }
-        if (in_array($type, [Field::TEXT_TYPE, Field::PHONE_TYPE, Field::URL_TYPE, Field::PASSWORD_FIELD, Field::SEARCH_TYPE], true)) {
+        if (in_array(
+            $type,
+            [Field::TEXT_TYPE, Field::PHONE_TYPE, Field::URL_TYPE, Field::PASSWORD_FIELD, Field::SEARCH_TYPE],
+            true
+        )) {
             return 1;
         }
-        if (in_array($type, [Field::CHECK_TYPE, Field::RADIO_TYPE, Field::COMBO_TYPE, Field::NUMBER_TYPE, Field::SWITCH_TYPE], true)) {
+        if (in_array(
+            $type,
+            [Field::CHECK_TYPE, Field::RADIO_TYPE, Field::COMBO_TYPE, Field::NUMBER_TYPE, Field::SWITCH_TYPE],
+            true
+        )) {
             return 2;
         }
         if ($type === Field::TEXTAREA_TYPE) {

@@ -23,7 +23,7 @@ abstract class CustomApi extends Api
         return null;
     }
 
-    public function delete($pk = NULL)
+    public function delete($pk = null)
     {
         return null;
     }

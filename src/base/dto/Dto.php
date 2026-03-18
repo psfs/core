@@ -57,7 +57,10 @@ class Dto extends Singleton implements \JsonSerializable
                         $dto[$property->getName()] = $value;
                     } else {
                         $type = InjectorHelper::extractVarType($property->getDocComment());
-                        $dto[$property->getName()] = $this->checkCastedValue($property->getValue($this), $type ?: 'string');
+                        $dto[$property->getName()] = $this->checkCastedValue(
+                            $property->getValue($this),
+                            $type ?: 'string'
+                        );
                     }
                 }
             }
@@ -116,7 +119,11 @@ class Dto extends Singleton implements \JsonSerializable
     {
         if (count($object) > 0) {
             $reflector = new \ReflectionClass($this);
-            $properties = InjectorHelper::extractProperties($reflector, \ReflectionProperty::IS_PUBLIC, InjectorHelper::VAR_PATTERN);
+            $properties = InjectorHelper::extractProperties(
+                $reflector,
+                \ReflectionProperty::IS_PUBLIC,
+                InjectorHelper::VAR_PATTERN
+            );
             unset($reflector);
             foreach ($object as $key => $value) {
                 if (property_exists($this, $key) && null !== $value) {

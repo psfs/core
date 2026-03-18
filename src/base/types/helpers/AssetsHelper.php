@@ -40,7 +40,7 @@ class AssetsHelper
      */
     public static function findDomainPath($string, string $filePath): ?string
     {
-        $domains = Template::getDomains(TRUE);
+        $domains = Template::getDomains(true);
         $filenamePath = null;
         if (!file_exists($filePath) && 0 < count($domains)) {
             foreach ($domains as $domain => $paths) {
@@ -63,8 +63,12 @@ class AssetsHelper
      *
      * @return string[]
      */
-    public static function calculateAssetPath(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): array
-    {
+    public static function calculateAssetPath(
+        string $string,
+        string|null $name = null,
+        bool $return = true,
+        string $filenamePath = ''
+    ): array {
         $path = explode("/", $string);
         $originalFilename = end($path);
         $base = WEB_DIR . DIRECTORY_SEPARATOR;

@@ -119,7 +119,7 @@ class ResponseHelper
      */
     public static function setStatusHeader(string $statusCode = null): void
     {
-        if (NULL !== $statusCode && !self::isTest()) {
+        if (null !== $statusCode && !self::isTest()) {
             self::setHeader($statusCode);
         }
     }

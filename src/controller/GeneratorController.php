@@ -77,7 +77,10 @@ class GeneratorController extends Admin
                 $module = preg_replace('/^\//', '', $module);
                 GeneratorHelper::checkCustomNamespaceApi($apiClass);
                 $this->gen->createStructureModule($module, false, $type, $apiClass);
-                Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, t("Module %s generated successfully")));
+                Security::getInstance()->setFlash(
+                    "callback_message",
+                    str_replace("%s", $module, t("Module %s generated successfully"))
+                );
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (Exception $e) {
                 Logger::log($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");

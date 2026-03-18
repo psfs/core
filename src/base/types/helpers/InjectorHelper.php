@@ -65,8 +65,11 @@ class InjectorHelper
      * @param string $pattern
      * @return array
      */
-    public static function extractProperties(ReflectionClass $reflector, $type = ReflectionProperty::IS_PROTECTED, $pattern = self::INJECTABLE_PATTERN)
-    {
+    public static function extractProperties(
+        ReflectionClass $reflector,
+        $type = ReflectionProperty::IS_PROTECTED,
+        $pattern = self::INJECTABLE_PATTERN
+    ) {
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
             $doc = $property->getDocComment() ?: '';
@@ -157,7 +160,10 @@ class InjectorHelper
         Logger::log('Create inyectable instance for ' . $classNameSpace);
         $reflector = new ReflectionClass($calledClass);
         $property = $reflector->getProperty($variable);
-        $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType($property->getDocComment(), $property) : $classNameSpace;
+        $varInstanceType = (null === $classNameSpace) ? InjectorHelper::extractVarType(
+            $property->getDocComment(),
+            $property
+        ) : $classNameSpace;
         if (true === $singleton && method_exists($varInstanceType, 'getInstance')) {
             $instance = $varInstanceType::getInstance();
         } else {

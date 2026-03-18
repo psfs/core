@@ -97,7 +97,6 @@ class AssetsTokenParser extends AbstractTokenParser
     {
         $node = null;
         if (0 < count($this->values)) {
-
             foreach ($this->values as $value) {
                 list($tmp, $node) = $this->extractTmpAttribute($node, $value);
                 $node->setAttribute('value', $tmp);

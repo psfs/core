@@ -138,7 +138,11 @@ class Template
     public function regenerateTemplates()
     {
         $this->generateTemplatesCache();
-        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
+        $domains = Cache::getInstance()->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json',
+            Cache::JSON,
+            true
+        );
         $translations = [];
         if (is_array($domains)) {
             $translations = $this->parsePathTranslations($domains);
@@ -156,9 +160,14 @@ class Template
     protected function generateTemplate($tplDir, $domain = '')
     {
         if (!file_exists($tplDir)) {
-            return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Path "%s" does not exist for domain "%d"'));
+            return str_replace(array('%s', '%d'),
+                array($tplDir, $domain),
+                t('Path "%s" does not exist for domain "%d"'));
         }
-        $templatesDir = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($tplDir), \RecursiveIteratorIterator::LEAVES_ONLY);
+        $templatesDir = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($tplDir),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
         foreach ($templatesDir as $file) {
             // force compilation
             if ($file->isFile()) {
@@ -169,7 +178,9 @@ class Template
                 }
             }
         }
-        return str_replace(array('%s', '%d'), array($tplDir, $domain), t('Generating templates in path "%s" for domain "%d"'));
+        return str_replace(array('%s', '%d'),
+            array($tplDir, $domain),
+            t('Generating templates in path "%s" for domain "%d"'));
     }
 
     /**
@@ -240,7 +251,11 @@ class Template
 
     private function loadDomains()
     {
-        $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
+        $domains = Cache::getInstance()->getDataFromFile(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json',
+            Cache::JSON,
+            true
+        );
         if (null !== $domains) {
             foreach ($domains as $domain => $paths) {
                 $this->addPath($paths['template'], preg_replace('/(@|\/)/', '', $domain));
@@ -255,7 +270,7 @@ class Template
         $this->tpl = new Environment($loader, array(
             'cache' => CACHE_DIR . DIRECTORY_SEPARATOR . 'twig',
             'debug' => (bool)$this->debug,
-            'auto_reload' => Config::getParam('twig.autoreload', TRUE),
+            'auto_reload' => Config::getParam('twig.autoreload', true),
         ));
         $this->loadDomains();
     }
@@ -298,7 +313,6 @@ class Template
 
     private function generateTemplatesCache()
     {
-
         $loader = $this->tpl->getLoader();
         $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {

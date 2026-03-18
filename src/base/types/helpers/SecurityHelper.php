@@ -33,7 +33,11 @@ class SecurityHelper
             && (preg_match('/^\/(admin|setup\-admin)/i', $route) || Config::getParam('restricted', false))
         ) {
             if (!self::isTest() &&
-                null === Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true)) {
+                null === Cache::getInstance()->getDataFromFile(
+                    CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json',
+                    Cache::JSONGZ,
+                    true
+                )) {
                 throw new AdminCredentialsException();
             }
             if (!Security::getInstance()->checkAdmin()) {
@@ -108,8 +112,11 @@ class SecurityHelper
      *
      * @return string
      */
-    public static function generateToken(string $secret, string $module = Router::PSFS_BASE_NAMESPACE, bool $isOdd = null): string
-    {
+    public static function generateToken(
+        string $secret,
+        string $module = Router::PSFS_BASE_NAMESPACE,
+        bool $isOdd = null
+    ): string {
         $timestamp = self::getTs($isOdd);
         $module = strtolower($module);
         $hash = hash_hmac('sha256', $module, $secret);
@@ -159,7 +166,7 @@ class SecurityHelper
      */
     private static function decodeToken(string $token, bool $force = false): ?string
     {
-        $decoded = NULL;
+        $decoded = null;
         $parts = self::extractTokenParts($token);
         list($token, $timestamp) = self::parseTokenParts($parts);
         if ($force || time() - (integer)$timestamp < 300) {

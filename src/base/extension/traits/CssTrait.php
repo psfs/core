@@ -122,7 +122,7 @@ trait CssTrait
                 $dest = $this->path . $origPart[1];
                 GeneratorHelper::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
-                    if (@copy($orig, $dest) === FALSE) {
+                    if (@copy($orig, $dest) === false) {
                         throw new \RuntimeException('Can\' copy ' . $dest . '');
                     }
                     Logger::log("$orig copiado a $dest", LOG_INFO);

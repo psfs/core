@@ -116,7 +116,10 @@ trait FormDataTrait
     private function hydrateField($data, $formName, $key, $field)
     {
         if (array_key_exists($key, $data[$formName])) {
-            if (preg_match('/id/i', $key) && ($data[$formName][$key] === 0 || $data[$formName][$key] === '%' || $data[$formName][$key] === '')) {
+            if (preg_match(
+                    '/id/i',
+                    $key
+                ) && ($data[$formName][$key] === 0 || $data[$formName][$key] === '%' || $data[$formName][$key] === '')) {
                 $field['value'] = null;
             } else {
                 $field['value'] = $data[$formName][$key];

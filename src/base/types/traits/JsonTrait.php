@@ -30,7 +30,10 @@ trait JsonTrait
             if (is_array($response)) {
                 $response['profiling'] = Inspector::getStats();
             } elseif ($response instanceof JsonResponse) {
-                $response = ProfilingJsonResponse::createFromPrevious($response, Inspector::getStats(Config::getParam('log.level')));
+                $response = ProfilingJsonResponse::createFromPrevious(
+                    $response,
+                    Inspector::getStats(Config::getParam('log.level'))
+                );
             }
         }
 

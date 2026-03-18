@@ -76,7 +76,12 @@ class ConfigController extends Admin
         if (defined('PSFS_UNIT_TESTING_EXECUTION')) {
             throw new ConfigException('CONFIG');
         }
-        $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
+        $form = new ConfigForm(
+            Router::getInstance()->getRoute('admin-config'),
+            Config::$required,
+            Config::$optional,
+            Config::getInstance()->dumpConfig()
+        );
         $form->build();
         return $this->render('welcome.html.twig', array(
             'text' => t("Welcome to PSFS"),
@@ -100,7 +105,12 @@ class ConfigController extends Admin
     {
         self::assertSuperAdminConfigWriteAccess();
         Logger::log(t("Saving configuration"), LOG_INFO);
-        $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
+        $form = new ConfigForm(
+            Router::getInstance()->getRoute('admin-config'),
+            Config::$required,
+            Config::$optional,
+            Config::getInstance()->dumpConfig()
+        );
         $form->build();
         $form->hydrate();
         if ($form->isValid()) {

@@ -132,7 +132,10 @@ class GeneratorHelper
                 self::writeGeneratorOutput($output, $quiet, $filename . ' already exists');
                 continue;
             }
-            $text = Template::getInstance()->dump("generator/html/" . $template . '.html.twig', ['PSFS_AS_VENDOR' => PSFS_AS_VENDOR]);
+            $text = Template::getInstance()->dump(
+                "generator/html/" . $template . '.html.twig',
+                ['PSFS_AS_VENDOR' => PSFS_AS_VENDOR]
+            );
             if (false === file_put_contents($target, $text)) {
                 self::writeGeneratorOutput($output, $quiet, 'Can\t create the file ' . $filename);
                 continue;
@@ -166,7 +169,10 @@ class GeneratorHelper
     {
         if (!file_exists(BASE_DIR . DIRECTORY_SEPARATOR . 'locale')) {
             self::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
-            self::copyr(SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'locale', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
+            self::copyr(
+                SOURCE_DIR . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'locale',
+                BASE_DIR . DIRECTORY_SEPARATOR . 'locale'
+            );
         }
     }
 
@@ -192,8 +198,10 @@ class GeneratorHelper
                 if (is_dir($filenamePath)) {
                     self::copyr($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                 } else {
-                    if (@copy($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === FALSE) {
-                        throw new ConfigException("Can't copy " . $filenamePath . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
+                    if (@copy($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === false) {
+                        throw new ConfigException(
+                            "Can't copy " . $filenamePath . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder
+                        );
                     }
                 }
             }

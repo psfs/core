@@ -155,7 +155,7 @@ class RequestHelper
         Inspector::stats('[RequestHelper] Checking CORS', Inspector::SCOPE_DEBUG);
         $corsEnabled = Config::getParam('cors.enabled');
         $request = Request::getInstance();
-        if (NULL !== $corsEnabled) {
+        if (null !== $corsEnabled) {
             $origin = $request->getServer('HTTP_ORIGIN');
             $allowedOrigin = self::resolveAllowedOrigin($origin, $corsEnabled);
             if ($allowedOrigin !== null) {
@@ -168,7 +168,9 @@ class RequestHelper
                         ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . $allowedOrigin);
                         ResponseHelper::setHeader('Vary: Origin');
                     }
-                    ResponseHelper::setHeader('Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD');
+                    ResponseHelper::setHeader(
+                        'Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD'
+                    );
                     ResponseHelper::setHeader('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
                 }
                 if ($request->getMethod() === Request::VERB_OPTIONS) {
@@ -234,8 +236,11 @@ class RequestHelper
      * @param string $endRange
      * @return bool
      */
-    public static function validateIpAddress(string $ipAddress, string $startRange = '0.0.0.0', string $endRange = '255.255.255.255'): bool
-    {
+    public static function validateIpAddress(
+        string $ipAddress,
+        string $startRange = '0.0.0.0',
+        string $endRange = '255.255.255.255'
+    ): bool {
         // Use FILTER_VALIDATE_IP to validate IP format.
         if (filter_var($ipAddress, FILTER_VALIDATE_IP) === false) {
             return false; // Invalid IP.

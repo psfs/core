@@ -97,8 +97,12 @@ trait FieldModelHelperTrait
      * @param array $extraColumns
      * @param mixed $value
      */
-    public static function composerComboField(TableMap $tableMap, ModelCriteria &$query, array $extraColumns = [], $value = null)
-    {
+    public static function composerComboField(
+        TableMap $tableMap,
+        ModelCriteria &$query,
+        array $extraColumns = [],
+        $value = null
+    ) {
         $exp = 'CONCAT(';
         $sep = '';
         foreach ($tableMap->getColumns() as $column) {

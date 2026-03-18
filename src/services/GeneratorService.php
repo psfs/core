@@ -50,8 +50,13 @@ class GeneratorService extends SimpleService
      * @throws GeneratorException
      * @throws \ReflectionException
      */
-    public function createStructureModule(string $module, bool $force = false, string $type = "", string $apiClass = "", bool $skipMigration = false): void
-    {
+    public function createStructureModule(
+        string $module,
+        bool $force = false,
+        string $type = "",
+        string $apiClass = "",
+        bool $skipMigration = false
+    ): void {
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
         $module = ucfirst($module);
         $this->createModulePath($module, $modPath);
@@ -119,8 +124,12 @@ class GeneratorService extends SimpleService
             "controllerType" => $class . "Base",
             "is_base" => false
         ));
-        $controller = $this->writeTemplateToFile($controllerBody, $modPath . DIRECTORY_SEPARATOR . "Controller" .
-            DIRECTORY_SEPARATOR . "{$class}Controller.php", $force);
+        $controller = $this->writeTemplateToFile(
+            $controllerBody,
+            $modPath . DIRECTORY_SEPARATOR . "Controller" .
+            DIRECTORY_SEPARATOR . "{$class}Controller.php",
+            $force
+        );
 
         $controllerBody = $this->tpl->dump("generator/controller.template.twig", array(
             "module" => $module,
@@ -132,8 +141,12 @@ class GeneratorService extends SimpleService
             "is_base" => true,
             "domain" => $class,
         ));
-        $controllerBase = $this->writeTemplateToFile($controllerBody, $modPath . DIRECTORY_SEPARATOR . "Controller" .
-            DIRECTORY_SEPARATOR . "base" . DIRECTORY_SEPARATOR . "{$class}BaseController.php", true);
+        $controllerBase = $this->writeTemplateToFile(
+            $controllerBody,
+            $modPath . DIRECTORY_SEPARATOR . "Controller" .
+            DIRECTORY_SEPARATOR . "base" . DIRECTORY_SEPARATOR . "{$class}BaseController.php",
+            true
+        );
 
         $filename = $modPath . DIRECTORY_SEPARATOR . "Test" . DIRECTORY_SEPARATOR . "{$class}Test.php";
         $test = true;
@@ -164,8 +177,12 @@ class GeneratorService extends SimpleService
         $configTemplate = $this->tpl->dump("generator/config.propel.template.twig", array(
             "module" => $module,
         ));
-        $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $modulePath . DIRECTORY_SEPARATOR . "Config" .
-            DIRECTORY_SEPARATOR . "config.php", true);
+        $this->writeTemplateToFile(
+            $configTemplate,
+            CORE_DIR . DIRECTORY_SEPARATOR . $modulePath . DIRECTORY_SEPARATOR . "Config" .
+            DIRECTORY_SEPARATOR . "config.php",
+            true
+        );
         Logger::log("Generated generic config for Propel");
     }
 
@@ -180,12 +197,25 @@ class GeneratorService extends SimpleService
         list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
 
         if ($manager->hasPendingMigrations()) {
-            throw new ApiException(t(sprintf('Module %s generated successfully. There is a pending migration to apply. Run `psfs:migrate` or remove the generated file in the module', $module)), 400);
+            throw new ApiException(
+                t(
+                    sprintf(
+                        'Module %s generated successfully. There is a pending migration to apply. Run `psfs:migrate` or remove the generated file in the module',
+                        $module
+                    )
+                ), 400
+            );
         }
 
         $debugLogger = Config::getParam('log.level') === 'DEBUG';
         $reversedSchema = $this->buildReversedSchema($manager, $generatorConfig, $migrationService, $debugLogger);
-        list($migrationsUp, $migrationsDown) = $this->buildMigrationDiffs($manager, $generatorConfig, $migrationService, $reversedSchema, $debugLogger);
+        list($migrationsUp, $migrationsDown) = $this->buildMigrationDiffs(
+            $manager,
+            $generatorConfig,
+            $migrationService,
+            $reversedSchema,
+            $debugLogger
+        );
         if (count($migrationsUp) === 0) {
             Logger::log('Same XML and database structures for all datasource - no diff to generate');
             return true;
@@ -202,14 +232,24 @@ class GeneratorService extends SimpleService
      * @param bool $debugLogger
      * @return Schema
      */
-    private function buildReversedSchema(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, bool $debugLogger): Schema
-    {
+    private function buildReversedSchema(
+        MigrationManager $manager,
+        GeneratorConfig $generatorConfig,
+        MigrationService $migrationService,
+        bool $debugLogger
+    ): Schema {
         $totalNbTables = 0;
         $reversedSchema = new Schema();
         $connections = $generatorConfig->getBuildConnections();
 
         foreach ($manager->getDatabases() as $appDatabase) {
-            list($database, $nbTables) = $migrationService->checkSourceDatabase($manager, $generatorConfig, $appDatabase, $connections, $debugLogger);
+            list($database, $nbTables) = $migrationService->checkSourceDatabase(
+                $manager,
+                $generatorConfig,
+                $appDatabase,
+                $connections,
+                $debugLogger
+            );
             if ($database) {
                 $reversedSchema->addDatabase($database);
             }
@@ -231,8 +271,13 @@ class GeneratorService extends SimpleService
      * @param bool $debugLogger
      * @return array
      */
-    private function buildMigrationDiffs(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, Schema $reversedSchema, bool $debugLogger): array
-    {
+    private function buildMigrationDiffs(
+        MigrationManager $manager,
+        GeneratorConfig $generatorConfig,
+        MigrationService $migrationService,
+        Schema $reversedSchema,
+        bool $debugLogger
+    ): array {
         Logger::log('Comparing models...');
         $migrationsUp = [];
         $migrationsDown = [];
@@ -249,10 +294,19 @@ class GeneratorService extends SimpleService
                 Logger::log(sprintf('<error>Database "%s" does not exist in schema.xml. Skipped.</error>', $name));
                 continue;
             }
-            $databaseDiff = DatabaseComparator::computeDiff($database, $appDataDatabase, true, false, false, $excludedTables);
+            $databaseDiff = DatabaseComparator::computeDiff(
+                $database,
+                $appDataDatabase,
+                true,
+                false,
+                false,
+                $excludedTables
+            );
             if (!$databaseDiff) {
                 if ($debugLogger) {
-                    Logger::log(sprintf('Same XML and database structures for datasource "%s" - no diff to generate', $name));
+                    Logger::log(
+                        sprintf('Same XML and database structures for datasource "%s" - no diff to generate', $name)
+                    );
                 }
                 continue;
             }
@@ -273,9 +327,11 @@ class GeneratorService extends SimpleService
     {
         // Generate configuration file.
         Logger::log("Generating empty configuration file");
-        return $this->writeTemplateToFile("<?php\n\t",
+        return $this->writeTemplateToFile(
+            "<?php\n\t",
             $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php",
-            $force);
+            $force
+        );
     }
 
     /**
@@ -294,9 +350,11 @@ class GeneratorService extends SimpleService
             "prefix" => preg_replace('/(\\\|\/)/', '', $module),
             "db" => $this->config->get("db_name"),
         ));
-        return $this->writeTemplateToFile($schema,
+        return $this->writeTemplateToFile(
+            $schema,
             $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "schema.xml",
-            $force);
+            $force
+        );
     }
 
     /**
@@ -312,9 +370,11 @@ class GeneratorService extends SimpleService
             "module" => $module,
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
         ));
-        return $this->writeTemplateToFile($buildProperties,
+        return $this->writeTemplateToFile(
+            $buildProperties,
             $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "propel.php",
-            $force);
+            $force
+        );
     }
 
     /**
@@ -330,9 +390,11 @@ class GeneratorService extends SimpleService
         $index = $this->tpl->dump("generator/index.template.twig", array(
             "module" => $module,
         ));
-        return $this->writeTemplateToFile($index,
+        return $this->writeTemplateToFile(
+            $index,
             $modPath . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "index.html.twig",
-            $force);
+            $force
+        );
     }
 
 }

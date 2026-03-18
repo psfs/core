@@ -36,7 +36,16 @@ class Config
         'front.version' => 'v1',
         'version' => 'v1',
     ];
-    static public array $required = ['db.host', 'db.port', 'db.name', 'db.user', 'db.password', 'home.action', 'default.language', 'debug'];
+    static public array $required = [
+        'db.host',
+        'db.port',
+        'db.name',
+        'db.user',
+        'db.password',
+        'home.action',
+        'default.language',
+        'debug'
+    ];
     static public array $encrypted = ['db.password'];
     static public array $optional = [
         'platform.name', // Platform name
@@ -143,7 +152,6 @@ class Config
         if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
                 if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
-
                     $data[$field] = $extra['value'][$index];
                 }
             }
@@ -262,7 +270,7 @@ class Config
     public function loadConfigData(bool $refresh = false): void
     {
         $this->config = $refresh ? $this->repository->refresh() : $this->repository->read();
-        $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : FALSE;
+        $this->debug = array_key_exists('debug', $this->config) ? (bool)$this->config['debug'] : false;
         if (array_key_exists('cache.var', $this->config)) {
             Security::getInstance()->setSessionKey('config.cache.var', $this->config['cache.var']);
         }

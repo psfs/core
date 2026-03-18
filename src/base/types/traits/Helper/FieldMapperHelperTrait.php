@@ -48,8 +48,12 @@ trait FieldMapperHelperTrait
      * @return array
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public static function mapArrayObject($namespace, ColumnMap $modelPk, array $query, array|ActiveRecordInterface $data = [])
-    {
+    public static function mapArrayObject(
+        $namespace,
+        ColumnMap $modelPk,
+        array $query,
+        array|ActiveRecordInterface $data = []
+    ) {
         $formatter = new ObjectFormatter();
         $formatter->setClass($namespace);
         $data[$modelPk->getPhpName()] = $data[Api::API_MODEL_KEY_FIELD];

@@ -51,7 +51,6 @@ class DocumentorService extends SimpleService
             $finder = new Finder();
             $finder->files()->in($modulePath)->depth('< 2')->name('*.php');
             if (count($finder)) {
-
                 foreach ($finder as $file) {
                     $filename = str_replace([$modulePath, '/'], ['', '\\'], $file->getPathname());
                     $namespace = "\\{$moduleName}\\Api" . str_replace('.php', '', $filename);
@@ -81,7 +80,7 @@ class DocumentorService extends SimpleService
                 foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                     try {
                         $mInfo = $this->extractMethodInfo($namespace, $method, $reflection, $module);
-                        if (NULL !== $mInfo) {
+                        if (null !== $mInfo) {
                             $info[] = $mInfo;
                         }
                     } catch (Exception $e) {
