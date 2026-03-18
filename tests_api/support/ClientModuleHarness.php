@@ -104,11 +104,11 @@ final class ClientModuleHarness
     private static function configureRuntime(): void
     {
         $config = self::$configBackup ?? [];
-        $host = self::$resolvedHost ?: (getenv('API_DB_HOST') ?: getenv('DB_HOST') ?: 'db');
-        $port = getenv('API_DB_PORT') ?: getenv('DB_PORT') ?: '3306';
-        $dbName = getenv('API_DB_NAME') ?: getenv('DB_NAME') ?: 'core_test';
-        $dbUser = getenv('API_DB_USER') ?: getenv('DB_USER') ?: 'root';
-        $dbPassword = getenv('API_DB_PASSWORD') ?: getenv('DB_PASSWORD') ?: 'psfs';
+        $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
+        $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
+        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
+        $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
 
         $config['debug'] = true;
         $config['home.action'] = $config['home.action'] ?? 'admin';
@@ -178,11 +178,11 @@ final class ClientModuleHarness
 
     private static function prepareDatabase(): void
     {
-        $host = self::$resolvedHost ?: (getenv('API_DB_HOST') ?: getenv('DB_HOST') ?: 'db');
-        $port = getenv('API_DB_PORT') ?: getenv('DB_PORT') ?: '3306';
-        $dbName = getenv('API_DB_NAME') ?: getenv('DB_NAME') ?: 'core_test';
-        $dbUser = getenv('API_DB_USER') ?: getenv('DB_USER') ?: 'root';
-        $dbPassword = getenv('API_DB_PASSWORD') ?: getenv('DB_PASSWORD') ?: 'psfs';
+        $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
+        $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
+        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
+        $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
         $hosts = self::candidateHosts($host);
         $pdo = null;
         $lastError = null;
@@ -210,11 +210,11 @@ final class ClientModuleHarness
 
     private static function connectTestDatabase(): \PDO
     {
-        $host = self::$resolvedHost ?: (getenv('API_DB_HOST') ?: getenv('DB_HOST') ?: 'db');
-        $port = getenv('API_DB_PORT') ?: getenv('DB_PORT') ?: '3306';
-        $dbName = getenv('API_DB_NAME') ?: getenv('DB_NAME') ?: 'core_test';
-        $dbUser = getenv('API_DB_USER') ?: getenv('DB_USER') ?: 'root';
-        $dbPassword = getenv('API_DB_PASSWORD') ?: getenv('DB_PASSWORD') ?: 'psfs';
+        $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
+        $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
+        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
+        $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
         $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $dbName);
         return new \PDO($dsn, $dbUser, $dbPassword, [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
@@ -290,8 +290,18 @@ final class ClientModuleHarness
             $preferred,
             'db',
             '127.0.0.1',
-            'host.docker.internal',
         ];
         return array_values(array_unique(array_filter($hosts)));
+    }
+
+    private static function envValue(array $keys, string $default): string
+    {
+        foreach ($keys as $key) {
+            $value = getenv($key);
+            if ($value !== false) {
+                return (string)$value;
+            }
+        }
+        return $default;
     }
 }
