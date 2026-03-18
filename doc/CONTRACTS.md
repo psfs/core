@@ -406,3 +406,23 @@ When evolving PSFS, changes should be evaluated according to this document:
   - Changing API routes, methods, or response shapes that are documented as public.
 
 Contributors are expected to update this `CONTRACTS.md` file when making changes that affect these contracts.
+
+---
+
+## 7. API query contracts (HTTP)
+
+The following query contracts are tracked as part of the API regression baseline:
+
+- Point 1: happy-path list contract (`GET /client/api/test` returns a successful payload with `data`, `total`, and `pages`).
+- Point 6: combo search (`__combo`) returns a bounded and successful filtered result.
+- Point 7: ascending sort with deterministic tie-breaker (`__order` includes `Id`).
+- Point 9: multi-field sorting stability (`Type`, `Number`, `Id` ordering is deterministic).
+- Point 10: pagination consistency (`__page` + `__limit` produce non-overlapping pages under stable ordering).
+
+Validation source of truth:
+
+- `tests_api/ApiPhaseCHttpQueryContractTest.php`
+
+Execution baseline:
+
+- Run from containerized runtime (`php` service) to ensure parity with production-like stack.

@@ -5,6 +5,7 @@ namespace PSFS\apitests\support;
 use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\SingletonRegistry;
 use PSFS\base\config\Config;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\GeneratorHelper;
@@ -20,6 +21,7 @@ final class ClientModuleHarness
     private static ?array $configBackup = null;
     private static ?string $moduleBackupPath = null;
     private static ?string $resolvedHost = null;
+    private static bool $seedIntegrityChecked = false;
 
     public static function acquire(): void
     {
@@ -60,17 +62,26 @@ final class ClientModuleHarness
     public static function dispatch(string $method, string $uri, array $headers = []): string
     {
         self::resetRuntimeState();
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+        $queryString = parse_url($uri, PHP_URL_QUERY) ?: '';
+        $queryParams = [];
+        if ($queryString !== '') {
+            parse_str($queryString, $queryParams);
+        }
+        self::guardFastProfilePagination($queryParams, $uri);
         $_SERVER = array_merge([
             'REQUEST_METHOD' => strtoupper($method),
-            'REQUEST_URI' => $uri,
+            'REQUEST_URI' => $path,
+            'QUERY_STRING' => $queryString,
+            'PATH_INFO' => $path,
             'REQUEST_TIME_FLOAT' => microtime(true),
             'SERVER_NAME' => 'localhost',
             'SERVER_PORT' => 8080,
             'HTTP_HOST' => 'localhost:8080',
         ], $headers);
-        $_GET = [];
+        $_GET = $queryParams;
         $_POST = [];
-        $_REQUEST = [];
+        $_REQUEST = $queryParams;
         $_FILES = [];
         $_COOKIE = [];
 
@@ -81,7 +92,7 @@ final class ClientModuleHarness
         ResponseHelper::setTest(true);
         Config::setTest(true);
         $dispatcher = Dispatcher::getInstance();
-        $result = (string)$dispatcher->run($uri);
+        $result = (string)$dispatcher->run($path);
         Api::setTest(false);
         Config::setTest(false);
         ResponseHelper::setTest(false);
@@ -93,12 +104,15 @@ final class ClientModuleHarness
 
     public static function resetSeedData(): void
     {
-        $sql = file_get_contents(BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'client_seed.sql');
-        if (!is_string($sql) || $sql === '') {
-            throw new \RuntimeException('Seed SQL fixture is empty');
-        }
+        self::assertSeedIntegrity();
         $pdo = self::connectTestDatabase();
-        $pdo->exec($sql);
+        foreach (self::seedFiles() as $seedFile) {
+            $sql = file_get_contents($seedFile);
+            if (!is_string($sql) || trim($sql) === '') {
+                throw new \RuntimeException('Seed SQL fixture is empty: ' . $seedFile);
+            }
+            self::executeSqlBatch($pdo, $sql);
+        }
     }
 
     private static function configureRuntime(): void
@@ -272,6 +286,7 @@ final class ClientModuleHarness
 
     private static function resetRuntimeState(): void
     {
+        SingletonRegistry::clear();
         if (method_exists(Dispatcher::class, 'dropInstance')) {
             Dispatcher::dropInstance();
         }
@@ -303,5 +318,92 @@ final class ClientModuleHarness
             }
         }
         return $default;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function seedFiles(): array
+    {
+        $seedDir = BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'client';
+        if (!is_dir($seedDir)) {
+            return [BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'client_seed.sql'];
+        }
+        $files = glob($seedDir . DIRECTORY_SEPARATOR . '*.sql') ?: [];
+        sort($files, SORT_NATURAL);
+        return $files;
+    }
+
+    private static function executeSqlBatch(\PDO $pdo, string $sql): void
+    {
+        $statements = array_filter(array_map(static fn(string $statement): string => trim($statement), explode(';', $sql)));
+        foreach ($statements as $statement) {
+            $pdo->exec($statement);
+        }
+    }
+
+    /**
+     * Avoid unbounded pagination in fast/CI profile.
+     *
+     * @param array<string, mixed> $queryParams
+     */
+    private static function guardFastProfilePagination(array $queryParams, string $uri): void
+    {
+        if (!self::isFastProfile()) {
+            return;
+        }
+        $limit = isset($queryParams['__limit']) ? (int)$queryParams['__limit'] : null;
+        if ($limit === -1) {
+            throw new \RuntimeException(
+                'Unbounded __limit=-1 is disabled in fast profile. URI: ' . $uri . '. Use nightly profile or set PSFS_ALLOW_UNBOUNDED_LIST=1'
+            );
+        }
+    }
+
+    private static function isFastProfile(): bool
+    {
+        if (getenv('PSFS_ALLOW_UNBOUNDED_LIST') === '1') {
+            return false;
+        }
+        $profile = strtolower((string)(getenv('PSFS_TEST_PROFILE') ?: ''));
+        if (in_array($profile, ['ci', 'fast'], true)) {
+            return true;
+        }
+        return strtolower((string)(getenv('CI') ?: '')) === 'true';
+    }
+
+    private static function assertSeedIntegrity(): void
+    {
+        if (self::$seedIntegrityChecked) {
+            return;
+        }
+        $seedDir = BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'client';
+        $manifestFile = $seedDir . DIRECTORY_SEPARATOR . 'checksums.sha256';
+        if (!is_file($manifestFile)) {
+            self::$seedIntegrityChecked = true;
+            return;
+        }
+        $lines = file($manifestFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+            $parts = preg_split('/\s+/', $trimmed, 2);
+            if (!is_array($parts) || count($parts) !== 2) {
+                throw new \RuntimeException('Invalid seed checksum manifest line: ' . $line);
+            }
+            $expectedHash = strtolower(trim($parts[0]));
+            $relativePath = ltrim(trim($parts[1]), '*');
+            $filePath = $seedDir . DIRECTORY_SEPARATOR . $relativePath;
+            if (!is_file($filePath)) {
+                throw new \RuntimeException('Missing seed file from checksum manifest: ' . $filePath);
+            }
+            $actualHash = strtolower((string)hash_file('sha256', $filePath));
+            if ($actualHash !== $expectedHash) {
+                throw new \RuntimeException('Seed checksum mismatch for ' . $filePath);
+            }
+        }
+        self::$seedIntegrityChecked = true;
     }
 }
