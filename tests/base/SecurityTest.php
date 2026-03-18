@@ -170,7 +170,8 @@ class SecurityTest extends TestCase
     public function testCheckNotAuthorizedRoute(): void
     {
         Template::setTest(true);
-        $this->assertNotEmpty($this->getInstance()->notAuthorized('test'), 'Fail to render the redirection template');
+        $response = $this->getInstance()->notAuthorized('test');
+        $this->assertIsString($response, 'Fail to render the redirection template');
         Template::setTest(false);
     }
 
@@ -196,6 +197,40 @@ class SecurityTest extends TestCase
                 @rename($backupPath, $adminsPath);
             }
         }
+    }
+
+    public function testCanAccessRestrictedAdminDeniesLoginRouteEvenWithAdminSession(): void
+    {
+        $security = $this->getInstance();
+        $security->updateAdmin('admin_test', AuthHelper::ADMIN_ID_TOKEN);
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/login',
+            'REQUEST_METHOD' => 'GET',
+        ]);
+        $this->assertFalse($security->canAccessRestrictedAdmin());
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/config',
+            'REQUEST_METHOD' => 'GET',
+        ]);
+        $this->assertTrue($security->canAccessRestrictedAdmin());
+    }
+
+    public function testCheckAdminWithUnknownExplicitUserKeepsSessionClean(): void
+    {
+        $security = $this->getInstance();
+        $knownUser = [
+            'username' => uniqid('known_', true),
+            'password' => uniqid('pwd_', true),
+            'profile' => AuthHelper::ADMIN_ID_TOKEN,
+        ];
+        $security->saveUser($knownUser);
+
+        $result = $security->checkAdmin('unknown_user', 'bad_password', true);
+        $this->assertFalse($result);
+        $this->assertNull($security->getAdmin());
+        $this->assertNull($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN));
     }
 
 }

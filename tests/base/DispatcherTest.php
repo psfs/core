@@ -8,6 +8,7 @@ use PHPUnit\Framework\MockObject\Stub\ReturnStub;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\Inspector;
@@ -254,6 +255,13 @@ class DispatcherTest extends TestCase
      */
     public function testExecuteRoute()
     {
+        Request::dropInstance();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/admin/config/params';
+        $_REQUEST = [];
+        $_GET = [];
+        $_POST = [];
+
         $router = Router::getInstance();
         $security = Security::getInstance();
         $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router, $security);
@@ -272,5 +280,6 @@ class DispatcherTest extends TestCase
         SecurityHelper::setTest(false);
         ResponseHelper::setTest(false);
         Config::setTest(false);
+        Request::dropInstance();
     }
 }

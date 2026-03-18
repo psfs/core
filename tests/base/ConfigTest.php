@@ -4,6 +4,8 @@ namespace PSFS\tests\base;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
+use PSFS\base\Request;
+use PSFS\base\Security;
 use PSFS\base\config\Config;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\FileHelper;
@@ -169,5 +171,46 @@ class ConfigTest extends TestCase
         foreach (Config::$cleanable_config_files as $cleanable_config_file) {
             $this->assertFileDoesNotExist(CONFIG_DIR . DIRECTORY_SEPARATOR . $cleanable_config_file);
         }
+    }
+
+    public function testCheckTryToSaveConfigOnlyAllowsAdminPostRoutes(): void
+    {
+        Request::dropInstance();
+        $_SERVER['REQUEST_URI'] = '/admin/config';
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        Request::getInstance()->init();
+        $this->assertTrue(Config::getInstance()->checkTryToSaveConfig());
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/config',
+            'REQUEST_METHOD' => 'GET',
+        ]);
+        $this->assertFalse(Config::getInstance()->checkTryToSaveConfig());
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/other',
+            'REQUEST_METHOD' => 'POST',
+        ]);
+        $this->assertFalse(Config::getInstance()->checkTryToSaveConfig());
+    }
+
+    public function testLoadConfigDataPersistsCacheVarIntoSession(): void
+    {
+        Security::dropInstance();
+        $config = Config::getInstance()->dumpConfig();
+        $config['cache.var'] = 'unit-test-cache-var';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $this->assertSame('unit-test-cache-var', Security::getInstance()->getSessionKey('config.cache.var'));
+    }
+
+    public function testClearConfigResetsLoadedState(): void
+    {
+        $config = Config::getInstance();
+        Config::save(array_merge($config->dumpConfig(), ['debug' => true]), []);
+        $this->assertTrue($config->isLoaded());
+        $config->clearConfig();
+        $this->assertFalse($config->isLoaded());
     }
 }

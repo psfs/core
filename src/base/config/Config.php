@@ -211,7 +211,7 @@ class Config
     {
         $uri = Request::getInstance()->getRequestUri();
         $method = Request::getInstance()->getMethod();
-        return (preg_match('/^\/admin\/(config|setup)$/', $uri) !== false && strtoupper($method) === 'POST');
+        return (preg_match('/^\/admin\/(config|setup)$/', $uri) === 1 && strtoupper($method) === 'POST');
     }
 
     /**
