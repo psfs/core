@@ -27,7 +27,6 @@ quality-report.*
 benchmark-report.*
 
 # Internal local implementation docs and tools (not public)
-tools/
 doc/guides/
 doc/migrations/
 doc/naming/
