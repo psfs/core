@@ -42,6 +42,14 @@ class RequestTest extends TestCase
         $this->assertSame('Bearer direct', $request->getHeader('X-API-SEC-TOKEN'));
     }
 
+    public function testHasHeaderAndHeaderDefaultFallback(): void
+    {
+        $request = Request::getInstance();
+        $this->assertTrue($request->hasHeader('AUTHORIZATION'));
+        $this->assertFalse($request->hasHeader('X-NOT-EXISTS'));
+        $this->assertSame('default-value', $request->getHeader('X-NOT-EXISTS', 'default-value'));
+    }
+
     public function testAuthorizationHeaderFallsBackToQueryOnlyWhenServerHeaderMissing(): void
     {
         $request = Request::getInstance();
@@ -83,6 +91,28 @@ class RequestTest extends TestCase
         $this->assertSame('//example.org:9443', $request->getRootUrl(false));
     }
 
+    public function testRootUrlOmitsStandardPorts(): void
+    {
+        $request = Request::getInstance();
+        $request->setServer([
+            'SERVER_PORT' => 80,
+            'HTTP_HOST' => 'example.org',
+            'SERVER_NAME' => 'example.org',
+            'REQUEST_SCHEME' => 'http',
+            'HTTPS' => '',
+        ]);
+        $this->assertSame('http://example.org', $request->getRootUrl());
+
+        $request->setServer([
+            'SERVER_PORT' => 443,
+            'HTTP_HOST' => 'secure.example.org:443',
+            'SERVER_NAME' => 'secure.example.org',
+            'REQUEST_SCHEME' => 'https',
+            'HTTPS' => 'on',
+        ]);
+        $this->assertSame('https://secure.example.org', $request->getRootUrl());
+    }
+
     public function testFileDetectionAndLanguageHeaderAndTimestamp(): void
     {
         $request = Request::getInstance();
@@ -96,6 +126,15 @@ class RequestTest extends TestCase
         $this->assertSame('en', Request::header('X-API-LANG'));
         $request->setServer(['REQUEST_TIME_FLOAT' => microtime(true)]);
         $this->assertNotNull(Request::getTimestamp());
+    }
+
+    public function testGetQueryParamsAndRawDataAreArrays(): void
+    {
+        $request = Request::getInstance();
+        $query = $request->getQueryParams();
+        $this->assertIsArray($query);
+        $this->assertSame('x', $query['q'] ?? null);
+        $this->assertIsArray($request->getRawData());
     }
 
     private function bootstrapRequest(): void

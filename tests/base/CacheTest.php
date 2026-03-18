@@ -135,4 +135,70 @@ class CacheTest extends TestCase
         chmod(realpath(CACHE_DIR . DIRECTORY_SEPARATOR . 'TEST'), 0777);
         FileHelper::deleteDir(CACHE_DIR . DIRECTORY_SEPARATOR . 'TEST');
     }
+
+    public function testReadFromCacheReturnsNullWhenFileIsMissing(): void
+    {
+        $cache = $this->getInstance();
+        $called = false;
+        $data = $cache->readFromCache('tests' . DIRECTORY_SEPARATOR . uniqid('missing_', true), 300, function () use (&$called) {
+            $called = true;
+            return ['should' => 'not-run'];
+        }, Cache::JSON);
+
+        $this->assertNull($data);
+        $this->assertFalse($called);
+    }
+
+    public function testReadFromCacheCanIgnoreExpiration(): void
+    {
+        $cache = $this->getInstance();
+        $hash = sha1(microtime(true));
+        $path = 'tests' . DIRECTORY_SEPARATOR . $hash;
+        $payload = ['old' => true];
+        $cache->storeData($path, $payload, Cache::JSONGZ);
+        touch(CACHE_DIR . DIRECTORY_SEPARATOR . $path, time() - 3600);
+
+        $called = false;
+        $result = $cache->readFromCache($path, 1, function () use (&$called) {
+            $called = true;
+            return ['new' => true];
+        }, Cache::JSONGZ, true);
+
+        $this->assertFalse($called);
+        $this->assertSame($payload, $result);
+    }
+
+    public function testGetDataFromFileAbsolutePathSupportsTransforms(): void
+    {
+        $cache = $this->getInstance();
+        $tmpPath = CACHE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . uniqid('abs_', true);
+        $cache->storeData($tmpPath, ['abs' => 'ok'], Cache::JSONGZ, true);
+
+        $decoded = $cache->getDataFromFile($tmpPath, Cache::JSONGZ, true);
+        $this->assertSame(['abs' => 'ok'], $decoded);
+    }
+
+    public function testNeedCacheReturnsFalseWhenNoSessionAction(): void
+    {
+        $cache = $this->getInstance();
+        $config = Config::getInstance()->dumpConfig();
+        $config['debug'] = false;
+        $config['cache.data.enable'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, null);
+
+        $this->assertFalse(Cache::needCache());
+        $this->assertInstanceOf(Cache::class, $cache);
+    }
+
+    public function testRequestCacheHashReturnsNullWhenNoCacheAction(): void
+    {
+        $cache = $this->getInstance();
+        Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, null);
+        [$path, $filename] = $cache->getRequestCacheHash();
+
+        $this->assertNull($path);
+        $this->assertNull($filename);
+    }
 }
