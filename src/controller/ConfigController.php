@@ -9,6 +9,11 @@ use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route as RouteAttribute;
+use PSFS\base\types\helpers\attributes\Visible;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
@@ -36,6 +41,10 @@ class ConfigController extends Admin
      * @visible false
      * @return \PSFS\base\dto\JsonResponse(data=array)
      */
+    #[HttpMethod('GET')]
+    #[RouteAttribute('/admin/config/params')]
+    #[Label('PSFS configuration parameters')]
+    #[Visible(false)]
     public function getConfigParams()
     {
         $response = array_merge(Config::$required, Config::$optional);
@@ -57,6 +66,10 @@ class ConfigController extends Admin
      * @return string HTML
      * @throws FormException
      */
+    #[HttpMethod('GET')]
+    #[RouteAttribute('/admin/config')]
+    #[Label('General configuration')]
+    #[Icon('fa-cogs')]
     public function config()
     {
         Logger::log("Config loaded executed by " . $this->getRequest()->getRequestUri());
@@ -80,6 +93,9 @@ class ConfigController extends Admin
      * @return string
      * @throws FormException|ConfigException
      */
+    #[HttpMethod('POST')]
+    #[RouteAttribute('/admin/config')]
+    #[Visible(false)]
     public function saveConfig()
     {
         self::assertSuperAdminConfigWriteAccess();

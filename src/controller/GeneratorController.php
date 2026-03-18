@@ -8,8 +8,14 @@ use PSFS\base\config\ModuleForm;
 use PSFS\base\exception\FormException;
 use PSFS\base\Logger;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
+use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
+use PSFS\services\GeneratorService;
 
 /**
  * Class GeneratorController
@@ -22,7 +28,8 @@ class GeneratorController extends Admin
      * @Injectable
      * @var \PSFS\services\GeneratorService Service that generates directory structures
      */
-    protected $gen;
+    #[Injectable]
+    protected GeneratorService $gen;
 
     /**
      * @label Generate new module
@@ -32,6 +39,10 @@ class GeneratorController extends Admin
      * @return string
      * @throws FormException
      */
+    #[Label('Generate new module')]
+    #[HttpMethod('GET')]
+    #[Route('/admin/module')]
+    #[Icon('fa-layer-plus')]
     public function generateModule()
     {
         Logger::log("Module generator started for request " . $this->getRequest()->getRequestUri());
@@ -49,6 +60,9 @@ class GeneratorController extends Admin
      * @label Module generator
      * @return string
      */
+    #[HttpMethod('POST')]
+    #[Route('/admin/module')]
+    #[Label('Module generator')]
     public function doGenerateModule()
     {
         $form = new ModuleForm();

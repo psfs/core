@@ -3,6 +3,11 @@
 namespace PSFS\controller;
 
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route;
+use PSFS\base\types\helpers\attributes\Visible;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\controller\base\Admin;
 
@@ -20,6 +25,10 @@ class I18nController extends Admin
      * @label Locale generator
      * @return string
      */
+    #[HttpMethod('GET')]
+    #[Route('/admin/translations')]
+    #[Icon('fa-language')]
+    #[Label('Locale generator')]
     public function defaultTranslations()
     {
         return $this->getTranslations(Config::getParam('default.language', 'en_US'));
@@ -34,6 +43,10 @@ class I18nController extends Admin
      * @visible false
      * @return string HTML
      */
+    #[HttpMethod('GET')]
+    #[Route('/admin/translations/{locale}')]
+    #[Label('Locale generator')]
+    #[Visible(false)]
     public function getTranslations($locale)
     {
         //Default locale

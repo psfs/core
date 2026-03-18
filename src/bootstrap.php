@@ -64,6 +64,12 @@ defined('WEB_DIR') or define('WEB_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'html')
 defined('LOCALE_DIR') or define('LOCALE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
 
 // -----------------------------------------------------------------------------
+// 3.1 Load runtime polyfills
+// -----------------------------------------------------------------------------
+
+require_once SOURCE_DIR . '/polyfills/bootstrap.php';
+
+// -----------------------------------------------------------------------------
 // 4. Load Composer autoload
 // -----------------------------------------------------------------------------
 

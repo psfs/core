@@ -4,6 +4,11 @@ namespace PSFS\controller\base;
 
 use PSFS\base\exception\UserAuthException;
 use PSFS\base\types\AuthAdminController;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Route;
+use PSFS\base\types\helpers\attributes\Visible;
+use PSFS\base\config\Config;
 use PSFS\controller\UserController;
 use PSFS\services\AdminServices;
 
@@ -20,12 +25,14 @@ abstract class Admin extends AuthAdminController
      * @Injectable
      * @var \PSFS\base\config\Config Configuration service
      */
-    protected $config;
+    #[Injectable]
+    protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\services\AdminServices Admin service
      */
-    protected $srv;
+    #[Injectable]
+    protected AdminServices $srv;
 
     /**
      * Static administrator login method
@@ -52,6 +59,9 @@ abstract class Admin extends AuthAdminController
      * @visible false
      * @return string|null
      */
+    #[HttpMethod('GET')]
+    #[Route('/admin')]
+    #[Visible(false)]
     public function index()
     {
         return $this->render("index.html.twig");

@@ -5,7 +5,13 @@ namespace PSFS\controller;
 use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 use PSFS\base\types\Controller;
+use PSFS\base\types\helpers\attributes\Cacheable;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route;
 use PSFS\base\types\helpers\ResponseHelper;
+use PSFS\services\DocumentorService;
 
 /**
  * Class DocumentorController
@@ -19,7 +25,8 @@ class DocumentorController extends Controller
      * @Injectable
      * @var \PSFS\services\DocumentorService $srv
      */
-    protected $srv;
+    #[Injectable]
+    protected DocumentorService $srv;
 
     /**
      * @GET
@@ -30,6 +37,10 @@ class DocumentorController extends Controller
      * @return mixed|string
      * @throws \ReflectionException
      */
+    #[HttpMethod('GET')]
+    #[Cacheable(true)]
+    #[Label('API documentation generator')]
+    #[Route('/{domain}/api/doc')]
     public function createApiDocs($domain)
     {
         ini_set('memory_limit', -1);
@@ -67,6 +78,8 @@ class DocumentorController extends Controller
      * @param string $domain
      * @return string HTML
      */
+    #[HttpMethod('GET')]
+    #[Route('/admin/{domain}/swagger-ui')]
     public function swaggerUi($domain)
     {
         if (!Router::getInstance()->domainExists($domain)) {
