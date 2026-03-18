@@ -21,7 +21,7 @@ build:
   environment:
     timezone: "Europe/Madrid"
     php:
-      version: 8.3
+      version: 8.3.30
       ini:
         memory_limit: "-1"
         xdebug.mode: coverage
