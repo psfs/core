@@ -26,6 +26,10 @@ build:
         memory_limit: "-1"
         xdebug.mode: coverage
   nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
     services-tests:
       services:
         mysql: "8.4"
