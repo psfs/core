@@ -126,6 +126,11 @@ class OutputTraitTest extends TestCase
         $this->assertSame('text/plain', ResponseHelper::$headers_sent['content-type'] ?? null);
         $this->assertSame('attachment; filename="demo.txt"', ResponseHelper::$headers_sent['content-disposition'] ?? null);
         $this->assertSame('demo.txt', ResponseHelper::$headers_sent['filename'] ?? null);
+        $this->assertArrayHasKey('cache-control', ResponseHelper::$headers_sent);
+        $cacheControl = ResponseHelper::$headers_sent['cache-control'];
+        $this->assertIsArray($cacheControl);
+        $this->assertContains('no-store, no-cache, must-revalidate', $cacheControl);
+        $this->assertContains('pre-check=0, post-check=0, max-age=0', $cacheControl);
     }
 }
 

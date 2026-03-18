@@ -122,6 +122,40 @@ class I18nHelperTest extends TestCase
         $this->assertCount(1, $matches);
     }
 
+    public function testTranslateWithProvidersKeepsCustomEmptyStringOverride(): void
+    {
+        I18nHelper::clearMissingTranslationsReport();
+        I18nHelper::setLocale('en_GB', force: true);
+        $message = '__EMPTY_OVERRIDE_' . uniqid('', true);
+        $catalog = [$message => ''];
+        $catalogMap = [mb_convert_case($message, MB_CASE_LOWER, 'UTF-8') => $message];
+
+        $translated = I18nHelper::translateWithProviders($message, 'en_GB', $catalog, $catalogMap, true);
+
+        $this->assertSame('', $translated);
+        $report = I18nHelper::getMissingTranslationsReport();
+        if (array_key_exists('en_GB', $report)) {
+            $this->assertNotContains($message, $report['en_GB']);
+        }
+    }
+
+    public function testTranslateWithProvidersReportsMissingOnceWhenGettextFallbackIsUsed(): void
+    {
+        I18nHelper::clearMissingTranslationsReport();
+        I18nHelper::setLocale('en_GB', force: true);
+        $message = '__GETTEXT_FALLBACK_MISSING_' . uniqid('', true);
+
+        $first = I18nHelper::translateWithProviders($message, 'en_GB', [], [], true);
+        $second = I18nHelper::translateWithProviders($message, 'en_GB', [], [], true);
+
+        $this->assertSame(gettext($message), $first);
+        $this->assertSame($first, $second);
+        $report = I18nHelper::getMissingTranslationsReport();
+        $this->assertArrayHasKey('en_GB', $report);
+        $matches = array_values(array_filter($report['en_GB'], static fn ($msg) => $msg === $message));
+        $this->assertCount(1, $matches);
+    }
+
     public function testLocaleValidationAcceptsAndRejectsExpectedFormats(): void
     {
         $this->assertTrue(I18nHelper::isValidLocale('es_ES'));

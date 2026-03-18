@@ -108,7 +108,7 @@ class Router
             Logger::log(t('Requesting credentials for restricted area access'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
-            throw $this->mapNotFoundException($r);
+            throw $this->stageMapNotFoundException($r);
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
@@ -126,13 +126,62 @@ class Router
     protected function searchAction($route)
     {
         Inspector::stats('[Router] Searching action to execute: ' . $route, Inspector::SCOPE_DEBUG);
-        [$path, $httpRequest] = $this->buildMatchContext((string)$route);
+        [$path, $httpRequest] = $this->stageLoadContext((string)$route);
+        [$pattern, $action] = $this->stageMatchRoute($path, $httpRequest);
+        return $this->stageExecuteRoute((string)$route, $pattern, $action);
+    }
+
+    /**
+     * Stage 1: normalize runtime context for route lookup.
+     *
+     * @param string $route
+     * @return array{0:string,1:string}
+     */
+    protected function stageLoadContext(string $route): array
+    {
+        return $this->buildMatchContext($route);
+    }
+
+    /**
+     * Stage 2: resolve a route pattern + action pair or fail with RouterException.
+     *
+     * @param string $path
+     * @param string $httpRequest
+     * @return array{0:string,1:array}
+     * @throws RouterException
+     */
+    protected function stageMatchRoute(string $path, string $httpRequest): array
+    {
         $matchedRoute = $this->findMatchingRoute($path, $httpRequest);
         if (null === $matchedRoute) {
             throw new RouterException(t('Route not found'));
         }
-        [$pattern, $action] = $matchedRoute;
-        return $this->executeMatchedRoute((string)$route, $pattern, $action);
+        return $matchedRoute;
+    }
+
+    /**
+     * Stage 3: execute the matched route action with preconditions and cache flow.
+     *
+     * @param string $route
+     * @param string $pattern
+     * @param array $action
+     * @return mixed
+     * @throws Exception
+     */
+    protected function stageExecuteRoute(string $route, string $pattern, array $action): mixed
+    {
+        return $this->executeMatchedRoute($route, $pattern, $action);
+    }
+
+    /**
+     * Stage 4: map route-related exceptions to the public not-found contract.
+     *
+     * @param RouterException $exception
+     * @return RouterException
+     */
+    protected function stageMapNotFoundException(RouterException $exception): RouterException
+    {
+        return $this->mapNotFoundException($exception);
     }
 
     /**

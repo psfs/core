@@ -32,7 +32,6 @@ class ResponseHeaderHelper
 
     public static function allowsMultipleValues(string $normalizedKey): bool
     {
-        return in_array($normalizedKey, ['set-cookie', 'warning', 'link'], true);
+        return in_array($normalizedKey, ['set-cookie', 'warning', 'link', 'cache-control'], true);
     }
 }
-

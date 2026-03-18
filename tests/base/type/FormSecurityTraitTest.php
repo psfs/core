@@ -155,4 +155,62 @@ class FormSecurityTraitTest extends TestCase
         ]);
         $this->assertFalse($form->isValid());
     }
+
+    public function testRejectsMalformedTokenAndPurgesReplayEntry(): void
+    {
+        $form = new FormSecurityTraitTestForm();
+        $form->add('email', ['type' => 'text']);
+        $form->build();
+        $tokenKey = $form->getField(self::TOKEN_KEY_FIELD)['value'] ?? '';
+
+        $form->setData([
+            'csrf_test_form_token' => 'invalid token with spaces',
+            self::TOKEN_KEY_FIELD => $tokenKey,
+            'email' => 'malformed@example.com',
+        ]);
+        $this->assertFalse($form->isValid());
+
+        $stored = Security::getInstance()->getSessionKey(self::CSRF_SESSION_TOKEN_KEY);
+        $this->assertIsArray($stored);
+        $this->assertArrayNotHasKey($tokenKey, $stored);
+    }
+
+    public function testRejectsMalformedTokenKeyFormat(): void
+    {
+        $form = new FormSecurityTraitTestForm();
+        $form->add('email', ['type' => 'text']);
+        $form->build();
+        $token = $form->getField('csrf_test_form_token')['value'] ?? '';
+
+        $form->setData([
+            'csrf_test_form_token' => $token,
+            self::TOKEN_KEY_FIELD => '../bad-key',
+            'email' => 'invalid-key@example.com',
+        ]);
+        $this->assertFalse($form->isValid());
+    }
+
+    public function testRejectsTokenBoundToDifferentFormName(): void
+    {
+        $form = new FormSecurityTraitTestForm();
+        $form->add('email', ['type' => 'text']);
+        $form->build();
+        $token = $form->getField('csrf_test_form_token')['value'] ?? '';
+        $tokenKey = $form->getField(self::TOKEN_KEY_FIELD)['value'] ?? '';
+
+        Security::getInstance()->setSessionKey(self::CSRF_SESSION_TOKEN_KEY, [
+            $tokenKey => [
+                'token' => $token,
+                'expires_at' => time() + 600,
+                'form' => 'another_form',
+            ],
+        ]);
+
+        $form->setData([
+            'csrf_test_form_token' => $token,
+            self::TOKEN_KEY_FIELD => $tokenKey,
+            'email' => 'wrong-form@example.com',
+        ]);
+        $this->assertFalse($form->isValid());
+    }
 }

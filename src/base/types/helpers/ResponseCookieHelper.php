@@ -83,5 +83,32 @@ class ResponseCookieHelper
         }
         return 'Lax';
     }
-}
 
+    public static function renderSetCookieHeaderValue(array $payload): string
+    {
+        $name = (string)($payload['name'] ?? '');
+        $value = (string)($payload['value'] ?? '');
+        $options = is_array($payload['options'] ?? null) ? $payload['options'] : [];
+
+        $parts = [$name . '=' . rawurlencode($value)];
+        if (!empty($options['expires'])) {
+            $parts[] = 'Expires=' . gmdate('D, d M Y H:i:s \\G\\M\\T', (int)$options['expires']);
+        }
+        $parts[] = 'Path=' . (string)($options['path'] ?? '/');
+        if (!empty($options['domain'])) {
+            $parts[] = 'Domain=' . (string)$options['domain'];
+        }
+        if (!empty($options['secure'])) {
+            $parts[] = 'Secure';
+        }
+        if (!empty($options['httponly'])) {
+            $parts[] = 'HttpOnly';
+        }
+        $sameSite = (string)($options['samesite'] ?? 'Lax');
+        if ($sameSite !== '') {
+            $parts[] = 'SameSite=' . $sameSite;
+        }
+
+        return implode('; ', $parts);
+    }
+}

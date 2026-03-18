@@ -40,6 +40,7 @@ class AuthApiTest extends TestCase
         $this->getBackup = $_GET;
         $this->requestBackup = $_REQUEST;
         $this->filesBackup = $_FILES;
+        AuthApiTestDouble::resetTokenTelemetry();
         $this->bootstrapRequest();
     }
 
@@ -53,6 +54,7 @@ class AuthApiTest extends TestCase
         $_REQUEST = $this->requestBackup;
         $_FILES = $this->filesBackup;
         Request::dropInstance();
+        AuthApiTestDouble::resetTokenTelemetry();
     }
 
     public function testExtractHeaderTokenPrefersServerAndHeaderFallback(): void
@@ -93,6 +95,11 @@ class AuthApiTest extends TestCase
         Config::save(array_merge($this->configBackup, ['api.query_token.compat' => false]), []);
         Config::getInstance()->loadConfigData(true);
         $this->assertSame('', $this->callPrivate($api, 'resolveApiToken'));
+
+        $telemetry = AuthApiTestDouble::getTokenTelemetry();
+        $this->assertArrayHasKey('header', $telemetry['sources']);
+        $this->assertArrayHasKey('cookie', $telemetry['sources']);
+        $this->assertArrayHasKey('query_legacy', $telemetry['sources']);
     }
 
     public function testResolveApiTokenUsesConfiguredCookieName(): void
@@ -117,6 +124,20 @@ class AuthApiTest extends TestCase
         Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => '']);
 
         $this->assertSame('', $this->callPrivate($api, 'resolveApiToken'));
+    }
+
+    public function testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie(): void
+    {
+        $api = $this->newAuthApiWithoutConstructor();
+        $_COOKIE['X-API-SEC-TOKEN'] = 'cookie-token';
+        Request::dropInstance();
+        Request::getInstance()->init();
+        Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => "bad token \n"]);
+
+        $this->assertSame('cookie-token', $this->callPrivate($api, 'resolveApiToken'));
+        $telemetry = AuthApiTestDouble::getTokenTelemetry();
+        $this->assertArrayHasKey('header', $telemetry['invalid']);
+        $this->assertArrayHasKey('cookie', $telemetry['sources']);
     }
 
     public function testCheckAuthAcceptsNoSecretOrAdminBypass(): void

@@ -15,6 +15,7 @@ trait FormSecurityTrait
     private const CSRF_SESSION_TOKEN_KEY = '__PSFS_CSRF_FORM_TOKENS__';
     private const CSRF_DEFAULT_EXPIRATION_SECONDS = 1800;
     private const CSRF_TOKEN_KEY_FIELD_SUFFIX = '_token_key';
+    private const CSRF_TOKEN_REGEX = '/^[a-f0-9]{64}$/';
 
     /**
      * @var
@@ -39,15 +40,19 @@ trait FormSecurityTrait
         $submittedTokenKey = $this->extractSubmittedToken($tokenKeyField);
         $storedToken = '';
         $storedValid = false;
-        if ($submittedTokenKey !== '' && array_key_exists($submittedTokenKey, $storage)) {
+        if ($this->isValidCsrfTokenKey($submittedTokenKey) && array_key_exists($submittedTokenKey, $storage)) {
             $entry = $storage[$submittedTokenKey];
             $storedToken = (string)($entry['token'] ?? '');
             $expiresAt = (int)($entry['expires_at'] ?? 0);
             $storedForm = (string)($entry['form'] ?? '');
-            $storedValid = ($storedToken !== '' && $expiresAt >= time() && $storedForm === $formKey);
+            $storedValid = (
+                $this->isValidCsrfTokenValue($storedToken)
+                && $expiresAt >= time()
+                && $storedForm === $formKey
+            );
         }
 
-        if ($submittedToken !== '' && $storedValid && hash_equals($storedToken, $submittedToken)) {
+        if ($this->isValidCsrfTokenValue($submittedToken) && $storedValid && hash_equals($storedToken, $submittedToken)) {
             // Keep the same token during POST build to preserve legacy form flow: build() -> hydrate() -> isValid().
             $this->crfs = $storedToken;
             $tokenKey = $submittedTokenKey;
@@ -125,11 +130,17 @@ trait FormSecurityTrait
         }
 
         $submittedToken = (string)$this->fields[$tokenField]['value'];
-        if ('' === $submittedToken) {
+        if (!$this->isValidCsrfTokenValue($submittedToken)) {
+            $submittedTokenKey = (string)$this->fields[$tokenKeyField]['value'];
+            $storage = $this->getCsrfStorage();
+            if ($this->isValidCsrfTokenKey($submittedTokenKey) && array_key_exists($submittedTokenKey, $storage)) {
+                unset($storage[$submittedTokenKey]);
+                $this->setCsrfStorage($storage);
+            }
             return false;
         }
         $submittedTokenKey = (string)$this->fields[$tokenKeyField]['value'];
-        if ('' === $submittedTokenKey) {
+        if (!$this->isValidCsrfTokenKey($submittedTokenKey)) {
             return false;
         }
 
@@ -144,7 +155,7 @@ trait FormSecurityTrait
         $expiresAt = (int)($entry['expires_at'] ?? 0);
         $storedForm = (string)($entry['form'] ?? '');
 
-        if ('' === $sessionToken || $expiresAt < time() || $storedForm !== $formKey) {
+        if (!$this->isValidCsrfTokenValue($sessionToken) || $expiresAt < time() || $storedForm !== $formKey) {
             unset($storage[$submittedTokenKey]);
             $this->setCsrfStorage($storage);
             return false;
@@ -247,6 +258,16 @@ trait FormSecurityTrait
             return '';
         }
         return (string)($requestData[$formName][$tokenField] ?? '');
+    }
+
+    private function isValidCsrfTokenValue(string $token): bool
+    {
+        return preg_match(self::CSRF_TOKEN_REGEX, $token) === 1;
+    }
+
+    private function isValidCsrfTokenKey(string $tokenKey): bool
+    {
+        return preg_match(self::CSRF_TOKEN_REGEX, $tokenKey) === 1;
     }
 
 }

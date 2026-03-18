@@ -124,6 +124,34 @@ class RequestResponseSecurityContractTest extends TestCase
         $this->assertArrayNotHasKey('http status', ResponseHelper::$headers_sent);
     }
 
+    public function testHeaderBookkeepingMultiValueDoesNotDuplicateSameLine(): void
+    {
+        ResponseHelper::setHeader('Set-Cookie: session=a');
+        ResponseHelper::setHeader('set-cookie: session=a');
+        ResponseHelper::setHeader('Set-Cookie: profile=b');
+
+        $this->assertArrayHasKey('set-cookie', ResponseHelper::$headers_sent);
+        $cookies = ResponseHelper::$headers_sent['set-cookie'];
+        $this->assertIsArray($cookies);
+        $this->assertCount(2, $cookies);
+        $this->assertSame('session=a', $cookies[0]);
+        $this->assertSame('profile=b', $cookies[1]);
+    }
+
+    public function testHeaderBookkeepingSupportsMultiCacheControlWithoutDuplicates(): void
+    {
+        ResponseHelper::setHeader('Cache-Control: no-store, no-cache, must-revalidate');
+        ResponseHelper::setHeader('cache-control: no-store, no-cache, must-revalidate');
+        ResponseHelper::setHeader('Cache-Control: pre-check=0, post-check=0, max-age=0');
+
+        $this->assertArrayHasKey('cache-control', ResponseHelper::$headers_sent);
+        $cacheControl = ResponseHelper::$headers_sent['cache-control'];
+        $this->assertIsArray($cacheControl);
+        $this->assertCount(2, $cacheControl);
+        $this->assertSame('no-store, no-cache, must-revalidate', $cacheControl[0]);
+        $this->assertSame('pre-check=0, post-check=0, max-age=0', $cacheControl[1]);
+    }
+
     public function testNotFoundNegotiationJsonAndHtml(): void
     {
         $request = Request::getInstance();
@@ -249,6 +277,88 @@ class RequestResponseSecurityContractTest extends TestCase
             ],
         ]);
         $this->assertTrue(true);
+    }
+
+    public function testSetCookieHeadersBookkeepingIsIdempotentWithCookieMatrix(): void
+    {
+        ResponseHelper::setTest(true);
+        ResponseHelper::$headers_sent = [];
+        Request::getInstance()->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'SERVER_NAME' => 'example.com',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+            'HTTPS' => 'on',
+        ]);
+
+        ResponseHelper::setCookieHeaders([
+            [
+                'name' => 'api',
+                'value' => 'token',
+                'sameSite' => 'None',
+                'secure' => false,
+                'httpOnly' => true,
+                'path' => '/',
+                'domain' => 'example.com',
+            ],
+            [
+                'name' => 'api',
+                'value' => 'token',
+                'sameSite' => 'None',
+                'secure' => false,
+                'httpOnly' => true,
+                'path' => '/',
+                'domain' => 'example.com',
+            ],
+            [
+                'name' => 'admin',
+                'value' => 'v2',
+                'sameSite' => 'Strict',
+                'secure' => true,
+                'httpOnly' => true,
+                'path' => '/admin',
+                'domain' => 'example.com',
+            ],
+        ]);
+
+        $this->assertArrayHasKey('set-cookie', ResponseHelper::$headers_sent);
+        $headers = ResponseHelper::$headers_sent['set-cookie'];
+        $this->assertIsArray($headers);
+        $this->assertCount(2, $headers);
+        $this->assertStringContainsString('api=token', $headers[0]);
+        $this->assertStringContainsString('SameSite=None', $headers[0]);
+        $this->assertStringContainsString('Secure', $headers[0]);
+        $this->assertStringContainsString('HttpOnly', $headers[0]);
+        $this->assertStringContainsString('Path=/admin', $headers[1]);
+        $this->assertStringContainsString('SameSite=Strict', $headers[1]);
+    }
+
+    public function testSetCookieHeadersIsIdempotentAcrossRepeatedInvocations(): void
+    {
+        ResponseHelper::setTest(true);
+        ResponseHelper::$headers_sent = [];
+        Request::getInstance()->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'SERVER_NAME' => 'example.com',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+            'HTTPS' => 'on',
+        ]);
+        $payload = [[
+            'name' => 'api',
+            'value' => 'token',
+            'sameSite' => 'None',
+            'secure' => false,
+            'httpOnly' => true,
+            'path' => '/',
+            'domain' => 'example.com',
+        ]];
+
+        ResponseHelper::setCookieHeaders($payload);
+        ResponseHelper::setCookieHeaders($payload);
+
+        $headers = ResponseHelper::$headers_sent['set-cookie'] ?? [];
+        $this->assertIsArray($headers);
+        $this->assertCount(1, $headers);
+        $this->assertStringContainsString('api=token', $headers[0]);
     }
 
     public function testSetDebugHeadersNoopWhenDebugAndProfilingDisabled(): void

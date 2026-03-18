@@ -31,6 +31,7 @@ class RouterFlowContractTest extends TestCase
         $this->configBackup = Config::getInstance()->dumpConfig();
         Security::dropInstance();
         Request::dropInstance();
+        StageTrackingRouter::resetTrace();
     }
 
     protected function tearDown(): void
@@ -46,6 +47,7 @@ class RouterFlowContractTest extends TestCase
         Config::getInstance()->loadConfigData(true);
         RouterFlowController::reset();
         RouterFlowPreconditionController::reset();
+        StageTrackingRouter::resetTrace();
     }
 
     public function testMatchPrecedencePrefersExactMethodOverAll(): void
@@ -75,6 +77,54 @@ class RouterFlowContractTest extends TestCase
 
         $this->assertSame('all', $result);
         $this->assertSame(['all'], RouterFlowController::$calls);
+    }
+
+    public function testRouterExecutionUsesStagedPipelineOrder(): void
+    {
+        $router = new StageTrackingRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/stages' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+        ]);
+
+        $this->bootstrapRequest('/contract/stages', 'GET');
+        $result = $router->execute('/contract/stages');
+
+        $this->assertSame('get', $result);
+        $this->assertSame(['load', 'match', 'execute'], StageTrackingRouter::getTrace());
+    }
+
+    public function testRouterStagePipelineStopsBeforeExecuteWhenRouteIsMissing(): void
+    {
+        $router = new StageTrackingRouter();
+        $router->seedRoutes([]);
+
+        $this->bootstrapRequest('/contract/stages/missing', 'GET');
+        try {
+            $router->execute('/contract/stages/missing');
+            $this->fail('Expected RouterException was not thrown');
+        } catch (RouterException $exception) {
+            $this->assertSame('Page not found', $exception->getMessage());
+        }
+
+        $this->assertSame(['load', 'match', 'map'], StageTrackingRouter::getTrace());
+    }
+
+    public function testRouterStagePipelineIncludesExecuteOnPreconditionsFailure(): void
+    {
+        $router = new StageTrackingRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/stages/require/{id}' => $this->buildAction('cached', RouterFlowController::class, 'GET', 0, ['id', 'type']),
+        ]);
+
+        $this->bootstrapRequest('/contract/stages/require/42', 'GET');
+        try {
+            $router->execute('/contract/stages/require/42');
+            $this->fail('Expected RouterException was not thrown');
+        } catch (RouterException $exception) {
+            $this->assertSame('Page not found', $exception->getMessage());
+        }
+
+        $this->assertSame(['load', 'match', 'execute', 'map'], StageTrackingRouter::getTrace());
     }
 
     public function testMatchPrecedencePrefersMostSpecificPatternWithinSameMethod(): void
@@ -330,6 +380,45 @@ class HomeHydrationRouter extends TestableRouter
     protected function generateRouting()
     {
         $this->setRouterProperty('routing', $this->generatedRoutes);
+    }
+}
+
+class StageTrackingRouter extends TestableRouter
+{
+    private static array $trace = [];
+
+    public static function resetTrace(): void
+    {
+        self::$trace = [];
+    }
+
+    public static function getTrace(): array
+    {
+        return self::$trace;
+    }
+
+    protected function stageLoadContext(string $route): array
+    {
+        self::$trace[] = 'load';
+        return parent::stageLoadContext($route);
+    }
+
+    protected function stageMatchRoute(string $path, string $httpRequest): array
+    {
+        self::$trace[] = 'match';
+        return parent::stageMatchRoute($path, $httpRequest);
+    }
+
+    protected function stageExecuteRoute(string $route, string $pattern, array $action): mixed
+    {
+        self::$trace[] = 'execute';
+        return parent::stageExecuteRoute($route, $pattern, $action);
+    }
+
+    protected function stageMapNotFoundException(RouterException $exception): RouterException
+    {
+        self::$trace[] = 'map';
+        return parent::stageMapNotFoundException($exception);
     }
 }
 

@@ -26,10 +26,12 @@ class ResponseHelper
         $line = $parsed['line'];
 
         if (ResponseHeaderHelper::allowsMultipleValues($key)) {
+            if (!self::appendMultiHeaderValue($key, $value)) {
+                return;
+            }
             if (!self::isTest()) {
                 header($line, false);
             }
-            self::$headers_sent[$key] = $value;
             return;
         }
 
@@ -59,17 +61,29 @@ class ResponseHelper
  */
     public static function setCookieHeaders($cookies): void
     {
-        if (!empty($cookies) && is_array($cookies) && false === headers_sent() && !self::isTest()) {
-            $isSecureRequest = self::isSecureRequest();
-            $defaultDomain = Request::getInstance()->getServerName();
-            foreach ($cookies as $cookie) {
-                if (!is_array($cookie)) {
-                    continue;
-                }
-                $payload = ResponseCookieHelper::buildCookiePayload($cookie, $isSecureRequest, $defaultDomain);
-                if (null === $payload) {
-                    continue;
-                }
+        if (empty($cookies) || !is_array($cookies)) {
+            return;
+        }
+
+        $canEmitHeaders = !self::isTest() && false === headers_sent();
+        $isSecureRequest = self::isSecureRequest();
+        $defaultDomain = Request::getInstance()->getServerName();
+        $seen = [];
+        foreach ($cookies as $cookie) {
+            if (!is_array($cookie)) {
+                continue;
+            }
+            $payload = ResponseCookieHelper::buildCookiePayload($cookie, $isSecureRequest, $defaultDomain);
+            if (null === $payload) {
+                continue;
+            }
+            $line = ResponseCookieHelper::renderSetCookieHeaderValue($payload);
+            if (isset($seen[$line])) {
+                continue;
+            }
+            $seen[$line] = true;
+            self::appendMultiHeaderValue('set-cookie', $line);
+            if ($canEmitHeaders) {
                 setcookie($payload['name'], $payload['value'], $payload['options']);
             }
         }
@@ -127,6 +141,29 @@ class ResponseHelper
         }
 
         return $vars;
+    }
+
+    private static function readMultiHeaderValues(string $key): array
+    {
+        if (!array_key_exists($key, self::$headers_sent)) {
+            return [];
+        }
+        $value = self::$headers_sent[$key];
+        if (is_array($value)) {
+            return $value;
+        }
+        return [trim((string)$value)];
+    }
+
+    private static function appendMultiHeaderValue(string $key, string $value): bool
+    {
+        $values = self::readMultiHeaderValues($key);
+        if (in_array($value, $values, true)) {
+            return false;
+        }
+        $values[] = $value;
+        self::$headers_sent[$key] = $values;
+        return true;
     }
 
 }

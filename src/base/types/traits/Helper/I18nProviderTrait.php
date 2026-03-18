@@ -28,7 +28,7 @@ trait I18nProviderTrait
         // Keep wrapper compatibility: merged catalog (base + custom override) is always the source of truth.
         $customProvider = new CustomTranslationProvider();
         $customTranslation = $customProvider->translate($message, $locale, $context);
-        if (is_string($customTranslation) && '' !== $customTranslation) {
+        if (null !== $customTranslation) {
             return $customTranslation;
         }
 

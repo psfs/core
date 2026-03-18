@@ -5,10 +5,19 @@ namespace PSFS\tests\base\type\helper;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\MetadataReader;
+use PSFS\base\types\helpers\attributes\Action;
+use PSFS\base\types\helpers\attributes\Api;
+use PSFS\base\types\helpers\attributes\Cacheable;
+use PSFS\base\types\helpers\attributes\DefaultValue;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Required;
 use PSFS\base\types\helpers\attributes\Route;
 use PSFS\base\types\helpers\attributes\VarType;
+use PSFS\base\types\helpers\attributes\Values;
+use PSFS\base\types\helpers\attributes\Visible;
 
 class MetadataReaderTest extends TestCase
 {
@@ -17,12 +26,14 @@ class MetadataReaderTest extends TestCase
     protected function setUp(): void
     {
         $this->configBackup = Config::getInstance()->dumpConfig();
+        MetadataReader::clearLegacyFallbackLogs();
     }
 
     protected function tearDown(): void
     {
         Config::save($this->configBackup, []);
         Config::getInstance()->loadConfigData(true);
+        MetadataReader::clearLegacyFallbackLogs();
     }
 
     public function testGetTagValueUsesDocWhenAttributesDisabled(): void
@@ -56,6 +67,32 @@ class MetadataReaderTest extends TestCase
         $value = MetadataReader::getTagValue('route', $doc, null, $method);
 
         $this->assertSame('/doc-route', $value);
+    }
+
+    public function testLegacyFallbackLogIsRegisteredOncePerContext(): void
+    {
+        $this->setAttributesEnabled(true);
+        $method = new \ReflectionMethod(MetadataReaderDocExample::class, 'routeFromDoc');
+        $doc = (string)$method->getDocComment();
+
+        MetadataReader::getTagValue('route', $doc, null, $method);
+        MetadataReader::getTagValue('route', $doc, null, $method);
+
+        $logs = MetadataReader::getLegacyFallbackLogs();
+        $matches = array_values(array_filter($logs, static fn ($context) => $context === 'annotation_route'));
+        $this->assertCount(1, $matches);
+    }
+
+    public function testNoLegacyFallbackLogWhenAttributeResolvesTag(): void
+    {
+        $this->setAttributesEnabled(true);
+        $method = new \ReflectionMethod(MetadataReaderAttributeExample::class, 'routeFromAttribute');
+        $doc = (string)$method->getDocComment();
+
+        $value = MetadataReader::getTagValue('route', $doc, null, $method);
+
+        $this->assertSame('/attr-route', $value);
+        $this->assertNotContains('annotation_route', MetadataReader::getLegacyFallbackLogs());
     }
 
     public function testHasInjectableDetectsAttributeAndAnnotation(): void
@@ -93,6 +130,56 @@ class MetadataReaderTest extends TestCase
         $this->assertFalse(MetadataReader::getTagValue('visible', $doc, true, $method));
         $this->assertTrue(MetadataReader::getTagValue('cache', $doc, false, $method));
         $this->assertSame('fallback', MetadataReader::getTagValue('label', null, 'fallback', $method));
+    }
+
+    public function testMethodTagParityPrefersAttributesOverAnnotationsWhenEnabled(): void
+    {
+        $this->setAttributesEnabled(true);
+        $method = new \ReflectionMethod(MetadataReaderParityExample::class, 'mixedMethodTags');
+        $doc = (string)$method->getDocComment();
+
+        $this->assertSame('/attr-parity', MetadataReader::getTagValue('route', $doc, null, $method));
+        $this->assertSame('ATTR_ACTION', MetadataReader::getTagValue('action', $doc, null, $method));
+        $this->assertSame('Attribute Label', MetadataReader::getTagValue('label', $doc, null, $method));
+        $this->assertSame('fa-attr', MetadataReader::getTagValue('icon', $doc, null, $method));
+        $this->assertSame('PATCH', MetadataReader::getTagValue('http', $doc, 'ALL', $method));
+        $this->assertFalse(MetadataReader::getTagValue('visible', $doc, true, $method));
+        $this->assertFalse(MetadataReader::getTagValue('cache', $doc, true, $method));
+    }
+
+    public function testMethodTagParityUsesAnnotationsWhenAttributesDisabled(): void
+    {
+        $this->setAttributesEnabled(false);
+        $method = new \ReflectionMethod(MetadataReaderParityExample::class, 'mixedMethodTags');
+        $doc = (string)$method->getDocComment();
+
+        $this->assertSame('/doc-parity', MetadataReader::getTagValue('route', $doc, null, $method));
+        $this->assertSame('DOC_ACTION', MetadataReader::getTagValue('action', $doc, null, $method));
+        $this->assertSame('Doc Label', MetadataReader::getTagValue('label', $doc, null, $method));
+        $this->assertSame('fa-doc', MetadataReader::getTagValue('icon', $doc, null, $method));
+        $this->assertSame('POST', MetadataReader::getTagValue('http', $doc, 'ALL', $method));
+        $this->assertTrue(MetadataReader::getTagValue('visible', $doc, false, $method));
+        $this->assertTrue(MetadataReader::getTagValue('cache', $doc, false, $method));
+    }
+
+    public function testClassAndPropertyTagParityWithAttributesAndAnnotationFallback(): void
+    {
+        $this->setAttributesEnabled(true);
+        $class = new \ReflectionClass(MetadataReaderParityExample::class);
+        $classDoc = (string)$class->getDocComment();
+        $property = new \ReflectionProperty(MetadataReaderParityExample::class, 'mixedPropertyTags');
+        $propertyDoc = (string)$property->getDocComment();
+
+        $this->assertSame('ATTR_API', MetadataReader::getTagValue('api', $classDoc, null, $class));
+        $this->assertTrue(MetadataReader::getTagValue('required', $propertyDoc, false, $property));
+        $this->assertSame('attr_values', MetadataReader::getTagValue('values', $propertyDoc, null, $property));
+        $this->assertSame('attr_default', MetadataReader::getTagValue('default', $propertyDoc, null, $property));
+
+        $fallbackProperty = new \ReflectionProperty(MetadataReaderParityExample::class, 'docOnlyPropertyTags');
+        $fallbackDoc = (string)$fallbackProperty->getDocComment();
+        $this->assertSame('false', MetadataReader::getTagValue('required', $fallbackDoc, true, $fallbackProperty));
+        $this->assertSame('doc_only_values', MetadataReader::getTagValue('values', $fallbackDoc, null, $fallbackProperty));
+        $this->assertSame('doc_only_default', MetadataReader::getTagValue('default', $fallbackDoc, null, $fallbackProperty));
     }
 
     private function setAttributesEnabled(bool $enabled): void
@@ -154,3 +241,46 @@ class MetadataReaderAttributeExample
     }
 }
 
+/**
+ * @api DOC_API
+ */
+#[Api('ATTR_API')]
+class MetadataReaderParityExample
+{
+    /**
+     * @route /doc-parity
+     * @action DOC_ACTION
+     * @label Doc Label
+     * @icon fa-doc
+     * @POST
+     * @visible true
+     * @cache true
+     */
+    #[Route('/attr-parity')]
+    #[Action('ATTR_ACTION')]
+    #[Label('Attribute Label')]
+    #[Icon('fa-attr')]
+    #[HttpMethod('PATCH')]
+    #[Visible(false)]
+    #[Cacheable(false)]
+    public function mixedMethodTags(): void
+    {
+    }
+
+    /**
+     * @required false
+     * @values doc_values
+     * @default doc_default
+     */
+    #[Required(true)]
+    #[Values('attr_values')]
+    #[DefaultValue('attr_default')]
+    private $mixedPropertyTags;
+
+    /**
+     * @required false
+     * @values doc_only_values
+     * @default doc_only_default
+     */
+    private $docOnlyPropertyTags;
+}

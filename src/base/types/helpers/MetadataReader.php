@@ -79,6 +79,16 @@ class MetadataReader
         return self::readVarTypeFromDoc($doc ?: '');
     }
 
+    public static function getLegacyFallbackLogs(): array
+    {
+        return array_keys(self::$legacyFallbackLogs);
+    }
+
+    public static function clearLegacyFallbackLogs(): void
+    {
+        self::$legacyFallbackLogs = [];
+    }
+
     private static function attributesEnabled(): bool
     {
         return (bool)Config::getParam('metadata.attributes.enabled', false);
@@ -173,4 +183,3 @@ class MetadataReader
         Logger::log('[LegacyMetadata] ' . $context, LOG_NOTICE);
     }
 }
-

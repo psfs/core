@@ -106,6 +106,35 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertSame($translation, $storedCatalog[$message]);
     }
 
+    public function testWrapperRespectsCustomEmptyOverrideAsSourceOfTruth(): void
+    {
+        $this->overrideConfig([
+            'debug' => false,
+            'i18n.autogenerate' => false,
+        ]);
+        I18nHelper::clearMissingTranslationsReport();
+        I18nHelper::setLocale('en_GB', force: true);
+
+        $customKey = 'empty_override_' . uniqid('', true);
+        $customPath = LOCALE_DIR . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR . $customKey;
+        GeneratorHelper::createDir($customPath);
+        $this->tmpPaths[] = $customPath;
+
+        $knownMessage = $this->getKnownTranslationKey();
+        $customLocaleFile = $customPath . DIRECTORY_SEPARATOR . 'en_GB.json';
+        file_put_contents($customLocaleFile, json_encode([
+            $knownMessage => '',
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        $translated = CustomTranslateExtension::_($knownMessage, $customKey, true);
+
+        $this->assertSame('', $translated);
+        $report = I18nHelper::getMissingTranslationsReport();
+        if (array_key_exists('en_GB', $report)) {
+            $this->assertNotContains($knownMessage, $report['en_GB']);
+        }
+    }
+
     public function testWrapperSourceOfTruthProviderOrderContract(): void
     {
         $this->overrideConfig([
