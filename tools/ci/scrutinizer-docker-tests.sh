@@ -35,12 +35,17 @@ $DC down -v || true
 $DC up -d db redis
 
 for i in $(seq 1 60); do
+  echo "Waiting for MySQL readiness... attempt $i/60"
   if $DC exec -T db mysqladmin ping -h localhost --silent >/dev/null 2>&1; then
+    echo "MySQL is ready"
     break
   fi
   sleep 2
 done
 
+echo "Running composer install inside php container..."
 $DC run --rm -T php sh -lc 'cd /var/www && composer install --no-interaction --no-progress --prefer-dist'
+echo "Preparing coverage directory..."
 $DC run --rm -T php sh -lc 'cd /var/www && mkdir -p cache/coverage'
+echo "Running PHPUnit with coverage..."
 $DC run --rm -T php sh -lc 'cd /var/www && XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --coverage-clover cache/coverage/coverage.xml --colors=never'

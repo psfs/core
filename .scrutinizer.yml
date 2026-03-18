@@ -11,6 +11,7 @@ filter:
     - logs/*
     - tests/*
     - tests_api/*
+    - tools/*
   dependency_paths:
     - vendor/
 
@@ -20,7 +21,7 @@ checks:
 build:
   environment:
     php:
-      version: "8.2.0"
+      version: "8.2"
   dependencies:
     override:
       - true
@@ -49,6 +50,7 @@ build:
         stop_on_failure: true
         override:
           - command: "bash tools/ci/scrutinizer-docker-tests.sh"
+            idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
               format: "clover"
