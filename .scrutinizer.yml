@@ -18,6 +18,9 @@ checks:
     php: true
 
 build:
+  environment:
+    php:
+      version: "8.2.0"
   dependencies:
     override:
       - true
@@ -30,8 +33,6 @@ build:
   nodes:
     docker-tests:
       environment:
-        php:
-          version: "8.3"
         docker: true
         variables:
           APP_ENVIRONMENT: "test"
