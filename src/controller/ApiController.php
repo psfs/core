@@ -4,6 +4,12 @@ namespace PSFS\controller;
 
 use PSFS\base\Router;
 use PSFS\base\types\AuthAdminController;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
+use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route;
+use PSFS\services\DocumentorService;
 
 /**
  * Class Api
@@ -20,7 +26,8 @@ class ApiController extends AuthAdminController
      * @Injectable
      * @var \PSFS\services\DocumentorService $srv
      */
-    protected $srv;
+    #[Injectable]
+    protected DocumentorService $srv;
 
     /**
      * @GET
@@ -29,6 +36,10 @@ class ApiController extends AuthAdminController
      * @label Documentación api
      * @return string HTML
      */
+    #[HttpMethod('GET')]
+    #[Route('/admin/api/docs')]
+    #[Icon('fa-books')]
+    #[Label('API documentation')]
     public function documentorHome()
     {
         $domains = Router::getInstance()->getDomains();

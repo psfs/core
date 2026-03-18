@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
+{% set lang_html = get_config('default.language')|default('en_US')|split("_") %}
 <html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
 <head>
     <meta charset="utf-8">
@@ -73,7 +73,7 @@
         globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}'),
         __basic_auth = '{{ session('__U_T_L__') }}',
         __encrypted_auth = '{{ generate_auth_token('admin', 'admin') }}',
-        defaultLocale = '{{ get_config('default.language', 'es_ES') }}';
+        defaultLocale = '{{ get_config('default.language', 'en_US') }}';
     (function () {
         app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'bw.paging', 'ngSanitize']);
     })();
@@ -89,7 +89,7 @@
                     message: "{{ getFlash("callback_message") | raw }}",
                     buttons: {
                         success: {
-                            label: "{{ "Aceptar" | trans }}",
+                            label: "{{ "Accept" | trans }}",
                             className: "btn-primary",
                             callback: function () {
                                 if ({{ existsFlash("callback_route")|default('false') }}) {

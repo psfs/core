@@ -30,11 +30,11 @@ class ModuleForm extends Form
 
         $controllerTypes = array(
             "Normal" => t("Normal"),
-            "Auth" => t("Requiere autenticación de usuario"),
-            "AuthAdmin" => t("Requiere autenticación de administrador"),
+            "Auth" => t("Requires user authentication"),
+            "AuthAdmin" => t("Requires administrator authentication"),
         );
         $this->add('module', array(
-            'label' => t('Nombre del Módulo'),
+            'label' => t('Module Name'),
         ))->add('controllerType', array(
             'label' => t('Tipo de controlador'),
             'type' => 'select',
@@ -49,7 +49,7 @@ class ModuleForm extends Form
         $this->setAttrs(array(
             'class' => 'col-md-6',
         ));
-        $this->addButton('submit', 'Generar módulo');
+        $this->addButton('submit', 'Generate module');
     }
 
     /**
@@ -58,7 +58,7 @@ class ModuleForm extends Form
      */
     public function getTitle()
     {
-        return t('Gestión de Módulos');
+        return t('Module Management');
     }
 
     /**

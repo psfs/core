@@ -106,7 +106,7 @@ abstract class Api extends Singleton
         list($return, $total, $pages) = $this->getList();
         $message = null;
         if (!$total) {
-            $message = t('No se han encontrado elementos para la búsqueda');
+            $message = t('No items found for the search');
         }
 
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);

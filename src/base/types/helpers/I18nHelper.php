@@ -24,7 +24,7 @@ class I18nHelper
     const PSFS_SESSION_LANGUAGE_KEY = '__PSFS_SESSION_LANG_SELECTED__';
     const PSFS_SESSION_LOCALE_KEY = '__PSFS_SESSION_LOCALE_SELECTED__';
 
-    static array $langs = ['es_ES', 'en_GB', 'fr_FR', 'pt_PT', 'de_DE'];
+    static array $langs = ['en_US', 'en_GB', 'es_ES', 'fr_FR', 'pt_PT', 'de_DE'];
 
     /**
      * @param string $absoluteFileName

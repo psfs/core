@@ -5,6 +5,7 @@ namespace PSFS\services;
 use PSFS\base\config\Config;
 use PSFS\base\Security;
 use PSFS\base\Service;
+use PSFS\base\Template;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\ResponseHelper;
@@ -19,19 +20,19 @@ class AdminServices extends Service
      * @var \PSFS\base\config\Config Servicio de configuración
      */
     #[Injectable]
-    protected $config;
+    protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
     #[Injectable]
-    protected $security;
+    protected Security $security;
     /**
      * @Injectable
      * @var \PSFS\base\Template Servicio de gestión de plantillas
      */
     #[Injectable]
-    protected $tpl;
+    protected Template $tpl;
 
     /**
      * Servicio que devuelve las cabeceras de autenticación
@@ -42,7 +43,7 @@ class AdminServices extends Service
         $platform = trim(Config::getInstance()->get('platform.name', 'PSFS'));
         ResponseHelper::setHeader('HTTP/1.1 401 Unauthorized');
         ResponseHelper::setHeader('WWW-Authenticate: Basic Realm="' . $platform . '"');
-        echo t('Zona restringida');
+        echo t('Restricted area');
         exit();
     }
 

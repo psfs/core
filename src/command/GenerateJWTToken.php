@@ -18,8 +18,8 @@ if (!isset($console)) {
 }
 $console
     ->register('psfs:jwt:generate')
-    ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'Usuario que genera el token')
-    ->addOption('module', 'm', InputOption::VALUE_OPTIONAL, 'Módulo para el que se genera el token', 'ALL')
+    ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'User that generates the token')
+    ->addOption('module', 'm', InputOption::VALUE_OPTIONAL, 'Module for which the token is generated', 'ALL')
     ->addUsage('psfs:jwt:generate --user=admin')
     ->addUsage('psfs:jwt:generate --user=test --module=TEST')
     ->setDescription('Genera un token JWT')
@@ -33,7 +33,7 @@ $console
         $password = new Question("Escribe la clave para generar el JWT:\n", "string");
         $password->setHidden(true);
         $key = $helper->ask($input, $output, $password);
-        $output->writeln("Generando JWT para el usuario $user en el módulo $module con clave $key");
+        $output->writeln("Generating JWT for user $user in module $module with key $key");
         $jwt = JWT::encode([
             'iss' => 'PSFS',
             'sub' => $user,

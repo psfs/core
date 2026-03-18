@@ -42,7 +42,7 @@ trait StructureTrait
         Logger::log("Generamos la estructura");
         $paths = [
             "Api", "Config", "Controller", "Models", "Public", "Templates", "Services", "Test", "Doc",
-            "Locale", "Locale/" . Config::getParam('default.locale', 'es_ES'), "Locale/" . Config::getParam('default.locale', 'es_ES') . "/LC_MESSAGES"
+            "Locale", "Locale/" . Config::getParam('default.locale', 'en_US'), "Locale/" . Config::getParam('default.locale', 'en_US') . "/LC_MESSAGES"
         ];
         $modulePath = $modPath . $module;
         foreach ($paths as $path) {

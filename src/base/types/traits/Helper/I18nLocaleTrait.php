@@ -27,7 +27,14 @@ trait I18nLocaleTrait
     {
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
-            $locale = Security::getInstance()->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
+            $session = Security::getInstance();
+            $sessionLocale = $session->getSessionKey(self::PSFS_SESSION_LOCALE_KEY);
+            $sessionLanguage = $session->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
+            if (!empty($sessionLanguage) && (empty($sessionLocale) || stripos((string)$sessionLocale, (string)$sessionLanguage . '_') !== 0)) {
+                $locale = $sessionLanguage;
+            } else {
+                $locale = $sessionLocale ?: $sessionLanguage;
+            }
             if (empty($locale) && ServerHelper::hasServerValue('HTTP_ACCEPT_LANGUAGE')) {
                 $browserLocales = explode(",", str_replace("-", "_", ServerHelper::getServerValue("HTTP_ACCEPT_LANGUAGE"))); // brosers use en-US, Linux uses en_US
                 for ($i = 0, $ct = count($browserLocales); $i < $ct; $i++) {
@@ -46,13 +53,20 @@ trait I18nLocaleTrait
 
     private static function normalizeLocale(string $locale): string
     {
-        $value = strtolower($locale ?: 'es_es');
+        $value = trim($locale ?: 'en_US');
+        if (preg_match('/^[a-z]{2}_[A-Z]{2}$/', $value) === 1) {
+            if (in_array($value, self::$langs, true)) {
+                return $value;
+            }
+            [$lang] = explode('_', $value, 2);
+            return self::normalizeLocale($lang);
+        }
+        $value = strtolower($value);
         if (str_contains($value, '_')) {
-            $parts = explode('_', $value);
-            $value = $parts[0];
+            [$value] = explode('_', $value, 2);
         }
         if ($value === 'en') {
-            return 'en_GB';
+            return 'en_US';
         }
         return $value . '_' . strtoupper($value);
     }

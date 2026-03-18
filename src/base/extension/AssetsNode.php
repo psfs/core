@@ -20,12 +20,11 @@ class AssetsNode extends Node
      * @param string $name
      * @param array $values
      * @param int $line
-     * @param string $tag
      * @param string $type
      */
-    public function __construct($name, $values, $line, $tag = null, $type = 'js')
+    public function __construct($name, $values, $line, $type = 'js')
     {
-        parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line, $tag);
+        parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line);
         $this->hash = $values["hash"];
         $this->type = $type;
     }

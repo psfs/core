@@ -1,6 +1,6 @@
 {% set base_version = get_config('admin.version', 'v1') %}
 <!DOCTYPE html>
-{% set lang_html = get_config('default.language')|default('es_ES')|split("_") %}
+{% set lang_html = get_config('default.language')|default('en_US')|split("_") %}
 <html lang="{{ lang_html[0] }}" data-ng-app="{{ app_name|default('psfs') }}">
 <head>
     <meta charset="utf-8">
@@ -34,7 +34,7 @@
             <md-button data-ng-click="toggleMenu()" aria-label="Toggle menu" class="md-icon-button">
                 <i class="fa fa-bars"></i>
             </md-button>
-            <h2 flex md-truncate>{{ 'Bienvenido'|trans }} <strong>{{ __admin__.alias }}</strong></h2>
+            <h2 flex md-truncate>{{ 'Welcome'|trans }} <strong>{{ __admin__.alias }}</strong></h2>
             <a href="{{ path('admin', true) }}" aria-label="Home">
                 <i class="fa fa-home"></i>
             </a>
@@ -60,7 +60,7 @@
     var app,
         globalLimit = parseInt('{{ get_config('pagination.limit') | default('10') }}'),
         __basic_auth = '{{ session('__U_T_L__') }}',
-        defaultLocale = '{{ get_config('default.language', 'es_ES') }}';
+        defaultLocale = '{{ get_config('default.language', 'en_US') }}';
     (function () {
         app = app || angular.module('{{ app_name|default('psfs') }}', ['ngMaterial', 'ngSanitize', 'bw.paging']);
         app.config(function($mdThemingProvider) {

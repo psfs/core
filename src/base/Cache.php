@@ -96,7 +96,11 @@ class Cache
     {
         Inspector::stats('[Cache] Checking expiration', Inspector::SCOPE_DEBUG);
         $absolutePath = ($absolute) ? $path : CACHE_DIR . DIRECTORY_SEPARATOR . $path;
-        $lasModificationDate = filemtime($absolutePath);
+        clearstatcache(true, $absolutePath);
+        $lasModificationDate = @filemtime($absolutePath);
+        if (false === $lasModificationDate) {
+            return true;
+        }
         return ($lasModificationDate + $expires <= time());
     }
 
@@ -227,7 +231,7 @@ class Cache
         Inspector::stats('[Cache] Gathering cache hash for request', Inspector::SCOPE_DEBUG);
         if (null !== $action && $action['cache'] > 0) {
             $query = $action['params'];
-            $query[Api::HEADER_API_LANG] = Request::header(Api::HEADER_API_LANG, 'es');
+            $query[Api::HEADER_API_LANG] = Request::header(Api::HEADER_API_LANG, 'en');
             $filename = FileHelper::generateHashFilename($action['http'], $action['slug'], $query);
             $hashPath = FileHelper::generateCachePath($action, $query);
             Inspector::stats('[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]), Inspector::SCOPE_DEBUG);

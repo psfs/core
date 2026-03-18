@@ -9,7 +9,7 @@
         <md-card-actions layout="row" layout-align="end center">
             <md-button class="md-raised md-primary" ng-click="submitForm()" aria-label="Save" ng-disabled="extraActionExecution">
                 <i class="fa fa-save"></i>&nbsp;
-                <span>{{ "Guardar"|trans }}</span>
+                <span>{{ "Save"|trans }}</span>
             </md-button>
             <md-menu ng-show="formActions().length || isSaved()" md-offset="0 45">
                 <md-button aria-label="Open phone interactions menu" class="md-raised" ng-click="$mdMenu.open()" ng-disabled="extraActionExecution">
@@ -26,7 +26,7 @@
                     <md-menu-item ng-show="isSaved()">
                         <md-button ng-click="addNewItem()" aria-label="New">
                             <i class="fa fa-plus-circle"></i>&nbsp;
-                            <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
+                            <span ng-bind="'{{ "New"|trans }} ' + entity"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-divider ng-show="isSaved() && formActions().length"></md-menu-divider>
@@ -89,7 +89,7 @@
                             </md-not-found>
                         </md-autocomplete>
                         <md-select ng-model="model[field.name]" ng-if="isComboField(field)">
-                            <md-option ng-if="!field.required"><em>{{ "Selecciona un valor"|trans }}</em></md-option>
+                            <md-option ng-if="!field.required"><em>{{ "Select a value"|trans }}</em></md-option>
                             <md-option ng-repeat="element in field.data" ng-value="element[field.name]">
                                 {{ "{{ element.Label }}" }}
                             </md-option>
@@ -114,13 +114,13 @@
                     <md-menu-item ng-show="isSaved()">
                         <md-button class="md-warn" ng-click="deleteItem(model, $event)" ng-show="isSaved()" aria-label="Delete">
                             <i class="fa fa-trash-o"></i>&nbsp;
-                            <span ng-bind="{{ "Eliminar"|trans }}"></span>
+                            <span ng-bind="{{ "Delete"|trans }}"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-item ng-show="isSaved()">
                         <md-button ng-click="addNewItem()" aria-label="New">
                             <i class="fa fa-plus-circle"></i>&nbsp;
-                            <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
+                            <span ng-bind="'{{ "New"|trans }} ' + entity"></span>
                         </md-button>
                     </md-menu-item>
                     <md-menu-divider ng-show="isSaved()"></md-menu-divider>

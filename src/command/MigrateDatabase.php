@@ -15,8 +15,8 @@ if (!isset($console)) {
 }
 $console
     ->register('psfs:migrate')
-    ->addOption('module', 'm', InputArgument::OPTIONAL, 'Módulo específico a migrar')
-    ->addOption('simulate', 's', InputArgument::OPTIONAL, 'Sólo graba en la tabla de migración', false)
+    ->addOption('module', 'm', InputArgument::OPTIONAL, 'Specific module to migrate')
+    ->addOption('simulate', 's', InputArgument::OPTIONAL, 'Only write in the migration table', false)
     ->addUsage('psfs:migrate --module=TEST')
     ->addUsage('psfs:migrate --simulate=1')
     ->addUsage('psfs:migrate --module=TEST --simulate=1')
@@ -31,7 +31,7 @@ $console
                 continue;
             }
             if(empty($module) || str_contains(strtolower($domain), strtolower($module))) {
-                $output->writeln(sprintf(t("Ejecutando migraciones para módulo %s"), $domain));
+                $output->writeln(sprintf(t("Running migrations for module %s"), $domain));
                 $configDir = realpath($paths['base']) . DIRECTORY_SEPARATOR . 'Config';
                 $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
                 if(file_exists($configDir)) {
@@ -39,10 +39,9 @@ $console
                     $result = shell_exec($script);
                     $output->writeln($result);
                 } else {
-                    $output->writeln("Módulo sin configuración de BD, saltando proceso para " . $module);
+                    $output->writeln("Module without DB configuration, skipping process for " . $module);
                 }
             }
         }
-        $output->writeln("Migración finalizada");
+        $output->writeln("Migration completed");
     });
-

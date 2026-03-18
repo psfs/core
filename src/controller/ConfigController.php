@@ -22,10 +22,10 @@ class ConfigController extends Admin
 {
 
     /**
-     * Servicio que devuelve los parámetros disponibles
+     * Service that returns available configuration parameters
      * @GET
      * @route /admin/config/params
-     * @label Parámetros de configuración de PSFS
+     * @label PSFS configuration parameters
      * @visible false
      * @return \PSFS\base\dto\JsonResponse(data=array)
      */
@@ -42,10 +42,10 @@ class ConfigController extends Admin
     }
 
     /**
-     * Método que gestiona la configuración de las variables
+     * Handles platform configuration
      * @GET
      * @Route /admin/config
-     * @label Configuración general
+     * @label General configuration
      * @icon fa-cogs
      * @return string HTML
      * @throws FormException
@@ -59,7 +59,7 @@ class ConfigController extends Admin
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         return $this->render('welcome.html.twig', array(
-            'text' => t("Bienvenido a PSFS"),
+            'text' => t("Welcome to PSFS"),
             'config' => $form,
             'typeahead_data' => array_merge(Config::$required, Config::$optional),
         ));
@@ -75,14 +75,14 @@ class ConfigController extends Admin
      */
     public function saveConfig()
     {
-        Logger::log(t("Guardando configuración"), LOG_INFO);
+        Logger::log(t("Saving configuration"), LOG_INFO);
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
         $form->hydrate();
         if ($form->isValid()) {
             $debug = Config::getInstance()->getDebugMode();
             if (Config::save($form->getData(), $form->getExtraData())) {
-                Logger::log(t('Configuración guardada correctamente'));
+                Logger::log(t('Configuration saved successfully'));
                 $runtimeDebug = (bool)Config::getParam('debug', false);
                 // En producción (debug=0) siempre refrescamos cache.var e invalidamos artefactos de config.
                 if (!$runtimeDebug) {
@@ -92,14 +92,14 @@ class ConfigController extends Admin
                 if (boolval($debug) !== $runtimeDebug) {
                     GeneratorHelper::clearDocumentRoot();
                 }
-                Security::getInstance()->setFlash("callback_message", t("Configuración actualizada correctamente"));
+                Security::getInstance()->setFlash("callback_message", t("Configuration updated successfully"));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-config", true));
             } else {
-                throw new HttpException(t('Error al guardar la configuración, prueba a cambiar los permisos'), 403);
+                throw new HttpException(t('Error while saving configuration, please verify filesystem permissions'), 403);
             }
         }
         return $this->render('welcome.html.twig', array(
-            'text' => t("Bienvenido a PSFS"),
+            'text' => t("Welcome to PSFS"),
             'config' => $form,
             'typeahead_data' => array_merge(Config::$required, Config::$optional),
         ));

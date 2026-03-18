@@ -57,11 +57,12 @@ class Security
     }
 
     /**
-     * @return array|null
+     * @return array
      */
-    public function getAdmins()
+    public function getAdmins(): array
     {
-        return Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true);
+        $admins = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', Cache::JSONGZ, true);
+        return is_array($admins) ? $admins : [];
     }
 
     /**
@@ -78,7 +79,7 @@ class Security
             return $this->authorized || self::isTest();
         }
         $admins = $this->getAdmins();
-        if (null === $admins) {
+        if (empty($admins)) {
             return $this->authorized || self::isTest();
         }
         [$user, $token] = $this->resolveAdminCredentials($admins, $user, $pass);
@@ -165,6 +166,7 @@ class Security
         $users = $this->getAdmins();
         $logged = $this->getAdmin();
         if (is_array($logged)
+            && is_array($users)
             && array_key_exists('alias', $logged)
             && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];
@@ -182,6 +184,7 @@ class Security
         $users = $this->getAdmins();
         $logged = $this->getAdmin();
         if (is_array($logged)
+            && is_array($users)
             && array_key_exists('alias', $logged)
             && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];

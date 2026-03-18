@@ -107,7 +107,7 @@ class Router
         try {
             return $this->searchAction($route);
         } catch (AccessDeniedException $e) {
-            Logger::log(t('Solicitamos credenciales de acceso a zona restringida'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
+            Logger::log(t('Requesting credentials for restricted area access'), LOG_WARNING, ['file' => $e->getFile() . '[' . $e->getLine() . ']']);
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
             throw $this->mapNotFoundException($r);

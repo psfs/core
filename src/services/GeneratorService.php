@@ -12,6 +12,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
+use PSFS\base\Security;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\ApiGenerationTrait;
@@ -33,13 +34,13 @@ class GeneratorService extends SimpleService
      * @var \PSFS\base\config\Config Servicio de configuración
      */
     #[Injectable]
-    protected $config;
+    protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security Servicio de autenticación
      */
     #[Injectable]
-    protected $security;
+    protected Security $security;
 
     /**
      * Servicio que genera la estructura de un módulo o lo actualiza en caso de ser necesario
@@ -64,7 +65,7 @@ class GeneratorService extends SimpleService
             $this->createModuleMigrations($module, $modPath);
         }
         //Redireccionamos al home definido
-        Logger::log("Módulo generado correctamente");
+        Logger::log("Module generated successfully");
     }
 
     /**
@@ -111,7 +112,7 @@ class GeneratorService extends SimpleService
     private function generateControllerTemplate($module, $modPath, $force = false, $controllerType = "")
     {
         //Generamos el controlador base
-        Logger::log("Generamos el controlador BASE");
+        Logger::log("Generating BASE controller");
         $class = preg_replace('/(\\\|\/)/', '', $module);
         $controllerBody = $this->tpl->dump("generator/controller.template.twig", array(
             "module" => $module,
@@ -169,7 +170,7 @@ class GeneratorService extends SimpleService
         ));
         $this->writeTemplateToFile($configTemplate, CORE_DIR . DIRECTORY_SEPARATOR . $modulePath . DIRECTORY_SEPARATOR . "Config" .
             DIRECTORY_SEPARATOR . "config.php", true);
-        Logger::log("Generado config genérico para propel");
+        Logger::log("Generated generic config for Propel");
     }
 
     /**
@@ -183,7 +184,7 @@ class GeneratorService extends SimpleService
         list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
 
         if ($manager->hasPendingMigrations()) {
-            throw new ApiException(t(sprintf('Módulo %s generado correctamente. Hay una migración pendiente de aplicar, ejecute comando `psfs:migrate` o elimine el fichero generado en el módulo', $module)), 400);
+            throw new ApiException(t(sprintf('Module %s generated successfully. There is a pending migration to apply. Run `psfs:migrate` or remove the generated file in the module', $module)), 400);
         }
 
         $debugLogger = Config::getParam('log.level') === 'DEBUG';
@@ -275,7 +276,7 @@ class GeneratorService extends SimpleService
     private function generateConfigTemplate($modPath, $force = false)
     {
         //Generamos el fichero de configuración
-        Logger::log("Generamos fichero vacío de configuración");
+        Logger::log("Generating empty configuration file");
         return $this->writeTemplateToFile("<?php\n\t",
             $modPath . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "config.php",
             $force);
@@ -290,7 +291,7 @@ class GeneratorService extends SimpleService
     private function generateSchemaTemplate($module, $modPath, $force = false)
     {
         //Generamos el autoloader del módulo
-        Logger::log("Generamos el schema");
+        Logger::log("Generating schema");
         $schema = $this->tpl->dump("generator/schema.propel.twig", array(
             "module" => $module,
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
@@ -310,7 +311,7 @@ class GeneratorService extends SimpleService
      */
     private function generatePropertiesTemplate($module, $modPath, $force = false)
     {
-        Logger::log("Generamos la configuración de Propel");
+        Logger::log("Generating Propel configuration");
         $buildProperties = $this->tpl->dump("generator/build.properties.twig", array(
             "module" => $module,
             "namespace" => preg_replace('/(\\\|\/)/', '', $module),
@@ -329,7 +330,7 @@ class GeneratorService extends SimpleService
     private function generateIndexTemplate($module, $modPath, $force = false)
     {
         //Generamos la plantilla de index
-        Logger::log("Generamos una plantilla base por defecto");
+        Logger::log("Generating default base template");
         $index = $this->tpl->dump("generator/index.template.twig", array(
             "module" => $module,
         ));

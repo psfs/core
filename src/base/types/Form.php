@@ -60,7 +60,7 @@ abstract class Form extends Singleton implements FormType
     public function save()
     {
         if (null === $this->model) {
-            throw new FormException(t('No se ha asociado ningún modelo al formulario'));
+            throw new FormException(t('No model has been associated with the form'));
         }
         $this->model->fromArray(array($this->getData()));
         try {

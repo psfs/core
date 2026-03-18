@@ -65,10 +65,10 @@ class UserController extends Admin
         if ($form->isValid()) {
             if (Security::save($form->getData())) {
                 Logger::log('Configuration saved successful');
-                Security::getInstance()->setFlash("callback_message", t("Usuario agregado correctamente"));
+                Security::getInstance()->setFlash("callback_message", t("User created successfully"));
                 Security::getInstance()->setFlash("callback_route", Router::getInstance()->getRoute("admin", true));
             } else {
-                throw new ConfigException(t('Error al guardar los administradores, prueba a cambiar los permisos'));
+                throw new ConfigException(t('Error while saving administrators, please verify filesystem permissions'));
             }
         }
         return Template::getInstance()->render('admin.html.twig', array(
@@ -116,7 +116,7 @@ class UserController extends Admin
         $data = Request::getInstance()->getData();
         $username = $data['user'] ?? null;
         if (empty($username)) {
-            throw new ApiException(t('No se ha indicado el usuario a eliminar'), 400);
+            throw new ApiException(t('No user was provided to delete'), 400);
         }
         Security::getInstance()->deleteUser($username);
         return $this->json('OK');

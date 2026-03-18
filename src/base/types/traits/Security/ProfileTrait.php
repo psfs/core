@@ -31,7 +31,7 @@ trait ProfileTrait
         return array(
             AuthHelper::ADMIN_ID_TOKEN => t('Administrador'),
             AuthHelper::MANAGER_ID_TOKEN => t('Gestor'),
-            AuthHelper::USER_ID_TOKEN => t('Usuario'),
+            AuthHelper::USER_ID_TOKEN => t('User'),
         );
     }
 

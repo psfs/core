@@ -22,7 +22,7 @@ trait FormValidatorTrait
      *
      * @return FormSchemaTrait
      */
-    public function setError($field, $error = 'Error de validación')
+    public function setError($field, $error = 'Validation error')
     {
         $this->fields[$field]['error'] = $error;
         $this->errors[$field] = $error;
@@ -70,7 +70,7 @@ trait FormValidatorTrait
         // Check if required
         $valid = true;
         if ((!array_key_exists('required', $field) || false !== (bool)$field['required']) && $this->checkEmpty($field['value'])) {
-            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('El campo %s es oligatorio')));
+            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('Field %s is required')));
             $field['error'] = $this->getError($key);
             $valid = false;
         }
@@ -81,7 +81,7 @@ trait FormValidatorTrait
             && !empty($field['value'])
             && preg_match('/' . $field['pattern'] . '/', $field['value']) === 0
         ) {
-            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('El campo %s no tiene un formato válido')));
+            $this->setError($key, str_replace('%s', "<strong>{$key}</strong>", t('Field %s has an invalid format')));
             $field['error'] = $this->getError($key);
             $valid = false;
         }

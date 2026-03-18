@@ -143,7 +143,7 @@ trait FieldHelperTrait
                             $fDto->required = true;
                             if (strtolower($fDto->name) === 'locale') {
                                 $fDto->type = Field::COMBO_TYPE;
-                                $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'es_ES')));
+                                $languages = explode(',', Config::getParam('i18n.locales', Config::getParam('default.language', 'en_US')));
                                 foreach ($languages as $language) {
                                     $fDto->data[] = [
                                         $fDto->name => $language,

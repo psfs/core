@@ -15,7 +15,7 @@ if (!isset($console)) {
 }
 $console
     ->register('psfs:migrate:rollback')
-    ->addOption('module', 'm', InputArgument::OPTIONAL, 'Módulo específico a deshacer')
+    ->addOption('module', 'm', InputArgument::OPTIONAL, 'Specific module to rollback')
     ->addUsage('psfs:migrate:rollback --module=TEST')
     ->setDescription('Deshacer las migraciones de base de datos')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
@@ -27,7 +27,7 @@ $console
                 continue;
             }
             if(empty($module) || str_contains(strtolower($domain), strtolower($module))) {
-                $output->writeln(sprintf(t("Ejecutando migraciones para módulo %s"), $domain));
+                $output->writeln(sprintf(t("Running migrations for module %s"), $domain));
                 $configDir = realpath($paths['base']) . DIRECTORY_SEPARATOR . 'Config';
                 $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
                 $script = sprintf("%s/bin/propel migration:down  --config-dir=%s --output-dir=%s", realpath(VENDOR_DIR), $configDir, $migrationDir);
@@ -35,6 +35,5 @@ $console
                 $output->writeln($result);
             }
         }
-        $output->writeln("Migración finalizada");
+        $output->writeln("Migration completed");
     });
-

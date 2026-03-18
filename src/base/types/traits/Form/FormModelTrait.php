@@ -95,7 +95,7 @@ trait FormModelTrait
     protected function setModelLocale()
     {
         if (method_exists($this->model, 'setLocale')) {
-            $this->model->setLocale(Config::getParam('default.language', 'es_ES'));
+            $this->model->setLocale(Config::getParam('default.language', 'en_US'));
         }
     }
 

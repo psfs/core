@@ -10,7 +10,7 @@
             ng-click="submitForm()" aria-label="Save"
             ng-disabled="extraActionExecution || entity_form.$invalid">
         <i class="fa" ng-class="{'fa-cog fa-spin':itemLoading, 'fa-save':!itemLoading}"></i>&nbsp;
-        {{ "Guardar"|trans }}
+        {{ "Save"|trans }}
     </button>
     <button type="button" class="btn btn-primary dropdown-toggle"
             ng-show="formActions().length || isSaved()"
@@ -33,7 +33,7 @@
         <li>
             <a href="javascript:void(0);" ng-click="addNewItem()" aria-label="New">
                 <i class="fa fa-plus-circle"></i>&nbsp;
-                <span ng-bind="'{{ "Nuevo"|trans }} ' + entity"></span>
+                <span ng-bind="'{{ "New"|trans }} ' + entity"></span>
             </a>
         </li>
         <li role="separator" class="divider" ng-show="formActions().length"></li>

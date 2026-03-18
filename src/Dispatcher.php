@@ -86,6 +86,10 @@ class Dispatcher extends Singleton
                     return $this->router->execute($uri ?? $this->actualUri);
                 }
             } else {
+                // First boot flow: when there are no admins yet, force admin setup before config wizard.
+                if (!defined('PSFS_UNIT_TESTING_EXECUTION') && empty($this->security->getAdmins())) {
+                    return UserController::showAdminManager();
+                }
                 return ConfigController::getInstance()->config();
             }
         } catch (AdminCredentialsException $a) {

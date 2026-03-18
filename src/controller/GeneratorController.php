@@ -34,7 +34,7 @@ class GeneratorController extends Admin
      */
     public function generateModule()
     {
-        Logger::log("Arranque generador de módulos al solicitar " . $this->getRequest()->getRequestUri());
+        Logger::log("Module generator started for request " . $this->getRequest()->getRequestUri());
         /* @var $form ConfigForm */
         $form = new ModuleForm();
         $form->build();
@@ -46,7 +46,7 @@ class GeneratorController extends Admin
     /**
      * @POST
      * @route /admin/module
-     * @label Generador de módulos
+     * @label Module generator
      * @return string
      */
     public function doGenerateModule()
@@ -63,7 +63,7 @@ class GeneratorController extends Admin
                 $module = preg_replace('/^\//', '', $module);
                 GeneratorHelper::checkCustomNamespaceApi($apiClass);
                 $this->gen->createStructureModule($module, false, $type, $apiClass);
-                Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, t("Módulo %s generado correctamente")));
+                Security::getInstance()->setFlash("callback_message", str_replace("%s", $module, t("Module %s generated successfully")));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
             } catch (Exception $e) {
                 Logger::log($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");

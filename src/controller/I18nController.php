@@ -22,7 +22,7 @@ class I18nController extends Admin
      */
     public function defaultTranslations()
     {
-        return $this->getTranslations(Config::getParam('default.language', 'es_ES'));
+        return $this->getTranslations(Config::getParam('default.language', 'en_US'));
     }
 
     /**
@@ -38,10 +38,10 @@ class I18nController extends Admin
     {
         //Default locale
         if (null === $locale) {
-            $locale = Config::getParam('default.language', 'es_ES');
+            $locale = Config::getParam('default.language', 'en_US');
         }
         if (!I18nHelper::isValidLocale($locale)) {
-            $locale = Config::getParam('default.language', 'es_ES');
+            $locale = Config::getParam('default.language', 'en_US');
         }
 
         //Generating the templates translations

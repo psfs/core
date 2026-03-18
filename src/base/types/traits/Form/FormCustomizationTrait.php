@@ -40,7 +40,7 @@ trait FormCustomizationTrait
      * @param array|null $attrs
      * @return FormSchemaTrait
      */
-    public function addButton($buttonId, $value = 'Guardar', $type = 'submit', $attrs = array())
+    public function addButton($buttonId, $value = 'Save', $type = 'submit', $attrs = array())
     {
         $this->buttons[$buttonId] = [
             'value' => $value,

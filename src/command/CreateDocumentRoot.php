@@ -18,7 +18,7 @@ $console
     ->setDefinition(array(
         new InputArgument('path', InputArgument::OPTIONAL, 'Path en el que crear el Document Root'),
     ))
-    ->setDescription('Comando de creación del Document Root del proyecto')
+    ->setDescription('Command to create the project Document Root')
     ->setCode(function (InputInterface $input, OutputInterface $output) {
         // Creates the html path
         $path = $input->getArgument('path');
@@ -28,4 +28,3 @@ $console
 
         $output->writeln("Document root generado en " . $path);
     });
-

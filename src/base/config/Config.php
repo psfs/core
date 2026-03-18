@@ -19,7 +19,7 @@ class Config
     use SingletonTrait;
     use TestTrait;
 
-    const DEFAULT_LANGUAGE = 'es';
+    const DEFAULT_LANGUAGE = 'en';
     const DEFAULT_ENCODE = 'UTF-8';
     const DEFAULT_CTYPE = 'text/html';
     const DEFAULT_DATETIMEZONE = 'Europe/Madrid';
@@ -32,7 +32,7 @@ class Config
     static public array $defaults = [
         'db.host' => 'localhost',
         'db.port' => '3306',
-        'default.language' => 'es_ES',
+        'default.language' => 'en_US',
         'debug' => true,
         'front.version' => 'v1',
         'version' => 'v1',
@@ -72,9 +72,11 @@ class Config
         'admin.version', // Determines the version for the admin ui
         'api.block.limit', // Determine the number of rows for bulk insert
         'api.field.types', // Extract __fields from api with their types
+        'api.version', // API version exposed in generated API documentation
         'i18n.locales', // Default locales for any project
         'log.slack.hook', // Hook for slack traces
         'i18n.autogenerate', // Set PSFS auto generate i18n mode
+        'default.locale', // Default locale used for generated module structure
         'resources.cdn.url', // CDN URL base path
         'api.field.case', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap class
         'route.404', // Set route for 404 pages
@@ -92,7 +94,11 @@ class Config
         'auth.expiration', // Set the expiration time for the auth token
         'api.query_token.compat', // Allow legacy API_TOKEN query string fallback (deprecated)
         'api.token.cookie', // Cookie name for API token fallback
+        'enable.jwt', // Enable JWT auth flow fallback/compat in security checks
+        'jwt.alg', // JWT signing/verification algorithm
+        'jwt.expiration_seconds', // JWT token expiration in seconds
         'csrf.expiration', // CSRF token expiration time (seconds)
+        'db.log.max_files', // Max rotated files for DB-related logs in generated Propel config
         'psfs.redis', // Enable redis read-through cache
         'cache.config.ttl', // Config read-through ttl
         'cache.reflections.ttl', // Reflection cache read-through ttl
@@ -231,6 +237,7 @@ class Config
             $finalData = array_filter($finalData, function ($key, $value) {
                 return in_array($key, self::$required, true) || !empty($value);
             }, ARRAY_FILTER_USE_BOTH);
+            ksort($finalData, SORT_NATURAL | SORT_FLAG_CASE);
             $instance = self::getInstance();
             $saved = $instance->repository->save($finalData);
             $instance->loadConfigData(true);

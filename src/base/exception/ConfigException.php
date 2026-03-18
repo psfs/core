@@ -16,6 +16,6 @@ class ConfigException extends \RuntimeException
     {
         parent::__construct($message, $code);
         $this->code = $code;
-        $this->message = $message ?: t("Error en la configuración de la plataforma");
+        $this->message = $message ?: t("Platform configuration error");
     }
 }

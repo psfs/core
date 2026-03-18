@@ -2,7 +2,7 @@
 {% extends '@ROOT/' ~base_version ~ '/base.html.twig' %}
 {% block header %}
     <div class="page-header col-xs-12">
-        <h2>{{ "Herramienta de Gestión de Administradores PSFS"|trans }}</h2>
+        <h2>{{ "PSFS Administrator Management Tool"|trans }}</h2>
         <h1>{{ get_config('platform.name') }}</h1>
     </div>
 {% endblock header %}
@@ -13,13 +13,13 @@
             {% for user, admin in admins %}
                 <span class="label label-{{ admin.class }}">{{ user }} <i class="fa fa-trash-alt delete-user" data-user="{{ user }}"></i></span>
             {% else %}
-            <p class="well">{{ "No hay administradores definidos" }}</p>
+            <p class="well">{{ "No administrators defined"|trans }}</p>
             {% endfor %}
         </div>
         <div class="panel-footer">
-            <span class="label label-info">{{ "Administrador"|trans }}</span>&nbsp;
-            <span class="label label-warning">{{ "Gestor"|trans }}</span>&nbsp;
-            <span class="label label-primary">{{ "Usuario"|trans }}</span>&nbsp;
+            <span class="label label-info">{{ "Administrator"|trans }}</span>&nbsp;
+            <span class="label label-warning">{{ "Manager"|trans }}</span>&nbsp;
+            <span class="label label-primary">{{ "User"|trans }}</span>&nbsp;
         </div>
     </div>
     {% else %}
@@ -41,7 +41,7 @@
                 {{ user }}
             </md-button>
         {% else %}
-            <p class="well">{{ "No hay administradores definidos" }}</p>
+            <p class="well">{{ "No administrators defined"|trans }}</p>
         {% endfor %}
         </md-card-content>
     </md-card>
@@ -55,7 +55,7 @@
     <script type="application/javascript">
         (function(){
             $('.delete-user').bind('click', function(el) {
-                if (confirm('{{ "¿Quieres eliminar el acceso del usuario?"|trans }}')) {
+                if (confirm('{{ "Do you want to remove this user access?"|trans }}')) {
                     $httpSrv.$put('/admin/setup', {
                         'user': $(el.target).attr('data-user')
                     }).then(function() { document.location.reload(); });

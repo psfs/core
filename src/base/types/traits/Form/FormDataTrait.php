@@ -68,9 +68,11 @@ trait FormDataTrait
     public function getData()
     {
         $data = array();
+        $tokenField = $this->getName() . '_token';
+        $tokenKeyField = $this->getName() . '_token_key';
         if (count($this->fields) > 0) {
             foreach ($this->fields as $key => $field) {
-                if (self::SEPARATOR !== $key && $key !== ($this->getName() . '_token')) {
+                if (self::SEPARATOR !== $key && $key !== $tokenField && $key !== $tokenKeyField) {
                     $data[$key] = array_key_exists('value', $field) ? $field['value'] : null;
                 }
             }

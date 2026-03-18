@@ -37,7 +37,7 @@ class AssetsTokenParser extends AbstractTokenParser
         $name = $token->getValue();
         $this->extractTemplateNodes();
         $node = $this->findTemplateNode();
-        return new AssetsNode($name, array('node' => $node, 'hash' => $hash), $token->getLine(), $this->getTag(), $this->type);
+        return new AssetsNode($name, array('node' => $node, 'hash' => $hash), $token->getLine(), $this->type);
     }
 
     /**

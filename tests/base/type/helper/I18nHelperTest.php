@@ -82,7 +82,7 @@ class I18nHelperTest extends TestCase
         $security = Security::getInstance();
 
         Request::setLanguageHeader('en');
-        $this->assertSame('en_GB', I18nHelper::extractLocale($defaultLanguage));
+        $this->assertSame('en_US', I18nHelper::extractLocale($defaultLanguage));
 
         Request::setLanguageHeader('zz');
         $this->assertSame($defaultLanguage, I18nHelper::extractLocale($defaultLanguage));

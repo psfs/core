@@ -32,11 +32,11 @@ class ConfigForm extends Form
         $this->setAttrs(['class' => 'form-horizontal']);
         $this->setData($data);
         $add = $this->buildAddFieldButtonAttrs();
-        $this->addButton('submit', t('Guardar configuración'), 'submit', array(
+        $this->addButton('submit', t('Save configuration'), 'submit', array(
             'class' => 'btn-success col-md-offset-2 md-primary',
             'icon' => 'fa-save',
         ))
-            ->addButton('add_field', t('Añadir nuevo parámetro'), 'button', $add);
+            ->addButton('add_field', t('Add new parameter'), 'button', $add);
     }
 
     private function addRequiredFields(array $required): void
@@ -132,6 +132,6 @@ class ConfigForm extends Form
      */
     public function getTitle()
     {
-        return t('Parámetros necesarios para la ejecución de PSFS');
+        return t('Required parameters to run PSFS');
     }
 }

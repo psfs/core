@@ -174,4 +174,28 @@ class SecurityTest extends TestCase
         Template::setTest(false);
     }
 
+    public function testRolesAreSafeWhenAdminsConfigIsMissing(): void
+    {
+        $adminsPath = CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json';
+        $backupPath = $adminsPath . '.tmp.bak';
+        if (file_exists($backupPath)) {
+            @unlink($backupPath);
+        }
+        if (file_exists($adminsPath)) {
+            @rename($adminsPath, $backupPath);
+        }
+        try {
+            Security::dropInstance();
+            $security = $this->getInstance();
+            $this->assertSame([], $security->getAdmins());
+            $this->assertFalse($security->isUser());
+            $this->assertFalse($security->isManager());
+            $this->assertFalse($security->isSuperAdmin());
+        } finally {
+            if (file_exists($backupPath)) {
+                @rename($backupPath, $adminsPath);
+            }
+        }
+    }
+
 }

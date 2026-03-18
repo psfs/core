@@ -76,6 +76,21 @@ class RouterFlowContractTest extends TestCase
         $this->assertSame(['all'], RouterFlowController::$calls);
     }
 
+    public function testMatchPrecedencePrefersMostSpecificPatternWithinSameMethod(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/config/{key}' => $this->buildAction('all', RouterFlowController::class, 'GET'),
+            'GET#|#/contract/config/params' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+        ]);
+
+        $this->bootstrapRequest('/contract/config/params', 'GET');
+        $result = $router->execute('/contract/config/params');
+
+        $this->assertSame('get', $result);
+        $this->assertSame(['get'], RouterFlowController::$calls);
+    }
+
     public function testRequirementsValidationContract(): void
     {
         $router = new TestableRouter();
@@ -135,7 +150,7 @@ class RouterFlowContractTest extends TestCase
         $this->bootstrapRequest('/contract/missing', 'GET');
 
         $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('Página no encontrada');
+        $this->expectExceptionMessage('Page not found');
         $router->execute('/contract/missing');
     }
 
@@ -152,7 +167,7 @@ class RouterFlowContractTest extends TestCase
             $this->fail('Expected RouterException was not thrown');
         } catch (RouterException $exception) {
             $this->assertSame(418, $exception->getCode());
-            $this->assertSame('Página no encontrada', $exception->getMessage());
+            $this->assertSame('Page not found', $exception->getMessage());
         }
     }
 
@@ -165,7 +180,7 @@ class RouterFlowContractTest extends TestCase
         $this->bootstrapRequest('/contract/require/42', 'GET');
 
         $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('Página no encontrada');
+        $this->expectExceptionMessage('Page not found');
         $router->execute('/contract/require/42');
     }
 

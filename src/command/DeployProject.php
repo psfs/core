@@ -32,16 +32,16 @@ $console
         $output->writeln(str_replace('%path', $path, t("Document root re-generado en %path")));
 
         $cacheState = DeployHelper::refreshCacheState();
-        $output->writeln(str_replace('%version', $cacheState['version'], t("Versión de cache actualizada a %version")));
+        $output->writeln(str_replace('%version', $cacheState['version'], t("Cache version updated to %version")));
 
         if ($cacheState['config_files_cleaned']) {
-            $output->writeln(t("Ficheros de configuración limpiados con éxito"));
+            $output->writeln(t("Configuration files cleaned successfully"));
         } else {
-            $output->writeln(t("No se han podido limpiar uno o más ficheros de la carpeta de configuración"));
+            $output->writeln(t("One or more files in the configuration folder could not be cleaned"));
         }
 
         $router = Router::getInstance();
         $router->hydrateRouting();
         $router->simpatize();
-        $output->writeln(t("Rutas del proyecto generadas con éxito"));
+        $output->writeln(t("Project routes generated successfully"));
     });

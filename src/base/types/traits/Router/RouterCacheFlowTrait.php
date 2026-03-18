@@ -61,7 +61,7 @@ trait RouterCacheFlowTrait
     private function mapNotFoundException(RouterException $exception): RouterException
     {
         Logger::log($exception->getMessage(), LOG_WARNING);
-        return new RouterException(t('Página no encontrada'), $exception->getCode());
+        return new RouterException(t('Page not found'), $exception->getCode());
     }
 
     private function buildMatchContext(string $route): array
@@ -73,20 +73,48 @@ trait RouterCacheFlowTrait
 
     private function findMatchingRoute(string $path, string $httpRequest): ?array
     {
-        $fallback = null;
+        $bestExact = null;
+        $bestExactScore = PHP_INT_MIN;
+        $bestFallback = null;
+        $bestFallbackScore = PHP_INT_MIN;
         foreach ($this->routing as $pattern => $action) {
             [$httpMethod, $routePattern] = RouterHelper::extractHttpRoute($pattern);
             if (!RouterHelper::matchRoutePattern($routePattern, $path) || !RouterHelper::compareSlashes($routePattern, $path)) {
                 continue;
             }
+            $score = $this->calculateRouteSpecificity($routePattern);
             if ($httpMethod === $httpRequest) {
-                return [$pattern, $action];
+                if ($score > $bestExactScore) {
+                    $bestExact = [$pattern, $action];
+                    $bestExactScore = $score;
+                }
             }
-            if ($httpMethod === 'ALL' && null === $fallback) {
-                $fallback = [$pattern, $action];
+            if ($httpMethod === 'ALL' && $score > $bestFallbackScore) {
+                $bestFallback = [$pattern, $action];
+                $bestFallbackScore = $score;
             }
         }
-        return $fallback;
+        return $bestExact ?? $bestFallback;
+    }
+
+    private function calculateRouteSpecificity(string $routePattern): int
+    {
+        $trimmed = trim($routePattern, '/');
+        if ('' === $trimmed) {
+            return 0;
+        }
+        $parts = explode('/', $trimmed);
+        $total = count($parts);
+        $dynamic = 0;
+        $staticLen = 0;
+        foreach ($parts as $part) {
+            if (preg_match('/^\{[^}]+\}$/', $part)) {
+                $dynamic++;
+                continue;
+            }
+            $staticLen += strlen($part);
+        }
+        return ($total * 1000) + (($total - $dynamic) * 100) + $staticLen - ($dynamic * 10);
     }
 
     private function normalizeHomeAction(mixed $home): ?string

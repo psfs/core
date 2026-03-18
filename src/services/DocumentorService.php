@@ -36,7 +36,7 @@ class DocumentorService extends SimpleService
      * @var \PSFS\base\Router route
      */
     #[Injectable]
-    protected $route;
+    protected Router $route;
 
     /**
      * Method that extract all endpoints for each module

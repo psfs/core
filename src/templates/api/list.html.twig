@@ -3,7 +3,7 @@
         <div class="panel-heading">
             <p ng-bind="'[' + count + ' {{ "elementos"|trans }} ' + api + ']'"></p>
             <div class="form-group" role="group" ng-class="{'input-group':i18nLocales.length}">
-                <input id="search" type="search" class="form-control" ng-model="listSearch" placeholder="{{ "Buscar"|trans }} {{ "{{ api }}" }}">
+                <input id="search" type="search" class="form-control" ng-model="listSearch" placeholder="{{ "Search"|trans }} {{ "{{ api }}" }}">
                 <div class="input-group-btn"
                      ng-show="i18nLocales.length">
                     <button type="button" class="btn btn-default dropdown-toggle"
@@ -40,7 +40,7 @@
                     </button>
                 </li>
                 <li class="list-group-item text-center" ng-show="list.length === 0">
-                    <span>{{ "No existen registros"|trans }}</span>
+                    <span>{{ "No records found"|trans }}</span>
                 </li>
             </ul>
         </div>

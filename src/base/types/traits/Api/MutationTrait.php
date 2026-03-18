@@ -116,7 +116,7 @@ trait MutationTrait
             $apiPks[$principal] = Api::API_MODEL_KEY_FIELD;
             return $apiPks;
         }
-        throw new ApiException(t('El modelo de la API no está debidamente mapeado, no hay Primary Key o es compuesta'));
+        throw new ApiException(t('The API model is not properly mapped, there is no Primary Key or it is composite'));
     }
 
     /**
@@ -209,7 +209,7 @@ trait MutationTrait
 
     protected function extractApiLang()
     {
-        $defaultLanguage = explode('_', Config::getParam('default.language', 'es_ES'));
+        $defaultLanguage = explode('_', Config::getParam('default.language', 'en_US'));
         $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage[0]);
     }
 
@@ -260,7 +260,7 @@ trait MutationTrait
             if ($tableMap->hasRelation($tableMap->getPhpName() . 'I18n')) {
                 $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
-                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, 'es_ES')));
+                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, 'en_US')));
                 foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
                     $dtoColumnName = ApiHelper::getColumnMapName($columnMap);

@@ -36,7 +36,7 @@ class CustomTranslateExtension extends AbstractExtension
     /**
      * @var string
      */
-    protected static $locale = 'es_ES';
+    protected static $locale = 'en_US';
     /**
      * @var bool
      */

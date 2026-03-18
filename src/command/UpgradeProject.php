@@ -27,7 +27,7 @@ $console
         foreach ($modules as $module => $config) {
             $clean_module = str_replace(['@', '\\', '/'], '', $module);
             if (!in_array($clean_module, ['ROOT', 'NOSQL', 'AUTH'], true)) {
-                $output->write("\t- Actualizando módulo {$clean_module}");
+                $output->write("\t- Updating module {$clean_module}");
                 $configPath = $config['base'] . DIRECTORY_SEPARATOR . 'Config';
                 // Cleaning up config files and autoloader
                 if (file_exists($config['base'] . DIRECTORY_SEPARATOR . 'autoloader.php')) {
@@ -53,4 +53,3 @@ $console
         ]);
         $console->run($commandInput, $output);
     });
-

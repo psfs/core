@@ -106,7 +106,7 @@ trait ServerTrait
      */
     public function getLanguage()
     {
-        return $this->getServer('HTTP_ACCEPT_LANGUAGE', Config::getParam('default.language', 'es_ES'));
+        return $this->getServer('HTTP_ACCEPT_LANGUAGE', Config::getParam('default.language', 'en_US'));
     }
 
 }

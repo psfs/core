@@ -39,7 +39,7 @@
         {% elseif field.type == 'select' %}
             {% if field.hasLabel %}<label class="control-label{% if field.class %} col-md-4{% endif %}" for="{{ field.id }}">{{ field.label|default(field.name) }}</label>{% endif %}
             {% if field.route %}
-                <a class="btn btn-link" href="javascript:void(0);" data-add="{{ field.route }}" data-title="{{ "Nuevo "|trans ~ field.label }}" title="{{ "Nuevo "|trans ~ field.label }}" data-tooltip="true">
+                <a class="btn btn-link" href="javascript:void(0);" data-add="{{ field.route }}" data-title="{{ "New "|trans ~ field.label }}" title="{{ "New "|trans ~ field.label }}" data-tooltip="true">
                     <i class="fa fa-plus-circle"></i>
                 </a>
             {% endif %}
@@ -74,10 +74,10 @@
                         <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Info"|trans }}" title onclick="showDetails('{{ field.id }}');">
                             <i class="fa fa-info-circle"></i>
                         </button>
-                        <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Seleccionar"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, false);">
+                        <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Select"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, false);">
                             <i class="fa fa-angle-right"></i>
                         </button>
-                        <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Seleccionar todo"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, true);">
+                        <button type="button" class="btn btn-default" data-tooltip="true" data-title="{{ "Select all"|trans }}" title onclick="changeMultiple('{{ field.name }}', '{{ field.id }}', true, true);">
                             <i class="fa fa-angle-double-right"></i>
                         </button>
                     </div>

@@ -108,7 +108,7 @@ trait SwaggerFormaterTrait
             "basePath" => '/' . $module['name'] . '/api',
             "schemes" => [Request::getInstance()->getServer('HTTPS') === 'on' ? 'https' : 'http'],
             "info" => [
-                "title" => t('Documentación API módulo ') . $module['name'],
+                "title" => t('Module API documentation ') . $module['name'],
                 "version" => Config::getParam('api.version', '1.0.0'),
                 "contact" => [
                     "name" => Config::getParam("author", "Fran López"),
@@ -264,14 +264,14 @@ trait SwaggerFormaterTrait
             $methodInfo['query'][] = [
                 "name" => "__limit",
                 "in" => "query",
-                "description" => t("Límite de registros a devolver, -1 para devolver todos los registros"),
+                    "description" => t("Record limit to return, -1 to return all records"),
                 "required" => false,
                 "type" => "integer",
             ];
             $methodInfo['query'][] = [
                 "name" => "__page",
                 "in" => "query",
-                "description" => t("Página a devolver"),
+                    "description" => t("Page to return"),
                 "required" => false,
                 "type" => "integer",
             ];
