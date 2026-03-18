@@ -41,7 +41,7 @@ services:
       - no-new-privileges:true
 
   db:
-    image: mysql
+    image: mysql:8.4
     networks:
       - psfs-network
     environment:
@@ -50,7 +50,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-psfs}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-psfs}
     volumes:
-      - "./cache/db:/var/lib/mysql"
+      - "psfs-db-data:/var/lib/mysql"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 5s
@@ -60,3 +60,6 @@ services:
 networks:
   psfs-network:
     driver: bridge
+
+volumes:
+  psfs-db-data:

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" bootstrap="tests/bootstrap/api_bootstrap.php"
-         requireCoverageMetadata="false" beStrictAboutCoverageMetadata="true" beStrictAboutOutputDuringTests="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd"
+         bootstrap="tests/bootstrap/api_bootstrap.php"
+         requireCoverageMetadata="false"
+         beStrictAboutCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true"
          colors="true">
     <testsuites>
-        <testsuite name="default">
-            <directory>tests</directory>
-        </testsuite>
         <testsuite name="api">
             <directory>tests_api</directory>
         </testsuite>
@@ -25,10 +25,15 @@
     </source>
     <coverage>
         <report>
-            <html outputDirectory="cache/coverage"/>
-            <clover outputFile="cache/coverage/coverage.xml"/>
+            <html outputDirectory="cache/coverage/api"/>
+            <clover outputFile="cache/coverage/api-coverage.xml"/>
         </report>
     </coverage>
+    <groups>
+        <include>
+            <group>api</group>
+        </include>
+    </groups>
     <php>
         <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
         <ini name="error_reporting" value="-1"/>

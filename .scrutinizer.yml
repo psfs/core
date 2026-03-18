@@ -10,6 +10,7 @@ filter:
     - config/*
     - logs/*
     - tests/*
+    - tests_api/*
   dependency_paths:
     - vendor/
 
@@ -20,7 +21,7 @@ build:
   environment:
     timezone: "Europe/Madrid"
     php:
-      version: 8.2
+      version: 8.3
       ini:
         memory_limit: "-1"
         xdebug.mode: coverage
@@ -29,10 +30,21 @@ build:
       tests:
         override:
           - php-scrutinizer-run --enable-security-analysis
-    coverage:
+    api-mysql:
+      services:
+        mysql: "8.4"
+      environment:
+        variables:
+          APP_ENVIRONMENT: "test"
+          API_DB_HOST: "127.0.0.1"
+          API_DB_PORT: "3306"
+          API_DB_NAME: "core_test"
+          API_DB_USER: "root"
+          API_DB_PASSWORD: ""
       dependencies:
         before:
           - "composer install -o --no-interaction --no-progress"
+          - "php tests/bootstrap/prepare_api_mysql.php"
       tests:
         override:
           - command: "vendor/bin/phpunit --configuration phpunit.xml.dist"

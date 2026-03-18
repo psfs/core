@@ -55,6 +55,11 @@
       "PSFS\\tests\\": "tests"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "PSFS\\apitests\\": "tests_api/"
+    }
+  },
   "bin": [
     "src/bin/psfs"
   ],
