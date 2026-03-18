@@ -72,6 +72,12 @@ trait RouterCacheFlowTrait
     {
         $parts = parse_url($route);
         $path = array_key_exists('path', $parts) ? $parts['path'] : $route;
+        if ('/' !== $path) {
+            $path = rtrim($path, '/');
+            if ('' === $path) {
+                $path = '/';
+            }
+        }
         return [$path, Request::getInstance()->getMethod()];
     }
 
@@ -90,6 +96,7 @@ trait RouterCacheFlowTrait
                 continue;
             }
             $score = $this->calculateRouteSpecificity($routePattern);
+            $score -= abs($this->countSegments($routePattern) - $this->countSegments($path)) * 2000;
             if ($httpMethod === $httpRequest) {
                 if ($score > $bestExactScore) {
                     $bestExact = [$pattern, $action];
@@ -122,6 +129,15 @@ trait RouterCacheFlowTrait
             $staticLen += strlen($part);
         }
         return ($total * 1000) + (($total - $dynamic) * 100) + $staticLen - ($dynamic * 10);
+    }
+
+    private function countSegments(string $path): int
+    {
+        $trimmed = trim($path, '/');
+        if ('' === $trimmed) {
+            return 0;
+        }
+        return count(explode('/', $trimmed));
     }
 
     private function normalizeHomeAction(mixed $home): ?string
