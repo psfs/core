@@ -2,7 +2,6 @@
 
 namespace PSFS\controller;
 
-use HttpException;
 use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
 use PSFS\base\exception\ConfigException;
@@ -20,6 +19,14 @@ use PSFS\controller\base\Admin;
  */
 class ConfigController extends Admin
 {
+    private static function assertSuperAdminConfigWriteAccess(): void
+    {
+        $security = Security::getInstance();
+        $hasAdmins = count($security->getAdmins()) > 0;
+        if ($hasAdmins && !$security->isSuperAdmin() && !Security::isTest()) {
+            throw new ConfigException(t('Restricted area'));
+        }
+    }
 
     /**
      * Service that returns available configuration parameters
@@ -71,10 +78,11 @@ class ConfigController extends Admin
      * @route /admin/config
      * @visible false
      * @return string
-     * @throws FormException|HttpException
+     * @throws FormException|ConfigException
      */
     public function saveConfig()
     {
+        self::assertSuperAdminConfigWriteAccess();
         Logger::log(t("Saving configuration"), LOG_INFO);
         $form = new ConfigForm(Router::getInstance()->getRoute('admin-config'), Config::$required, Config::$optional, Config::getInstance()->dumpConfig());
         $form->build();
@@ -95,7 +103,7 @@ class ConfigController extends Admin
                 Security::getInstance()->setFlash("callback_message", t("Configuration updated successfully"));
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-config", true));
             } else {
-                throw new HttpException(t('Error while saving configuration, please verify filesystem permissions'), 403);
+                throw new ConfigException(t('Error while saving configuration, please verify filesystem permissions'));
             }
         }
         return $this->render('welcome.html.twig', array(

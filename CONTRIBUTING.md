@@ -46,7 +46,3 @@ docker exec -e XDEBUG_MODE=coverage <php_container> php vendor/bin/phpunit --cov
 - Keep auth/security contracts explicit (`invalid auth -> null/null + stop flow`).
 - Add/adjust tests when changing auth, request/response security, or routing behavior.
 
-## Review and commit policy
-
-- Do not auto-commit.
-- Wait for explicit human validation before creating any commit.

@@ -20,6 +20,15 @@ use PSFS\services\AdminServices;
  */
 class UserController extends Admin
 {
+    private static function assertSuperAdminUserWriteAccess(): void
+    {
+        $security = Security::getInstance();
+        $hasAdmins = count($security->getAdmins()) > 0;
+        if ($hasAdmins && !$security->isSuperAdmin() && !Security::isTest()) {
+            throw new ApiException(t('Restricted area'), 403);
+        }
+    }
+
     /**
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
@@ -58,6 +67,7 @@ class UserController extends Admin
      */
     public static function updateAdminUsers()
     {
+        self::assertSuperAdminUserWriteAccess();
         $admins = AdminServices::getInstance()->getAdmins();
         $form = new AdminForm();
         $form->build();
@@ -113,6 +123,7 @@ class UserController extends Admin
      */
     public function deleteUsers()
     {
+        self::assertSuperAdminUserWriteAccess();
         $data = Request::getInstance()->getData();
         $username = $data['user'] ?? null;
         if (empty($username)) {
