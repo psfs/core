@@ -94,7 +94,7 @@ trait ApiGenerationTrait
     {
         $base = $dir->path;
         while ($file = $dir->read()) {
-            if (!in_array(strtolower($file), ['.', '..', 'base', 'map'])) {
+            if (!in_array(strtolower($file), ['.', '..', 'base', 'map'], true)) {
                 if (is_dir($base . DIRECTORY_SEPARATOR . $file)) {
                     $this->generateApiFiles(
                         $module,

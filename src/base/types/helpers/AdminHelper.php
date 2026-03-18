@@ -51,12 +51,12 @@ class AdminHelper
         $excluded_modules = explode(',', strtoupper(Config::getParam('hide.modules', '')));
         foreach ($systemRoutes as $params) {
             $module = strtoupper($params['module']);
-            if (in_array($module, $excluded_modules) && $module !== 'PSFS') {
+            if (in_array($module, $excluded_modules, true) && $module !== 'PSFS') {
                 continue;
             }
             if (isset($params['http']) && Request::VERB_GET === $params['http']
                 && preg_match('/^\/admin(\/|$)/', $params['default'])
-                && !in_array($params['slug'], ['n-a', 'admin-login', 'admin'])) {
+                && !in_array($params['slug'], ['n-a', 'admin-login', 'admin'], true)) {
                 $mode = $params['visible'] ? 'visible' : 'hidden';
                 $routes[$module][$mode][] = [
                     'slug' => $params['slug'],

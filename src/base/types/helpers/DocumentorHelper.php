@@ -95,7 +95,7 @@ class DocumentorHelper
                 list($dtos, $paths) = DocumentorHelper::parsePayload($endpoint, $dtos, $paths, $url, $method);
             }
         }
-        if (!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'])) {
+        if (!isset($paths[$url][$method]['tags']) || !in_array($endpoint['class'], $paths[$url][$method]['tags'], true)) {
             $paths[$url][$method]['tags'][] = $endpoint['class'];
         }
     }
@@ -150,7 +150,7 @@ class DocumentorHelper
             ],
         ];
         foreach ($fields as $field => $info) {
-            if (array_key_exists('type', $info) && in_array($info['type'], ['array', 'object'])) {
+            if (array_key_exists('type', $info) && in_array($info['type'], ['array', 'object'], true)) {
                 $definition[$name]['properties'][$field] = $info;
             } elseif (array_key_exists('type', $info)) {
                 list($type, $format) = self::translateSwaggerFormats($info['type']);

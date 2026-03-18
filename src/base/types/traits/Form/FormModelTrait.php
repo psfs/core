@@ -160,7 +160,7 @@ trait FormModelTrait
         }
         // Force select and checkbox fields to always hold an array value.
         if ((array_key_exists('value', $field) && !is_array($field['value']))
-            && in_array($type, ['select', 'checkbox'])
+            && in_array($type, ['select', 'checkbox'], true)
         ) {
             $field['value'] = [$field['value']];
         }

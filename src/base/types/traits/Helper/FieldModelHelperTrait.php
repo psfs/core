@@ -55,7 +55,7 @@ trait FieldModelHelperTrait
         } else {
             if (null !== $column->getValueSet()) {
                 $valueSet = $column->getValueSet();
-                if (in_array($value, $valueSet)) {
+                if (in_array($value, $valueSet, true)) {
                     $value = array_search($value, $valueSet);
                 }
             }

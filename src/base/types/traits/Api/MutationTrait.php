@@ -146,7 +146,7 @@ trait MutationTrait
 
     protected function addDefaultListField()
     {
-        if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns))) {
+        if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns), true)) {
             $tableMap = $this->getTableMap();
 
             $column = null;
@@ -181,7 +181,7 @@ trait MutationTrait
         if (!empty($this->extraColumns)) {
             $fields = $this->resolveRequestedExtraFields();
             foreach ($this->extraColumns as $expression => $columnName) {
-                if (empty($fields) || in_array($columnName, $fields)) {
+                if (empty($fields) || in_array($columnName, $fields, true)) {
                     $query->withColumn($expression, $columnName);
                 }
             }

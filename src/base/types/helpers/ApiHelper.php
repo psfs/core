@@ -139,14 +139,14 @@ class ApiHelper
             $fDto = self::generateTextField($field, $mappedColumn, $required);
         } elseif ($mappedColumn->getType() === PropelTypes::BOOLEAN) {
             $fDto = self::generateBooleanField($field, $required);
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY])) {
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::BINARY, PropelTypes::VARBINARY], true)) {
             $fDto = self::generatePasswordField($field, $required);
         } elseif (in_array(
             $mappedColumn->getType(),
             [PropelTypes::TIMESTAMP, PropelTypes::DATE, PropelTypes::BU_DATE, PropelTypes::BU_TIMESTAMP]
         )) {
             $fDto = self::generateTimestampField($field, $behaviors, $mappedColumn, $required);
-        } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET])) {
+        } elseif (in_array($mappedColumn->getType(), [PropelTypes::ENUM, PropelTypes::SET], true)) {
             $fDto = self::parseEnumField($field, $required, $mappedColumn);
         }
         return $fDto;

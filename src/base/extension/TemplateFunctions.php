@@ -172,7 +172,7 @@ class TemplateFunctions
                 true
             ) ?: [];
             // Force the resource copy
-            if (!in_array($filenamePath, $cachedFiles) || $force) {
+            if (!in_array($filenamePath, $cachedFiles, true) || $force) {
                 $force = true;
                 $cachedFiles[] = $filenamePath;
                 Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);

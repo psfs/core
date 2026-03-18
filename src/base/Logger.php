@@ -167,7 +167,7 @@ class Logger
             Inspector::stats($msg, Inspector::SCOPE_DEBUG);
         }
         $level = LogHelper::calculateLogLevel($type);
-        if (in_array($level, [\Monolog\Level::Critical, \Monolog\Level::Error, \Monolog\Level::Emergency]) &&
+        if (in_array($level, [\Monolog\Level::Critical, \Monolog\Level::Error, \Monolog\Level::Emergency], true) &&
             strlen(Config::getParam('log.slack.hook', '')) > 0) {
             SlackHelper::getInstance()->trace($msg, '', '', $context);
         }

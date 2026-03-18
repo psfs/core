@@ -256,9 +256,10 @@ trait SwaggerFormaterTrait
      */
     protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
     {
-        if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST]) && in_array(
+        if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST], true) && in_array(
                 $method->getShortName(),
-                self::$nativeMethods
+                self::$nativeMethods,
+                true
             )) {
             $methodInfo['query'] = [];
             $methodInfo['query'][] = [
@@ -327,7 +328,7 @@ trait SwaggerFormaterTrait
      */
     protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
-        if (in_array($methodInfo['method'], ['POST', 'PUT'])) {
+        if (in_array($methodInfo['method'], ['POST', 'PUT'], true)) {
             list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload(
                 $modelNamespace,
                 $docComments

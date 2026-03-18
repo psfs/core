@@ -40,7 +40,7 @@ class ConfigForm extends Form
     private function addRequiredFields(array $required): void
     {
         foreach ($required as $field) {
-            $type = in_array($field, Config::$encrypted) ? 'password' : 'text';
+            $type = in_array($field, Config::$encrypted, true) ? 'password' : 'text';
             $value = isset(Config::$defaults[$field]) ? Config::$defaults[$field] : null;
             $this->add($field, [
                 'label' => t($field),

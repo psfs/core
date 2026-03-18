@@ -169,7 +169,7 @@ trait ModulesTrait
                 $externalModule = $this->finder->directories()->in($externalModulePath)->depth(0);
                 if ($externalModule->hasResults()) {
                     foreach ($externalModule->getIterator() as $modulePath) {
-                        if (!in_array(strtoupper($modulePath->getRelativePathname()), $modulesToIgnore)) {
+                        if (!in_array(strtoupper($modulePath->getRelativePathname()), $modulesToIgnore, true)) {
                             $this->loadExternalAutoloader($hydrateRoute, $modulePath, $externalModulePath, $routing);
                         }
                     }

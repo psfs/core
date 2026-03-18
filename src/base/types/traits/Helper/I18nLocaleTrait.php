@@ -50,7 +50,7 @@ trait I18nLocaleTrait
         }
         $locale = self::normalizeLocale((string)$locale);
         $defaultLocales = explode(',', Config::getParam('i18n.locales', ''));
-        if (!in_array($locale, array_merge($defaultLocales, self::$langs))) {
+        if (!in_array($locale, array_merge($defaultLocales, self::$langs), true)) {
             $locale = Config::getParam('default.language', $default);
         }
         return $locale;
