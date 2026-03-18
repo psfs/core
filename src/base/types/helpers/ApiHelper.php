@@ -22,6 +22,22 @@ class ApiHelper
     use FieldMapperHelperTrait;
 
     /**
+     * Public entrypoint for API field DTO generation.
+     * Kept as a thin wrapper to preserve current behavior while improving testability.
+     *
+     * @param string $domain
+     * @param TableMap $tableMap
+     * @param string $field
+     * @param array $behaviors
+     * @return Field|null
+     * @throws GeneratorException
+ */
+    public static function buildFieldDto(string $domain, TableMap $tableMap, string $field, array $behaviors = []): ?Field
+    {
+        return self::parseFormField($domain, $tableMap, $field, $behaviors);
+    }
+
+    /**
      * @param string $domain
      * @param TableMap $tableMap
      * @param string $field
@@ -48,21 +64,9 @@ class ApiHelper
  */
     protected static function applyCaseToNames(Field $fDto, ColumnMap $mappedColumn)
     {
-        switch (Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
-            default:
-            case TableMap::TYPE_PHPNAME:
-                $fDto->name = $mappedColumn->getPhpName();
-                $fDto->label = t($mappedColumn->getPhpName());
-                break;
-            case TableMap::TYPE_CAMELNAME:
-                $fDto->name = lcfirst($mappedColumn->getPhpName());
-                $fDto->label = t(lcfirst($mappedColumn->getPhpName()));
-                break;
-            case TableMap::TYPE_COLNAME:
-                $fDto->name = $mappedColumn->getFullyQualifiedName();
-                $fDto->label = t($mappedColumn->getFullyQualifiedName());
-                break;
-        }
+        $name = self::resolveColumnNameByCase($mappedColumn);
+        $fDto->name = $name;
+        $fDto->label = t($name);
     }
 
     /**
@@ -87,25 +91,27 @@ class ApiHelper
     protected static function parseEnumField($field, bool $required, ColumnMap $mappedColumn)
     {
         $fDto = self::generateEnumField($field, $required);
+        $fieldName = self::resolveColumnNameByCase($mappedColumn);
         foreach ($mappedColumn->getValueSet() as $value) {
-            switch (Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
-                default:
-                case TableMap::TYPE_PHPNAME:
-                    $fieldName = $mappedColumn->getPhpName();
-                    break;
-                case TableMap::TYPE_CAMELNAME:
-                    $fieldName = lcfirst($mappedColumn->getPhpName());
-                    break;
-                case TableMap::TYPE_COLNAME:
-                    $fieldName = $mappedColumn->getFullyQualifiedName();
-                    break;
-            }
             $fDto->data[] = [
                 $fieldName => $value,
                 "Label" => t($value),
             ];
         }
         return $fDto;
+    }
+
+    private static function resolveColumnNameByCase(ColumnMap $mappedColumn): string
+    {
+        switch (Config::getParam('api.field.case', TableMap::TYPE_PHPNAME)) {
+            default:
+            case TableMap::TYPE_PHPNAME:
+                return $mappedColumn->getPhpName();
+            case TableMap::TYPE_CAMELNAME:
+                return lcfirst($mappedColumn->getPhpName());
+            case TableMap::TYPE_COLNAME:
+                return $mappedColumn->getFullyQualifiedName();
+        }
     }
 
     /**

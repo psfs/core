@@ -12,7 +12,7 @@ final class ServerHelper {
 
     /**
      * @param string $key
-     * @param null $default
+     * @param mixed|null $default
      * @return mixed|null
  */
     public static function getServerValue(string $key, $default = null): mixed {

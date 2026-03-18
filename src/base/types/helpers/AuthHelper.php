@@ -101,7 +101,6 @@ class AuthHelper
 
     public static function decrypt(string $encrypted_data, string $key): false|string
     {
-        $data = false;
         if (str_starts_with($encrypted_data, self::CRYPTO_VERSION_PREFIX)) {
             $payload = substr($encrypted_data, strlen(self::CRYPTO_VERSION_PREFIX));
             $data = self::secureDecrypt($payload, $key);

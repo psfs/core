@@ -81,9 +81,13 @@ trait SessionTrait
         if ($closeSession) {
             Logger::log('Close session');
             
-            @session_write_close();
+            if( @session_write_close() === false) {
+                Logger::log('[SessionTrait::updateSession] Unable to close session');
+            }
             
-            @session_start();
+            if( @session_start() === false) {
+                Logger::log('[SessionTrait::updateSession] Unable to start session');
+            }
         }
         Logger::log('Session updated');
         return $this;
@@ -93,11 +97,17 @@ trait SessionTrait
     {
         unset($_SESSION);
         
-        @session_destroy();
+        if( @session_destroy() === false) {
+            Logger::log('[SessionTrait::closeSession] Unable to destroy session');
+        }
         
-        @session_regenerate_id(TRUE);
+        if( @session_regenerate_id(TRUE) === false) {
+            Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
+        }
         
-        @session_start();
+        if( @session_start() === false) {
+            Logger::log('[SessionTrait::closeSession] Unable to start session');
+        }
     }
 
 }

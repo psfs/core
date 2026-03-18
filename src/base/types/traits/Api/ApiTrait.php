@@ -105,11 +105,13 @@ trait ApiTrait
     protected function saveBulk()
     {
         $tablemap = $this->getTableMap();
+        $this->bulkSavedCount = 0;
         foreach ($this->list as &$model) {
             $con = Propel::getWriteConnection($tablemap::DATABASE_NAME);
             try {
                 $model->save($con);
                 $con->commit();
+                $this->bulkSavedCount++;
             } catch (\Exception $e) {
                 Logger::log($e->getMessage(), LOG_ERR, $model->toArray());
                 $con->rollBack();

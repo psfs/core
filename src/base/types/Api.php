@@ -278,16 +278,18 @@ abstract class Api extends Singleton
         $saved = FALSE;
         $status = 400;
         $message = null;
+        $savedCount = 0;
         try {
             $this->hydrateBulkRequest();
             $this->saveBulk();
+            $savedCount = $this->getBulkSavedCount();
             $saved = true;
             $status = 200;
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
             $message = t('Bulk insert rolled back');
         }
-        return $this->json(new JsonResponse($this->exportList(), $saved, count($this->list), 1, $message), $status);
+        return $this->json(new JsonResponse($this->exportList(), $saved, $savedCount, 1, $message), $status);
     }
 
     private function extractDataWithFormat()

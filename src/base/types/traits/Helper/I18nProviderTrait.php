@@ -3,6 +3,7 @@
 namespace PSFS\base\types\traits\Helper;
 
 use PSFS\base\config\Config;
+use PSFS\base\Logger;
 use PSFS\base\types\helpers\i18n\CustomTranslationProvider;
 use PSFS\base\types\helpers\i18n\GettextTranslationProvider;
 
@@ -17,7 +18,7 @@ trait I18nProviderTrait
      * @param array $catalogLowerMap
      * @param bool $allowGettext
      * @return string
- */
+     */
     public static function translateWithProviders(string $message, string $locale, array $catalog = [], array $catalogLowerMap = [], bool $allowGettext = true): string
     {
         $context = [
@@ -65,6 +66,8 @@ trait I18nProviderTrait
             self::$missingTranslations[$locale][] = $message;
         }
         $reportPath = Config::getParam('i18n.missing.report.path', CACHE_DIR . DIRECTORY_SEPARATOR . 'i18n_missing.json');
-        @file_put_contents($reportPath, json_encode(self::$missingTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if (@file_put_contents($reportPath, json_encode(self::$missingTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+            Logger::log('[I18nProviderTrait::reportMissingTranslation] Unable to save the file: ' . $reportPath, LOG_WARNING);
+        }
     }
 }

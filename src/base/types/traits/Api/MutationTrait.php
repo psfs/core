@@ -52,6 +52,13 @@ trait MutationTrait
     protected $data = array();
 
     /**
+     * Number of items persisted successfully in a bulk save operation.
+     *
+     * @var int
+     */
+    protected int $bulkSavedCount = 0;
+
+    /**
      * @return TableMap
  */
     abstract function getModelTableMap();
@@ -169,6 +176,8 @@ trait MutationTrait
     private function addExtraColumns(ModelCriteria &$query, $action)
     {
         if (Api::API_ACTION_LIST === $action) {
+            // Legacy tokens kept for compatibility (`__name__`, `__pk`).
+            // Planned future cleanup can remove them behind a versioned contract switch.
             $this->addDefaultListField();
             $this->addPkToList();
         }
@@ -202,8 +211,8 @@ trait MutationTrait
 
     protected function extractApiLang()
     {
-        $defaultLanguage = explode('_', Config::getParam('default.language', 'en_US'));
-        $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage[0]);
+        $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
+        $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage);
     }
 
     /**
@@ -253,7 +262,8 @@ trait MutationTrait
             if ($tableMap->hasRelation($tableMap->getPhpName() . 'I18n')) {
                 $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
                 $i18NTableMap = $relateI18n->getLocalTable();
-                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, 'en_US')));
+                $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
+                $model->setLocale(array_key_exists('Locale', $data) ? $data['Locale'] : (array_key_exists('locale', $data) ? $data['locale'] : Request::header(Api::HEADER_API_LANG, $defaultLanguage)));
                 foreach ($i18NTableMap->getColumns() as $columnMap) {
                     $method = 'set' . $columnMap->getPhpName();
                     $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
@@ -273,5 +283,10 @@ trait MutationTrait
     protected function checkFieldType()
     {
         $this->fieldType = ApiHelper::getFieldTypes();
+    }
+
+    protected function getBulkSavedCount(): int
+    {
+        return $this->bulkSavedCount;
     }
 }

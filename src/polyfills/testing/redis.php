@@ -9,22 +9,22 @@ if (!class_exists('RedisException')) {
 if (!class_exists('Redis')) {
     class Redis
     {
-        public function connect(string $host, int $port = 6379, float $timeout = 0): bool
+        public function connect(/** @scrutinizer ignore-unused */ string $host, /** @scrutinizer ignore-unused */ int $port = 6379, /** @scrutinizer ignore-unused */ float $timeout = 0): bool
         {
             return false;
         }
 
-        public function get(string $key)
+        public function get(/** @scrutinizer ignore-unused */ string $key)
         {
             return false;
         }
 
-        public function setex(string $key, int $ttl, string $value): bool
+        public function setex(/** @scrutinizer ignore-unused */ string $key, /** @scrutinizer ignore-unused */ int $ttl, /** @scrutinizer ignore-unused */ string $value): bool
         {
             return true;
         }
 
-        public function set(string $key, string $value): bool
+        public function set(/** @scrutinizer ignore-unused */ string $key, /** @scrutinizer ignore-unused */ string $value): bool
         {
             return true;
         }

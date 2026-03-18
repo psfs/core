@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use PSFS\base\config\Config;
+use PSFS\base\Logger;
 
 /**
  * @package PSFS\base\types\helpers
@@ -18,7 +19,7 @@ final class DeployHelper
     /**
      * @return string
      * @throws Exception
- */
+     */
     public static function updateCacheVar(): string
     {
         $now = new DateTime();
@@ -34,7 +35,7 @@ final class DeployHelper
     /**
      * @return array{version:string,config_files_cleaned:bool}
      * @throws Exception
- */
+     */
     public static function refreshCacheState(): array
     {
         $version = self::updateCacheVar();
@@ -64,6 +65,9 @@ final class DeployHelper
         $cacheFile = CACHE_DIR . DIRECTORY_SEPARATOR . $version . '.file.cache';
         if (file_exists($cacheFile)) {
             @unlink($cacheFile);
+            if (@unlink($cacheFile) === false) {
+                Logger::log('[DeployHelper::removeTemplateCacheFile] Failed to delete cache file: ' . $cacheFile, LOG_WARNING);
+            }
         }
     }
 }
