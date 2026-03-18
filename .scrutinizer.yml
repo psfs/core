@@ -18,36 +18,33 @@ checks:
     php: true
 
 build:
-  environment:
-    timezone: "Europe/Madrid"
-    php:
-      version: 8.3.30
-      ini:
-        memory_limit: "-1"
-        xdebug.mode: coverage
   nodes:
     analysis:
       tests:
         override:
           - php-scrutinizer-run --enable-security-analysis
-    api-mysql:
-      services:
-        mysql: "8.4"
+    docker-tests:
       environment:
+        docker:
+          remote_engine: true
         variables:
           APP_ENVIRONMENT: "test"
-          API_DB_HOST: "127.0.0.1"
-          API_DB_PORT: "3306"
-          API_DB_NAME: "core_test"
-          API_DB_USER: "root"
-          API_DB_PASSWORD: ""
-      dependencies:
-        before:
-          - "composer install -o --no-interaction --no-progress"
-          - "php tests/bootstrap/prepare_api_mysql.php"
+          HOST_PORT: "8008"
+          DEBUG: "-xdebug"
+          PHP_OPCACHE: "0"
       tests:
         override:
-          - command: "vendor/bin/phpunit --configuration phpunit.xml.dist"
+          - command: |
+              cat > .env <<'EOF'
+              HOST_PORT=8008
+              DEBUG=-xdebug
+              PHP_OPCACHE=0
+              EOF
+              docker compose down -v --remove-orphans || true
+              docker compose up -d --wait db redis php
+              docker compose exec -T php sh -lc 'cd /var/www && composer install --no-interaction --no-progress'
+              docker compose exec -T php sh -lc 'cd /var/www && XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never'
+              docker compose down -v --remove-orphans
             coverage:
               file: "cache/coverage/coverage.xml"
               format: "clover"
