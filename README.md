@@ -150,7 +150,6 @@ MYSQL_DATABASE=psfs
 ## Documentation
 
 - [General information and contracts](./doc/CONTRACTS.md)
-- [Validation runbook](./doc/runbooks/validation.md)
 - [Versioning policy](./doc/VERSIONING.md)
 - [Security policy](./SECURITY.md)
 
