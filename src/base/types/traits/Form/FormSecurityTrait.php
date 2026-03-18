@@ -97,7 +97,7 @@ trait FormSecurityTrait
             $valid = false;
         }
         // Validate all the fields
-        if ($valid && count($this->fields) > 0) {
+        if ($valid && !empty($this->fields)) {
             foreach ($this->fields as $key => &$field) {
                 if ($key === $tokenField || $key === $tokenKeyField || $key === self::SEPARATOR) {
                     continue;

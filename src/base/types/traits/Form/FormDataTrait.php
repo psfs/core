@@ -69,7 +69,7 @@ trait FormDataTrait
         $data = array();
         $tokenField = $this->getName() . '_token';
         $tokenKeyField = $this->getName() . '_token_key';
-        if (count($this->fields) > 0) {
+        if (!empty($this->fields)) {
             foreach ($this->fields as $key => $field) {
                 if (self::SEPARATOR !== $key && $key !== $tokenField && $key !== $tokenKeyField) {
                     $data[$key] = array_key_exists('value', $field) ? $field['value'] : null;
@@ -95,7 +95,7 @@ trait FormDataTrait
      */
     public function setData(array $data = [])
     {
-        if (count($this->fields) === 0) {
+        if (empty($this->fields)) {
             throw new FormException(t('Form fields must be configured first'), 400);
         }
 

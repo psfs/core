@@ -95,7 +95,7 @@ trait ApiListTrait
      */
     protected function addFilters(ModelCriteria &$query)
     {
-        if (count($this->query) > 0) {
+        if (!empty($this->query)) {
             $tableMap = $this->getTableMap();
             foreach ($this->query as $field => $value) {
                 if (self::API_COMBO_FIELD === $field) {

@@ -46,7 +46,7 @@ trait FormCustomizationTrait
             'type' => $type,
             'id' => $buttonId,
         ];
-        if (count($attrs) > 0) {
+        if (!empty($attrs)) {
             foreach ($attrs as $key => $attr) {
                 $this->buttons[$buttonId][$key] = $attr;
             }

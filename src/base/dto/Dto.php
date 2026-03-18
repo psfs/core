@@ -43,7 +43,7 @@ class Dto extends Singleton implements \JsonSerializable
         try {
             $reflectionClass = new \ReflectionClass($this);
             $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
-            if (count($properties) > 0) {
+            if (!empty($properties)) {
                 foreach ($properties as $property) {
                     $value = $property->getValue($this);
                     if (is_object($value) && method_exists($value, 'toArray')) {
@@ -117,7 +117,7 @@ class Dto extends Singleton implements \JsonSerializable
      */
     public function fromArray(array $object = [])
     {
-        if (count($object) > 0) {
+        if (!empty($object)) {
             $reflector = new \ReflectionClass($this);
             $properties = InjectorHelper::extractProperties(
                 $reflector,

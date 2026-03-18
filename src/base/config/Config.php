@@ -166,10 +166,10 @@ class Config
     protected static function saveExtraParams(array $data)
     {
         $finalData = array();
-        if (count($data) > 0) {
+        if (!empty($data)) {
             Logger::log('Saving extra configuration parameters');
             foreach (self::iterateConfigEntries($data) as [$key, $value]) {
-                if (null !== $value || $value !== '') {
+                if (null !== $value) {
                     $finalData[$key] = $value;
                 }
             }
@@ -200,7 +200,7 @@ class Config
     public function isConfigured()
     {
         Inspector::stats('[Config] Checking configuration', Inspector::SCOPE_DEBUG);
-        $configured = (count($this->config) > 0);
+        $configured = !empty($this->config);
         if ($configured) {
             foreach (static::$required as $required) {
                 if (!array_key_exists($required, $this->config)) {

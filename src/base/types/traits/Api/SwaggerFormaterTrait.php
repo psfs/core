@@ -348,7 +348,7 @@ trait SwaggerFormaterTrait
                 $parameterName = $parameter->getName();
                 $types = [];
                 preg_match_all('/\@param\ (.*)\ \$' . $parameterName . '$/im', $docComments, $types);
-                if (count($types) > 1 && count($types[1]) > 0) {
+                if (count($types) > 1 && !empty($types[1])) {
                     $methodInfo['parameters'][$parameterName] = $types[1][0];
                 }
             }

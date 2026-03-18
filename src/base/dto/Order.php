@@ -28,7 +28,7 @@ class Order extends Dto
     public function removeOrder($fieldToRemove)
     {
         $order = [];
-        if (count($this->fields) > 0) {
+        if (!empty($this->fields)) {
             foreach ($this->getOrders() as $field => $direction) {
                 if (strtolower($fieldToRemove) === strtolower($field)) {
                     continue;

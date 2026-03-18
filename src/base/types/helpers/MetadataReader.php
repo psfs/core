@@ -141,11 +141,11 @@ class MetadataReader
         }
         if ($tag === 'http') {
             preg_match('/@(GET|POST|PUT|DELETE|HEAD|PATCH)(\n|\r)/i', $doc, $routeMethod);
-            return (count($routeMethod) > 0) ? strtoupper($routeMethod[1]) : ($default ?? 'ALL');
+            return !empty($routeMethod) ? strtoupper($routeMethod[1]) : ($default ?? 'ALL');
         }
         if ($tag === 'visible') {
             preg_match('/@visible\ (.*)(\n|\r)/im', $doc, $matches);
-            $value = (count($matches) > 0) ? $matches[1] : '';
+            $value = !empty($matches) ? $matches[1] : '';
             return !str_contains((string)$value, 'false');
         }
         if ($tag === 'cache') {
@@ -158,7 +158,7 @@ class MetadataReader
     private static function readFromDocValue(string $needle, string $doc, mixed $default): mixed
     {
         preg_match('/@' . preg_quote($needle, '/') . '\ (.*)(\n|\r)/im', $doc, $matches);
-        return (count($matches) > 0) ? $matches[1] : $default;
+        return !empty($matches) ? $matches[1] : $default;
     }
 
     private static function readVarTypeFromDoc(string $doc): ?string

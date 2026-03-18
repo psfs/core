@@ -216,7 +216,7 @@ class GeneratorService extends SimpleService
             $reversedSchema,
             $debugLogger
         );
-        if (count($migrationsUp) === 0) {
+        if (empty($migrationsUp)) {
             Logger::log('Same XML and database structures for all datasource - no diff to generate');
             return true;
         }

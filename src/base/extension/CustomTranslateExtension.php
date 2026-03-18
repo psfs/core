@@ -128,7 +128,7 @@ class CustomTranslateExtension extends AbstractExtension
 
     private static function hasTranslationsLoaded(string $locale): bool
     {
-        return array_key_exists($locale, self::$translations) && count(self::$translations[$locale]) > 0;
+        return array_key_exists($locale, self::$translations) && !empty(self::$translations[$locale]);
     }
 
     private static function hydrateLocaleAliasIfNeeded(string $locale): string

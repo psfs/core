@@ -170,7 +170,7 @@ class RouterHelper
         $parameters = $method->getParameters();
         $requirements = [];
 
-        if (count($parameters) > 0) {
+        if (!empty($parameters)) {
             foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
                     $params[$param->getName()] = $param->getDefaultValue();

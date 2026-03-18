@@ -112,7 +112,7 @@ trait FormModelTrait
             case 'checkbox':
             case 'select':
                 $data = array();
-                if (null !== $value && count($value) > 0) {
+                if (null !== $value && !empty($value)) {
                     foreach ($value as $val) {
                         list($field, $method, $data) = $this->extractRelatedModelFieldValue($field, $val, $data);
                     }

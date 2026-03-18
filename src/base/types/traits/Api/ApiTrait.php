@@ -205,7 +205,7 @@ trait ApiTrait
         $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
         if (null !== $returnFields) {
             $select = $this->resolveReturnFields($returnFields);
-            if (count($select) > 0) {
+            if (!empty($select)) {
                 $query->select($select);
             }
         }
