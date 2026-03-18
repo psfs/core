@@ -18,7 +18,7 @@ class Cache
 {
     /**
      * @var \Memcache
- */
+     */
     protected $memcache = null;
 
     const JSON = 1;
@@ -39,7 +39,7 @@ class Cache
 
     /**
      * @return bool
- */
+     */
     public static function canUseMemcache()
     {
         return Config::getParam('psfs.memcache', false) && !Config::getParam('debug') && class_exists('Memcached');
@@ -47,7 +47,7 @@ class Cache
 
     /**
      * @return bool
- */
+     */
     public static function canUseRedis()
     {
         return Config::getParam('psfs.redis', false) && !Config::getParam('debug') && class_exists('Redis');
@@ -58,7 +58,7 @@ class Cache
      * @param string $path
      * @throws GeneratorException
      * @throws ConfigException
- */
+     */
     private function saveTextToFile($data, $path)
     {
         GeneratorHelper::createDir(dirname($path));
@@ -72,7 +72,7 @@ class Cache
      * @param int $transform
      * @param boolean $absolute
      * @return mixed
- */
+     */
     public function getDataFromFile($path, $transform = Cache::TEXT, $absolute = false)
     {
         Inspector::stats('[Cache] Gathering data from cache', Inspector::SCOPE_DEBUG);
@@ -89,7 +89,7 @@ class Cache
      * @param int $expires
      * @param boolean $absolute
      * @return bool
- */
+     */
     private function hasExpiredCache($path, $expires = 300, $absolute = false)
     {
         Inspector::stats('[Cache] Checking expiration', Inspector::SCOPE_DEBUG);
@@ -106,7 +106,7 @@ class Cache
      * @param mixed $data
      * @param int $transform
      * @return mixed
- */
+     */
     public static function extractDataWithFormat($data = null, $transform = Cache::TEXT)
     {
         Inspector::stats('[Cache] Extracting data from cache', Inspector::SCOPE_DEBUG);
@@ -131,7 +131,7 @@ class Cache
      * @param string $data
      * @param int $transform
      * @return string
- */
+     */
     public static function transformData($data, $transform = Cache::TEXT)
     {
         Logger::log('Transform data in cache', LOG_DEBUG);
@@ -159,7 +159,7 @@ class Cache
      * @param bool $absolute
      * @throws GeneratorException
      * @throws ConfigException
- */
+     */
     public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false)
     {
         Inspector::stats('[Cache] Store data in cache', Inspector::SCOPE_DEBUG);
@@ -177,7 +177,7 @@ class Cache
      * @return mixed|null
      * @throws GeneratorException
      * @throws ConfigException
- */
+     */
     public function readFromCache($path, $expires = 300, $function = null, $transform = Cache::TEXT, $ignoreExpiration = false)
     {
         $data = null;
@@ -195,7 +195,7 @@ class Cache
 
     /**
      * @return bool
- */
+     */
     private static function checkAdminSite()
     {
         return Security::getInstance()->canAccessRestrictedAdmin();
@@ -203,7 +203,7 @@ class Cache
 
     /**
      * @return integer|boolean
- */
+     */
     public static function needCache()
     {
         $needCache = false;
@@ -220,7 +220,7 @@ class Cache
 
     /**
      * @return array
- */
+     */
     public function getRequestCacheHash()
     {
         $hashPath = null;

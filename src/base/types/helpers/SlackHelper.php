@@ -13,7 +13,7 @@ class SlackHelper extends Service
 {
     /**
      * @var string
- */
+     */
     private static $hookUrl;
 
     public function __construct()

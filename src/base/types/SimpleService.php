@@ -14,17 +14,17 @@ abstract class SimpleService extends Singleton
     /**
      * @Injectable
      * @var \PSFS\base\Logger
- */
+     */
     protected $log;
     /**
      * @Injectable
      * @var \PSFS\base\Cache
- */
+     */
     protected $cache;
 
     /**
      * @return Logger
- */
+     */
     public function getLog()
     {
         return $this->log;
@@ -32,7 +32,7 @@ abstract class SimpleService extends Singleton
 
     /**
      * @param Logger $log
- */
+     */
     public function setLog($log)
     {
         $this->log = $log;

@@ -19,21 +19,21 @@ trait ApiListTrait
 
     /**
      * @var array
- */
+     */
     protected $filters = array();
 
     /**
      * @Injectable
      * @var \PSFS\base\dto\Order
- */
+     */
     protected $order;
 
     /**
      * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager
- */
+     */
     protected $list;
 
-    
+
     protected function hydrateOrders()
     {
         if (count($this->query)) {
@@ -51,7 +51,7 @@ trait ApiListTrait
 
     /**
      * @return array
- */
+     */
     protected function extractPagination()
     {
         Logger::log(static::class . ' extract pagination start', LOG_DEBUG);
@@ -64,7 +64,7 @@ trait ApiListTrait
     /**
      * @param ModelCriteria $query
      * @throws \PSFS\base\exception\ApiException
- */
+     */
     protected function addOrders(ModelCriteria &$query)
     {
         Logger::log(static::class . ' extract orders start ', LOG_DEBUG);
@@ -92,7 +92,7 @@ trait ApiListTrait
     /**
      *
      * @param ModelCriteria $query
- */
+     */
     protected function addFilters(ModelCriteria &$query)
     {
         if (count($this->query) > 0) {
@@ -107,7 +107,7 @@ trait ApiListTrait
         }
     }
 
-    
+
     protected function paginate()
     {
         $this->list = null;

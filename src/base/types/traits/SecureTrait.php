@@ -13,7 +13,7 @@ trait SecureTrait
 
     /**
      * @return boolean
- */
+     */
     public function isLogged()
     {
         return (null !== Security::getInstance()->getUser() || $this->isAdmin());
@@ -21,7 +21,7 @@ trait SecureTrait
 
     /**
      * @return boolean
- */
+     */
     public function isAdmin()
     {
         return Security::getInstance()->canAccessRestrictedAdmin();
@@ -30,7 +30,7 @@ trait SecureTrait
     /**
      * @param $action
      * @return bool
- */
+     */
     public function canDo($action)
     {
         return true;

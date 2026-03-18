@@ -9,6 +9,6 @@ class PdoHelper extends ConnectionWrapper
     /**
      *
      * @var string
- */
+     */
     protected $lastExecutedQuery = '';
 }

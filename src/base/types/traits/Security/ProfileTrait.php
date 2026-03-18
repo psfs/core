@@ -14,17 +14,17 @@ trait ProfileTrait
 {
     /**
      * @var array
- */
+     */
     protected $user = null;
 
     /**
      * @var array
- */
+     */
     protected $admin = null;
 
     /**
      * @return array
- */
+     */
     public static function getProfiles()
     {
         return array(
@@ -36,7 +36,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     public function getAdminCleanProfiles()
     {
         return static::getCleanProfiles();
@@ -44,7 +44,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     public function getAdminProfiles()
     {
         return static::getProfiles();
@@ -52,7 +52,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     public static function getCleanProfiles()
     {
         return array(
@@ -64,7 +64,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     public function getUser()
     {
         return $this->user;
@@ -72,7 +72,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     public function getAdmin()
     {
         return $this->admin;
@@ -82,7 +82,7 @@ trait ProfileTrait
      * @param mixed $user
      * @return bool
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public static function save($user)
     {
         $saved = true;
@@ -98,7 +98,7 @@ trait ProfileTrait
      * @param $user
      * @return bool
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public function saveUser($user)
     {
         $saved = false;
@@ -117,7 +117,7 @@ trait ProfileTrait
 
     /**
      * @param mixed $user
- */
+     */
     public function updateUser($user)
     {
         $this->user = $user;
@@ -126,7 +126,7 @@ trait ProfileTrait
     /**
      * @param $alias
      * @param $profile
- */
+     */
     public function updateAdmin($alias, $profile)
     {
         $this->admin = array(
@@ -138,7 +138,7 @@ trait ProfileTrait
 
     /**
      * @return array
- */
+     */
     protected function getAdminFromCookie()
     {
         $authCookie = Request::getInstance()->getCookie(AuthHelper::generateProfileHash());

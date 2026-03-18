@@ -17,7 +17,7 @@ class Inspector
     /**
      * @param string|null $name
      * @return array
- */
+     */
     public static function collect($name = null): array
     {
         return [
@@ -32,7 +32,7 @@ class Inspector
     /**
      * @param string|null $name
      * @param string $scope
- */
+     */
     public static function stats($name = null, $scope = self::SCOPE_PROFILE): void
     {
         self::$debug[] = self::collect($name);
@@ -47,7 +47,7 @@ class Inspector
      * @param int $mem
      * @param int $files
      * @return array
- */
+     */
     protected static function calculateStats($stats, $timestamp, $mem = 0, $files = 0): array
     {
         return [
@@ -61,7 +61,7 @@ class Inspector
     /**
      * @param string $scope
      * @return array
- */
+     */
     protected static function processStats($scope = self::SCOPE_PROFILE): array
     {
         self::stats('Profiling collect start');
@@ -79,7 +79,7 @@ class Inspector
     /**
      * @param string|null $scope
      * @return array
- */
+     */
     public static function getStats($scope = self::SCOPE_PROFILE): array
     {
         return self::processStats($scope);

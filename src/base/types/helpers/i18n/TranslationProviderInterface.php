@@ -9,7 +9,7 @@ interface TranslationProviderInterface
      * @param string $locale
      * @param array $context
      * @return string|null
- */
+     */
     public function translate(string $message, string $locale, array $context = []): ?string;
 }
 

@@ -17,11 +17,11 @@ trait SystemTrait
 
     /**
      * @var integer
- */
+     */
     protected $ts;
     /**
      * @var integer
- */
+     */
     protected $mem;
 
     /**
@@ -29,7 +29,7 @@ trait SystemTrait
      * @param $unit string
      *
      * @return int
- */
+     */
     public function getMem($unit = "Bytes")
     {
         // Keep same mode as bootstrap baseline (PSFS_START_MEM uses memory_get_usage(true)).
@@ -50,13 +50,13 @@ trait SystemTrait
 
     /**
      * @return double
- */
+     */
     public function getTs()
     {
         return microtime(TRUE) - $this->ts;
     }
 
-    
+
     protected function bindWarningAsExceptions()
     {
         Inspector::stats('[SystemTrait] Added handlers for errors', Inspector::SCOPE_DEBUG);
@@ -94,7 +94,7 @@ trait SystemTrait
         });
     }
 
-    
+
     protected function initiateStats(): void
     {
         Inspector::stats('[SystemTrait] Initializing stats (mem + ts)');

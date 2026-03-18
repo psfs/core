@@ -24,7 +24,7 @@ class SecurityHelper
      *
      * @throws AccessDeniedException
      * @throws AdminCredentialsException
- */
+     */
     public static function checkRestrictedAccess(string $route): void
     {
         Inspector::stats('[SecurityHelper] Checking admin zone', Inspector::SCOPE_DEBUG);
@@ -47,7 +47,7 @@ class SecurityHelper
      * @param string $timestamp
      * @param string $hash
      * @return string
- */
+     */
     private static function mixSecret(string $timestamp, string $hash): string
     {
         $token = '';
@@ -65,7 +65,7 @@ class SecurityHelper
      * @param string $hash
      * @param string $token
      * @return string
- */
+     */
     private static function mixToken(string $timestamp, string $hash, string $token): string
     {
         $mixedToken = '';
@@ -88,7 +88,7 @@ class SecurityHelper
     /**
      * @param bool|null $isOdd
      * @return int
- */
+     */
     private static function getTs(bool $isOdd = null): int
     {
         $timestamp = time();
@@ -107,7 +107,7 @@ class SecurityHelper
      * @param boolean|null $isOdd
      *
      * @return string
- */
+     */
     public static function generateToken(string $secret, string $module = Router::PSFS_BASE_NAMESPACE, bool $isOdd = null): string
     {
         $timestamp = self::getTs($isOdd);
@@ -120,7 +120,7 @@ class SecurityHelper
     /**
      * @param string $part
      * @return array
- */
+     */
     private static function extractTs(string $part): array
     {
         $partToken = '';
@@ -140,7 +140,7 @@ class SecurityHelper
     /**
      * @param array $parts
      * @return array
- */
+     */
     private static function parseTokenParts(array $parts): array
     {
         list($partToken, $timestamp) = self::extractTs(array_pop($parts));
@@ -156,7 +156,7 @@ class SecurityHelper
      * @param boolean $force
      *
      * @return null|string
- */
+     */
     private static function decodeToken(string $token, bool $force = false): ?string
     {
         $decoded = NULL;
@@ -171,7 +171,7 @@ class SecurityHelper
     /**
      * @param string $token
      * @return array
- */
+     */
     private static function extractTokenParts(string $token): array
     {
         for ($i = 0, $ct = strlen(self::RAND_SEP); $i < $ct; $i++) {
@@ -186,7 +186,7 @@ class SecurityHelper
      * @param string $module
      *
      * @return bool
- */
+     */
     public static function checkToken(string $token, string $secret, string $module = Router::PSFS_BASE_NAMESPACE): bool
     {
         if (0 === strlen($token) || 0 === strlen($secret)) {

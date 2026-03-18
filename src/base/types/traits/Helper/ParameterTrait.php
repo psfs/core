@@ -9,12 +9,12 @@ trait ParameterTrait
 {
     /**
      * @var array
- */
+     */
     private $params;
 
     /**
      * @return array
- */
+     */
     public function getParams()
     {
         return $this->params ?: [];
@@ -23,7 +23,7 @@ trait ParameterTrait
     /**
      * @param $params
      * @return ParameterTrait
- */
+     */
     public function setParams($params)
     {
         $this->params = $params;
@@ -36,7 +36,7 @@ trait ParameterTrait
      * @param mixed|null $value
      *
      * @return ParameterTrait
- */
+     */
     public function addParam($key, $value = NULL)
     {
         $this->params[$key] = $value;
@@ -46,7 +46,7 @@ trait ParameterTrait
     /**
      * @param string $key
      * @return ParameterTrait
- */
+     */
     public function dropParam($key)
     {
         if (array_key_exists($key, $this->params)) {
@@ -58,7 +58,7 @@ trait ParameterTrait
     /**
      * @param string $key
      * @return mixed|null
- */
+     */
     public function getParam($key)
     {
         if (array_key_exists($key, $this->params)) {

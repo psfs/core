@@ -12,6 +12,7 @@ use PSFS\base\types\traits\SecureTrait;
 abstract class CustomAuthApi extends CustomApi
 {
     use SecureTrait;
+
     public function init()
     {
         parent::init();

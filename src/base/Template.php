@@ -27,11 +27,11 @@ class Template
     const STATUS_OK = 'HTTP/1.0 200 OK';
     /**
      * @var \Twig\Environment
- */
+     */
     protected $tpl;
     protected $filters = array();
 
-    
+
     public function __construct()
     {
         $this->setup();
@@ -42,7 +42,7 @@ class Template
 
     /**
      * @return \Twig\Loader\LoaderInterface
- */
+     */
     public function getLoader()
     {
         return $this->tpl->getLoader();
@@ -52,7 +52,7 @@ class Template
      * @param bool $public
      *
      * @return Template
- */
+     */
     public function setPublicZone($public = true)
     {
         $this->public_zone = $public;
@@ -61,7 +61,7 @@ class Template
 
     /**
      * @return bool
- */
+     */
     public function isPublicZone()
     {
         return $this->public_zone;
@@ -73,7 +73,7 @@ class Template
      * @param array $cookies
      * @return string
      * @throws exception\GeneratorException
- */
+     */
     public function render($tpl, array $vars = array(), array $cookies = array())
     {
         Logger::log('Start render response');
@@ -88,7 +88,7 @@ class Template
      * @param $domain
      *
      * @return Template
- */
+     */
     public function addPath($path, $domain = '')
     {
         if (file_exists($path)) {
@@ -101,7 +101,7 @@ class Template
      * @param string $tpl
      * @param array $vars
      * @return string
- */
+     */
     public function dump($tpl, array $vars = array())
     {
         $vars['__user__'] = Security::getInstance()->getUser();
@@ -124,7 +124,7 @@ class Template
      * @param $functionName
      *
      * @return Template
- */
+     */
     protected function addTemplateFunction($templateFunction, $functionName)
     {
         $function = new TwigFunction($templateFunction, $functionName);
@@ -134,7 +134,7 @@ class Template
 
     /**
      * @return array
- */
+     */
     public function regenerateTemplates()
     {
         $this->generateTemplatesCache();
@@ -152,7 +152,7 @@ class Template
      * @param string $domain
      *
      * @return mixed
- */
+     */
     protected function generateTemplate($tplDir, $domain = '')
     {
         if (!file_exists($tplDir)) {
@@ -176,7 +176,7 @@ class Template
      * @param $path
      *
      * @return string
- */
+     */
     public static function extractPath($path)
     {
         $explodePath = explode(DIRECTORY_SEPARATOR, $path);
@@ -190,7 +190,7 @@ class Template
     /**
      * @param bool $append
      * @return array
- */
+     */
     static public function getDomains($append = false)
     {
         $domains = Router::getInstance()->getDomains();
@@ -204,7 +204,7 @@ class Template
         return $domains;
     }
 
-    
+
     private function addTemplateFunctions()
     {
         // Register template helper functions.
@@ -231,13 +231,13 @@ class Template
 
     /**
      * @return \Twig\Environment
- */
+     */
     public function getTemplateEngine()
     {
         return $this->tpl;
     }
 
-    
+
     private function loadDomains()
     {
         $domains = Cache::getInstance()->getDataFromFile(CONFIG_DIR . DIRECTORY_SEPARATOR . 'domains.json', Cache::JSON, true);
@@ -248,7 +248,7 @@ class Template
         }
     }
 
-    
+
     private function setup()
     {
         $loader = new FilesystemLoader(GeneratorHelper::getTemplatePath());
@@ -260,7 +260,7 @@ class Template
         $this->loadDomains();
     }
 
-    
+
     private function addTemplateTokens()
     {
         // Add token parser extensions.
@@ -268,7 +268,7 @@ class Template
         $this->tpl->addTokenParser(new AssetsTokenParser('js'));
     }
 
-    
+
     private function optimizeTemplates()
     {
         // Enable template optimizations.
@@ -279,7 +279,7 @@ class Template
      * @param array $domains
      *
      * @return array
- */
+     */
     private function parsePathTranslations($domains)
     {
         $translations = array();
@@ -295,10 +295,10 @@ class Template
         return $translations;
     }
 
-    
+
     private function generateTemplatesCache()
     {
-        
+
         $loader = $this->tpl->getLoader();
         $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {

@@ -13,7 +13,7 @@ trait ApiGenerationTrait
      * @param string $apiClass
      * @return boolean
      * @throws \ReflectionException
- */
+     */
     private function generateBaseApiTemplate($module, $modPath, $force = false, $apiClass = "")
     {
         $created = true;
@@ -34,7 +34,7 @@ trait ApiGenerationTrait
      * @param string $package
      *
      * @return bool
- */
+     */
     private function createApiBaseFile($module, $modPath, $api, $apiClass = '', $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
@@ -62,7 +62,7 @@ trait ApiGenerationTrait
      * @param string $package
      *
      * @return bool
- */
+     */
     private function createApi($module, $modPath, $force, $api, $package = null)
     {
         $class = preg_replace('/(\\\|\/)/', '', $module);
@@ -86,7 +86,7 @@ trait ApiGenerationTrait
      * @param string $apiPath
      * @param string $package
      * @throws \ReflectionException
- */
+     */
     private function generateApiFiles($module, $force, $apiClass, \Directory $dir, string $apiPath, $package = null)
     {
         $base = $dir->path;
@@ -115,7 +115,7 @@ trait ApiGenerationTrait
      * @param string $filename
      * @return bool
      * @throws \ReflectionException
- */
+     */
     private function checkIfIsModel($module, $filename, $package = null)
     {
         $parts = [$module, 'Models'];

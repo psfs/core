@@ -27,16 +27,16 @@ trait ModulesTrait
     /**
      * @Injectable
      * @var Finder
- */
+     */
     private $finder;
     /**
      * @var array
- */
+     */
     private $domains = [];
 
     /**
      *
- */
+     */
     public function initializeFinder()
     {
         $this->finder = new Finder();
@@ -50,7 +50,7 @@ trait ModulesTrait
      * @throws ReflectionException
      * @throws ConfigException
      * @throws InvalidArgumentException
- */
+     */
     private function inspectDir($origen, $namespace = 'PSFS', $routing = [])
     {
         foreach ($this->iterateControllerFiles($origen) as $file) {
@@ -71,7 +71,7 @@ trait ModulesTrait
      * @param string $module
      * @return array
      * @throws ReflectionException
- */
+     */
     private function addRouting($namespace, &$routing, $module = Router::PSFS_BASE_NAMESPACE)
     {
         if (self::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
@@ -96,7 +96,7 @@ trait ModulesTrait
      *
      * @return $this
      * @throws ConfigException
- */
+     */
     protected function extractDomain(ReflectionClass $class)
     {
         // Resolve template domains.
@@ -115,7 +115,7 @@ trait ModulesTrait
 
     /**
      * @return array
- */
+     */
     public function getDomains()
     {
         return $this->domains ?: [];
@@ -127,7 +127,7 @@ trait ModulesTrait
      * @param string $externalModulePath
      * @param array $routing
      * @throws ReflectionException
- */
+     */
     private function loadExternalAutoloader($hydrateRoute, SplFileInfo $modulePath, $externalModulePath, &$routing = [])
     {
         $extModule = $modulePath->getBasename();
@@ -145,7 +145,7 @@ trait ModulesTrait
      * @param string $module
      * @param array $routing
      * @return mixed
- */
+     */
     private function loadExternalModule($hydrateRoute, $module, &$routing = [])
     {
         $modulesToIgnore = explode(',', Config::getParam('hide.modules', ''));
@@ -170,7 +170,7 @@ trait ModulesTrait
     /**
      * @param string $domainToCheck
      * @return bool
- */
+     */
     public function domainExists($domainToCheck)
     {
         $exists = false;
@@ -187,7 +187,7 @@ trait ModulesTrait
 
     /**
      * @return string|null
- */
+     */
     private function getExternalModules()
     {
         $externalModules = Config::getParam('modules.extend', '');
@@ -197,7 +197,7 @@ trait ModulesTrait
 
     /**
      * @param boolean $hydrateRoute
- */
+     */
     private function checkExternalModules($hydrateRoute = true)
     {
         $externalModules = $this->getExternalModules();
@@ -212,7 +212,7 @@ trait ModulesTrait
     /**
      * @param string $origin
      * @return \Generator
- */
+     */
     private function iterateControllerFiles(string $origin): \Generator
     {
         $files = $this->finder->files()->in($origin)->path('/(controller|api)/i')->depth('< 3')->name('*.php');
@@ -231,7 +231,7 @@ trait ModulesTrait
      * @param string $namespace
      * @return \Generator
      * @throws ReflectionException
- */
+     */
     private function iterateRoutesFromClass(ReflectionClass $reflection, string $api, string $module, string $namespace): \Generator
     {
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
@@ -247,7 +247,7 @@ trait ModulesTrait
         }
     }
 
-    
+
     protected function calculateRoutingFingerprint(): string
     {
         $seedParts = [];

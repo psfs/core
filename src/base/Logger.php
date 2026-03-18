@@ -33,26 +33,26 @@ class Logger
 
     /**
      * @var \Monolog\Logger
- */
+     */
     protected \Monolog\Logger $logger;
     /**
      * @var resource
- */
+     */
     private $stream;
     /**
      * @var UidProcessor
- */
+     */
     private $uuid;
     /**
      * @var string
- */
+     */
     protected string $logLevel;
 
     /**
      * @throws GeneratorException
      * @throws ConfigException
      * @throws \Exception
- */
+     */
     public function __construct()
     {
         $args = func_get_args();
@@ -75,7 +75,7 @@ class Logger
      * @param string $logger
      * @param boolean $debug
      * @throws \Exception
- */
+     */
     private function addPushLogger($logger, $debug)
     {
         $this->logger = new \Monolog\Logger(strtoupper($logger));
@@ -98,7 +98,7 @@ class Logger
      * @param array $args
      * @return array
      * @throws exception\GeneratorException
- */
+     */
     private function setup(array $args = [])
     {
         $args = $args ?? [];
@@ -114,7 +114,7 @@ class Logger
 
     /**
      * @return string
- */
+     */
     private function setLoggerName(): string
     {
         $logger = Config::getParam('platform.name', self::DEFAULT_NAMESPACE);
@@ -124,7 +124,7 @@ class Logger
     /**
      * @return string
      * @throws exception\GeneratorException
- */
+     */
     private function createLoggerPath(): string
     {
         $logger = $this->setLoggerName();
@@ -139,7 +139,7 @@ class Logger
      * @param array $context
      * @param boolean $force
      * @return bool
- */
+     */
     public function addLog($msg, $type = \Monolog\Level::Notice, $context = [], $force = false)
     {
         return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord($type, $msg, LogHelper::addMinimalContext($context));
@@ -150,7 +150,7 @@ class Logger
      * @param int $type
      * @param array|null $context
      * @param bool $force
- */
+     */
     public static function log($msg, $type = LOG_DEBUG, $context = null, $force = false): void
     {
         if (null === $context) {
@@ -171,7 +171,7 @@ class Logger
      * @param bool $debug
      * @return StreamHandler
      * @throws \Exception
- */
+     */
     private function addDefaultStreamHandler($debug = false): StreamHandler
     {
         // the default date format is "Y-m-d H:i:s"
@@ -187,7 +187,7 @@ class Logger
 
     /**
      * @return string
- */
+     */
     public function getLogUid()
     {
         return $this->uuid->getUid();
@@ -195,7 +195,7 @@ class Logger
 
     /**
      * @return string
- */
+     */
     public static function getUid()
     {
         return self::getInstance()->getLogUid();

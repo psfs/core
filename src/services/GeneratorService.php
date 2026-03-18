@@ -31,13 +31,13 @@ class GeneratorService extends SimpleService
     /**
      * @Injectable
      * @var \PSFS\base\config\Config
- */
+     */
     #[Injectable]
     protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security
- */
+     */
     #[Injectable]
     protected Security $security;
 
@@ -49,7 +49,7 @@ class GeneratorService extends SimpleService
      * @param bool $skipMigration
      * @throws GeneratorException
      * @throws \ReflectionException
- */
+     */
     public function createStructureModule(string $module, bool $force = false, string $type = "", string $apiClass = "", bool $skipMigration = false): void
     {
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
@@ -72,7 +72,7 @@ class GeneratorService extends SimpleService
      * @param boolean $force
      * @param string $controllerType
      * @throws GeneratorException
- */
+     */
     private function createModuleBaseFiles($module, $modPath, $force = false, $controllerType = '')
     {
         $modulePath = $modPath . $module;
@@ -90,7 +90,7 @@ class GeneratorService extends SimpleService
      * @param bool $force
      * @return void
      * @throws GeneratorException
- */
+     */
     public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void
     {
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
@@ -105,7 +105,7 @@ class GeneratorService extends SimpleService
      * @param boolean $force
      * @param string $controllerType
      * @return boolean
- */
+     */
     private function generateControllerTemplate($module, $modPath, $force = false, $controllerType = "")
     {
         // Generate base controller.
@@ -152,7 +152,7 @@ class GeneratorService extends SimpleService
      * @param string $module
      * @param string $path
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private function createModuleModels($module, $path)
     {
         $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
@@ -171,12 +171,12 @@ class GeneratorService extends SimpleService
 
     /**
      * @throws GeneratorException
- */
+     */
     private function createModuleMigrations($module, $path)
     {
         $migrationService = MigrationService::getInstance();
-        
-        
+
+
         list($manager, $generatorConfig) = $migrationService->getConnectionManager($module, $path);
 
         if ($manager->hasPendingMigrations()) {
@@ -201,13 +201,13 @@ class GeneratorService extends SimpleService
      * @param MigrationService $migrationService
      * @param bool $debugLogger
      * @return Schema
- */
+     */
     private function buildReversedSchema(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, bool $debugLogger): Schema
     {
         $totalNbTables = 0;
         $reversedSchema = new Schema();
         $connections = $generatorConfig->getBuildConnections();
-        
+
         foreach ($manager->getDatabases() as $appDatabase) {
             list($database, $nbTables) = $migrationService->checkSourceDatabase($manager, $generatorConfig, $appDatabase, $connections, $debugLogger);
             if ($database) {
@@ -230,7 +230,7 @@ class GeneratorService extends SimpleService
      * @param Schema $reversedSchema
      * @param bool $debugLogger
      * @return array
- */
+     */
     private function buildMigrationDiffs(MigrationManager $manager, GeneratorConfig $generatorConfig, MigrationService $migrationService, Schema $reversedSchema, bool $debugLogger): array
     {
         Logger::log('Comparing models...');
@@ -268,7 +268,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generateConfigTemplate($modPath, $force = false)
     {
         // Generate configuration file.
@@ -283,7 +283,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generateSchemaTemplate($module, $modPath, $force = false)
     {
         // Generate module autoloader.
@@ -304,7 +304,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generatePropertiesTemplate($module, $modPath, $force = false)
     {
         Logger::log("Generating Propel configuration");
@@ -322,7 +322,7 @@ class GeneratorService extends SimpleService
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generateIndexTemplate($module, $modPath, $force = false)
     {
         // Generate index template.

@@ -24,51 +24,51 @@ class Field extends Dto
 
     /**
      * @var string
- */
+     */
     public $label;
     /**
      * @var string
- */
+     */
     public $name;
     /**
      * @var string
- */
+     */
     public $type = Field::TEXT_TYPE;
     /**
      * @var array
- */
+     */
     public $data = array();
     /**
      * @var string
- */
+     */
     public $url;
     /**
      * @var Object
- */
+     */
     public $value;
     /**
      * @var bool
- */
+     */
     public $required = true;
     /**
      * @var string
- */
+     */
     public $entity;
     /**
      * @var bool
- */
+     */
     public $readonly = false;
     /**
      * @var bool
- */
+     */
     public $pk = false;
     /**
      * @var string
- */
+     */
     public $relatedField;
     /**
      * @var integer
- */
+     */
     public $size;
 
     public function __construct($name, $label, $type = self::TEXT_TYPE, $value = null, $data = array(), $url = null, $required = true)

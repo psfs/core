@@ -26,45 +26,45 @@ class AssetsParser
 
     /**
      * @var array
- */
+     */
     protected $files = [];
     /**
      * @var string
- */
+     */
     protected $hash;
     /**
      * @var array
- */
+     */
     protected $compiledFiles = [];
     /**
      * @var string
- */
+     */
     protected $type;
     /**
      * @var array
- */
+     */
     protected $domains = [];
     /**
      * @var string
- */
+     */
     private $cdnPath = null;
     /**
      * @var array
- */
+     */
     protected $sri = [];
 
     /**
      * @var string
- */
+     */
     protected $sriFilename;
 
     /**
      * @param string $type
- */
+     */
     public function init($type)
     {
         $this->sriFilename = $type === 'js' ? JS_SRI_FILENAME : CSS_SRI_FILENAME;
-        
+
         $cache = Cache::getInstance();
         $this->sri = $cache->getDataFromFile($this->sriFilename, Cache::JSON, true);
         if (empty($this->sri)) {
@@ -75,7 +75,7 @@ class AssetsParser
     /**
      *
      * @param string $type
- */
+     */
     public function __construct($type = 'js')
     {
         $this->type = $type;
@@ -88,7 +88,7 @@ class AssetsParser
      * @param $filename
      * @return AssetsParser
      * @internal param string $type
- */
+     */
     public function addFile($filename)
     {
         if (file_exists($this->path . $filename) && preg_match('/\.' . $this->type . '$/i', $filename)) {
@@ -108,7 +108,7 @@ class AssetsParser
      * @param string $hash
      *
      * @return AssetsParser
- */
+     */
     public function setHash($hash)
     {
         $cache = Config::getParam('cache.var', '');
@@ -121,7 +121,7 @@ class AssetsParser
      * @throws ConfigException
      * @throws \PSFS\base\exception\GeneratorException
      * @internal param string $type
- */
+     */
     public function compile()
     {
         // Deduplicate files to keep compilation time stable.
@@ -139,7 +139,7 @@ class AssetsParser
         return $this;
     }
 
-    
+
     public function printHtml()
     {
         $baseUrl = $this->cdnPath ?: '';
@@ -158,7 +158,7 @@ class AssetsParser
      * @param string $filenamePath
      * @param string[] $source
      * @return string
- */
+     */
     protected static function calculateResourcePathname($filenamePath, $source)
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
@@ -178,7 +178,7 @@ class AssetsParser
      * @param $handle
      * @param string $filenamePath
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public static function extractCssLineResource($handle, $filenamePath)
     {
         $line = fgets($handle);
@@ -206,7 +206,7 @@ class AssetsParser
      * @param string $type
      * @return mixed|string
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     protected function getSriHash($hash, $type = 'js')
     {
         if (array_key_exists($hash, $this->sri)) {

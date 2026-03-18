@@ -9,14 +9,14 @@ class FormAction extends Dto
 {
     /**
      * @var string
- */
+     */
     public $label;
     /**
      * @var string
- */
+     */
     public $url;
     /**
      * @var string
- */
+     */
     public $method;
 }

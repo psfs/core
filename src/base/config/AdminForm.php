@@ -14,7 +14,7 @@ class AdminForm extends Form
 
     /**
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public function __construct()
     {
         parent::__construct();
@@ -44,7 +44,7 @@ class AdminForm extends Form
 
     /**
      * @return string
- */
+     */
     public function getTitle()
     {
         return t("Admin user control panel");
@@ -52,7 +52,7 @@ class AdminForm extends Form
 
     /**
      * @return string
- */
+     */
     public function getName()
     {
         return "admin_setup";

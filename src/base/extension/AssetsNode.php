@@ -20,7 +20,7 @@ class AssetsNode extends Node
      * @param array $values
      * @param int $line
      * @param string $type
- */
+     */
     public function __construct($name, $values, $line, $type = 'js')
     {
         parent::__construct(array('scripts' => $values["node"]), array('name' => $name), $line);

@@ -29,7 +29,7 @@ class I18nHelper
      * @param string $absoluteFileName
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public static function generateTranslationsFile(string $absoluteFileName): array
     {
         $translations = array();
@@ -47,7 +47,7 @@ class I18nHelper
      * @param string|null $customKey
      * @param bool $force
      * @throws Exception
- */
+     */
     public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
     {
         $locale = $force ? $default : self::extractLocale($default);
@@ -72,7 +72,7 @@ class I18nHelper
     /**
      * @param $data
      * @return mixed
- */
+     */
     public static function utf8Encode($data): mixed
     {
         if (is_array($data)) {
@@ -95,7 +95,7 @@ class I18nHelper
     /**
      * @param string $namespace
      * @return bool
- */
+     */
     public static function checkI18Class(string $namespace): bool
     {
         $isI18n = false;
@@ -111,7 +111,7 @@ class I18nHelper
     /**
      * @param $string
      * @return string
- */
+     */
     public static function sanitize($string): string
     {
         $from = [
@@ -142,7 +142,7 @@ class I18nHelper
     /**
      * @param string $string
      * @return string
- */
+     */
     public static function cleanHtmlAttacks(string $string): string
     {
         $value = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $string);

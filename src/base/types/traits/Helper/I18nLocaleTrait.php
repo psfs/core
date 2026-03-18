@@ -12,7 +12,7 @@ trait I18nLocaleTrait
     /**
      * @param string $locale
      * @return bool
- */
+     */
     public static function isValidLocale(string $locale): bool
     {
         return preg_match('/^[a-z]{2}(?:_[A-Z]{2})?$/', $locale) === 1;
@@ -21,7 +21,7 @@ trait I18nLocaleTrait
     /**
      * @param string|null $default
      * @return string
- */
+     */
     public static function extractLocale(string $default = null): string
     {
         $locale = Request::header('X-API-LANG', $default);

@@ -36,12 +36,12 @@ class Router
 
     /**
      * @var Cache
- */
+     */
     private $cache;
 
     /**
      * @var int
- */
+     */
     protected $cacheType = Cache::JSON;
 
     /**
@@ -49,7 +49,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
- */
+     */
     public function __construct()
     {
         $this->cache = Cache::getInstance();
@@ -62,7 +62,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
- */
+     */
     public function init()
     {
         [$this->routing, $this->slugs] = $this->loadRoutingCache();
@@ -79,7 +79,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
- */
+     */
     private function debugLoad()
     {
         if (!Config::getParam('skip.route_generation', false)) {
@@ -98,7 +98,7 @@ class Router
      *
      * @return string
      * @throws Exception
- */
+     */
     public function execute($route)
     {
         Inspector::stats('[Router] Executing the request', Inspector::SCOPE_DEBUG);
@@ -122,7 +122,7 @@ class Router
      * @throws AdminCredentialsException
      * @throws RouterException
      * @throws Exception
- */
+     */
     protected function searchAction($route)
     {
         Inspector::stats('[Router] Searching action to execute: ' . $route, Inspector::SCOPE_DEBUG);
@@ -189,7 +189,7 @@ class Router
      * @throws InvalidArgumentException
      * @throws ReflectionException
      * @throws GeneratorException
- */
+     */
     protected function generateRouting()
     {
         $base = SOURCE_DIR;
@@ -213,7 +213,7 @@ class Router
      * @throws ConfigException
      * @throws InvalidArgumentException
      * @throws ReflectionException
- */
+     */
     public function hydrateRouting()
     {
         $this->generateRouting();
@@ -230,7 +230,7 @@ class Router
     /**
      * @param string $namespace
      * @return bool
- */
+     */
     public static function exists($namespace)
     {
         return (class_exists($namespace) || interface_exists($namespace) || trait_exists($namespace));
@@ -243,7 +243,7 @@ class Router
      *
      * @return string|null
      * @throws RouterException
- */
+     */
     public function getRoute($slug = '', $absolute = false, array $params = [])
     {
         $baseUrl = $absolute ? Request::getInstance()->getRootUrl() : '';
@@ -271,7 +271,7 @@ class Router
      * @param boolean $throwExceptions
      * @return void
      * @throws Exception
- */
+     */
     public static function run($class, $method, $throwExceptions = false): void
     {
         Inspector::stats("[Router] Pre action invoked " . get_class($class) . "::{$method}", Inspector::SCOPE_DEBUG);
@@ -293,7 +293,7 @@ class Router
      * @param bool $isJson
      * @return string
      * @throws GeneratorException
- */
+     */
     public function httpNotFound(\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);

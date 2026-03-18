@@ -11,7 +11,7 @@ trait FlashesTrait
 
     /**
      * @return mixed
- */
+     */
     public function getFlashes()
     {
         $flashes = $this->getSessionKey(self::FLASH_MESSAGE_TOKEN);
@@ -21,7 +21,7 @@ trait FlashesTrait
 
     /**
      * @return $this
- */
+     */
     public function clearFlashes()
     {
         $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, NULL);
@@ -33,7 +33,7 @@ trait FlashesTrait
      *
      * @param string $key
      * @param mixed $data
- */
+     */
     public function setFlash($key, $data = NULL)
     {
         $flashes = $this->getFlashes();
@@ -49,7 +49,7 @@ trait FlashesTrait
      * @param string $key
      *
      * @return mixed
- */
+     */
     public function getFlash($key)
     {
         $flashes = $this->getFlashes();

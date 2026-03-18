@@ -9,12 +9,12 @@ trait RoutingTrait
 {
     /**
      * @var array
- */
+     */
     private $routing = [];
 
     /**
      * @return array
- */
+     */
     public function getRoutes()
     {
         return $this->routing;
@@ -22,7 +22,7 @@ trait RoutingTrait
 
     /**
      * @return array
- */
+     */
     public function getAllRoutes()
     {
         $routes = [];

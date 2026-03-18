@@ -38,7 +38,7 @@ abstract class Api extends Singleton
 
     /**
      * @var string
- */
+     */
     protected $domain;
 
     public function __construct(...$args)
@@ -47,7 +47,7 @@ abstract class Api extends Singleton
         parent::__construct();
     }
 
-    
+
     public function init()
     {
         parent::init();
@@ -95,7 +95,7 @@ abstract class Api extends Singleton
      * @ROUTE /{__DOMAIN__}/api/{__API__}
      *
      * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
- */
+     */
     public function modelList()
     {
         $this->action = self::API_ACTION_LIST;
@@ -119,7 +119,7 @@ abstract class Api extends Singleton
      * @param int $pk
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
- */
+     */
     public function get($pk)
     {
         $this->action = self::API_ACTION_GET;
@@ -142,7 +142,7 @@ abstract class Api extends Singleton
      * @ROUTE /{__DOMAIN__}/api/{__API__}
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
- */
+     */
     public function post()
     {
         $this->action = self::API_ACTION_POST;
@@ -160,7 +160,7 @@ abstract class Api extends Singleton
                 $message = t('Selected model could not be saved');
             }
         } catch (\Exception $e) {
-            if(Config::getParam('debug')) {
+            if (Config::getParam('debug')) {
                 $message = t('An error occurred while saving the item: ') . '<br>' . $e->getMessage();
             } else {
                 $message = t('An error occurred while saving the item: ') . '<br>' . $e->getCode();
@@ -186,7 +186,7 @@ abstract class Api extends Singleton
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
      *
- */
+     */
     public function put($pk)
     {
         $this->action = self::API_ACTION_PUT;
@@ -206,7 +206,7 @@ abstract class Api extends Singleton
                     $message = t('An error occurred while updating the item, please check logs');
                 }
             } catch (\Exception $e) {
-                if(Config::getParam('debug')) {
+                if (Config::getParam('debug')) {
                     $message = t('An error occurred while updating the item: ') . '<br>' . $e->getMessage();
                 } else {
                     $message = t('An error occurred while updating the item, please check logs: ') . '<br>' . $e->getCode();
@@ -233,7 +233,7 @@ abstract class Api extends Singleton
      * @param string $pk
      *
      * @return \PSFS\base\dto\JsonResponse(data={__API__})
- */
+     */
     public function delete($pk = NULL)
     {
         $this->action = self::API_ACTION_DELETE;
@@ -271,7 +271,7 @@ abstract class Api extends Singleton
      *
      * @payload [{__API__}]
      * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
- */
+     */
     public function bulk()
     {
         $this->action = self::API_ACTION_BULK;
@@ -304,7 +304,7 @@ abstract class Api extends Singleton
 
     /**
      * @return array
- */
+     */
     private function getList()
     {
         $return = [];
@@ -339,7 +339,7 @@ abstract class Api extends Singleton
      * @param integer $pk
      *
      * @return array
- */
+     */
     private function getSingleResult($pk)
     {
         $model = $this->_get($pk);

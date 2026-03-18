@@ -27,7 +27,7 @@ abstract class CurlService extends SimpleService
 
     /**
      * @return mixed
- */
+     */
     public function getCallInfo()
     {
         return $this->getInfo();
@@ -48,7 +48,7 @@ abstract class CurlService extends SimpleService
      * @param $content
      *
      * @return $this
- */
+     */
     public function addHeader($header, $content = NULL)
     {
         $this->headers[$header] = $content;
@@ -58,7 +58,7 @@ abstract class CurlService extends SimpleService
     /**
      * @param string $secret
      * @param string $module
- */
+     */
     protected function addRequestToken($secret, $module = 'PSFS')
     {
         $this->addHeader(self::PSFS_AUTH_HEADER, SecurityHelper::generateToken($secret, $module));
@@ -67,7 +67,7 @@ abstract class CurlService extends SimpleService
     /**
      * @param string $user
      * @param string $pass
- */
+     */
     protected function addAuthHeader($user, $pass)
     {
         $this->addOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
@@ -95,7 +95,7 @@ abstract class CurlService extends SimpleService
 
     /**
      * @return int
- */
+     */
     protected function parseServiceType()
     {
         if ($this->isJson()) {
@@ -154,7 +154,7 @@ abstract class CurlService extends SimpleService
      * @param bool $returnTransfer
      * @param bool $followLocation
      * @param bool $sslVerifyPeer
- */
+     */
     protected function applyCurlBehavior($returnTransfer = true, $followLocation = true, $sslVerifyHost = false, $sslVerifyPeer = false)
     {
         $this->addOption(CURLOPT_RETURNTRANSFER, Config::getParam('curl.returnTransfer', $returnTransfer));
@@ -166,7 +166,7 @@ abstract class CurlService extends SimpleService
 
     /**
      * @return resource
- */
+     */
     protected function initVerboseMode()
     {
         curl_setopt($this->getCon(), CURLINFO_HEADER_OUT, true);
@@ -178,7 +178,7 @@ abstract class CurlService extends SimpleService
 
     /**
      * @param resource $verbose
- */
+     */
     protected function dumpVerboseLogs($verbose)
     {
         rewind($verbose);

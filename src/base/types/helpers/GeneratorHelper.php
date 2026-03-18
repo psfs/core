@@ -18,7 +18,7 @@ class GeneratorHelper
 {
     /**
      * @param $dir
- */
+     */
     public static function deleteDir($dir): void
     {
         if (is_dir($dir)) {
@@ -37,7 +37,7 @@ class GeneratorHelper
         }
     }
 
-    
+
     public static function clearDocumentRoot(): void
     {
         $rootDirs = array("css", "js", "media", "font");
@@ -55,7 +55,7 @@ class GeneratorHelper
     /**
      * @param string $dir
      * @throws GeneratorException
- */
+     */
     public static function createDir($dir): void
     {
         if (!empty($dir)) {
@@ -74,7 +74,7 @@ class GeneratorHelper
 
     /**
      * @return string
- */
+     */
     public static function getTemplatePath(): string
     {
         $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
@@ -84,7 +84,7 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @return string
- */
+     */
     public static function extractClassFromNamespace($namespace): string
     {
         $parts = preg_split('/(\\\|\\/)/', $namespace);
@@ -94,7 +94,7 @@ class GeneratorHelper
     /**
      * @param $namespace
      * @throws GeneratorException
- */
+     */
     public static function checkCustomNamespaceApi($namespace): void
     {
         if (!empty($namespace)) {
@@ -116,7 +116,7 @@ class GeneratorHelper
      * @param OutputInterface|null $output
      * @param boolean $quiet
      * @throws GeneratorException
- */
+     */
     public static function createRoot($path = WEB_DIR, $output = null, $quiet = false): void
     {
         $output = $output ?? new ConsoleOutput();
@@ -183,7 +183,7 @@ class GeneratorHelper
      * @param string $filenamePath
      * @param boolean $debug
      * @throws GeneratorException
- */
+     */
     public static function copyResources($dest, $force, $filenamePath, $debug): void
     {
         if (file_exists($filenamePath)) {
@@ -204,7 +204,7 @@ class GeneratorHelper
      * @param string $src
      * @param string $dst
      * @throws GeneratorException
- */
+     */
     public static function copyr($src, $dst): void
     {
         $dir = opendir($src);

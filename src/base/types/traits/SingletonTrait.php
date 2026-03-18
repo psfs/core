@@ -13,19 +13,19 @@ trait SingletonTrait
 
     /**
      * @var boolean
- */
+     */
     private $loaded = false;
 
     /**
      *
      * @param array $args
      * @return $this
- */
+     */
     public static function getInstance(...$args)
     {
         $class = static::class;
         $instance = SingletonRegistry::get($class);
-        if(!$instance) {
+        if (!$instance) {
             $instance = new $class($args[0] ?? null);
             SingletonRegistry::register($instance);
             self::initiate($instance);
@@ -33,7 +33,7 @@ trait SingletonTrait
         return $instance;
     }
 
-    
+
     public static function dropInstance()
     {
         $class = static::class;
@@ -42,7 +42,7 @@ trait SingletonTrait
 
     /**
      * @return bool
- */
+     */
     public function isLoaded()
     {
         return $this->loaded;
@@ -50,7 +50,7 @@ trait SingletonTrait
 
     /**
      * @param bool $loaded
- */
+     */
     public function setLoaded($loaded = true)
     {
         $this->loaded = $loaded;
@@ -59,7 +59,7 @@ trait SingletonTrait
     /**
      * @param mixed $instance
      * @param mixed $args
- */
+     */
     private static function initiate($instance, $args = null)
     {
         $loaded = false;

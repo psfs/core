@@ -18,7 +18,7 @@ class RouterHelper
      * @param array $action
      * @return mixed
      * @throws ReflectionException
- */
+     */
     public static function getClassToCall(array $action): mixed
     {
         Inspector::stats('[RouterHelper] Getting class to call for executing the request action', Inspector::SCOPE_DEBUG);
@@ -37,7 +37,7 @@ class RouterHelper
      * @param $pattern
      *
      * @return array
- */
+     */
     public static function extractHttpRoute($pattern): array
     {
         $httpMethod = 'ALL';
@@ -56,7 +56,7 @@ class RouterHelper
      * @param string $pattern
      *
      * @return array
- */
+     */
     public static function extractComponents(string $route, string $pattern): array
     {
         Inspector::stats('[RouterHelper] Extracting parts for the request to execute', Inspector::SCOPE_DEBUG);
@@ -84,7 +84,7 @@ class RouterHelper
      * @param $routePattern
      * @param $path
      * @return bool
- */
+     */
     public static function compareSlashes($routePattern, $path): bool
     {
         $patternSeparator = count(explode('/', $routePattern));
@@ -113,7 +113,7 @@ class RouterHelper
      * @param $path
      *
      * @return bool
- */
+     */
     public static function matchRoutePattern($routePattern, $path): bool
     {
         if (Config::getParam('allow.double.slashes', true)) {
@@ -131,7 +131,7 @@ class RouterHelper
      * @param ReflectionClass $class
      * @param string $domain
      * @return array
- */
+     */
     public static function extractDomainInfo(ReflectionClass $class, string $domain): array
     {
         $path = dirname($class->getFileName()) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
@@ -159,14 +159,14 @@ class RouterHelper
      * @param ReflectionMethod $method
      * @return array
      * @throws ReflectionException
- */
+     */
     public static function extractReflectionParams($regex, ReflectionMethod $method): array
     {
         $default = '';
         $params = [];
         $parameters = $method->getParameters();
         $requirements = [];
-        
+
         if (count($parameters) > 0) {
             foreach ($parameters as $param) {
                 if ($param->isOptional() && !is_array($param->getDefaultValue())) {
@@ -189,7 +189,7 @@ class RouterHelper
      * @param string $module
      * @return array
      * @throws ReflectionException
- */
+     */
     public static function extractRouteInfo(ReflectionMethod $method, string $api = '', string $module = ''): array
     {
         $route = $info = null;
@@ -231,7 +231,7 @@ class RouterHelper
      * @param string $text
      *
      * @return string
- */
+     */
     public static function slugify(string $text): string
     {
         // replace non letter or digits by -

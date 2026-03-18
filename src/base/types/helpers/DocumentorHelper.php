@@ -12,7 +12,7 @@ class DocumentorHelper
      * @param array $params
      * @param string $variable
      * @return bool
- */
+     */
     private static function searchPayloadParam(array $params, string $variable): bool
     {
         $exists = false;
@@ -34,7 +34,7 @@ class DocumentorHelper
      * @param string $url
      * @param string $method
      * @return array
- */
+     */
     public static function parsePayload(array $endpoint, array $dtos, array $paths, string $url, string $method): array
     {
         $schema = [
@@ -66,7 +66,7 @@ class DocumentorHelper
      * @param $object
      * @param $url
      * @param $method
- */
+     */
     public static function parseObjects(&$paths, &$dtos, $name, $endpoint, $object, $url, $method): void
     {
         if (class_exists($name)) {
@@ -102,7 +102,7 @@ class DocumentorHelper
      * @param string $format
      *
      * @return array
- */
+     */
     public static function translateSwaggerFormats(string $format): array
     {
         $normalized = self::normalizeSwaggerFormat($format);
@@ -138,7 +138,7 @@ class DocumentorHelper
      * @param array $fields
      *
      * @return array
- */
+     */
     public static function extractSwaggerDefinition(string $name, array $fields): array
     {
         $definition = [

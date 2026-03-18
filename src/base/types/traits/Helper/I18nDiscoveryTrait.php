@@ -12,7 +12,7 @@ trait I18nDiscoveryTrait
      * @param string $locale
      * @return array
      * @throws GeneratorException
- */
+     */
     public static function findTranslations(string $path, string $locale): array
     {
         if (!self::isValidLocale($locale)) {
@@ -26,7 +26,7 @@ trait I18nDiscoveryTrait
     /**
      * @param string $localePath
      * @return string
- */
+     */
     public static function compileTranslations(string $localePath): string
     {
         $poPath = escapeshellarg($localePath . 'translations.po');
@@ -40,7 +40,7 @@ trait I18nDiscoveryTrait
      * @param string $localePath
      * @return \Generator
      * @throws GeneratorException
- */
+     */
     private static function yieldTranslations(string $path, string $localePath): \Generator
     {
         if (!file_exists($path)) {

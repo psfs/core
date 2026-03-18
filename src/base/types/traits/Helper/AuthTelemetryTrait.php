@@ -11,7 +11,7 @@ trait AuthTelemetryTrait
 
     /**
      * @return array<string,bool>
- */
+     */
     public static function getLegacyFallbackTelemetry(): array
     {
         return self::$legacyFallbackTelemetry;

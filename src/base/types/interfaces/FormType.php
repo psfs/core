@@ -4,7 +4,7 @@ namespace PSFS\base\types\interfaces;
 
 interface FormType
 {
-    
+
     const SEPARATOR = '__SEPARATOR__';
     const VALID_NUMBER = '^[0-9]+$';
     const VALID_ALPHANUMERIC = '[A-Za-z0-9-_\","\s]+';

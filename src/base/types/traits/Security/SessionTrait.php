@@ -12,7 +12,7 @@ trait SessionTrait
 {
     /**
      * @var array
- */
+     */
     protected $session;
 
     /**
@@ -20,7 +20,7 @@ trait SessionTrait
      * @param string $key
      *
      * @return mixed
- */
+     */
     public function getSessionKey($key)
     {
         $data = NULL;
@@ -46,7 +46,7 @@ trait SessionTrait
      * @param mixed $data
      *
      * @return $this
- */
+     */
     public function setSessionKey($key, $data = NULL)
     {
         $this->session[$key] = $data;
@@ -71,7 +71,7 @@ trait SessionTrait
      * @param boolean $closeSession
      *
      * @return $this
- */
+     */
     public function updateSession($closeSession = FALSE)
     {
         Logger::log('Update session');
@@ -80,12 +80,12 @@ trait SessionTrait
         $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = is_array($this->admin) ? $this->admin : null;
         if ($closeSession) {
             Logger::log('Close session');
-            
-            if( @session_write_close() === false) {
+
+            if (@session_write_close() === false) {
                 Logger::log('[SessionTrait::updateSession] Unable to close session');
             }
-            
-            if( @session_start() === false) {
+
+            if (@session_start() === false) {
                 Logger::log('[SessionTrait::updateSession] Unable to start session');
             }
         }
@@ -96,16 +96,16 @@ trait SessionTrait
     public function closeSession()
     {
         unset($_SESSION);
-        
-        if( @session_destroy() === false) {
+
+        if (@session_destroy() === false) {
             Logger::log('[SessionTrait::closeSession] Unable to destroy session');
         }
-        
-        if( @session_regenerate_id(TRUE) === false) {
+
+        if (@session_regenerate_id(TRUE) === false) {
             Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
         }
-        
-        if( @session_start() === false) {
+
+        if (@session_start() === false) {
             Logger::log('[SessionTrait::closeSession] Unable to start session');
         }
     }

@@ -18,25 +18,25 @@ class AdminServices extends Service
     /**
      * @Injectable
      * @var \PSFS\base\config\Config
- */
+     */
     #[Injectable]
     protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security
- */
+     */
     #[Injectable]
     protected Security $security;
     /**
      * @Injectable
      * @var \PSFS\base\Template
- */
+     */
     #[Injectable]
     protected Template $tpl;
 
     /**
      * @return string
- */
+     */
     public function setAdminHeaders()
     {
         $platform = trim(Config::getInstance()->get('platform.name', 'PSFS'));
@@ -48,7 +48,7 @@ class AdminServices extends Service
 
     /**
      * @return array|mixed
- */
+     */
     public function getAdmins()
     {
         $admins = $this->security->getAdmins();
@@ -63,7 +63,7 @@ class AdminServices extends Service
 
     /**
      * @param array $admins
- */
+     */
     private function parseAdmins(&$admins)
     {
         if (!empty($admins)) {

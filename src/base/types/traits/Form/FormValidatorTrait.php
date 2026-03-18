@@ -11,7 +11,7 @@ trait FormValidatorTrait
 
     /**
      * @var array
- */
+     */
     protected $errors = [];
 
     /**
@@ -19,7 +19,7 @@ trait FormValidatorTrait
      * @param string $error
      *
      * @return FormSchemaTrait
- */
+     */
     public function setError($field, $error = 'Validation error')
     {
         $this->fields[$field]['error'] = $error;
@@ -31,7 +31,7 @@ trait FormValidatorTrait
      * @param string $field
      *
      * @return string
- */
+     */
     public function getError($field)
     {
         return array_key_exists($field, $this->errors) ? $this->errors[$field] : '';
@@ -40,7 +40,7 @@ trait FormValidatorTrait
     /**
      * @param mixed $value
      * @return bool
- */
+     */
     protected function checkEmpty($value)
     {
         $isEmpty = false;
@@ -62,7 +62,7 @@ trait FormValidatorTrait
      * @param array $field
      * @param string $key
      * @return array
- */
+     */
     private function checkFieldValidation($field, $key)
     {
         // Check if required

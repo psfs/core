@@ -13,8 +13,8 @@ class EventHelper
 
     public static function handleEvents(string $eventName, mixed $context = null): void
     {
-        if(array_key_exists($eventName, self::$events)) {
-            foreach(self::$events[$eventName] as $eventClass) {
+        if (array_key_exists($eventName, self::$events)) {
+            foreach (self::$events[$eventName] as $eventClass) {
                 try {
                     $return = (new $eventClass)($context);
                     Logger::log("$eventClass event handled with return $return");
@@ -27,7 +27,7 @@ class EventHelper
 
     public static function addEvent(string $eventName, string $eventClass): void
     {
-        if(!array_key_exists($eventName, self::$events)) {
+        if (!array_key_exists($eventName, self::$events)) {
             self::$events[$eventName] = [];
         }
         self::$events[$eventName][] = $eventClass;

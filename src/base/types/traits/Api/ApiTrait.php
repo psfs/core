@@ -27,17 +27,17 @@ trait ApiTrait
 
     /**
      * @var \Propel\Runtime\ActiveRecord\ActiveRecordInterface
- */
+     */
     protected $model;
 
     /**
      * @var string
- */
+     */
     protected $action;
 
     /**
      * @return mixed
- */
+     */
     public function getApi()
     {
         $model = explode("\\", $this->getModelNamespace());
@@ -47,7 +47,7 @@ trait ApiTrait
 
     /**
      * @return mixed
- */
+     */
     public function getDomain()
     {
         $model = explode("\\", $this->getModelNamespace() ?? '');
@@ -56,7 +56,7 @@ trait ApiTrait
 
     /**
      * @return \Propel\Runtime\ActiveRecord\ActiveRecordInterface
- */
+     */
     protected function getModel()
     {
         return $this->model;
@@ -64,7 +64,7 @@ trait ApiTrait
 
     /**
      * @return array
- */
+     */
     protected function renderModel()
     {
         return (NULL !== $this->model) ? $this->model->toArray() : [];
@@ -74,7 +74,7 @@ trait ApiTrait
     {
     }
 
-    
+
     protected function hydrateFromRequest()
     {
         $class = new \ReflectionClass($this->getModelNamespace());
@@ -82,7 +82,7 @@ trait ApiTrait
         $this->hydrateModelFromRequest($this->model, $this->data);
     }
 
-    
+
     protected function hydrateBulkRequest()
     {
         $class = new \ReflectionClass($this->getModelNamespace());
@@ -90,7 +90,7 @@ trait ApiTrait
         foreach ($this->data as $item) {
             if (is_array($item)) {
                 if (count($this->list) < Config::getParam('api.block.limit', 1000)) {
-                    
+
                     $model = $class->newInstance();
                     $this->hydrateModelFromRequest($model, $item);
                     $this->list[] = $model;
@@ -101,7 +101,7 @@ trait ApiTrait
         }
     }
 
-    
+
     protected function saveBulk()
     {
         $tablemap = $this->getTableMap();
@@ -121,11 +121,11 @@ trait ApiTrait
 
     /**
      * @return array
- */
+     */
     protected function exportList()
     {
         $list = [];
-        
+
         foreach ($this->list as $item) {
             $list[] = $item->toArray();
         }
@@ -135,7 +135,7 @@ trait ApiTrait
     /**
      *
      * @param ModelCriteria $query
- */
+     */
     protected function joinTables(ModelCriteria &$query)
     {
         //TODO for specific implementations
@@ -146,7 +146,7 @@ trait ApiTrait
      * @param string $primaryKey
      * @return ActiveRecordInterface|null
      * @throws ApiException
- */
+     */
     protected function findPk(ModelCriteria $query, $primaryKey)
     {
         $pks = explode(Api::API_PK_SEPARATOR, urldecode($primaryKey));
@@ -172,7 +172,7 @@ trait ApiTrait
 
     /**
      * @return ModelCriteria
- */
+     */
     protected function prepareQuery()
     {
         $query = ApiHelper::extractQuery($this->getModelNamespace(), $this->con);
@@ -185,7 +185,7 @@ trait ApiTrait
     /**
      *
      * @param string $primaryKey
- */
+     */
     protected function hydrateModel($primaryKey)
     {
         try {
@@ -201,7 +201,7 @@ trait ApiTrait
      * @param integer $primaryKey
      *
      * @return null|ActiveRecordInterface
- */
+     */
     protected function _get($primaryKey)
     {
         $this->hydrateModel($primaryKey);
@@ -211,14 +211,14 @@ trait ApiTrait
 
     /**
      * @param ModelCriteria $query
- */
+     */
     protected function checkReturnFields(ModelCriteria &$query)
     {
         $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
         if (null !== $returnFields) {
             $fields = explode(',', $returnFields);
             $select = [];
-            
+
             $tablemap = $this->getTableMap();
             foreach ($fields as $field) {
                 if (in_array($field, $this->extraColumns)) {
@@ -238,7 +238,7 @@ trait ApiTrait
      * @param \PSFS\base\dto\JsonResponse $response
      * @param int $status
      *
- */
+     */
     public function json($response, $status = 200)
     {
         $this->closeTransaction($status);

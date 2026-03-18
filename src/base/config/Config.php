@@ -113,7 +113,7 @@ class Config
 
     /**
      * @return Config
- */
+     */
     protected function init()
     {
         $this->repository = $this->createRepository();
@@ -125,7 +125,7 @@ class Config
 
     /**
      * @return bool
- */
+     */
     public function isLoaded()
     {
         return !empty($this->config);
@@ -135,7 +135,7 @@ class Config
      * @param array $data
      * @param array $extra
      * @return array
- */
+     */
     protected static function saveConfigParams(array $data, $extra = null)
     {
         Logger::log('Saving required config parameters');
@@ -143,7 +143,7 @@ class Config
         if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
                 if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
-                    
+
                     $data[$field] = $extra['value'][$index];
                 }
             }
@@ -154,7 +154,7 @@ class Config
     /**
      * @param array $data
      * @return array
- */
+     */
     protected static function saveExtraParams(array $data)
     {
         $finalData = array();
@@ -171,7 +171,7 @@ class Config
 
     /**
      * @return boolean
- */
+     */
     public function getDebugMode()
     {
         return $this->debug;
@@ -179,7 +179,7 @@ class Config
 
     /**
      * @param bool $debug
- */
+     */
     public function setDebugMode($debug = true)
     {
         $this->debug = $debug;
@@ -188,7 +188,7 @@ class Config
 
     /**
      * @return boolean
- */
+     */
     public function isConfigured()
     {
         Inspector::stats('[Config] Checking configuration', Inspector::SCOPE_DEBUG);
@@ -206,7 +206,7 @@ class Config
 
     /**
      * @return bool
- */
+     */
     public function checkTryToSaveConfig()
     {
         $uri = Request::getInstance()->getRequestUri();
@@ -219,7 +219,7 @@ class Config
      * @param array $data
      * @param array|null $extra
      * @return boolean
- */
+     */
     public static function save(array $data, $extra = null)
     {
         $data = self::saveConfigParams($data, $extra);
@@ -244,7 +244,7 @@ class Config
      * @param mixed|null $defaultValue
      *
      * @return mixed|null
- */
+     */
     public function get($param, $defaultValue = null)
     {
         return array_key_exists($param, $this->config) ? $this->config[$param] : $defaultValue;
@@ -252,13 +252,13 @@ class Config
 
     /**
      * @return array
- */
+     */
     public function dumpConfig(): array
     {
         return $this->config ?: [];
     }
 
-    
+
     public function loadConfigData(bool $refresh = false): void
     {
         $this->config = $refresh ? $this->repository->refresh() : $this->repository->read();
@@ -268,7 +268,7 @@ class Config
         }
     }
 
-    
+
     public function clearConfig()
     {
         $this->config = [];
@@ -279,7 +279,7 @@ class Config
      * @param mixed|null $defaultValue
      * @param string|null $module
      * @return mixed|null
- */
+     */
     public static function getParam($key, $defaultValue = null, $module = null)
     {
         if (null !== $module) {
@@ -325,7 +325,7 @@ class Config
     /**
      * @param array $data
      * @return \Generator
- */
+     */
     private static function iterateConfigEntries(array $data): \Generator
     {
         foreach ($data as $key => $value) {

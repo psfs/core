@@ -9,16 +9,16 @@ class Form extends Dto
 {
     /**
      * @var \PSFS\base\dto\Field[]
- */
+     */
     private $fields = [];
     /**
      * @var \PSFS\base\dto\FormAction[]
- */
+     */
     public $actions = [];
 
     /**
      * @param Field $field
- */
+     */
     public function addField(Field $field)
     {
         $this->fields[$field->name] = $field;
@@ -27,7 +27,7 @@ class Form extends Dto
     /**
      * @param string $name
      * @return bool
- */
+     */
     public function fieldExists($name)
     {
         return array_key_exists($name, $this->fields);
@@ -35,7 +35,7 @@ class Form extends Dto
 
     /**
      * @return array
- */
+     */
     public function __toArray()
     {
         $array = [
@@ -69,7 +69,7 @@ class Form extends Dto
     /**
      * @param array $field
      * @return int
- */
+     */
     public static function fieldsOrder(array $field)
     {
         $type = $field['type'] ?? '';

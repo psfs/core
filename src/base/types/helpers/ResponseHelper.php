@@ -58,7 +58,7 @@ class ResponseHelper
 
     /**
      * @param $cookies
- */
+     */
     public static function setCookieHeaders($cookies): void
     {
         if (empty($cookies) || !is_array($cookies)) {
@@ -102,7 +102,7 @@ class ResponseHelper
 
     /**
      * @param boolean $isPublic
- */
+     */
     public static function setAuthHeaders(bool $isPublic = true): void
     {
         if ($isPublic) {
@@ -116,7 +116,7 @@ class ResponseHelper
 
     /**
      * @param string|null $statusCode
- */
+     */
     public static function setStatusHeader(string $statusCode = null): void
     {
         if (NULL !== $statusCode && !self::isTest()) {
@@ -128,7 +128,7 @@ class ResponseHelper
      * @param array $vars
      *
      * @return array
- */
+     */
     public static function setDebugHeaders(array $vars): array
     {
         if ((Config::getParam('debug', true) || Config::getParam('profiling.enable', false)) && !self::isTest()) {

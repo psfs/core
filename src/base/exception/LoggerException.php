@@ -10,7 +10,7 @@ class LoggerException extends \Exception
 
     /**
      * @return string
- */
+     */
     public function getError()
     {
         $msg = $this->getMessage();

@@ -22,7 +22,7 @@ trait SwaggerFormaterTrait
 
     /**
      * @return array
- */
+     */
     protected function swaggerResponses()
     {
         $codes = [200, 400, 404, 500];
@@ -77,7 +77,7 @@ trait SwaggerFormaterTrait
      * @param array $endpoints
      *
      * @return array
- */
+     */
     public function swaggerFormatter(array $module, array $endpoints)
     {
         $formatted = $this->buildSwaggerDocumentSkeleton($module);
@@ -176,7 +176,7 @@ trait SwaggerFormaterTrait
      * @param $modelDto
      * @param $dtoName
      * @return array
- */
+     */
     protected function checkDtoAttributes($dto, $modelDto, $dtoName)
     {
         foreach ($dto as $param => &$info) {
@@ -215,7 +215,7 @@ trait SwaggerFormaterTrait
      *
      * @return array
      * @throws \ReflectionException
- */
+     */
     protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
     {
         $methodInfo = NULL;
@@ -253,7 +253,7 @@ trait SwaggerFormaterTrait
     /**
      * @param ReflectionMethod $method
      * @param $methodInfo
- */
+     */
     protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
     {
         if (in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST]) && in_array($method->getShortName(), self::$nativeMethods)) {
@@ -261,14 +261,14 @@ trait SwaggerFormaterTrait
             $methodInfo['query'][] = [
                 "name" => "__limit",
                 "in" => "query",
-                    "description" => t("Record limit to return, -1 to return all records"),
+                "description" => t("Record limit to return, -1 to return all records"),
                 "required" => false,
                 "type" => "integer",
             ];
             $methodInfo['query'][] = [
                 "name" => "__page",
                 "in" => "query",
-                    "description" => t("Page to return"),
+                "description" => t("Page to return"),
                 "required" => false,
                 "type" => "integer",
             ];
@@ -288,7 +288,7 @@ trait SwaggerFormaterTrait
     /**
      * @param ReflectionClass $reflection
      * @param $methodInfo
- */
+     */
     protected function setRequestHeaders(ReflectionClass $reflection, &$methodInfo)
     {
 
@@ -322,7 +322,7 @@ trait SwaggerFormaterTrait
      * @param array $methodInfo
      * @param string $modelNamespace
      * @param string $docComments
- */
+     */
     protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
         if (in_array($methodInfo['method'], ['POST', 'PUT'])) {

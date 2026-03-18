@@ -31,7 +31,7 @@ abstract class Form extends Singleton implements FormType
      * @param string $prop
      *
      * @return mixed|null
- */
+     */
     public function get($prop)
     {
         $return = null;
@@ -43,7 +43,7 @@ abstract class Form extends Singleton implements FormType
 
     /**
      * @return Form
- */
+     */
     public function build()
     {
         if (strtoupper($this->method) === 'POST') {
@@ -55,7 +55,7 @@ abstract class Form extends Singleton implements FormType
     /**
      * @return bool
      * @throws FormException
- */
+     */
     public function save()
     {
         if (null === $this->model) {

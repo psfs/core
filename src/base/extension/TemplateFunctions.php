@@ -43,7 +43,7 @@ class TemplateFunctions
      * @param bool $return
      * @return string|null
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public static function asset(string $string, string $name = null, bool $return = true): ?string
     {
 
@@ -52,7 +52,7 @@ class TemplateFunctions
             $filePath = BASE_DIR . $string;
         }
         $filenamePath = AssetsHelper::findDomainPath($string, $filePath);
-        if(!empty($filenamePath)){
+        if (!empty($filenamePath)) {
             $filePath = self::processAsset($string, $name, $return, $filenamePath);
             $basePath = Config::getParam('resources.cdn.url', Request::getInstance()->getRootUrl(false));
             $returnPath = empty($name) ? $basePath . '/' . $filePath : $name;
@@ -66,7 +66,7 @@ class TemplateFunctions
      * @param array $params
      *
      * @return string|null
- */
+     */
     public static function route(string $path = '', bool $absolute = false, array $params = []): ?string
     {
         $router = Router::getInstance();
@@ -83,7 +83,7 @@ class TemplateFunctions
      * @param string $default
      *
      * @return mixed|null
- */
+     */
     public static function config(string $param, string $default = ''): mixed
     {
         return Config::getInstance()->get($param) ?: $default;
@@ -93,7 +93,7 @@ class TemplateFunctions
      * @param string $query
      *
      * @return string
- */
+     */
     public static function query(string $query): string
     {
         return Request::getInstance()->getQuery($query);
@@ -104,7 +104,7 @@ class TemplateFunctions
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
- */
+     */
     public static function button(array $button): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/button.html.twig', array(
@@ -118,7 +118,7 @@ class TemplateFunctions
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
- */
+     */
     public static function widget(array $field, string $label = null): void
     {
         if (null !== $label) {
@@ -141,7 +141,7 @@ class TemplateFunctions
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
- */
+     */
     public static function form(Form $form): void
     {
         Template::getInstance()->getTemplateEngine()->display('forms/base.html.twig', array(
@@ -156,7 +156,7 @@ class TemplateFunctions
      *
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public static function resource(string $path, string $dest, bool $force = false): string
     {
         $debug = Config::getParam('debug');
@@ -183,7 +183,7 @@ class TemplateFunctions
      * @param $domains
      *
      * @return string|array
- */
+     */
     private static function extractPathname(string $path, $domains): string|array
     {
         $filenamePath = $path;
@@ -204,7 +204,7 @@ class TemplateFunctions
     /**
      * @param $filenamePath
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private static function processCssLines($filenamePath): void
     {
         $handle = @fopen($filenamePath, 'r');
@@ -221,7 +221,7 @@ class TemplateFunctions
      * @param string $filenamePath
      * @param string $base
      * @param string $filePath
- */
+     */
     private static function putResourceContent(string|null $name, string $filenamePath, string $base, string $filePath): void
     {
         $data = file_get_contents($filenamePath);
@@ -239,7 +239,7 @@ class TemplateFunctions
      * @param string $filenamePath
      * @return string
      * @throws GeneratorException
- */
+     */
     private static function processAsset(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): string
     {
         $filePath = $filenamePath;
@@ -262,7 +262,7 @@ class TemplateFunctions
     /**
      * @param string $key
      * @return mixed
- */
+     */
     public static function session(string $key): mixed
     {
         return Security::getInstance()->getSessionKey($key);
@@ -271,7 +271,7 @@ class TemplateFunctions
     /**
      * @param string $key
      * @return bool
- */
+     */
     public static function existsFlash(string $key = ''): bool
     {
         return null !== Security::getInstance()->getFlash($key);
@@ -280,7 +280,7 @@ class TemplateFunctions
     /**
      * @param string $key
      * @return mixed
- */
+     */
     public static function getFlash(string $key): mixed
     {
         $var = Security::getInstance()->getFlash($key);
@@ -288,15 +288,18 @@ class TemplateFunctions
         return $var;
     }
 
-    public static function encrypt(string $string, string $key): string {
+    public static function encrypt(string $string, string $key): string
+    {
         return AuthHelper::encrypt($string, $key);
     }
 
-    public static function generateAuthToken(string $user, string $password, $userAgent = null) {
+    public static function generateAuthToken(string $user, string $password, $userAgent = null)
+    {
         return AuthHelper::generateToken($user, $password, $userAgent);
     }
 
-    public static function generateJWTToken(string $user, string $module, string $password) {
+    public static function generateJWTToken(string $user, string $module, string $password)
+    {
         return JWT::encode([
             'iss' => Config::getParam('platform.name', 'PSFS'),
             'sub' => $user,

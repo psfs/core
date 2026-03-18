@@ -16,12 +16,12 @@ trait FormModelTrait
 
     /**
      * @var ActiveRecordInterface
- */
+     */
     protected $model;
 
     /**
      * @return ActiveRecordInterface
- */
+     */
     public function getHydratedModel()
     {
         $this->setModelLocale();
@@ -33,7 +33,7 @@ trait FormModelTrait
 
     /**
      * @return void
- */
+     */
     public function hydrateFromModel()
     {
         $this->setModelLocale();
@@ -46,7 +46,7 @@ trait FormModelTrait
      * @param string $key
      * @param mixed $value
      * @return void
- */
+     */
     private function hydrateModelField($key, $value)
     {
         $setter = 'set' . ucfirst($key);
@@ -69,7 +69,7 @@ trait FormModelTrait
      * @param string|array $val
      * @param array $data
      * @return array
- */
+     */
     private function extractRelatedModelFieldValue($field, $val, $data)
     {
         // Extract related model data when the getter exists.
@@ -103,7 +103,7 @@ trait FormModelTrait
      * @param $value
      * @param $type
      * @return mixed
- */
+     */
     private function computeModelFieldValue($field, $value, $type)
     {
         $value = $value->getData();
@@ -131,7 +131,7 @@ trait FormModelTrait
      * @param string $key
      * @param array $field
      * @return array
- */
+     */
     private function extractModelFieldValue($key, $field)
     {
         // Extract model field value.

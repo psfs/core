@@ -26,15 +26,15 @@ $console
         $module = $input->getOption('module');
         $simulate = $input->getOption('simulate') !== false ? '--fake' : '';
         $domains = Router::getInstance()->getDomains();
-        foreach($domains as $domain => $paths) {
-            if(str_contains($domain, 'ROOT')) {
+        foreach ($domains as $domain => $paths) {
+            if (str_contains($domain, 'ROOT')) {
                 continue;
             }
-            if(empty($module) || str_contains(strtolower($domain), strtolower($module))) {
+            if (empty($module) || str_contains(strtolower($domain), strtolower($module))) {
                 $output->writeln(sprintf(t("Running migrations for module %s"), $domain));
                 $configDir = realpath($paths['base']) . DIRECTORY_SEPARATOR . 'Config';
                 $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
-                if(file_exists($configDir)) {
+                if (file_exists($configDir)) {
                     $script = sprintf("%s/bin/propel migrate %s --platform mysql --config-dir=%s --output-dir=%s", realpath(VENDOR_DIR), $simulate, $configDir, $migrationDir);
                     $result = shell_exec($script);
                     $output->writeln($result);

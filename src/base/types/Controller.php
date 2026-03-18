@@ -22,7 +22,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     /**
      * @Injectable
      * @var \PSFS\base\Template
- */
+     */
     #[Injectable]
     protected $tpl;
     protected $domain = 'ROOT';
@@ -34,7 +34,7 @@ abstract class Controller extends Singleton implements ControllerInterface
      * @param string $domain
      *
      * @return string
- */
+     */
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
@@ -47,7 +47,7 @@ abstract class Controller extends Singleton implements ControllerInterface
 
     /**
      * @return array
- */
+     */
     protected function getMenu()
     {
         return array();
@@ -66,7 +66,7 @@ abstract class Controller extends Singleton implements ControllerInterface
      * @param string $domain
      *
      * @return string
- */
+     */
     public function dump($template, array $vars = array(), $domain = null)
     {
         $vars['__menu__'] = $this->getMenu();
@@ -77,7 +77,7 @@ abstract class Controller extends Singleton implements ControllerInterface
     /**
      * @param string $path
      * @return $this
- */
+     */
     protected function setTemplatePath($path)
     {
         $this->tpl->addPath($path, $this->domain);
@@ -88,7 +88,7 @@ abstract class Controller extends Singleton implements ControllerInterface
      * @param string $domain
      *
      * @return $this
- */
+     */
     protected function setDomain($domain)
     {
         $this->domain = $domain;
@@ -97,7 +97,7 @@ abstract class Controller extends Singleton implements ControllerInterface
 
     /**
      * @return string
- */
+     */
     public function getDomain()
     {
         return "@{$this->domain}/";

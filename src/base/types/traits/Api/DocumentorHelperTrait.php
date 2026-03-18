@@ -29,7 +29,7 @@ trait DocumentorHelperTrait
      * @param array|string $namespace
      * @param true $isArray
      * @return array
- */
+     */
     public function processPayload(array|string $namespace, bool $isArray): array
     {
         if (false !== strpos($namespace, '[') && false !== strpos($namespace, ']')) {
@@ -45,7 +45,7 @@ trait DocumentorHelperTrait
      * @param string $comments
      *
      * @return string
- */
+     */
     protected function extractApi($comments = '')
     {
         $api = '';
@@ -59,7 +59,7 @@ trait DocumentorHelperTrait
      * @param string $comments
      *
      * @return boolean
- */
+     */
     protected function checkDeprecated($comments = '')
     {
         return false != preg_match('/@deprecated\n/i', $comments);
@@ -70,7 +70,7 @@ trait DocumentorHelperTrait
      * @param string $comments
      *
      * @return string
- */
+     */
     public static function extractVarType($comments = '')
     {
         $type = 'string';
@@ -88,7 +88,7 @@ trait DocumentorHelperTrait
      * @param string $comments
      * @return array
      * @throws ReflectionException
- */
+     */
     protected function extractPayload($model, $comments = '')
     {
         $payload = [];
@@ -111,7 +111,7 @@ trait DocumentorHelperTrait
      * @param string $class
      * @return array
      * @throws ReflectionException
- */
+     */
     protected function extractDtoProperties($class)
     {
         $properties = [];
@@ -128,7 +128,7 @@ trait DocumentorHelperTrait
      * @param string $comments
      * @return array
      * @throws ReflectionException
- */
+     */
     protected function extractReturn($model, $comments = '')
     {
         $modelDto = [];
@@ -159,7 +159,7 @@ trait DocumentorHelperTrait
     /**
      * @param string $requestModule
      * @return array
- */
+     */
     public function getModules($requestModule)
     {
         $modules = [];
@@ -187,7 +187,7 @@ trait DocumentorHelperTrait
      * @param string $namespace
      * @param $namespace
      * @return array
- */
+     */
     protected function extractModelFields($namespace)
     {
         $payload = [];
@@ -197,7 +197,7 @@ trait DocumentorHelperTrait
             if (NULL !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
                 $tableMap = $namespace::TABLE_MAP;
                 $tableMap = $tableMap::getTableMap();
-                
+
                 foreach ($tableMap->getColumns() as $field) {
                     list($type, $format) = DocumentorHelper::translateSwaggerFormats($field->getType());
                     $info = [

@@ -6,29 +6,30 @@ class JsonResponse extends Dto
 {
     /**
      * @var string
- */
+     */
     public $message = 'No message';
     /**
      * @var bool
- */
+     */
     public $success = false;
     /**
      * @var array
- */
+     */
     public $data = null;
     /**
      * @var int
- */
+     */
     public $total = 0;
     /**
      * @var int
- */
+     */
     public $pages = 1;
 
-    private function parseData($data) {
+    private function parseData($data)
+    {
         if ($data instanceof \Generator) {
             $generatedData = [];
-            foreach($data as $datum) {
+            foreach ($data as $datum) {
                 $generatedData[] = $datum;
             }
         } else {
@@ -44,7 +45,7 @@ class JsonResponse extends Dto
      * @param int $pages
      * @param string $message
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public function __construct($data = [], $result = false, $total = null, $pages = 1, $message = null)
     {
         parent::__construct(false);

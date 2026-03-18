@@ -23,7 +23,7 @@ trait JsonTrait
      * @param int $statusCode
      *
      * @throws GeneratorException
- */
+     */
     public function json($response, $statusCode = 200)
     {
         if (Config::getParam('profiling.enable')) {
@@ -54,7 +54,7 @@ trait JsonTrait
     /**
      * @param mixed $response
      * @throws GeneratorException
- */
+     */
     public function jsonp($response)
     {
         $data = json_encode($response, JSON_UNESCAPED_UNICODE);
@@ -63,7 +63,7 @@ trait JsonTrait
 
     /**
      * @param $response
- */
+     */
     private function decodeJsonResponse(&$response)
     {
         if (Config::getParam('json.encodeUTF8', false)) {

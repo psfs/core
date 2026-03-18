@@ -25,29 +25,29 @@ class CustomTranslateExtension extends AbstractExtension
 
     /**
      * @var array
- */
+     */
     protected static $translations = [];
 
     /**
      * @var array
- */
+     */
     protected static $translationsKeys = [];
     /**
      * @var string
- */
+     */
     protected static $locale = 'en_US';
     /**
      * @var bool
- */
+     */
     protected static $generate = false;
     /**
      * @var string
- */
+     */
     protected static $filename = '';
 
     /**
      * @return array|mixed
- */
+     */
     protected static function extractBaseTranslations($locale = null)
     {
         $locale = $locale ?? self::$locale;
@@ -63,10 +63,11 @@ class CustomTranslateExtension extends AbstractExtension
     /**
      * @param string $locale
      * @return void
- */
-    protected static function generateTranslationsKeys($locale) {
+     */
+    protected static function generateTranslationsKeys($locale)
+    {
         self::$translationsKeys[$locale] = [];
-        foreach(self::$translations[$locale] as $key => $value) {
+        foreach (self::$translations[$locale] as $key => $value) {
             $tKey = mb_convert_case($key, MB_CASE_LOWER, "UTF-8");
             self::$translationsKeys[$locale][$tKey] = $key;
         }
@@ -76,7 +77,7 @@ class CustomTranslateExtension extends AbstractExtension
      * @param string $customKey
      * @param bool $forceReload
      * @param bool $useBase
- */
+     */
     protected static function translationsCheckLoad($customKey = null, $forceReload = false, $useBase = false)
     {
         Inspector::stats('[translationsCheckLoad] Start checking translations load', Inspector::SCOPE_DEBUG);
@@ -182,13 +183,13 @@ class CustomTranslateExtension extends AbstractExtension
         self::$filename = implode(DIRECTORY_SEPARATOR, [LOCALE_DIR, 'custom', $locale . '.json']);
     }
 
-    
+
     public function getTokenParsers()
     {
         return [new BlockTokenParser()];
     }
 
-    
+
     public function getFilters()
     {
         return array(
@@ -198,7 +199,7 @@ class CustomTranslateExtension extends AbstractExtension
         );
     }
 
-    
+
     public function getName()
     {
         return 'PSFSi18n';
@@ -209,10 +210,10 @@ class CustomTranslateExtension extends AbstractExtension
      * @param string $customKey
      * @param bool $forceReload
      * @return mixed|string
- */
+     */
     public static function _($message, $customKey = null, $forceReload = false)
     {
-        if(0 === count(self::$translations) || $forceReload) {
+        if (0 === count(self::$translations) || $forceReload) {
             self::translationsCheckLoad($customKey, $forceReload);
         }
         // Set default translation to catch missing strings
@@ -235,10 +236,10 @@ class CustomTranslateExtension extends AbstractExtension
     /**
      * @param string $message
      * @param string $translation
- */
+     */
     protected static function generate($message, $translation)
     {
-        if(!array_key_exists(self::$locale, self::$translations)) {
+        if (!array_key_exists(self::$locale, self::$translations)) {
             self::$translations[self::$locale] = [];
             self::$translationsKeys[self::$locale] = [];
         }

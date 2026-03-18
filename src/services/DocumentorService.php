@@ -33,7 +33,7 @@ class DocumentorService extends SimpleService
     /**
      * @Injectable
      * @var \PSFS\base\Router
- */
+     */
     #[Injectable]
     protected Router $route;
 
@@ -41,7 +41,7 @@ class DocumentorService extends SimpleService
      * @param array $module
      * @return array
      * @throws ReflectionException
- */
+     */
     public function extractApiEndpoints(array $module)
     {
         $modulePath = $module['path'] . DIRECTORY_SEPARATOR . 'Api';
@@ -51,7 +51,7 @@ class DocumentorService extends SimpleService
             $finder = new Finder();
             $finder->files()->in($modulePath)->depth('< 2')->name('*.php');
             if (count($finder)) {
-                
+
                 foreach ($finder as $file) {
                     $filename = str_replace([$modulePath, '/'], ['', '\\'], $file->getPathname());
                     $namespace = "\\{$moduleName}\\Api" . str_replace('.php', '', $filename);
@@ -70,7 +70,7 @@ class DocumentorService extends SimpleService
      * @param $module
      * @return array
      * @throws ReflectionException
- */
+     */
     public function extractApiInfo($namespace, $module)
     {
         $info = [];

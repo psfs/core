@@ -21,7 +21,7 @@ trait PropelHelperTrait
      * @param string $modulePath
      * @return array
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private function getPropelPaths(string $modulePath): array
     {
         $moduleDir = CORE_DIR . DIRECTORY_SEPARATOR . $modulePath;
@@ -45,7 +45,7 @@ trait PropelHelperTrait
      * @param string $modulePath
      * @return GeneratorConfig
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private function getConfigGenerator(string $modulePath): GeneratorConfig
     {
         // Generate the configurator
@@ -62,7 +62,7 @@ trait PropelHelperTrait
 
     /**
      * @param GeneratorConfig $configGenerator
- */
+     */
     private function buildModels(GeneratorConfig $configGenerator)
     {
         $manager = new ModelManager();
@@ -73,7 +73,7 @@ trait PropelHelperTrait
 
     /**
      * @param GeneratorConfig $configGenerator
- */
+     */
     private function buildSql(GeneratorConfig $configGenerator): void
     {
         $manager = new SqlManager();
@@ -89,7 +89,7 @@ trait PropelHelperTrait
      * @param GeneratorConfig $configGenerator
      * @param AbstractManager $manager
      * @param string $workingDir
- */
+     */
     private function setupManager(GeneratorConfig $configGenerator, AbstractManager &$manager, string $workingDir = CORE_DIR): void
     {
         $manager->setGeneratorConfig($configGenerator);
@@ -107,7 +107,7 @@ trait PropelHelperTrait
      * @param bool $recursive
      *
      * @return array
- */
+     */
     protected function getSchemas(array|string $directory, bool $recursive = false): array
     {
         $finder = new Finder();

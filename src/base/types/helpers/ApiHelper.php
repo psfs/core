@@ -31,7 +31,7 @@ class ApiHelper
      * @param array $behaviors
      * @return Field|null
      * @throws GeneratorException
- */
+     */
     public static function buildFieldDto(string $domain, TableMap $tableMap, string $field, array $behaviors = []): ?Field
     {
         return self::parseFormField($domain, $tableMap, $field, $behaviors);
@@ -44,10 +44,10 @@ class ApiHelper
      * @param array $behaviors
      * @return Field|null
      * @throws GeneratorException
- */
+     */
     protected static function parseFormField($domain, TableMap $tableMap, $field, array $behaviors = [])
     {
-        
+
         $mappedColumn = $tableMap->getColumnByPhpName($field);
         $required = $mappedColumn->isNotNull() && null === $mappedColumn->getDefaultValue();
         $fDto = self::parseFieldType($domain, $field, $behaviors, $mappedColumn, $required);
@@ -61,7 +61,7 @@ class ApiHelper
     /**
      * @param ColumnMap $mappedColumn
      * @param Field|null $fDto
- */
+     */
     protected static function applyCaseToNames(Field $fDto, ColumnMap $mappedColumn)
     {
         $name = self::resolveColumnNameByCase($mappedColumn);
@@ -72,7 +72,7 @@ class ApiHelper
     /**
      * @param Field|null $fDto
      * @param ColumnMap $mappedColumn
- */
+     */
     protected static function checkPrimaryKey(Field $fDto, ColumnMap $mappedColumn)
     {
         $fDto->size = $mappedColumn->getSize();
@@ -87,7 +87,7 @@ class ApiHelper
      * @param ColumnMap $mappedColumn
      * @return Field
      * @throws GeneratorException
- */
+     */
     protected static function parseEnumField($field, bool $required, ColumnMap $mappedColumn)
     {
         $fDto = self::generateEnumField($field, $required);
@@ -122,7 +122,7 @@ class ApiHelper
      * @param bool $required
      * @return Field
      * @throws GeneratorException
- */
+     */
     protected static function parseFieldType($domain, $field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {
         $fDto = null;
@@ -152,7 +152,7 @@ class ApiHelper
      * @param bool $required
      * @return Field
      * @throws GeneratorException
- */
+     */
     protected static function generateTextField($field, ColumnMap $mappedColumn, bool $required)
     {
         if ($mappedColumn->getSize() > 100) {
@@ -170,7 +170,7 @@ class ApiHelper
      * @param bool $required
      * @return Field
      * @throws GeneratorException
- */
+     */
     protected static function generateTimestampField($field, array $behaviors, ColumnMap $mappedColumn, bool $required)
     {
         $fDto = self::createField($field, $mappedColumn->getType() == PropelTypes::TIMESTAMP ? Field::TEXT_TYPE : Field::DATE, $required);

@@ -16,12 +16,12 @@ trait SluggerTrait
 
     /**
      * @var array
- */
+     */
     private $slugs = [];
 
     /**
      * @return array
- */
+     */
     public function getSlugs()
     {
         return $this->slugs;
@@ -29,7 +29,7 @@ trait SluggerTrait
 
     /**
      * @return $this
- */
+     */
     private function generateSlugs()
     {
         foreach ($this->routing as $key => &$info) {
@@ -46,7 +46,7 @@ trait SluggerTrait
     /**
      * @return $this
      * @throws GeneratorException
- */
+     */
     public function simpatize()
     {
         $this->generateSlugs();

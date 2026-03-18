@@ -12,14 +12,14 @@ use UnexpectedValueException;
 
 class OptimizedArray implements IteratorAggregate, Countable
 {
-    
+
     private $iterableFactory;
     private ?int $countHint;
 
     /**
      * @param callable $iterableFactory
      * @param int|null $countHint
- */
+     */
     public function __construct(callable $iterableFactory, ?int $countHint = null)
     {
         $this->iterableFactory = $iterableFactory;
@@ -43,7 +43,7 @@ class OptimizedArray implements IteratorAggregate, Countable
      * @param iterable $items
      * @param int|null $countHint
      * @return self
- */
+     */
     public static function fromIterable(iterable $items, ?int $countHint = null): self
     {
         if (is_array($items)) {
@@ -69,7 +69,7 @@ class OptimizedArray implements IteratorAggregate, Countable
      * @param callable $generatorFactory
      * @param int|null $countHint
      * @return self
- */
+     */
     public static function fromGenerator(callable $generatorFactory, ?int $countHint = null): self
     {
         return new self(

@@ -6,11 +6,11 @@ interface AnnotationInterface
 {
     /**
      * @return array
- */
+     */
     function getTags();
 
     /**
      * @return array
- */
+     */
     function parse();
 }

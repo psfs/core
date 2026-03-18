@@ -23,7 +23,7 @@ trait ManagerTrait
 
     /**
      * @return array
- */
+     */
     protected function getMenu()
     {
         return Router::getInstance()->getAllRoutes();
@@ -36,7 +36,7 @@ trait ManagerTrait
      * @route /admin/{__DOMAIN__}/{__API__}
      * @return string
      * @throws ApiException
- */
+     */
     public function admin()
     {
         if (Security::getInstance()->isUser()) {
@@ -61,7 +61,7 @@ trait ManagerTrait
      * @return JsonResponse(data=\PSFS\base\dto\Form)
      * @throws GeneratorException
      * @throws \ReflectionException
- */
+     */
     public function getForm()
     {
         $map = $this->getModelTableMap();

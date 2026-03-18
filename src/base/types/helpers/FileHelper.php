@@ -14,7 +14,7 @@ class FileHelper
      * @param mixed $data
      * @param string $path
      * @return int|bool
- */
+     */
     public static function writeFile(string $path, mixed $data): int|bool
     {
         return @file_put_contents($path, $data);
@@ -23,7 +23,7 @@ class FileHelper
     /**
      * @param string $path
      * @return string|bool
- */
+     */
     public static function readFile(string $path): string|bool
     {
         $data = false;
@@ -38,7 +38,7 @@ class FileHelper
      * @param string $slug
      * @param array $query
      * @return string
- */
+     */
     public static function generateHashFilename(string $verb, string $slug, array $query = []): string
     {
         return sha1(strtolower($verb) . ' ' . $slug . ' ' . strtolower(http_build_query($query)));
@@ -48,7 +48,7 @@ class FileHelper
      * @param array $action
      * @param array $query
      * @return string
- */
+     */
     public static function generateCachePath(array $action, array $query = []): string
     {
         $class = GeneratorHelper::extractClassFromNamespace($action['class']);
@@ -60,7 +60,7 @@ class FileHelper
     /**
      * @param $path
      * @throws IOException
- */
+     */
     public static function deleteDir($path): void
     {
         (new Filesystem())->remove($path);

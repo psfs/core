@@ -18,7 +18,7 @@ trait StructureTrait
      * @param string $module
      * @param string $modPath
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private function createModulePath($module, $modPath)
     {
         // Creates the src folder
@@ -32,7 +32,7 @@ trait StructureTrait
      * @param boolean $modPath
      * @return boolean
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     private function createModulePathTree($module, $modPath)
     {
         // Create core module folders.
@@ -57,7 +57,7 @@ trait StructureTrait
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generatePublicTemplates($modPath, $force = false)
     {
         // Generate base asset files.
@@ -76,7 +76,7 @@ trait StructureTrait
      * @param string $modPath
      * @param boolean $force
      * @return boolean
- */
+     */
     private function generateServiceTemplate($module, $modPath, $force = false)
     {
         // Generate base service.
@@ -97,7 +97,7 @@ trait StructureTrait
      * @param string $mod_path
      * @param boolean $force
      * @return boolean
- */
+     */
     private function genereateAutoloaderTemplate($module, $mod_path, $force = false)
     {
         // Generate module autoloader.

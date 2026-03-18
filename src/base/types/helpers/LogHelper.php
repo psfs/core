@@ -1,14 +1,16 @@
 <?php
+
 namespace PSFS\base\types\helpers;
 
 use Monolog\Level;
 
-class LogHelper {
+class LogHelper
+{
     /**
      * @param string $currentLogLevel
      * @param Level $level
      * @return bool
- */
+     */
     public static function checkLogLevel(string $currentLogLevel, \Monolog\Level $level = \Monolog\Level::Notice): bool
     {
         switch ($currentLogLevel) {
@@ -45,7 +47,7 @@ class LogHelper {
      * @param $logger
      *
      * @return mixed
- */
+     */
     public static function cleanLoggerName($logger): mixed
     {
         $logger = str_replace(' ', '', $logger);
@@ -55,7 +57,7 @@ class LogHelper {
     /**
      * @param array $context
      * @return array
- */
+     */
     public static function addMinimalContext(array $context = []): array
     {
         $context['uri'] = ServerHelper::getServerValue('REQUEST_URI', 'Unknow');
@@ -69,7 +71,7 @@ class LogHelper {
     /**
      * @param int $type
      * @return \Monolog\Level
- */
+     */
     public static function calculateLogLevel(int $type): \Monolog\Level
     {
         switch ($type) {

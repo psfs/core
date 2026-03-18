@@ -31,7 +31,7 @@ class AuthHelper
 
     /**
      * @return array
- */
+     */
     public static function getAdminFromCookie(): array
     {
         $authCookie = Request::getInstance()->getCookie(self::generateProfileHash());
@@ -44,7 +44,7 @@ class AuthHelper
     /**
      * @param string $role
      * @return string
- */
+     */
     public static function generateProfileHash(?string $role = AuthHelper::SESSION_TOKEN): string
     {
         return substr($role, 0, 8);

@@ -15,6 +15,7 @@ use PSFS\base\types\traits\SecureTrait;
 abstract class AuthApi extends Api
 {
     use SecureTrait;
+
     private const LEGACY_QUERY_TOKEN_PARAM = 'API_TOKEN';
     private const DEFAULT_API_TOKEN_COOKIE = 'X-API-SEC-TOKEN';
     private const TOKEN_SOURCE_HEADER = 'header';
@@ -34,7 +35,7 @@ abstract class AuthApi extends Api
 
     /**
      * @return bool
- */
+     */
     private function checkAuth()
     {
         $namespace = explode('\\', $this->getModelTableMap());
@@ -55,7 +56,7 @@ abstract class AuthApi extends Api
 
     /**
      * @return string
- */
+     */
     private function resolveApiToken(): string
     {
         $request = Request::getInstance();
@@ -105,7 +106,7 @@ abstract class AuthApi extends Api
     /**
      * @param Request $request
      * @return string
- */
+     */
     private function extractHeaderToken(Request $request): string
     {
         $token = $request->getServer('HTTP_X_API_SEC_TOKEN');

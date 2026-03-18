@@ -13,13 +13,13 @@ class ModuleForm extends Form
     /**
      * @Injectable
      * @var \PSFS\base\Router
- */
+     */
     protected $router;
 
     /**
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
- */
+     */
     public function __construct()
     {
         parent::__construct();
@@ -53,7 +53,7 @@ class ModuleForm extends Form
 
     /**
      * @return string
- */
+     */
     public function getTitle()
     {
         return t('Module Management');
@@ -61,7 +61,7 @@ class ModuleForm extends Form
 
     /**
      * @return string
- */
+     */
     public function getName()
     {
         return 'admin_modules';

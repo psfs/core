@@ -9,11 +9,11 @@ trait FormCustomizationTrait
 {
     /**
      * @var array
- */
+     */
     protected $buttons = [];
     /**
      * @var string
- */
+     */
     protected $logo = '';
 
     public function setLogo($logo)
@@ -38,7 +38,7 @@ trait FormCustomizationTrait
      * @param string $type
      * @param array|null $attrs
      * @return FormSchemaTrait
- */
+     */
     public function addButton($buttonId, $value = 'Save', $type = 'submit', $attrs = array())
     {
         $this->buttons[$buttonId] = [
@@ -58,7 +58,7 @@ trait FormCustomizationTrait
      * @param string $buttonId
      *
      * @return FormSchemaTrait
- */
+     */
     public function dropButton($buttonId)
     {
         if (array_key_exists($buttonId, $this->buttons)) {

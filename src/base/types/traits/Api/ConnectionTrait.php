@@ -17,17 +17,17 @@ trait ConnectionTrait
 
     /**
      * @var ConnectionInterface
- */
+     */
     protected $con = null;
 
     /**
      * @var int
- */
+     */
     protected $items = 0;
 
     /**
      * @param TableMap $tableMap
- */
+     */
     protected function createConnection(TableMap $tableMap)
     {
         $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
@@ -41,7 +41,7 @@ trait ConnectionTrait
     /**
      *
      * @param int $status
- */
+     */
     protected function closeTransaction($status)
     {
         if (null !== $this->con) {
@@ -57,7 +57,7 @@ trait ConnectionTrait
         }
     }
 
-    
+
     protected function traceDebugQuery()
     {
         if (Config::getParam('debug')) {
@@ -65,7 +65,7 @@ trait ConnectionTrait
         }
     }
 
-    
+
     protected function checkTransaction()
     {
         if (null !== $this->con && !$this->con->inTransaction()) {

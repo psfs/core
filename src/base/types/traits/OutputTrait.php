@@ -24,15 +24,15 @@ trait OutputTrait
 
     /**
      * @var bool
- */
+     */
     protected $public_zone = true;
     /**
      * @var string
- */
+     */
     protected $status_code = Template::STATUS_OK;
     /**
      * @var bool
- */
+     */
     protected $debug = true;
 
     public function __construct()
@@ -42,7 +42,7 @@ trait OutputTrait
 
     /**
      * @return bool
- */
+     */
     public function isPublicZone()
     {
         return $this->public_zone;
@@ -51,7 +51,7 @@ trait OutputTrait
     /**
      * @param bool $publicZone
      * @return OutputTrait
- */
+     */
     public function setPublicZone($publicZone)
     {
         $this->public_zone = $publicZone;
@@ -60,7 +60,7 @@ trait OutputTrait
 
     /**
      * @return string
- */
+     */
     public function getStatusCode()
     {
         return $this->status_code;
@@ -69,7 +69,7 @@ trait OutputTrait
     /**
      * @param string $statusCode
      * @return OutputTrait
- */
+     */
     public function setStatusCode($statusCode)
     {
         $this->status_code = $statusCode;
@@ -78,7 +78,7 @@ trait OutputTrait
 
     /**
      * @return bool
- */
+     */
     public function isDebug()
     {
         return $this->debug;
@@ -87,7 +87,7 @@ trait OutputTrait
     /**
      * @param bool $debug
      * @return OutputTrait
- */
+     */
     public function setDebug($debug)
     {
         $this->debug = $debug;
@@ -98,7 +98,7 @@ trait OutputTrait
      * @param string $status
      *
      * @return $this
- */
+     */
     public function setStatus($status = null)
     {
         switch ($status) {
@@ -134,7 +134,7 @@ trait OutputTrait
     /**
      * @param string $contentType
      * @param array $cookies
- */
+     */
     private function setResponseHeaders($contentType = 'text/html', array $cookies = array()): void
     {
         ResponseHelper::setHeader('X-Powered-By: ' . Config::getParam('poweredBy', 'PSFS'));
@@ -151,7 +151,7 @@ trait OutputTrait
      * @param array $cookies
      * @return string
      * @throws \PSFS\base\exception\GeneratorException
- */
+     */
     public function output($output = '', $contentType = 'text/html', array $cookies = array())
     {
         if (!self::isTest()) {
@@ -182,8 +182,9 @@ trait OutputTrait
         }
     }
 
-    
-    #[NoReturn] public function closeRender(): void
+
+    #[NoReturn]
+    public function closeRender(): void
     {
         Logger::log('Close template render');
         $uri = Request::requestUri();
@@ -200,7 +201,7 @@ trait OutputTrait
     /**
      * @param string $data
      * @param array $headers
- */
+     */
     public function renderCache($data, $headers = array()): void
     {
         Inspector::stats('[OutputTrait] Rendering cache', Inspector::SCOPE_DEBUG);
@@ -219,7 +220,7 @@ trait OutputTrait
      * @param $data
      * @param string $content
      * @param string $filename
- */
+     */
     public function download($data, $content = 'text/html', $filename = 'data.txt'): void
     {
         ob_start();
@@ -250,7 +251,7 @@ trait OutputTrait
      * @param string $response
      * @param string $type
      * @throws GeneratorException
- */
+     */
     public function response($response, $type = 'text/html'): void
     {
         $this->output($response, $type);

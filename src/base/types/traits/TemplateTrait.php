@@ -13,7 +13,7 @@ trait TemplateTrait
     /**
      * @Injectable
      * @var \PSFS\base\Template
- */
+     */
     protected $tpl;
 
     /**
@@ -21,7 +21,7 @@ trait TemplateTrait
      * @param string $filename
      * @param boolean $force
      * @return boolean
- */
+     */
     private function writeTemplateToFile($fileContent, $filename, $force = false)
     {
         $created = false;

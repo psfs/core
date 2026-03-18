@@ -16,7 +16,7 @@ class AssetsHelper
     /**
      * @param string $source
      * @return string
- */
+     */
     public static function extractSourceFilename($source): string
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
@@ -37,7 +37,7 @@ class AssetsHelper
      * @param string $filePath
      *
      * @return string|null
- */
+     */
     public static function findDomainPath($string, string $filePath): ?string
     {
         $domains = Template::getDomains(TRUE);
@@ -62,7 +62,7 @@ class AssetsHelper
      * @param string $filenamePath
      *
      * @return string[]
- */
+     */
     public static function calculateAssetPath(string $string, string|null $name = null, bool $return = true, string $filenamePath = ''): array
     {
         $path = explode("/", $string);
@@ -107,7 +107,7 @@ class AssetsHelper
      * @param string $path
      * @param string $content
      * @throws GeneratorException
- */
+     */
     public static function storeContents(string $path, string $content = ""): void
     {
         GeneratorHelper::createDir(dirname($path));

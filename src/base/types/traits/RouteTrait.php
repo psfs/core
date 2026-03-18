@@ -19,7 +19,7 @@ trait RouteTrait
      * @param array $params
      * @return string|null
      * @throws \PSFS\base\exception\RouterException
- */
+     */
     public function getRoute($route = '', $absolute = false, array $params = array())
     {
         return Router::getInstance()->getRoute($route, $absolute, $params);
@@ -30,7 +30,7 @@ trait RouteTrait
      * @param array $params
      *
      * @throws \PSFS\base\exception\RouterException
- */
+     */
     public function redirect($route, array $params = array())
     {
         Request::getInstance()->redirect($this->getRoute($route, true, $params));
@@ -38,7 +38,7 @@ trait RouteTrait
 
     /**
      * @return \PSFS\base\Request
- */
+     */
     protected function getRequest()
     {
         return Request::getInstance();

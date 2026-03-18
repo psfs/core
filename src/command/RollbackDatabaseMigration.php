@@ -22,11 +22,11 @@ $console
         // Creates the html path
         $module = $input->getOption('module');
         $domains = Router::getInstance()->getDomains();
-        foreach($domains as $domain => $paths) {
-            if(str_contains($domain, 'ROOT')) {
+        foreach ($domains as $domain => $paths) {
+            if (str_contains($domain, 'ROOT')) {
                 continue;
             }
-            if(empty($module) || str_contains(strtolower($domain), strtolower($module))) {
+            if (empty($module) || str_contains(strtolower($domain), strtolower($module))) {
                 $output->writeln(sprintf(t("Running migrations for module %s"), $domain));
                 $configDir = realpath($paths['base']) . DIRECTORY_SEPARATOR . 'Config';
                 $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
