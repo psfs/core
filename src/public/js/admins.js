@@ -22,7 +22,7 @@ function backToTop()
 }
 
 /**
- * Guardado de JS en LocalStorage
+ * Save JS data in LocalStorage
  */
 function __storage(){
     var self = this;
@@ -58,7 +58,7 @@ function __storage(){
 jsStorage = new __storage();
 
 /**
- * Método que serializa la información de un formulario en un objeto JSON
+ * Serialize form data into a JSON object
  * @returns {}
  */
 $.fn.serializeObject = function()
@@ -79,7 +79,7 @@ $.fn.serializeObject = function()
 };
 
 /**
- * Función que guarda el estado de un formulario
+ * Save the current form state
  * @param form
  */
 function backupForm(form)
@@ -90,7 +90,7 @@ function backupForm(form)
 }
 
 /**
- * Función que restaura los valores de un formulario
+ * Restore form values from backup
  * @param form
  */
 function restoreForm(form)
@@ -109,7 +109,7 @@ function restoreForm(form)
 }
 
 /**
- * Función que revisa la existencia de generadores de datos
+ * Check whether data generators exist
  */
 function checkCreationFields()
 {
@@ -135,7 +135,7 @@ function checkCreationFields()
 }
 
 /**
- * Función auxilar para el funcionamiento del select multiple
+ * Helper function for multi-select behavior
  * @param name
  * @param id
  * @param select

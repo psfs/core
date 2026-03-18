@@ -124,7 +124,7 @@ class TemplateFunctions
         if (null !== $label) {
             $field['label'] = $label;
         }
-        //Limpiamos los campos obligatorios
+        // Normalize required field defaults
         if (!isset($field['required'])) {
             $field['required'] = true;
         }

@@ -296,7 +296,7 @@
                 $scope.extraActionExecution = false;
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
-                var message = 'Función ejecutada correctamente. Revisa el log del navegador para más detalle de la respuesta';
+                var message = 'Action executed successfully. Check browser logs for response details';
                 if(response.message) {
                     message += ': ' + response.message;
                 }
@@ -313,7 +313,7 @@
                 $scope.extraActionExecution = false;
                 $log.info('[EXECUTION] ' + label);
                 $log.debug(response);
-                var message = 'Ha ocurrido un error ejecutando la acción, por favor revisa el log';
+                var message = 'An error occurred while executing the action. Please check logs';
                 if(response.data.message) {
                     message += ': ' + response.data.message;
                 }
@@ -367,7 +367,7 @@
                         $scope.loading = true;
                         var confirm = $mdDialog.confirm()
                             .title(label)
-                            .htmlContent('La acción implica un borrado, ¿estás seguro?')
+                            .htmlContent('This action will delete data. Are you sure?')
                             .ok($scope.i18N['delete'])
                             .cancel($scope.i18N['cancel']);
                         $mdDialog.show(confirm).then(function() {

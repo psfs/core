@@ -130,13 +130,13 @@
         });
     };
 
-    //Añadimos el efecto parallax a los que tengan el atributo
+    // Apply the parallax effect to elements with the attribute
     $("[data-parallax]").parallax();
 
-    //Corregimos las alturas de los elementos
+    // Normalize element heights
 //    $("[data-same-height]").sameHeight();
 
-    //Añadimos elementos on scroll
+    // Apply scroll-driven effects
     $(document).on("scroll", function(ev){
         $("[data-effect]").showDelay();
 //        $("[data-effect=lateral]").slideLateral();
@@ -144,7 +144,7 @@
         $(".progress-bar").autoBar();
     });
 
-    //Corregimos al margen
+    // Fix top margin offsets
     $("[data-position]").each(function(){
         if($(document).width() >= 1000)
         {
@@ -154,7 +154,7 @@
         return true;
     });
 
-    //Corregimos los tamaños de los videos
+    // Normalize video sizes
     $("video").scaleVideo();
 
     $(".carousel .active .carousel-caption").show({
@@ -162,7 +162,7 @@
         duration: 1000,
         easing: "easeInQuart"
     });
-    //Añadimos le efecto con el que se muestran los textos del carrusel
+    // Apply caption reveal effect in the carousel
     $(".carousel").on("slid.bs.carousel", function(ev){
         if(undefined === $(this).find(".active").attr("data-loaded"))
         {

@@ -1,11 +1,11 @@
 var parameters, routing;
 /**
- * Función que añade un nuevo campo al formulario de configuración
+ * Add a new field to the configuration form
  * @returns {boolean}
  */
 function addNewField(form)
 {
-    if(undefined === form) throw new Error('Se necesita un formulario de origen');
+    if(undefined === form) throw new Error('A source form is required');
 
     var prelabel = $("<label>"),
         div_label = $("<div>"),
@@ -20,10 +20,10 @@ function addNewField(form)
         input_field_count = $(form).find("input[name^=value]").filter(function(){
             return $(this).val() === '';
         }).length;
-    //Controlamos que existan ya unos sin rellenar
+    // Ensure there are no pending empty fields first
     if(label_field_count + input_field_count > 0) return false;
 
-    //Añadimos le campo del nombre del campo
+    // Add the field label input
     div_label.addClass("control-label col-md-2")
     .css("padding", 0)
     .appendTo(container);
@@ -31,32 +31,32 @@ function addNewField(form)
         "type": "text",
         "name": "label[]",
         "id": ts,
-        "placeholder": "Parámetro"
+        "placeholder": "Parameter"
     }).css({
         "text-align": "right",
         "font-weight": "bolder"
     }).addClass("form-control")
     .appendTo(div_label);
 
-    //Añadimos el campo del valor
+    // Add the field value input
     div_input.addClass("col-md-4")
     .appendTo(container);
     input.attr({
         "type": "text",
         "name": "value[]",
         "for": ts,
-        "placeholder": "Introduce el valor del nuevo campo"
+        "placeholder": "Enter the value for the new field"
     }).addClass("form-control")
     .appendTo(div_input);
 
-    //Añadimos el contenedor
+    // Add the field container
     container.addClass('form-group row').appendTo($(form).find("fieldset"));
     return autocomplete(label, parameters);
 }
 
 (function(){
     $("[data-toggle=tooltip]").tooltip();
-    //Hidratamos las opciones de configuración
+    // Hydrate configuration options
     $.ajax({
         url: "/admin/config/params",
         dataType: "JSON",
@@ -64,7 +64,7 @@ function addNewField(form)
             parameters = json || [];
         }
     });
-    //Hidratamos las rutas de acceso
+    // Hydrate route options
     $.ajax({
         url: "/admin/routes/show",
         dataType: "JSON",

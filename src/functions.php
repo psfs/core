@@ -3,7 +3,7 @@
 use PSFS\base\extension\CustomTranslateExtension;
 use Symfony\Component\Finder\Finder;
 
-//Cargamos en memoria la función de desarrollo PRE
+// Load PRE development helper function in memory
 if (!function_exists('pre')) {
     /**
      * @param mixed $var
@@ -24,7 +24,7 @@ if (!function_exists('pre')) {
 
 if (file_exists(CORE_DIR)) {
     $loaded_files = [];
-    //Autoload de módulos
+    // Modules autoload
     $finder = new Finder();
     $finder->files()->in(CORE_DIR)->name('autoload.php');
     /* @var $file SplFileInfo */

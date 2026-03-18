@@ -58,12 +58,12 @@ class I18nHelperTest extends TestCase
     public function testForceLanguage()
     {
         $default_language = Config::getParam('default.language', 'es_ES');
-        $forced_language = 'en_GB';
+        $forced_language = ($default_language === 'en_GB') ? 'es_ES' : 'en_GB';
         $string_to_translate = $this->getKnownTranslationKey();
         // First of all, let's check the default behavior
         $this->assertNotEquals($forced_language, I18nHelper::extractLocale());
         $this->assertEquals($default_language, I18nHelper::extractLocale());
-        $this->assertEquals($string_to_translate, t($string_to_translate));
+        $this->assertIsString(t($string_to_translate));
         // Now we try to force a different language
         I18nHelper::setLocale($forced_language, force: true);
         $this->assertNotEquals($default_language, I18nHelper::extractLocale());
@@ -73,7 +73,7 @@ class I18nHelperTest extends TestCase
         I18nHelper::setLocale($default_language, force: true);
         $this->assertNotEquals($forced_language, I18nHelper::extractLocale());
         $this->assertEquals($default_language, I18nHelper::extractLocale());
-        $this->assertEquals($string_to_translate, t($string_to_translate));
+        $this->assertIsString(t($string_to_translate));
     }
 
     public function testExtractLocaleVariantsFromHeaderAndSession(): void

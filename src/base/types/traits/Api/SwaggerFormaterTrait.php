@@ -275,7 +275,7 @@ trait SwaggerFormaterTrait
             $methodInfo['query'][] = [
                 "name" => "__fields",
                 "in" => "query",
-                "description" => t("Campos a devolver"),
+                "description" => t("Fields to return"),
                 "required" => false,
                 "type" => "array",
                 "items" => [
