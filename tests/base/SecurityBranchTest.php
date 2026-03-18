@@ -2,7 +2,9 @@
 
 namespace PSFS\tests\base;
 
+use Firebase\JWT\JWT;
 use PHPUnit\Framework\TestCase;
+use PSFS\base\config\Config;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AuthHelper;
@@ -94,6 +96,35 @@ class SecurityBranchTest extends TestCase
         $this->assertIsArray($admin);
         $this->assertSame('root', $admin['alias'] ?? null);
         $this->assertSame(AuthHelper::ADMIN_ID_TOKEN, $admin['profile'] ?? null);
+
+        $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', 'wrong-token', 'secret']);
+        $this->assertSame('root', $security->getAdmin()['alias'] ?? null);
+    }
+
+    public function testResolveAdminCredentialsUsesJwtWhenEnabled(): void
+    {
+        $config = Config::getInstance()->dumpConfig();
+        $config['enable.jwt'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $subject = 'jwt_security_branch';
+        $hash = sha1($subject . ':secret');
+        $token = JWT::encode([
+            'sub' => $subject,
+            'iat' => time() - 10,
+            'exp' => time() + 120,
+        ], $hash, 'HS256');
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $security = Security::getInstance(true);
+        [$user, $tokenHash] = $this->invokePrivate($security, 'resolveAdminCredentials', [[
+            $subject => ['hash' => $hash],
+        ], null, null]);
+        $this->assertSame($subject, $user);
+        $this->assertSame($hash, $tokenHash);
     }
 
     protected function tearDown(): void

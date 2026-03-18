@@ -41,4 +41,22 @@ class RequestHelperTest extends TestCase
 
         $this->assertSame('198.51.100.7', RequestHelper::getIpAddress());
     }
+
+    public function testGetIpAddressUsesDirectClientIpWhenValid(): void
+    {
+        $_SERVER = [
+            'HTTP_CLIENT_IP' => '203.0.113.99',
+            'HTTP_X_FORWARDED_FOR' => '198.51.100.1',
+            'REMOTE_ADDR' => '127.0.0.1',
+        ];
+
+        $this->assertSame('203.0.113.99', RequestHelper::getIpAddress());
+    }
+
+    public function testValidateIpAddressRangeAndInvalidFormat(): void
+    {
+        $this->assertTrue(RequestHelper::validateIpAddress('10.0.0.10', '10.0.0.1', '10.0.0.255'));
+        $this->assertFalse(RequestHelper::validateIpAddress('10.0.1.10', '10.0.0.1', '10.0.0.255'));
+        $this->assertFalse(RequestHelper::validateIpAddress('not-an-ip'));
+    }
 }

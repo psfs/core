@@ -305,6 +305,149 @@ class RouterFlowContractTest extends TestCase
         $this->assertArrayHasKey('/', $router->getRoutes());
     }
 
+    public function testModulesTraitExtractDomainAndDomainExistsWithNormalizedInput(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([]);
+        $this->setRouterPrivateProperty($router, 'domains', 'invalid');
+
+        $extractDomain = new \ReflectionMethod(Router::class, 'extractDomain');
+        $extractDomain->setAccessible(true);
+        $extractDomain->invoke($router, new \ReflectionClass(RouterDomainContractController::class));
+
+        $this->assertTrue($router->domainExists('contractdomain'));
+        $this->assertFalse($router->domainExists('missingdomain'));
+    }
+
+    public function testLoadExternalAutoloaderIncludesModuleAndSupportsHydration(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([]);
+        $this->setRouterPrivateProperty($router, 'finder', new \Symfony\Component\Finder\Finder());
+
+        $tmpBase = CACHE_DIR . DIRECTORY_SEPARATOR . 'router_module_' . uniqid('', true);
+        $externalModulePath = $tmpBase . DIRECTORY_SEPARATOR . 'src';
+        $moduleName = 'TmpContractModule';
+        $modulePath = $externalModulePath . DIRECTORY_SEPARATOR . $moduleName;
+        $controllerDir = $modulePath . DIRECTORY_SEPARATOR . 'controller';
+        @mkdir($controllerDir, 0777, true);
+
+        $autoloadFile = $modulePath . DIRECTORY_SEPARATOR . 'autoload.php';
+        file_put_contents(
+            $autoloadFile,
+            "<?php\n\$GLOBALS['psfs_contract_module_autoload_hits'] = (\$GLOBALS['psfs_contract_module_autoload_hits'] ?? 0) + 1;\n"
+        );
+        file_put_contents($controllerDir . DIRECTORY_SEPARATOR . 'SampleController.php', "<?php\n");
+        $moduleInfo = new \Symfony\Component\Finder\SplFileInfo($modulePath, '', $moduleName);
+        $routing = [];
+
+        try {
+            $method = new \ReflectionMethod(Router::class, 'loadExternalAutoloader');
+            $method->setAccessible(true);
+            $method->invokeArgs($router, [true, $moduleInfo, $externalModulePath, &$routing]);
+            $this->assertGreaterThan(0, (int)($GLOBALS['psfs_contract_module_autoload_hits'] ?? 0));
+            $this->assertIsArray($routing);
+        } finally {
+            unset($GLOBALS['psfs_contract_module_autoload_hits']);
+            $this->deleteDirectoryRecursively($tmpBase);
+        }
+    }
+
+    public function testLoadExternalModuleSwallowsFinderExceptions(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([]);
+        $moduleName = 'psfs/router-contract-' . uniqid('', true);
+        $modulePath = VENDOR_DIR . DIRECTORY_SEPARATOR . $moduleName . DIRECTORY_SEPARATOR . 'src';
+        @mkdir($modulePath, 0777, true);
+        $this->setRouterPrivateProperty($router, 'finder', new ThrowingDirectoriesFinder());
+
+        $routing = [];
+        try {
+            $method = new \ReflectionMethod(Router::class, 'loadExternalModule');
+            $method->setAccessible(true);
+            $method->invokeArgs($router, [false, $moduleName, &$routing]);
+            $this->assertSame([], $routing);
+        } finally {
+            $this->deleteDirectoryRecursively(VENDOR_DIR . DIRECTORY_SEPARATOR . $moduleName);
+        }
+    }
+
+    public function testRouterCacheFlowHelpersCoverRootAndDebugBranches(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/debug' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+        ]);
+
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $normalizeHomeAction = new \ReflectionMethod(Router::class, 'normalizeHomeAction');
+        $normalizeHomeAction->setAccessible(true);
+        $this->assertNull($normalizeHomeAction->invoke($router, null));
+        $this->assertNull($normalizeHomeAction->invoke($router, '  '));
+
+        $specificity = new \ReflectionMethod(Router::class, 'calculateRouteSpecificity');
+        $specificity->setAccessible(true);
+        $this->assertSame(0, $specificity->invoke($router, '/'));
+
+        $shouldRebuildRouting = new \ReflectionMethod(Router::class, 'shouldRebuildRouting');
+        $shouldRebuildRouting->setAccessible(true);
+        $this->assertFalse((bool)$shouldRebuildRouting->invoke($router));
+
+        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'routes.meta.json', [], Cache::JSON, true);
+        $isRoutingMetaFresh = new \ReflectionMethod(Router::class, 'isRoutingMetaFresh');
+        $isRoutingMetaFresh->setAccessible(true);
+        $this->assertFalse((bool)$isRoutingMetaFresh->invoke($router));
+    }
+
+    public function testExecuteCachedRouteLogsWhenControllerReturnsFalse(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/contract/false' => $this->buildAction('returnsFalse', RouterFlowController::class, 'GET'),
+        ]);
+        $this->bootstrapRequest('/contract/false', 'GET');
+
+        $result = $router->execute('/contract/false');
+
+        $this->assertFalse($result);
+        $this->assertSame(['returnsFalse'], RouterFlowController::$calls);
+    }
+
+    private function setRouterPrivateProperty(Router $router, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionClass(Router::class);
+        $reflectionProperty = $reflection->getProperty($property);
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($router, $value);
+    }
+
+    private function deleteDirectoryRecursively(string $path): void
+    {
+        if (!file_exists($path)) {
+            return;
+        }
+        if (is_file($path) || is_link($path)) {
+            @unlink($path);
+            return;
+        }
+        $entries = scandir($path);
+        if (false === $entries) {
+            return;
+        }
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $this->deleteDirectoryRecursively($path . DIRECTORY_SEPARATOR . $entry);
+        }
+        @rmdir($path);
+    }
+
     private function bootstrapRequest(string $uri = '/', string $method = 'GET', array $query = []): void
     {
         $_SERVER = [
@@ -458,6 +601,12 @@ class RouterFlowController
     {
         throw new RouterException('boom', 418);
     }
+
+    public function returnsFalse(): bool
+    {
+        self::$calls[] = 'returnsFalse';
+        return false;
+    }
 }
 
 class RouterFlowPreconditionController implements PreConditionedRunInterface
@@ -490,5 +639,33 @@ class RouterFlowPreconditionController implements PreConditionedRunInterface
     {
         self::$calls[] = 'run';
         return 'ok';
+    }
+}
+
+class RouterDomainContractController
+{
+    public const DOMAIN = 'ContractDomain';
+}
+
+class ThrowingDirectoriesFinder
+{
+    public function directories(): self
+    {
+        return $this;
+    }
+
+    public function in(string $path): self
+    {
+        throw new \Exception('finder-error-' . $path);
+    }
+
+    public function depth(int|string $depth): self
+    {
+        return $this;
+    }
+
+    public function hasResults(): bool
+    {
+        return false;
     }
 }

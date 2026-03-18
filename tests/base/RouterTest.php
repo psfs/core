@@ -5,6 +5,7 @@ namespace PSFS\tests\base;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\RouterException;
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AuthHelper;
@@ -96,6 +97,10 @@ class RouterTest extends TestCase
         $this->expectExceptionCode(404);
         $this->expectException(\PSFS\base\exception\RouterException::class);
         Router::dropInstance();
+        Request::dropInstance();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/admin//config';
+        Request::getInstance()->init();
         $router = Router::getInstance();
         SecurityHelper::setTest(true);
         Security::setTest(true);
@@ -113,6 +118,10 @@ class RouterTest extends TestCase
     {
         $this->expectException(\PSFS\base\exception\UserAuthException::class);
         Router::dropInstance();
+        Request::dropInstance();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/admin//config';
+        Request::getInstance()->init();
         $router = Router::getInstance();
         SecurityHelper::setTest(true);
         Security::setTest(false);
@@ -170,6 +179,37 @@ class RouterTest extends TestCase
         $response = $router->httpNotFound(new \Exception('Not found', 404), true);
         $this->assertSame(404, $response);
         ResponseHelper::setTest(false);
+    }
+
+    public function testRouteMatchingPrefersSpecificConfigEndpoint(): void
+    {
+        Router::dropInstance();
+        Request::dropInstance();
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/admin/config/params';
+        $_REQUEST = [];
+        $_GET = [];
+        $_POST = [];
+        Request::getInstance()->init();
+
+        Security::setTest(true);
+        SecurityHelper::setTest(true);
+        Admin::setTest(true);
+        ResponseHelper::setTest(true);
+        try {
+            $router = Router::getInstance();
+            $response = $router->execute('/admin/config/params');
+            $decoded = json_decode((string)$response, true);
+
+            $this->assertIsArray($decoded, 'Specific /admin/config/params route must return JSON payload');
+            $this->assertContains('debug', $decoded);
+        } finally {
+            ResponseHelper::setTest(false);
+            Admin::setTest(false);
+            SecurityHelper::setTest(false);
+            Security::setTest(false);
+            Request::dropInstance();
+        }
     }
 
 }

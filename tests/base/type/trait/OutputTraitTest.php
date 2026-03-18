@@ -2,8 +2,12 @@
 
 namespace PSFS\tests\base\type\trait;
 
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
+use PSFS\base\Cache;
 use PSFS\base\Request;
+use PSFS\base\Security;
+use PSFS\base\SingletonRegistry;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\traits\OutputTrait;
@@ -16,6 +20,8 @@ class OutputTraitTest extends TestCase
     private array $requestBackup = [];
     private array $cookieBackup = [];
     private array $filesBackup = [];
+    private array $sessionBackup = [];
+    private array $singletonRegistryBackup = [];
 
     protected function setUp(): void
     {
@@ -25,6 +31,7 @@ class OutputTraitTest extends TestCase
         $this->requestBackup = $_REQUEST;
         $this->cookieBackup = $_COOKIE;
         $this->filesBackup = $_FILES;
+        $this->sessionBackup = $_SESSION ?? [];
 
         $_SERVER = [
             'REQUEST_METHOD' => 'GET',
@@ -38,12 +45,17 @@ class OutputTraitTest extends TestCase
         $_REQUEST = [];
         $_COOKIE = [];
         $_FILES = [];
+        $_SESSION = [];
         Request::dropInstance();
         Request::getInstance()->init();
+        Security::dropInstance();
+        Security::setTest(false);
+        Cache::dropInstance();
 
         ResponseHelper::setTest(true);
         ResponseHelper::$headers_sent = [];
         OutputTraitTestDouble::setTest(false);
+        $this->backupSingletonRegistry();
     }
 
     protected function tearDown(): void
@@ -55,7 +67,12 @@ class OutputTraitTest extends TestCase
         $_REQUEST = $this->requestBackup;
         $_COOKIE = $this->cookieBackup;
         $_FILES = $this->filesBackup;
+        $_SESSION = $this->sessionBackup;
         Request::dropInstance();
+        Security::setTest(false);
+        Security::dropInstance();
+        Cache::dropInstance();
+        $this->restoreSingletonRegistry();
         ResponseHelper::setTest(true);
         OutputTraitTestDouble::setTest(false);
     }
@@ -132,6 +149,117 @@ class OutputTraitTest extends TestCase
         $this->assertContains('no-store, no-cache, must-revalidate', $cacheControl);
         $this->assertContains('pre-check=0, post-check=0, max-age=0', $cacheControl);
     }
+
+    #[RunInSeparateProcess]
+    public function testOutputStoresCachePayloadWhenCacheIsEnabledAndStatusOk(): void
+    {
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        $config['cache.data.enable'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        ResponseHelper::setTest(false);
+
+        $security = Security::getInstance(true);
+        $security->setSessionKey(Cache::CACHE_SESSION_VAR, [
+            'cache' => 300,
+            'params' => ['id' => 7],
+            'http' => 'GET',
+            'slug' => '/output/cache',
+            'class' => '\\PSFS\\tests\\base\\type\\trait\\OutputTraitTestDouble',
+            'method' => 'output',
+            'module' => 'PSFS',
+        ]);
+        $security->updateSession();
+
+        $cacheSpy = new OutputTraitCacheSpy();
+        $cacheSpy->path = 'module/hash/path/';
+        $cacheSpy->filename = 'payload-hash';
+        $this->injectCacheSpy($cacheSpy);
+
+        $sut = new OutputTraitTestDouble();
+        ob_start();
+        $sut->output('{"ok":true}', 'application/json');
+        ob_end_clean();
+
+        $this->assertTrue($sut->closed);
+        $this->assertCount(2, $cacheSpy->storeCalls);
+        $this->assertSame('json' . DIRECTORY_SEPARATOR . 'module/hash/path/payload-hash', $cacheSpy->storeCalls[0]['path']);
+        $this->assertSame('json' . DIRECTORY_SEPARATOR . 'module/hash/path/payload-hash.headers', $cacheSpy->storeCalls[1]['path']);
+        $this->assertFalse($cacheSpy->flushCalled);
+    }
+
+    #[RunInSeparateProcess]
+    public function testOutputFlushesCacheForNonGetWhenNotCacheableStatus(): void
+    {
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        $config['cache.data.enable'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        ResponseHelper::setTest(false);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $security = Security::getInstance(true);
+        $security->setSessionKey(Cache::CACHE_SESSION_VAR, [
+            'cache' => 300,
+            'params' => [],
+            'http' => 'POST',
+            'slug' => '/output/flush',
+            'class' => '\\PSFS\\tests\\base\\type\\trait\\OutputTraitTestDouble',
+            'method' => 'output',
+            'module' => 'PSFS',
+        ]);
+        $security->updateSession();
+
+        $cacheSpy = new OutputTraitCacheSpy();
+        $cacheSpy->path = 'module/hash/path/';
+        $cacheSpy->filename = 'payload-hash';
+        $this->injectCacheSpy($cacheSpy);
+
+        $sut = new OutputTraitTestDouble();
+        $sut->setStatus('500');
+        ob_start();
+        $sut->output('error', 'text/plain');
+        ob_end_clean();
+
+        $this->assertTrue($sut->closed);
+        $this->assertTrue($cacheSpy->flushCalled);
+        $this->assertCount(0, $cacheSpy->storeCalls);
+    }
+
+    private function backupSingletonRegistry(): void
+    {
+        $reflection = new \ReflectionClass(SingletonRegistry::class);
+        $property = $reflection->getProperty('instances');
+        $property->setAccessible(true);
+        $this->singletonRegistryBackup = $property->getValue() ?? [];
+    }
+
+    private function restoreSingletonRegistry(): void
+    {
+        $reflection = new \ReflectionClass(SingletonRegistry::class);
+        $property = $reflection->getProperty('instances');
+        $property->setAccessible(true);
+        $property->setValue(null, $this->singletonRegistryBackup);
+    }
+
+    private function injectCacheSpy(OutputTraitCacheSpy $cacheSpy): void
+    {
+        $reflection = new \ReflectionClass(SingletonRegistry::class);
+        $property = $reflection->getProperty('instances');
+        $property->setAccessible(true);
+        $instances = $property->getValue() ?? [];
+        $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
+        if (!isset($instances[$context]) || !is_array($instances[$context])) {
+            $instances[$context] = [];
+        }
+        $instances[$context][Cache::class] = $cacheSpy;
+        $property->setValue(null, $instances);
+    }
 }
 
 class OutputTraitTestDouble
@@ -143,5 +271,38 @@ class OutputTraitTestDouble
     public function closeRender(): void
     {
         $this->closed = true;
+    }
+}
+
+class OutputTraitCacheSpy extends Cache
+{
+    public string $path = '';
+    public string $filename = '';
+    public array $storeCalls = [];
+    public bool $flushCalled = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getRequestCacheHash()
+    {
+        return [$this->path, $this->filename];
+    }
+
+    public function storeData($path, $data, $transform = Cache::TEXT, $absolute = false)
+    {
+        $this->storeCalls[] = [
+            'path' => $path,
+            'transform' => $transform,
+            'absolute' => $absolute,
+            'data' => $data,
+        ];
+    }
+
+    public function flushCache()
+    {
+        $this->flushCalled = true;
     }
 }

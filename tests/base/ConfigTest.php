@@ -192,6 +192,18 @@ class ConfigTest extends TestCase
             'REQUEST_METHOD' => 'POST',
         ]);
         $this->assertFalse(Config::getInstance()->checkTryToSaveConfig());
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/config/params',
+            'REQUEST_METHOD' => 'POST',
+        ]);
+        $this->assertFalse(Config::getInstance()->checkTryToSaveConfig());
+
+        Request::getInstance()->setServer([
+            'REQUEST_URI' => '/admin/setup',
+            'REQUEST_METHOD' => 'POST',
+        ]);
+        $this->assertTrue(Config::getInstance()->checkTryToSaveConfig());
     }
 
     public function testLoadConfigDataPersistsCacheVarIntoSession(): void

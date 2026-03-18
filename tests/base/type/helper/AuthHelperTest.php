@@ -349,6 +349,87 @@ class AuthHelperTest extends TestCase
         $this->assertSame($jwtUser, $user);
     }
 
+    public function testCheckBasicAuthReturnsNullTupleWhenCredentialsOrHashMissing(): void
+    {
+        [$userMissingPass, $tokenMissingPass] = AuthHelper::checkBasicAuth('admin', null, [
+            'admin' => ['hash' => sha1('adminsecret')],
+        ]);
+        $this->assertNull($userMissingPass);
+        $this->assertNull($tokenMissingPass);
+
+        [$userMissingHash, $tokenMissingHash] = AuthHelper::checkBasicAuth('admin', 'secret', [
+            'admin' => ['hash' => ''],
+        ]);
+        $this->assertNull($userMissingHash);
+        $this->assertNull($tokenMissingHash);
+    }
+
+    public function testCheckBasicAuthInvalidCookiePayloadKeepsNullTuple(): void
+    {
+        $this->bootstrapRequest([], [
+            AuthHelper::generateProfileHash() => 'invalid_cookie_payload',
+        ]);
+
+        [$user, $token] = AuthHelper::checkBasicAuth(null, null, [
+            'admin' => ['hash' => sha1('adminsecret')],
+        ]);
+
+        $this->assertNull($user);
+        $this->assertNull($token);
+    }
+
+    public function testCheckComplexAuthRejectsPayloadWithoutExpirationTimestamp(): void
+    {
+        $admin = 'complex_no_exp';
+        $hash = sha1($admin . 'secret');
+        $token = AuthHelper::encrypt(json_encode([
+            'sub' => $admin,
+            'ua' => 'phpunit-auth-helper',
+        ]), $hash);
+
+        $this->bootstrapRequest([
+            'HTTP_AUTHORIZATION' => 'Basic ' . $token,
+            'HTTP_USER_AGENT' => 'phpunit-auth-helper',
+        ]);
+        [$user, $tokenHash] = AuthHelper::checkComplexAuth([
+            $admin => ['hash' => $hash],
+        ]);
+
+        $this->assertNull($user);
+        $this->assertNull($tokenHash);
+    }
+
+    public function testCheckJwtAuthReturnsNullTupleWhenAuthorizationHeaderMissing(): void
+    {
+        $this->bootstrapRequest([
+            'HTTP_AUTHORIZATION' => '',
+        ]);
+        [$user, $hash] = AuthHelper::checkJwtAuth([
+            'admin' => ['hash' => sha1('admin:secret')],
+        ]);
+
+        $this->assertNull($user);
+        $this->assertNull($hash);
+    }
+
+    public function testLegacyCryptoPrivateHelpersRemainCompatible(): void
+    {
+        $key = sha1('legacy-key');
+        $cipher = $this->invokeAuthPrivateStatic('legacyEncrypt', ['payload', $key]);
+        $plain = $this->invokeAuthPrivateStatic('legacyDecrypt', [$cipher, $key]);
+        $emptyBase64Url = $this->invokeAuthPrivateStatic('fromBase64Url', ['']);
+
+        $this->assertIsString($cipher);
+        $this->assertSame('payload', $plain);
+        $this->assertFalse($emptyBase64Url);
+    }
+
+    public function testDecodeJwtPayloadWithoutVerificationRejectsMalformedTokenParts(): void
+    {
+        $payload = $this->invokeAuthPrivateStatic('decodeJwtPayloadWithoutVerification', ['invalid_token']);
+        $this->assertNull($payload);
+    }
+
     private static function legacyEncrypt(string $data, string $key): string
     {
         $data = base64_encode($data);
@@ -402,5 +483,12 @@ class AuthHelperTest extends TestCase
             'exp' => $now + 600,
         ];
         return JWT::encode($payload, $secret, 'HS256');
+    }
+
+    private function invokeAuthPrivateStatic(string $method, array $args = []): mixed
+    {
+        $reflection = new \ReflectionMethod(AuthHelper::class, $method);
+        $reflection->setAccessible(true);
+        return $reflection->invokeArgs(null, $args);
     }
 }

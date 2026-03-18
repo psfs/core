@@ -22,6 +22,7 @@ class RedisReadThroughReflectionCacheRepositoryTest extends TestCase
 
     public function testReadReturnsRedisPayloadWhenAvailable(): void
     {
+        $this->requireRedisExtension();
         $file = new ReflectionTestFileRepository();
         $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -40,6 +41,7 @@ class RedisReadThroughReflectionCacheRepositoryTest extends TestCase
 
     public function testSaveWritesBackToRedisAndInvalidatesLatestKey(): void
     {
+        $this->requireRedisExtension();
         $file = new ReflectionTestFileRepository();
         $repo = new RedisReadThroughReflectionCacheRepository($file, 90, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -65,6 +67,7 @@ class RedisReadThroughReflectionCacheRepositoryTest extends TestCase
 
     public function testReadAndSaveFallbackOnRedisExceptions(): void
     {
+        $this->requireRedisExtension();
         $file = new ReflectionTestFileRepository();
         $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -91,6 +94,77 @@ class RedisReadThroughReflectionCacheRepositoryTest extends TestCase
         $this->assertSame(1, $file->readCalls);
         $this->assertSame('/tmp/reflections.json', $repo->getCachePath());
         $this->assertSame('mtime:sha1', $repo->getSourceSignature());
+    }
+
+    public function testReadCachesFilePayloadWhenRedisMisses(): void
+    {
+        $this->requireRedisExtension();
+        $file = new ReflectionTestFileRepository();
+        $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
+        $redis = $this->createMock(\Redis::class);
+        $redis->expects($this->once())
+            ->method('get')
+            ->willReturn('');
+        $redis->expects($this->once())
+            ->method('setex');
+        $redis->expects($this->once())
+            ->method('set');
+        $this->setRedis($repo, $redis);
+
+        $result = $repo->read();
+        $this->assertSame(['cache' => '\\PSFS\\base\\Cache'], $result);
+        $this->assertSame(1, $file->readCalls);
+    }
+
+    public function testReadRecoversWhenRedisPayloadIsMalformed(): void
+    {
+        $this->requireRedisExtension();
+        $file = new ReflectionTestFileRepository();
+        $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
+        $redis = $this->createMock(\Redis::class);
+        $redis->expects($this->once())
+            ->method('get')
+            ->willReturn('{bad-json');
+        $redis->expects($this->once())
+            ->method('setex')
+            ->with($this->stringContains('psfs:reflections:'), 60, json_encode(['cache' => '\\PSFS\\base\\Cache']));
+        $redis->expects($this->once())
+            ->method('set');
+        $this->setRedis($repo, $redis);
+
+        $result = $repo->read();
+
+        $this->assertSame(['cache' => '\\PSFS\\base\\Cache'], $result);
+        $this->assertSame(1, $file->readCalls);
+    }
+
+    public function testSaveReturnsFalseWhenFileRepositoryFails(): void
+    {
+        $file = new ReflectionFailingFileRepository();
+        $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
+        $this->setRedis($repo, null);
+
+        $this->assertFalse($repo->save(['cache' => '\\PSFS\\base\\Cache']));
+    }
+
+    public function testInvalidateHandlesRedisExceptionsWithoutThrowing(): void
+    {
+        $this->requireRedisExtension();
+        $file = new ReflectionTestFileRepository();
+        $repo = new RedisReadThroughReflectionCacheRepository($file, 60, 'vtest');
+        $redis = $this->createMock(\Redis::class);
+        $redis->method('get')->willThrowException(new \RedisException('boom'));
+        $this->setRedis($repo, $redis);
+
+        $repo->invalidate();
+        $this->assertTrue(true);
+    }
+
+    private function requireRedisExtension(): void
+    {
+        if (!class_exists(\Redis::class)) {
+            $this->markTestSkipped('ext-redis not installed');
+        }
     }
 
     private function setRedis(RedisReadThroughReflectionCacheRepository $repo, ?\Redis $redis): void
@@ -138,3 +212,11 @@ class ReflectionTestFileRepository extends FileReflectionCacheRepository
     }
 }
 
+class ReflectionFailingFileRepository extends ReflectionTestFileRepository
+{
+    public function save(array $properties): bool
+    {
+        $this->saveCalls++;
+        return false;
+    }
+}

@@ -35,6 +35,7 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
 
     public function testReadReturnsDecodedCachedPayloadWhenRedisHit(): void
     {
+        $this->requireRedisExtension();
         $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['from' => 'file']);
         $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -53,6 +54,7 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
 
     public function testReadStoresDataInRedisWhenCacheMiss(): void
     {
+        $this->requireRedisExtension();
         $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['from' => 'file']);
         $repo = new RedisReadThroughConfigRepository($file, 120, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -75,6 +77,7 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
 
     public function testReadFallsBackToFileOnRedisException(): void
     {
+        $this->requireRedisExtension();
         $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['fallback' => true]);
         $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -85,8 +88,30 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
         $this->assertSame(1, $file->readCalls);
     }
 
+    public function testReadRehydratesFromFileWhenRedisPayloadIsMalformed(): void
+    {
+        $this->requireRedisExtension();
+        $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['from' => 'file']);
+        $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
+        $redis = $this->createMock(\Redis::class);
+        $redis->expects($this->once())
+            ->method('get')
+            ->willReturn('{invalid-json');
+        $redis->expects($this->once())
+            ->method('setex')
+            ->with($this->stringContains('psfs:config:'), 60, json_encode(['from' => 'file']));
+        $redis->expects($this->once())
+            ->method('set')
+            ->with($this->stringContains('psfs:config:latest:'), $this->stringContains('psfs:config:'));
+        $this->setRedis($repo, $redis);
+
+        $this->assertSame(['from' => 'file'], $repo->read());
+        $this->assertSame(1, $file->readCalls);
+    }
+
     public function testSaveAndRefreshInvalidateRedisKeys(): void
     {
+        $this->requireRedisExtension();
         $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['app' => 'psfs']);
         $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
         $redis = $this->createMock(\Redis::class);
@@ -104,6 +129,33 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
         $this->setRedis($repo, null);
         $this->assertSame(['app' => 'psfs'], $repo->refresh());
         $this->assertSame(1, $file->readCalls);
+    }
+
+    public function testInvalidateHandlesRedisExceptionsWithoutThrowing(): void
+    {
+        $this->requireRedisExtension();
+        $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['app' => 'psfs']);
+        $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
+        $redis = $this->createMock(\Redis::class);
+        $redis->method('get')->willThrowException(new \RedisException('boom'));
+        $this->setRedis($repo, $redis);
+
+        $repo->invalidate();
+        $this->assertTrue(true);
+    }
+
+    public function testGetConfigPathDelegatesToFileRepository(): void
+    {
+        $file = new RedisTestFileConfigRepository($this->tmpConfigPath, ['app' => 'psfs']);
+        $repo = new RedisReadThroughConfigRepository($file, 60, 'vtest');
+        $this->assertSame($this->tmpConfigPath, $repo->getConfigPath());
+    }
+
+    private function requireRedisExtension(): void
+    {
+        if (!class_exists(\Redis::class)) {
+            $this->markTestSkipped('ext-redis not installed');
+        }
     }
 
     private function setRedis(RedisReadThroughConfigRepository $repo, ?\Redis $redis): void

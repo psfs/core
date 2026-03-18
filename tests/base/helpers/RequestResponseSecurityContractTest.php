@@ -60,6 +60,79 @@ class RequestResponseSecurityContractTest extends TestCase
         $this->assertNull(RequestHelper::resolveAllowedOrigin('', 'https://api.example.com'));
     }
 
+    public function testResolveAllowedOriginSupportsArrayAndLegacyRegex(): void
+    {
+        $origin = 'https://secure.example.com';
+        $this->assertSame(
+            $origin,
+            RequestHelper::resolveAllowedOrigin($origin, ['https://api.example.com', 'https://secure.example.com'])
+        );
+        $this->assertNull(
+            RequestHelper::resolveAllowedOrigin($origin, ['https://api.example.com', 'https://admin.example.com'])
+        );
+
+        $this->assertSame($origin, RequestHelper::resolveAllowedOrigin($origin, '/^https:\/\/.*\.example\.com$/'));
+        $this->assertNull(RequestHelper::resolveAllowedOrigin('https://evil.test', '/^https:\/\/.*\.example\.com$/'));
+    }
+
+    public function testGetCorsHeadersIncludesExtraConfiguredHeadersWithoutDuplicates(): void
+    {
+        $config = $this->configBackup;
+        $config['cors.headers'] = ' X-Foo , Authorization, X-Bar, X-Foo ';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $headers = RequestHelper::getCorsHeaders();
+        $this->assertContains('Authorization', $headers);
+        $this->assertContains('X-Foo', $headers);
+        $this->assertContains('X-Bar', $headers);
+        $this->assertSame(1, count(array_filter($headers, static fn($h) => $h === 'X-Foo')));
+    }
+
+    public function testCheckCorsSetsHeadersForAllowedOriginOnGet(): void
+    {
+        $config = $this->configBackup;
+        $config['cors.enabled'] = ['https://app.example.com', 'https://admin.example.com'];
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $request = Request::getInstance();
+        $request->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'HTTP_ORIGIN' => 'https://app.example.com/path',
+        ]);
+
+        ResponseHelper::$headers_sent = [];
+        RequestHelper::checkCORS();
+
+        $this->assertSame('true', ResponseHelper::$headers_sent['access-control-allow-credentials'] ?? null);
+        $this->assertSame('https://app.example.com', ResponseHelper::$headers_sent['access-control-allow-origin'] ?? null);
+        $this->assertSame('Origin', ResponseHelper::$headers_sent['vary'] ?? null);
+        $this->assertArrayHasKey('access-control-allow-methods', ResponseHelper::$headers_sent);
+        $this->assertArrayHasKey('access-control-allow-headers', ResponseHelper::$headers_sent);
+        $this->assertArrayNotHasKey('http status', ResponseHelper::$headers_sent);
+    }
+
+    public function testCheckCorsSkipsHeadersWhenOriginIsNotAllowed(): void
+    {
+        $config = $this->configBackup;
+        $config['cors.enabled'] = 'https://allowed.example.com';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $request = Request::getInstance();
+        $request->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'HTTP_ORIGIN' => 'https://blocked.example.com',
+        ]);
+
+        ResponseHelper::$headers_sent = [];
+        RequestHelper::checkCORS();
+
+        $this->assertArrayNotHasKey('access-control-allow-origin', ResponseHelper::$headers_sent);
+        $this->assertArrayNotHasKey('access-control-allow-methods', ResponseHelper::$headers_sent);
+    }
+
     public function testNormalizeCookieDomain(): void
     {
         $this->assertEquals('example.com', ResponseHelper::normalizeCookieDomain('https://example.com:8080'));
