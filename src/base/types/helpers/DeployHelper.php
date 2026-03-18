@@ -64,7 +64,6 @@ final class DeployHelper
         }
         $cacheFile = CACHE_DIR . DIRECTORY_SEPARATOR . $version . '.file.cache';
         if (file_exists($cacheFile)) {
-            @unlink($cacheFile);
             if (@unlink($cacheFile) === false) {
                 Logger::log('[DeployHelper::removeTemplateCacheFile] Failed to delete cache file: ' . $cacheFile, LOG_WARNING);
             }
