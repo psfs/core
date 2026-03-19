@@ -14,6 +14,7 @@ use PSFS\base\Template;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\AssetsHelper;
 use PSFS\base\types\helpers\AuthHelper;
+use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 
 /**
@@ -164,19 +165,25 @@ class TemplateFunctions
         // Check if resources has been copied to public folders
         if (!$debug) {
             $cacheFilename = Config::getParam('cache.var', '__initial__') . '.file.cache';
-            $cachedFiles = Cache::getInstance()->readFromCache(
-                $cacheFilename,
-                1,
-                fn() => [],
-                Cache::JSON,
-                true
-            ) ?: [];
-            // Force the resource copy
-            if (!in_array($filenamePath, $cachedFiles, true) || $force) {
-                $force = true;
-                $cachedFiles[] = $filenamePath;
-                Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
-            }
+            $lockPath = CACHE_DIR . DIRECTORY_SEPARATOR . $cacheFilename . '.lock';
+            FileHelper::withExclusiveLock(
+                $lockPath,
+                function () use ($cacheFilename, $filenamePath, &$force) {
+                    $cachedFiles = Cache::getInstance()->readFromCache(
+                        $cacheFilename,
+                        1,
+                        fn() => [],
+                        Cache::JSON,
+                        true
+                    ) ?: [];
+                    // Force the resource copy
+                    if (!in_array($filenamePath, $cachedFiles, true) || $force) {
+                        $force = true;
+                        $cachedFiles[] = $filenamePath;
+                        Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
+                    }
+                }
+            );
         }
         GeneratorHelper::copyResources($dest, $force, $filenamePath, $debug);
         return '';
@@ -233,9 +240,9 @@ class TemplateFunctions
     ): void {
         $data = file_get_contents($filenamePath);
         if (!empty($name)) {
-            file_put_contents(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
+            FileHelper::writeFileAtomic(WEB_DIR . DIRECTORY_SEPARATOR . $name, $data);
         } else {
-            file_put_contents($base . $filePath, $data);
+            FileHelper::writeFileAtomic($base . $filePath, $data);
         }
     }
 

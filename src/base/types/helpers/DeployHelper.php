@@ -50,7 +50,7 @@ final class DeployHelper
     {
         $cleaned = Config::clearConfigFiles();
         $routingMeta = CONFIG_DIR . DIRECTORY_SEPARATOR . self::ROUTING_META_FILE;
-        if (file_exists($routingMeta) && !unlink($routingMeta)) {
+        if (file_exists($routingMeta) && !FileHelper::deleteFile($routingMeta)) {
             $cleaned = false;
         }
         return $cleaned;
@@ -64,7 +64,7 @@ final class DeployHelper
         }
         $cacheFile = CACHE_DIR . DIRECTORY_SEPARATOR . $version . '.file.cache';
         if (file_exists($cacheFile)) {
-            if (@unlink($cacheFile) === false) {
+            if (!FileHelper::deleteFile($cacheFile)) {
                 Logger::log(
                     '[DeployHelper::removeTemplateCacheFile] Failed to delete cache file: ' . $cacheFile,
                     LOG_WARNING

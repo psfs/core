@@ -7,6 +7,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\AssetsHelper;
+use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 
@@ -70,7 +71,7 @@ trait CssTrait
             $filePath = $this->hash . "_" . $pathParts[count($pathParts) - 1];
             if (!file_exists($base . $filePath) || filemtime($base . $filePath) < filemtime($file) || $debug) {
                 // Recompile all modified files when any source changed.
-                if (file_exists($base . $hash . ".css") && @unlink($base . $hash . ".css") === false) {
+                if (file_exists($base . $hash . ".css") && !FileHelper::deleteFile($base . $hash . ".css")) {
                     throw new ConfigException("Can't unlink file " . $base . $hash . ".css");
                 }
                 $this->loopCssLines($file);
@@ -122,7 +123,7 @@ trait CssTrait
                 $dest = $this->path . $origPart[1];
                 GeneratorHelper::createDir(dirname($dest));
                 if (!file_exists($dest) || filemtime($orig) > filemtime($dest)) {
-                    if (@copy($orig, $dest) === false) {
+                    if (!FileHelper::copyFileAtomic($orig, $dest)) {
                         throw new \RuntimeException('Can\' copy ' . $dest . '');
                     }
                     Logger::log("$orig copiado a $dest", LOG_INFO);

@@ -22,6 +22,102 @@ class FileHelper
 
     /**
      * @param string $path
+     * @param mixed $data
+     * @param int $flags
+     * @return bool
+     */
+    public static function writeFileAtomic(string $path, mixed $data, int $flags = 0): bool
+    {
+        $dir = dirname($path);
+        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+            return false;
+        }
+        $tmpPath = tempnam($dir, '.tmp-psfs-');
+        if (false === $tmpPath) {
+            return false;
+        }
+        $bytes = @file_put_contents($tmpPath, $data, $flags | LOCK_EX);
+        if (false === $bytes) {
+            @unlink($tmpPath);
+            return false;
+        }
+        if (@rename($tmpPath, $path) === false) {
+            @unlink($tmpPath);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param string $source
+     * @param string $target
+     * @return bool
+     */
+    public static function copyFileAtomic(string $source, string $target): bool
+    {
+        if (!file_exists($source)) {
+            return false;
+        }
+        $dir = dirname($target);
+        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+            return false;
+        }
+        $tmpPath = tempnam($dir, '.tmp-psfs-');
+        if (false === $tmpPath) {
+            return false;
+        }
+        if (@copy($source, $tmpPath) === false) {
+            @unlink($tmpPath);
+            return false;
+        }
+        if (@rename($tmpPath, $target) === false) {
+            @unlink($tmpPath);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param string $path
+     * @return bool
+     */
+    public static function deleteFile(string $path): bool
+    {
+        if (!file_exists($path)) {
+            return true;
+        }
+        return @unlink($path);
+    }
+
+    /**
+     * @template T
+     * @param string $lockPath
+     * @param callable():T $callback
+     * @return T|null
+     */
+    public static function withExclusiveLock(string $lockPath, callable $callback): mixed
+    {
+        $dir = dirname($lockPath);
+        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+            return null;
+        }
+        $handle = @fopen($lockPath, 'c+');
+        if (false === $handle) {
+            return null;
+        }
+        try {
+            if (!flock($handle, LOCK_EX)) {
+                return null;
+            }
+            return $callback();
+        } finally {
+            @flock($handle, LOCK_UN);
+            @fclose($handle);
+        }
+    }
+
+    /**
+     * @param string $path
      * @return string|bool
      */
     public static function readFile(string $path): string|bool

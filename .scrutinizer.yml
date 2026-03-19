@@ -18,6 +18,11 @@ filter:
 checks:
     php: true
 
+tools:
+  php_cs_fixer:
+    config:
+      level: psr12
+
 build:
   environment:
     php:

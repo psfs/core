@@ -10,6 +10,7 @@ use PSFS\base\extension\traits\JsTrait;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\Inspector;
 
@@ -190,7 +191,7 @@ class AssetsParser
                     $orig_part = preg_split("/Public/i", $orig);
                     $dest = WEB_DIR . $orig_part[1];
                     GeneratorHelper::createDir(dirname($dest));
-                    if (@copy($orig, $dest) === false) {
+                    if (!FileHelper::copyFileAtomic($orig, $dest)) {
                         throw new ConfigException("Can't copy " . $orig . " to " . $dest);
                     }
                 } else {

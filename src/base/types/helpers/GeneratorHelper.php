@@ -22,13 +22,17 @@ class GeneratorHelper
     public static function deleteDir($dir): void
     {
         if (is_dir($dir)) {
+            if (is_link($dir)) {
+                @unlink($dir);
+                return;
+            }
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
                     if (filetype($dir . "/" . $object) == "dir") {
                         self::deleteDir($dir . "/" . $object);
                     } else {
-                        unlink($dir . "/" . $object);
+                        FileHelper::deleteFile($dir . "/" . $object);
                     }
                 }
             }
@@ -42,9 +46,17 @@ class GeneratorHelper
     {
         $rootDirs = array("css", "js", "media", "font");
         foreach ($rootDirs as $dir) {
-            if (file_exists(WEB_DIR . DIRECTORY_SEPARATOR . $dir)) {
+            $target = WEB_DIR . DIRECTORY_SEPARATOR . $dir;
+            $realWebDir = realpath(WEB_DIR);
+            $realTarget = realpath($target);
+            if (
+                file_exists($target)
+                && false !== $realWebDir
+                && false !== $realTarget
+                && str_starts_with($realTarget, $realWebDir . DIRECTORY_SEPARATOR)
+            ) {
                 try {
-                    self::deleteDir(WEB_DIR . DIRECTORY_SEPARATOR . $dir);
+                    self::deleteDir($target);
                 } catch (\Exception $e) {
                     syslog(LOG_INFO, $e->getMessage());
                 }
@@ -136,7 +148,7 @@ class GeneratorHelper
                 "generator/html/" . $template . '.html.twig',
                 ['PSFS_AS_VENDOR' => PSFS_AS_VENDOR]
             );
-            if (false === file_put_contents($target, $text)) {
+            if (!FileHelper::writeFileAtomic($target, $text)) {
                 self::writeGeneratorOutput($output, $quiet, 'Can\t create the file ' . $filename);
                 continue;
             }
@@ -198,7 +210,10 @@ class GeneratorHelper
                 if (is_dir($filenamePath)) {
                     self::copyr($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder);
                 } else {
-                    if (@copy($filenamePath, WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder) === false) {
+                    if (!FileHelper::copyFileAtomic(
+                        $filenamePath,
+                        WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder
+                    )) {
                         throw new ConfigException(
                             "Can't copy " . $filenamePath . " to " . WEB_DIR . $dest . DIRECTORY_SEPARATOR . $destfolder
                         );
@@ -221,7 +236,7 @@ class GeneratorHelper
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src . '/' . $file)) {
                     self::copyr($src . '/' . $file, $dst . '/' . $file);
-                } elseif (@copy($src . '/' . $file, $dst . '/' . $file) === false) {
+                } elseif (!FileHelper::copyFileAtomic($src . '/' . $file, $dst . '/' . $file)) {
                     throw new ConfigException("Can't copy " . $src . " to " . $dst);
                 }
             }
