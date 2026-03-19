@@ -66,6 +66,18 @@ class DocumentorServiceTest extends GeneratorServiceTest
         $this->assertArrayHasKey('paths', $swagger);
         $this->assertArrayHasKey('definitions', $swagger);
         $this->assertNotEmpty($swagger['paths']);
+
+        $postman = $documentorService->postmanFormatter($module, $doc);
+        $this->assertArrayHasKey('info', $postman);
+        $this->assertArrayHasKey('item', $postman);
+        $this->assertArrayHasKey('variable', $postman);
+        $this->assertNotEmpty($postman['item']);
+        $this->assertSame(
+            'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+            $postman['info']['schema']
+        );
+        $this->assertArrayHasKey('request', $postman['item'][0]['item'][0]);
+        $this->assertArrayHasKey('url', $postman['item'][0]['item'][0]['request']);
         $this->clearContext($modulePath);
     }
 }

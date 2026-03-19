@@ -59,12 +59,13 @@ class DocumentorController extends Controller
                 $doc = $this->srv->swaggerFormatter($module, $doc);
                 break;
             case ApiController::POSTMAN_DOC:
-                $doc = ['Pending...'];
+                $doc = $this->srv->postmanFormatter($module, $doc);
                 break;
         }
 
-        if ($download && $type === ApiController::SWAGGER_DOC) {
-            return $this->download(json_encode($doc), 'application/json', 'swagger.json');
+        if ($download && in_array($type, [ApiController::SWAGGER_DOC, ApiController::POSTMAN_DOC], true)) {
+            $filename = $type === ApiController::POSTMAN_DOC ? 'postman.collection.json' : 'swagger.json';
+            return $this->download(json_encode($doc), 'application/json', $filename);
         }
         if ($type === ApiController::HTML_DOC) {
             return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
