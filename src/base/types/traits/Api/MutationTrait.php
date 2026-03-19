@@ -14,6 +14,9 @@ use PSFS\base\Request;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\attributes\DefaultValue;
+use PSFS\base\types\helpers\attributes\Header;
+use PSFS\base\types\helpers\attributes\Label;
 
 /**
  * @package PSFS\base\types\traits\Api
@@ -26,6 +29,9 @@ trait MutationTrait
      * @label Locale for the API request
      * @default es
      */
+    #[Header(Api::HEADER_API_LANG)]
+    #[Label('Locale for the API request')]
+    #[DefaultValue('es')]
     protected $lang;
 
     /**
@@ -34,6 +40,9 @@ trait MutationTrait
      * @label Field type for API Dto
      * @default phpName
      */
+    #[Header(Api::HEADER_API_FIELDTYPE)]
+    #[Label('Field type for API Dto')]
+    #[DefaultValue('phpName')]
     protected $fieldType = TableMap::TYPE_PHPNAME;
 
     /**

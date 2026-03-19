@@ -6,6 +6,7 @@ use Exception;
 use Propel\Runtime\Map\ColumnMap;
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
@@ -42,16 +43,14 @@ trait DocumentorHelperTrait
 
     /**
      *
-     * @param string $comments
+     * @param string|null $comments
+     * @param ReflectionClass|null $reflector
      *
      * @return string
      */
-    protected function extractApi($comments = '')
+    protected function extractApi(?string $comments = '', ?ReflectionClass $reflector = null): string
     {
-        $api = '';
-        preg_match('/@api\ (.*)\n/i', $comments, $api);
-
-        return $api[1];
+        return (string)AnnotationHelper::extractApi((string)$comments, $reflector);
     }
 
     /**

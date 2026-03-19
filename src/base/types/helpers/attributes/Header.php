@@ -3,7 +3,7 @@
 namespace PSFS\base\types\helpers\attributes;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-class DefaultValue implements MetadataAttributeContract
+class Header implements MetadataAttributeContract
 {
     use MetadataAttributeValueResolverTrait;
 
@@ -13,6 +13,6 @@ class DefaultValue implements MetadataAttributeContract
 
     public static function tag(): string
     {
-        return 'default';
+        return 'header';
     }
 }

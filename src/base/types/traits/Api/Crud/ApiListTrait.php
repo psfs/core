@@ -6,6 +6,7 @@ use Propel\Runtime\ActiveQuery\ModelCriteria;
 use PSFS\base\dto\Order;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\traits\Api\MutationTrait;
 
 trait ApiListTrait
@@ -26,7 +27,8 @@ trait ApiListTrait
      * @Injectable
      * @var \PSFS\base\dto\Order
      */
-    protected $order;
+    #[Injectable]
+    protected Order $order;
 
     /**
      * @var \Propel\Runtime\Collection\Collection|\Propel\Runtime\Util\PropelModelPager

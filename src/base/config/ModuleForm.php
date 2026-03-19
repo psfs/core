@@ -2,7 +2,9 @@
 
 namespace PSFS\base\config;
 
+use PSFS\base\Router;
 use PSFS\base\types\Form;
+use PSFS\base\types\helpers\attributes\Injectable;
 
 /**
  * @package PSFS\base\config
@@ -14,7 +16,8 @@ class ModuleForm extends Form
      * @Injectable
      * @var \PSFS\base\Router
      */
-    protected $router;
+    #[Injectable]
+    protected Router $router;
 
     /**
      * @throws \PSFS\base\exception\FormException

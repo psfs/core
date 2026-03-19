@@ -11,6 +11,12 @@ use PSFS\base\types\Api;
 use PSFS\base\types\AuthAdminController;
 use PSFS\base\types\helpers\ApiFormHelper;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\attributes\Cacheable;
+use PSFS\base\types\helpers\attributes\HttpMethod;
+use PSFS\base\types\helpers\attributes\Icon;
+use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\Route as RouteAttribute;
+use PSFS\base\types\helpers\attributes\Visible;
 use PSFS\base\types\traits\RouteTrait;
 
 /**
@@ -37,6 +43,10 @@ trait ManagerTrait
      * @return string
      * @throws ApiException
      */
+    #[Label('{__API__} Manager')]
+    #[HttpMethod('GET')]
+    #[Icon('fa-database')]
+    #[RouteAttribute('/admin/{__DOMAIN__}/{__API__}')]
     public function admin()
     {
         if (Security::getInstance()->isUser()) {
@@ -70,6 +80,11 @@ trait ManagerTrait
      * @throws GeneratorException
      * @throws \ReflectionException
      */
+    #[Label('Returns form data for any entity')]
+    #[HttpMethod('POST')]
+    #[Visible(false)]
+    #[Cacheable(true)]
+    #[RouteAttribute('/admin/api/form/{__DOMAIN__}/{__API__}')]
     public function getForm()
     {
         $map = $this->getModelTableMap();

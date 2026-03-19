@@ -3,6 +3,10 @@
 namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\types\SimpleService;
+use PSFS\base\types\traits\Api\Crud\ApiListTrait;
+use PSFS\base\types\traits\Router\ModulesTrait;
+use PSFS\base\types\traits\TemplateTrait;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\MetadataReader;
 use PSFS\base\types\helpers\attributes\Action;
@@ -182,6 +186,27 @@ class MetadataReaderTest extends TestCase
         $this->assertSame('doc_only_default', MetadataReader::getTagValue('default', $fallbackDoc, null, $fallbackProperty));
     }
 
+    public function testInjectableParityForCoreMigratedProperties(): void
+    {
+        $this->setAttributesEnabled(true);
+
+        $simpleServiceLog = new \ReflectionProperty(SimpleService::class, 'log');
+        $this->assertTrue(MetadataReader::hasInjectable($simpleServiceLog, (string)$simpleServiceLog->getDocComment()));
+        $this->assertSame('\\PSFS\\base\\Logger', MetadataReader::extractVarType($simpleServiceLog, (string)$simpleServiceLog->getDocComment()));
+
+        $templateTraitTpl = new \ReflectionProperty(TemplateTraitHostExample::class, 'tpl');
+        $this->assertTrue(MetadataReader::hasInjectable($templateTraitTpl, (string)$templateTraitTpl->getDocComment()));
+        $this->assertSame('\\PSFS\\base\\Template', MetadataReader::extractVarType($templateTraitTpl, (string)$templateTraitTpl->getDocComment()));
+
+        $modulesTraitFinder = new \ReflectionProperty(ModulesTraitHostExample::class, 'finder');
+        $this->assertTrue(MetadataReader::hasInjectable($modulesTraitFinder, (string)$modulesTraitFinder->getDocComment()));
+        $this->assertSame('Finder', MetadataReader::extractVarType($modulesTraitFinder, (string)$modulesTraitFinder->getDocComment()));
+
+        $apiListTraitOrder = new \ReflectionProperty(ApiListTraitHostExample::class, 'order');
+        $this->assertTrue(MetadataReader::hasInjectable($apiListTraitOrder, (string)$apiListTraitOrder->getDocComment()));
+        $this->assertSame('\\PSFS\\base\\dto\\Order', MetadataReader::extractVarType($apiListTraitOrder, (string)$apiListTraitOrder->getDocComment()));
+    }
+
     private function setAttributesEnabled(bool $enabled): void
     {
         $config = $this->configBackup;
@@ -283,4 +308,19 @@ class MetadataReaderParityExample
      * @default doc_only_default
      */
     private $docOnlyPropertyTags;
+}
+
+class TemplateTraitHostExample
+{
+    use TemplateTrait;
+}
+
+class ModulesTraitHostExample
+{
+    use ModulesTrait;
+}
+
+abstract class ApiListTraitHostExample
+{
+    use ApiListTrait;
 }

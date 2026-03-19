@@ -2,8 +2,10 @@
 
 namespace PSFS\base\types;
 
+use PSFS\base\Cache;
 use PSFS\base\Logger;
 use PSFS\base\Singleton;
+use PSFS\base\types\helpers\attributes\Injectable;
 
 /**
  * @package PSFS\base\types
@@ -15,12 +17,14 @@ abstract class SimpleService extends Singleton
      * @Injectable
      * @var \PSFS\base\Logger
      */
-    protected $log;
+    #[Injectable]
+    protected Logger $log;
     /**
      * @Injectable
      * @var \PSFS\base\Cache
      */
-    protected $cache;
+    #[Injectable]
+    protected Cache $cache;
 
     /**
      * @return Logger

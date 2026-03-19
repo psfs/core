@@ -6,10 +6,12 @@ use Exception;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\helpers\AnnotationHelper;
-use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\MetadataReader;
+use PSFS\base\types\helpers\attributes\Header;
 use PSFS\base\types\helpers\RouterHelper;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionProperty;
 
 /**
  * @package PSFS\base\types\traits\Api
@@ -31,7 +33,7 @@ trait ApiEndpointExtractorTrait
         if (null === AnnotationHelper::extractRoute($docComments, $method)) {
             return null;
         }
-        $api = $this->extractApi($reflection->getDocComment());
+        $api = $this->extractApi($reflection->getDocComment() ?: '', $reflection);
         list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
         if (!$this->canExposeRoute($info, $docComments)) {
             return null;
@@ -148,28 +150,39 @@ trait ApiEndpointExtractorTrait
     {
         $methodInfo['headers'] = [];
         foreach ($reflection->getProperties() as $property) {
-            $doc = $property->getDocComment();
-            $header = $this->extractHeaderDefinition($doc ?: '');
+            $header = $this->extractHeaderDefinition($property);
             if (null !== $header) {
                 $methodInfo['headers'][] = $header;
             }
         }
     }
 
-    private function extractHeaderDefinition(string $doc): ?array
+    private function extractHeaderDefinition(ReflectionProperty $property): ?array
     {
+        $doc = (string)$property->getDocComment();
+        $headerAttr = $property->getAttributes(Header::class);
+        $headerName = null;
+        if (!empty($headerAttr)) {
+            $headerName = $headerAttr[0]->newInstance()->value;
+        }
         $headers = [];
-        preg_match('/@header\ (.*)\n/i', $doc, $headers);
-        if (!count($headers)) {
+        if (null === $headerName) {
+            preg_match('/@header\ (.*)\n/i', $doc, $headers);
+            if (count($headers)) {
+                $headerName = $headers[1];
+            }
+        }
+        if (empty($headerName)) {
             return null;
         }
+        $required = (bool)MetadataReader::getTagValue('required', $doc, true, $property);
         return [
-            "name" => $headers[1],
+            "name" => $headerName,
             "in" => "header",
-            "required" => true,
-            "type" => $this->extractVarType($doc),
-            "description" => InjectorHelper::getLabel($doc),
-            "default" => InjectorHelper::getDefaultValue($doc),
+            "required" => $required,
+            "type" => MetadataReader::extractVarType($property, $doc),
+            "description" => (string)MetadataReader::getTagValue('label', $doc, '', $property),
+            "default" => MetadataReader::getTagValue('default', $doc, '', $property),
         ];
     }
 
@@ -225,4 +238,3 @@ trait ApiEndpointExtractorTrait
         return $parameters;
     }
 }
-

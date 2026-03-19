@@ -35,6 +35,7 @@ class Config
         'debug' => true,
         'front.version' => 'v1',
         'version' => 'v1',
+        'metadata.attributes.enabled' => true,
     ];
     static public array $required = [
         'db.host',

@@ -61,6 +61,18 @@ class DocumentorServiceTest extends GeneratorServiceTest
             $this->assertContains($namespace, self::$namespaces, 'Namespace not included in the test');
             $this->assertCount(7, $endpoints, 'Different number of endpoints');
         }
+        $headerNames = [];
+        foreach ($doc as $endpoints) {
+            foreach ($endpoints as $endpoint) {
+                foreach ($endpoint['headers'] ?? [] as $header) {
+                    if (isset($header['name'])) {
+                        $headerNames[] = $header['name'];
+                    }
+                }
+            }
+        }
+        $this->assertContains('X-API-LANG', $headerNames);
+        $this->assertContains('X-FIELD-TYPE', $headerNames);
         $swagger = $documentorService->swaggerFormatter($module, $doc);
         $this->assertArrayHasKey('swagger', $swagger);
         $this->assertArrayHasKey('paths', $swagger);

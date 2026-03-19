@@ -19,6 +19,7 @@ use PSFS\base\types\helpers\EventHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\RequestHelper;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\traits\SystemTrait;
 use PSFS\controller\ConfigController;
 use PSFS\controller\UserController;
@@ -35,18 +36,21 @@ class Dispatcher extends Singleton
      * @Injectable
      * @var \PSFS\base\Security $security
      */
+    #[Injectable]
     protected $security;
 
     /**
      * @Injectable
      * @var \PSFS\base\Router $router
      */
+    #[Injectable]
     protected $router;
 
     /**
      * @Injectable
      * @var \PSFS\base\config\Config $config
      */
+    #[Injectable]
     protected $config;
 
     private $actualUri;

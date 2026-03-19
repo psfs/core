@@ -11,6 +11,7 @@ use PSFS\base\Router;
 use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\RouterHelper;
+use PSFS\base\types\helpers\attributes\Injectable;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -28,6 +29,7 @@ trait ModulesTrait
      * @Injectable
      * @var Finder
      */
+    #[Injectable]
     private $finder;
     /**
      * @var array

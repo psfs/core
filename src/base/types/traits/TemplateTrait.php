@@ -4,6 +4,8 @@ namespace PSFS\base\types\traits;
 
 use PSFS\base\Cache;
 use PSFS\base\Logger;
+use PSFS\base\Template;
+use PSFS\base\types\helpers\attributes\Injectable;
 
 /**
  * @package PSFS\base\types\traits
@@ -14,7 +16,8 @@ trait TemplateTrait
      * @Injectable
      * @var \PSFS\base\Template
      */
-    protected $tpl;
+    #[Injectable]
+    protected Template $tpl;
 
     /**
      * @param string $fileContent

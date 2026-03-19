@@ -4,19 +4,9 @@ namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
-use PSFS\base\types\helpers\attributes\Action;
-use PSFS\base\types\helpers\attributes\Api;
-use PSFS\base\types\helpers\attributes\Cacheable;
-use PSFS\base\types\helpers\attributes\DefaultValue;
-use PSFS\base\types\helpers\attributes\HttpMethod;
-use PSFS\base\types\helpers\attributes\Icon;
 use PSFS\base\types\helpers\attributes\Injectable;
-use PSFS\base\types\helpers\attributes\Label;
-use PSFS\base\types\helpers\attributes\Required;
-use PSFS\base\types\helpers\attributes\Route;
-use PSFS\base\types\helpers\attributes\Values;
+use PSFS\base\types\helpers\attributes\MetadataAttributeContract;
 use PSFS\base\types\helpers\attributes\VarType;
-use PSFS\base\types\helpers\attributes\Visible;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -105,33 +95,17 @@ class MetadataReader
         if (null === $reflector) {
             return null;
         }
-        $tag = strtolower($tag);
-        return match ($tag) {
-            'route' => self::readAttributeValue($reflector, Route::class),
-            'api' => self::readAttributeValue($reflector, Api::class),
-            'action' => self::readAttributeValue($reflector, Action::class),
-            'label' => self::readAttributeValue($reflector, Label::class),
-            'icon' => self::readAttributeValue($reflector, Icon::class),
-            'visible' => self::readAttributeValue($reflector, Visible::class),
-            'cache' => self::readAttributeValue($reflector, Cacheable::class),
-            'http' => self::readAttributeValue($reflector, HttpMethod::class),
-            'required' => self::readAttributeValue($reflector, Required::class),
-            'values' => self::readAttributeValue($reflector, Values::class),
-            'default' => self::readAttributeValue($reflector, DefaultValue::class),
-            default => null,
-        };
-    }
-
-    private static function readAttributeValue(
-        ReflectionClass|ReflectionMethod|ReflectionProperty $reflector,
-        string $attributeClass
-    ): mixed {
-        $attributes = $reflector->getAttributes($attributeClass);
-        if (empty($attributes)) {
-            return null;
+        $normalizedTag = strtolower($tag);
+        foreach ($reflector->getAttributes() as $attribute) {
+            $instance = $attribute->newInstance();
+            if (!$instance instanceof MetadataAttributeContract) {
+                continue;
+            }
+            if (strtolower($instance::tag()) === $normalizedTag) {
+                return $instance->resolve();
+            }
         }
-        $instance = $attributes[0]->newInstance();
-        return $instance->value;
+        return null;
     }
 
     private static function readFromDoc(string $tag, ?string $doc, mixed $default = null): mixed
