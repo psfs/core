@@ -91,6 +91,8 @@ class Config
         'project.timezone', // Set the timezone for the timestamps in PSFS(Europe/madrid by default)
         'curl.returnTransfer', // Curl option CURLOPT_RETURNTRANSFER
         'curl.followLocation', // Curl option CURLOPT_FOLLOWLOCATION
+        'curl.connectTimeout', // Curl option CURLOPT_CONNECTTIMEOUT
+        'curl.timeout', // Curl option CURLOPT_TIMEOUT
         'curl.sslVerifyHost', // Curl option CURLOPT_SSL_VERIFYHOST
         'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER
         'assets.obfuscate', // Allow to obfuscate and gzip js and css files
@@ -113,6 +115,7 @@ class Config
         'redis.host', // Redis host for read-through caches
         'redis.port', // Redis port for read-through caches
         'redis.timeout', // Redis timeout for read-through caches
+        'job.queue.redis.prefix', // Redis key prefix for PSFS async queue subsystem
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
         'i18n.provider.custom.enabled', // Use custom provider before gettext
         'i18n.missing.report.path', // Path where missing i18n keys will be reported

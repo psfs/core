@@ -50,12 +50,18 @@ class SlackHelper extends Service
                         ],
                         [
                             "title" => "Payload",
-                            "value" => json_encode($request->getData(), JSON_UNESCAPED_UNICODE),
+                            "value" => json_encode(
+                                SensitiveDataHelper::redact($request->getData()),
+                                JSON_UNESCAPED_UNICODE
+                            ),
                             "short" => false
                         ],
                         [
                             "title" => "ExtraInfo",
-                            "value" => json_encode($info, JSON_UNESCAPED_UNICODE),
+                            "value" => json_encode(
+                                SensitiveDataHelper::redact($info),
+                                JSON_UNESCAPED_UNICODE
+                            ),
                             "short" => false
                         ]
                     ],

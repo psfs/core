@@ -151,6 +151,7 @@ MYSQL_DATABASE=psfs
 
 - [General information and contracts](./doc/CONTRACTS.md)
 - [Versioning policy](./doc/VERSIONING.md)
+- [Async queue and connector contracts](./doc/contracts/async-jobs-connectors-contracts.md)
 - [Security policy](./SECURITY.md)
 
 ## Roadmap

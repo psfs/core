@@ -324,6 +324,30 @@ PSFS encourages encapsulating business logic into “services”. The framework 
 
 ---
 
+### 3.4 Async queue and connector hardening
+
+**Responsibility**
+
+- Provide a stable contract for asynchronous job enqueue/dequeue and safe connector behavior.
+
+**Contract**
+
+- Queue abstraction:
+  - `JobQueueInterface` is the public contract for queue backends.
+  - `SyncJobQueue` is the deterministic fallback and must always be available.
+  - `RedisJobQueue` is optional and must fail safely when Redis is unavailable.
+- Connector behavior:
+  - `CurlService` enforces default connect/total timeouts unless explicitly overridden by config.
+  - `SlackHelper` and connector payload logging must redact sensitive fields before external delivery.
+- Compatibility:
+  - Existing public service interfaces remain unchanged.
+  - Queue usage is additive and non-breaking.
+
+Reference guide:
+- `doc/contracts/async-jobs-connectors-contracts.md`
+
+---
+
 ## 4. Exceptions
 
 PSFS defines a set of framework-specific exceptions under `src/base/exception`.

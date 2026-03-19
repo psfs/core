@@ -167,10 +167,8 @@ abstract class CurlService extends SimpleService
     ) {
         $this->addOption(CURLOPT_RETURNTRANSFER, Config::getParam('curl.returnTransfer', $returnTransfer));
         $this->addOption(CURLOPT_FOLLOWLOCATION, Config::getParam('curl.followLocation', $followLocation));
-        $this->addOption(
-            CURLOPT_SSL_VERIFYHOST,
-            Config::getParam('curl.followLocation', Config::getParam('debug') ? 0 : 2)
-        );
+        $this->addOption(CURLOPT_CONNECTTIMEOUT, (int)Config::getParam('curl.connectTimeout', 3));
+        $this->addOption(CURLOPT_TIMEOUT, (int)Config::getParam('curl.timeout', 10));
         $this->addOption(CURLOPT_SSL_VERIFYPEER, Config::getParam('curl.sslVerifyPeer', $sslVerifyPeer));
         $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('curl.sslVerifyHost', $sslVerifyHost));
     }

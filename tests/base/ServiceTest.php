@@ -165,6 +165,8 @@ class ServiceTest extends TestCase
         $authType = $authSrv->getOption(CURLOPT_HTTPAUTH);
         $this->assertNotNull($authType, 'Auth not set');
         $this->assertEquals(CURLAUTH_BASIC, $authType, 'Auth basic not set');
+        $this->assertEquals(3, $authSrv->getOption(CURLOPT_CONNECTTIMEOUT), 'Connect timeout not set');
+        $this->assertEquals(10, $authSrv->getOption(CURLOPT_TIMEOUT), 'Timeout not set');
         $authString = $authSrv->getOption(CURLOPT_USERPWD);
         $this->assertNotNull($authString, 'Basic auth string not set');
         $this->assertEquals($basicAuth, $authString, 'Different auth string');
