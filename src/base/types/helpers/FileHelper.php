@@ -32,6 +32,7 @@ class FileHelper
         if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
             return false;
         }
+        $existingMode = file_exists($path) ? (fileperms($path) & 0777) : 0644;
         $tmpPath = tempnam($dir, '.tmp-psfs-');
         if (false === $tmpPath) {
             return false;
@@ -45,6 +46,7 @@ class FileHelper
             @unlink($tmpPath);
             return false;
         }
+        @chmod($path, $existingMode > 0 ? $existingMode : 0644);
         return true;
     }
 
@@ -62,6 +64,7 @@ class FileHelper
         if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
             return false;
         }
+        $mode = fileperms($source) & 0777;
         $tmpPath = tempnam($dir, '.tmp-psfs-');
         if (false === $tmpPath) {
             return false;
@@ -74,6 +77,7 @@ class FileHelper
             @unlink($tmpPath);
             return false;
         }
+        @chmod($target, $mode > 0 ? $mode : 0644);
         return true;
     }
 

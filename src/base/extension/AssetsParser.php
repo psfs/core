@@ -92,12 +92,13 @@ class AssetsParser
      */
     public function addFile($filename)
     {
-        if (file_exists($this->path . $filename) && preg_match('/\.' . $this->type . '$/i', $filename)) {
-            $this->files[] = $filename;
+        $localFilename = $this->path . ltrim((string)$filename, DIRECTORY_SEPARATOR);
+        if (file_exists($localFilename) && preg_match('/\.' . $this->type . '$/i', (string)$filename)) {
+            $this->files[] = $localFilename;
         } elseif (!empty($this->domains)) {
             foreach ($this->domains as $domain => $paths) {
-                $domainFilename = str_replace($domain, $paths["public"], $filename);
-                if (file_exists($domainFilename) && preg_match('/\.' . $this->type . '$/i', $domainFilename)) {
+                $domainFilename = str_replace($domain, $paths["public"], (string)$filename);
+                if (file_exists($domainFilename) && preg_match('/\.' . $this->type . '$/i', (string)$domainFilename)) {
                     $this->files[] = $domainFilename;
                 }
             }

@@ -32,11 +32,21 @@ class AssetsTokenParser extends AbstractTokenParser
      */
     public function parse(Token $token)
     {
-        $hash = substr(md5($this->parser->getStream()->getSourceContext()->getPath()), 0, 8);
+        $path = $this->parser->getStream()->getSourceContext()->getPath();
+        $hash = $this->buildHash($path, $token->getLine());
         $name = $token->getValue();
         $this->extractTemplateNodes();
         $node = $this->findTemplateNode();
         return new AssetsNode($name, array('node' => $node, 'hash' => $hash), $token->getLine(), $this->type);
+    }
+
+    /**
+     * Build a stable but block-unique hash to avoid collisions between multiple
+     * assets tags in the same template file.
+     */
+    protected function buildHash(string $path, int $line): string
+    {
+        return substr(md5($path . '#' . $this->type . '#' . $line), 0, 8);
     }
 
     /**

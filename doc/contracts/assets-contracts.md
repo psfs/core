@@ -12,6 +12,7 @@
 1. `AssetsNode::compile()`
 - Always emits parser pipeline in order: `new AssetsParser` -> `setHash` -> `init` -> `addFile*` -> `compile` -> `printHtml`.
 - Must preserve input script/style sequence.
+- Hash identity must be unique per assets block (`template path + type + line`) to avoid bundle collisions inside the same template.
 
 2. `AssetsParser::addFile()`
 - Adds file only when extension matches parser type (`js` or `css`).
@@ -49,6 +50,7 @@
 2. `FileHelper::copyFileAtomic(source, target)`
 - Copies to temp target and atomically renames.
 - Returns `false` when source is missing or rename fails.
+- Preserves source file mode when possible and keeps target readable by web server processes.
 
 3. `FileHelper::deleteFile(path)`
 - Idempotent delete contract: returns `true` when file is already absent.
@@ -70,4 +72,3 @@
 - `tests/base/type/helper/FileHelperTest.php`
 - `tests/base/TemplateTest.php`
 - `tests/base/type/helper/GeneratorHelperTest.php`
-

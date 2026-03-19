@@ -37,6 +37,8 @@ class FileHelperTest extends TestCase
         $ok = FileHelper::writeFileAtomic($target, 'hello');
         $this->assertTrue($ok);
         $this->assertSame('hello', (string)file_get_contents($target));
+        $mode = fileperms($target) & 0777;
+        $this->assertGreaterThan(0, ($mode & 0004), 'File must remain world-readable for web servers');
     }
 
     public function testLegacyWriteAndReadFileContracts(): void
@@ -69,6 +71,9 @@ class FileHelperTest extends TestCase
         $ok = FileHelper::copyFileAtomic($source, $target);
         $this->assertTrue($ok);
         $this->assertSame('copy-me', (string)file_get_contents($target));
+        $sourceMode = fileperms($source) & 0777;
+        $targetMode = fileperms($target) & 0777;
+        $this->assertSame($sourceMode, $targetMode);
     }
 
     public function testCopyFileAtomicReturnsFalseWhenSourceIsMissing(): void
