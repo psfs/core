@@ -1,0 +1,228 @@
+<?php
+
+namespace PSFS\base\types\traits\Api;
+
+use Exception;
+use PSFS\base\Logger;
+use PSFS\base\Request;
+use PSFS\base\types\helpers\AnnotationHelper;
+use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\RouterHelper;
+use ReflectionClass;
+use ReflectionMethod;
+
+/**
+ * @package PSFS\base\types\traits\Api
+ */
+trait ApiEndpointExtractorTrait
+{
+    /**
+     * @param string $namespace
+     * @param ReflectionMethod $method
+     * @param ReflectionClass $reflection
+     * @param string $module
+     *
+     * @return array
+     * @throws \ReflectionException
+     */
+    protected function extractMethodInfo($namespace, ReflectionMethod $method, ReflectionClass $reflection, $module)
+    {
+        $docComments = $method->getDocComment() ?: '';
+        if (null === AnnotationHelper::extractRoute($docComments, $method)) {
+            return null;
+        }
+        $api = $this->extractApi($reflection->getDocComment());
+        list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
+        if (!$this->canExposeRoute($info, $docComments)) {
+            return null;
+        }
+        $modelNamespace = str_replace('Api', 'Models', $namespace);
+        return $this->buildMethodInfo(
+            $method,
+            $reflection,
+            $module,
+            $modelNamespace,
+            $docComments,
+            (string)$route,
+            $info
+        );
+    }
+
+    private function canExposeRoute(array $routeInfo, string $docComments): bool
+    {
+        return ($routeInfo['visible'] ?? false) && !$this->checkDeprecated($docComments);
+    }
+
+    private function buildMethodInfo(
+        ReflectionMethod $method,
+        ReflectionClass $reflection,
+        string $module,
+        string $modelNamespace,
+        string $docComments,
+        string $route,
+        array $info
+    ): ?array {
+        $methodInfo = null;
+        try {
+            $return = $this->extractReturn($modelNamespace, $docComments);
+            $url = $this->extractEndpointUrl($route, $module);
+            $methodInfo = [
+                'url' => $url,
+                'method' => $info['http'],
+                'description' => $info['label'],
+                'return' => $return,
+                'objects' => $return['objects'] ?? [],
+                'class' => $reflection->getShortName(),
+            ];
+            unset($methodInfo['return']['objects']);
+            $this->setRequestParams($method, $methodInfo, $modelNamespace, $docComments);
+            $this->setQueryParams($method, $methodInfo);
+            $this->setRequestHeaders($reflection, $methodInfo);
+            return $methodInfo;
+        } catch (Exception $e) {
+            Logger::log($e->getMessage(), LOG_ERR);
+            return $methodInfo;
+        }
+    }
+
+    private function extractEndpointUrl(string $route, string $module): string
+    {
+        $parts = explode('#|#', $route);
+        $url = (string)array_pop($parts);
+        return str_replace('/' . $module . '/api', '', $url);
+    }
+
+    /**
+     * @param ReflectionMethod $method
+     * @param mixed $methodInfo
+     */
+    protected function setQueryParams(ReflectionMethod $method, &$methodInfo)
+    {
+        if (!$this->supportsNativeQueryParams($methodInfo, $method)) {
+            return;
+        }
+        $methodInfo['query'] = $this->buildNativeQueryParams();
+    }
+
+    private function supportsNativeQueryParams(array $methodInfo, ReflectionMethod $method): bool
+    {
+        return in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST], true)
+            && in_array($method->getShortName(), self::$nativeMethods, true);
+    }
+
+    private function buildNativeQueryParams(): array
+    {
+        return [
+            [
+                "name" => "__limit",
+                "in" => "query",
+                "description" => t("Record limit to return, -1 to return all records"),
+                "required" => false,
+                "type" => "integer",
+            ],
+            [
+                "name" => "__page",
+                "in" => "query",
+                "description" => t("Page to return"),
+                "required" => false,
+                "type" => "integer",
+            ],
+            [
+                "name" => "__fields",
+                "in" => "query",
+                "description" => t("Fields to return"),
+                "required" => false,
+                "type" => "array",
+                "items" => [
+                    "type" => "string",
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param ReflectionClass $reflection
+     * @param mixed $methodInfo
+     */
+    protected function setRequestHeaders(ReflectionClass $reflection, &$methodInfo)
+    {
+        $methodInfo['headers'] = [];
+        foreach ($reflection->getProperties() as $property) {
+            $doc = $property->getDocComment();
+            $header = $this->extractHeaderDefinition($doc ?: '');
+            if (null !== $header) {
+                $methodInfo['headers'][] = $header;
+            }
+        }
+    }
+
+    private function extractHeaderDefinition(string $doc): ?array
+    {
+        $headers = [];
+        preg_match('/@header\ (.*)\n/i', $doc, $headers);
+        if (!count($headers)) {
+            return null;
+        }
+        return [
+            "name" => $headers[1],
+            "in" => "header",
+            "required" => true,
+            "type" => $this->extractVarType($doc),
+            "description" => InjectorHelper::getLabel($doc),
+            "default" => InjectorHelper::getDefaultValue($doc),
+        ];
+    }
+
+    /**
+     * @param ReflectionMethod $method
+     * @param array $methodInfo
+     * @param string $modelNamespace
+     * @param string $docComments
+     */
+    protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
+    {
+        $this->setRequestPayload($methodInfo, $modelNamespace, $docComments);
+        $parameters = $this->extractParameterTypes($method, $docComments);
+        if (!empty($parameters)) {
+            $methodInfo['parameters'] = $parameters;
+        }
+    }
+
+    private function setRequestPayload(array &$methodInfo, string $modelNamespace, string $docComments): void
+    {
+        if (!in_array($methodInfo['method'], ['POST', 'PUT'], true)) {
+            return;
+        }
+        list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload(
+            $modelNamespace,
+            $docComments
+        );
+        if (!count($payloadDto)) {
+            return;
+        }
+        $methodInfo['payload'] = [
+            'type' => $payloadNamespaceShortName,
+            'properties' => $payloadDto,
+            'is_array' => $isArray,
+        ];
+        $methodInfo = $this->checkDtoAttributes($payloadDto, $methodInfo, $payloadNamespace);
+    }
+
+    private function extractParameterTypes(ReflectionMethod $method, string $docComments): array
+    {
+        if ($method->getNumberOfParameters() <= 0) {
+            return [];
+        }
+        $parameters = [];
+        foreach ($method->getParameters() as $parameter) {
+            $parameterName = $parameter->getName();
+            $types = [];
+            preg_match_all('/\@param\ (.*)\ \$' . $parameterName . '$/im', $docComments, $types);
+            if (count($types) > 1 && !empty($types[1])) {
+                $parameters[$parameterName] = $types[1][0];
+            }
+        }
+        return $parameters;
+    }
+}
+
