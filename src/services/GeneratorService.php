@@ -221,7 +221,7 @@ class GeneratorService extends SimpleService
             return true;
         }
 
-        $migrationService->generateMigrationFile($manager, $migrationsUp, $migrationsDown, $generatorConfig);
+        $migrationService->generateMigrationFile($manager, $migrationsUp, $migrationsDown, $generatorConfig, $module);
         return true;
     }
 

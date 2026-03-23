@@ -9,6 +9,14 @@ use Propel\Generator\Model\IdMethod;
 use PSFS\base\Logger;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
+use PSFS\services\migration\CommandRunner;
+use PSFS\services\migration\MigrationEngineResolver;
+use PSFS\services\migration\MigrationExecutionContext;
+use PSFS\services\migration\MigrationExecutionResult;
+use PSFS\services\migration\PhinxConfigFactory;
+use PSFS\services\migration\PhinxMigrationEngine;
+use PSFS\services\migration\PropelMigrationEngine;
+use PSFS\services\migration\SqlStatementSplitter;
 use Symfony\Component\Console\Output\Output;
 
 class MigrationService extends SimpleService
@@ -129,16 +137,48 @@ class MigrationService extends SimpleService
         MigrationManager $manager,
         array $migrationsUp,
         array $migrationsDown,
-        GeneratorConfig $generatorConfig
+        GeneratorConfig $generatorConfig,
+        ?string $module = null,
+        ?string $engineName = null
     ): void {
         $timestamp = $this->getCurrentTimestamp();
-        $migrationFileName = $manager->getMigrationFileName($timestamp);
-        $migrationClassBody = $manager->getMigrationClassBody($migrationsUp, $migrationsDown, $timestamp);
+        $migrationDir = $generatorConfig->getSection('paths')['migrationDir'];
+        $resolvedModule = $module ?: $this->resolveModuleFromMigrationDir($migrationDir);
+        $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($resolvedModule));
+        $result = $engine->generateFromDiff(
+            $resolvedModule,
+            $migrationsUp,
+            $migrationsDown,
+            $migrationDir,
+            $timestamp,
+            $manager
+        );
 
-        $file = $generatorConfig->getSection('paths')['migrationDir'] . DIRECTORY_SEPARATOR . $migrationFileName;
-        $this->writeFile($file, $migrationClassBody);
+        if (!$result->isSuccess()) {
+            throw new \RuntimeException($result->getOutput());
+        }
+        Logger::log($result->getOutput());
+    }
 
-        Logger::log(sprintf('"%s" file successfully created.', $file));
+    public function runMigrate(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null): MigrationExecutionResult
+    {
+        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate);
+        $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
+        return $engine->migrate($context);
+    }
+
+    public function runRollback(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null): MigrationExecutionResult
+    {
+        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate);
+        $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
+        return $engine->rollback($context);
+    }
+
+    public function runStatus(string $module, string $moduleBasePath, ?string $engineName = null): MigrationExecutionResult
+    {
+        $context = $this->buildExecutionContext($module, $moduleBasePath, false);
+        $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
+        return $engine->status($context);
     }
 
     protected function createMigrationManager(): MigrationManager
@@ -159,5 +199,43 @@ class MigrationService extends SimpleService
     protected function writeFile(string $file, string $content): void
     {
         file_put_contents($file, $content);
+    }
+
+    protected function createMigrationEngineResolver(): MigrationEngineResolver
+    {
+        $runner = $this->createCommandRunner();
+        $propel = new PropelMigrationEngine($runner);
+        $phinx = new PhinxMigrationEngine(
+            $runner,
+            new PhinxConfigFactory(),
+            new SqlStatementSplitter()
+        );
+
+        return new MigrationEngineResolver($phinx, $propel);
+    }
+
+    protected function createCommandRunner(): CommandRunner
+    {
+        return new CommandRunner();
+    }
+
+    private function resolveModuleFromMigrationDir(string $migrationDir): string
+    {
+        $module = basename(dirname(dirname($migrationDir)));
+        return '' !== $module ? $module : 'module';
+    }
+
+    private function buildExecutionContext(string $module, string $moduleBasePath, bool $simulate): MigrationExecutionContext
+    {
+        $moduleRoot = realpath($moduleBasePath);
+        if (false === $moduleRoot) {
+            throw new \RuntimeException(sprintf('Invalid module base path: %s', $moduleBasePath));
+        }
+        $configDir = $moduleRoot . DIRECTORY_SEPARATOR . 'Config';
+        if (!is_dir($configDir)) {
+            throw new \RuntimeException(sprintf('Module config directory not found: %s', $configDir));
+        }
+        $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
+        return new MigrationExecutionContext($module, $configDir, $migrationDir, $simulate);
     }
 }

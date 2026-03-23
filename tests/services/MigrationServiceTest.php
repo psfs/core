@@ -11,6 +11,10 @@ use Propel\Generator\Platform\PlatformInterface;
 use Propel\Generator\Reverse\SchemaParserInterface;
 use Propel\Runtime\Connection\ConnectionInterface;
 use PSFS\services\MigrationService;
+use PSFS\services\migration\MigrationEngineInterface;
+use PSFS\services\migration\MigrationEngineResolver;
+use PSFS\services\migration\MigrationExecutionContext;
+use PSFS\services\migration\MigrationExecutionResult;
 
 class MigrationServiceTest extends TestCase
 {
@@ -35,28 +39,29 @@ class MigrationServiceTest extends TestCase
 
         $service = new class($manager, $generatorConfig) extends MigrationService {
             public string $capturedModulePath = '';
+
             public function __construct(private MigrationManager $managerMock, private GeneratorConfig $configMock)
             {
             }
+
             protected function createMigrationManager(): MigrationManager
             {
                 return $this->managerMock;
             }
+
             protected function resolveGeneratorConfig(string $modulePath): GeneratorConfig
             {
                 $this->capturedModulePath = (string)$modulePath;
                 return $this->configMock;
             }
+
             public function getSchemas(array|string $path, bool $recursive = false): array
             {
                 return ['schema.xml'];
             }
         };
 
-        [$returnedManager, $returnedConfig] = $service->getConnectionManager(
-            'client',
-            CORE_DIR . DIRECTORY_SEPARATOR
-        );
+        [$returnedManager, $returnedConfig] = $service->getConnectionManager('client', CORE_DIR . DIRECTORY_SEPARATOR);
 
         $this->assertSame('client', $service->capturedModulePath);
         $this->assertSame($manager, $returnedManager);
@@ -68,9 +73,11 @@ class MigrationServiceTest extends TestCase
         $service = new class extends MigrationService {
             public PlatformInterface $platform;
             public ConnectionInterface $connection;
+
             public function __construct()
             {
             }
+
             public function getPlatformAndConnection(
                 MigrationManager $manager,
                 ?string $name,
@@ -83,11 +90,14 @@ class MigrationServiceTest extends TestCase
         $service->platform = $this->createStub(PlatformInterface::class);
         $service->platform->method('supportsMigrations')->willReturn(false);
         $service->platform->method('getDatabaseType')->willReturn('sqlite');
-        $manager = $this->createMock(MigrationManager::class);
-        $generatorConfig = $this->createMock(GeneratorConfig::class);
-        $appDatabase = new Database('main');
 
-        [$database, $tables] = $service->checkSourceDatabase($manager, $generatorConfig, $appDatabase, [], true);
+        [$database, $tables] = $service->checkSourceDatabase(
+            $this->createMock(MigrationManager::class),
+            $this->createMock(GeneratorConfig::class),
+            new Database('main'),
+            [],
+            true
+        );
 
         $this->assertNull($database);
         $this->assertSame(0, $tables);
@@ -109,9 +119,11 @@ class MigrationServiceTest extends TestCase
         $service = new class extends MigrationService {
             public PlatformInterface $platform;
             public ConnectionInterface $connection;
+
             public function __construct()
             {
             }
+
             public function getPlatformAndConnection(
                 MigrationManager $manager,
                 ?string $name,
@@ -153,37 +165,131 @@ class MigrationServiceTest extends TestCase
         $this->assertSame(7, $tables);
     }
 
-    public function testGenerateMigrationFileUsesDeterministicTimestampAndWritesFile(): void
+    public function testGenerateMigrationFileDelegatesToResolvedEngine(): void
     {
         $tmpDir = CACHE_DIR . DIRECTORY_SEPARATOR . 'migration_test_' . uniqid('', true);
         mkdir($tmpDir, 0777, true);
-        $manager = $this->createMock(MigrationManager::class);
-        $manager->expects($this->once())->method('getMigrationFileName')->with(12345)->willReturn('Version12345.php');
-        $manager->expects($this->once())
-            ->method('getMigrationClassBody')
-            ->with(['up'], ['down'], 12345)
-            ->willReturn('<?php echo "migration";');
 
-        $generatorConfig = $this->createMock(GeneratorConfig::class);
-        $generatorConfig->method('getSection')->with('paths')->willReturn(['migrationDir' => $tmpDir]);
+        $engine = new TestMigrationEngine('propel');
+        $resolver = $this->createMock(MigrationEngineResolver::class);
+        $resolver->expects($this->once())
+            ->method('resolve')
+            ->with(null, $this->isType('string'))
+            ->willReturn($engine);
 
-        $service = new class extends MigrationService {
-            public function __construct()
+        $service = new class($resolver) extends MigrationService {
+            public function __construct(private MigrationEngineResolver $resolverMock)
             {
             }
+
+            protected function createMigrationEngineResolver(): MigrationEngineResolver
+            {
+                return $this->resolverMock;
+            }
+
             protected function getCurrentTimestamp(): int
             {
                 return 12345;
             }
         };
 
-        $service->generateMigrationFile($manager, ['up'], ['down'], $generatorConfig);
-        $file = $tmpDir . DIRECTORY_SEPARATOR . 'Version12345.php';
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $generatorConfig->method('getSection')->with('paths')->willReturn(['migrationDir' => $tmpDir]);
 
-        $this->assertFileExists($file);
-        $this->assertSame('<?php echo "migration";', (string)file_get_contents($file));
-        @unlink($file);
+        $manager = $this->createMock(MigrationManager::class);
+        $service->generateMigrationFile($manager, ['up'], ['down'], $generatorConfig);
+
+        $this->assertSame(1, $engine->generateCalls);
+        $this->assertNotSame('', (string)$engine->lastGenerateModule);
+        $this->assertSame($tmpDir, $engine->lastGenerateDir);
+        $this->assertSame(12345, $engine->lastGenerateTimestamp);
+        $this->assertSame($manager, $engine->lastGenerateManager);
+
         @rmdir($tmpDir);
+    }
+
+    public function testRunMigrateBuildsExecutionContextAndDelegatesToSelectedEngine(): void
+    {
+        $moduleDir = CACHE_DIR . DIRECTORY_SEPARATOR . 'migration_module_' . uniqid('', true);
+        mkdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations', 0777, true);
+
+        $engine = new TestMigrationEngine('phinx');
+        $resolver = $this->createMock(MigrationEngineResolver::class);
+        $resolver->expects($this->once())
+            ->method('resolve')
+            ->with('phinx', 'client')
+            ->willReturn($engine);
+
+        $service = new class($resolver) extends MigrationService {
+            public function __construct(private MigrationEngineResolver $resolverMock)
+            {
+            }
+
+            protected function createMigrationEngineResolver(): MigrationEngineResolver
+            {
+                return $this->resolverMock;
+            }
+        };
+
+        $result = $service->runMigrate('Client', $moduleDir, true, 'phinx');
+
+        $this->assertTrue($result->isSuccess());
+        $this->assertSame('phinx', $result->getEngine());
+        $this->assertInstanceOf(MigrationExecutionContext::class, $engine->lastMigrateContext);
+        $this->assertSame('Client', $engine->lastMigrateContext->getModule());
+        $this->assertTrue($engine->lastMigrateContext->isSimulate());
+
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations');
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config');
+        @rmdir($moduleDir);
+    }
+
+    public function testRunRollbackAndStatusDelegateToEngine(): void
+    {
+        $moduleDir = CACHE_DIR . DIRECTORY_SEPARATOR . 'migration_module_' . uniqid('', true);
+        mkdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations', 0777, true);
+
+        $engine = new TestMigrationEngine('propel');
+        $resolver = $this->createMock(MigrationEngineResolver::class);
+        $calls = 0;
+        $resolver->expects($this->exactly(2))
+            ->method('resolve')
+            ->willReturnCallback(function (?string $requestedEngine, ?string $module) use ($engine, &$calls): MigrationEngineInterface {
+                if (0 === $calls) {
+                    TestCase::assertSame('propel', $requestedEngine);
+                    TestCase::assertSame('client', $module);
+                } else {
+                    TestCase::assertNull($requestedEngine);
+                    TestCase::assertSame('client', $module);
+                }
+                $calls++;
+                return $engine;
+            });
+
+        $service = new class($resolver) extends MigrationService {
+            public function __construct(private MigrationEngineResolver $resolverMock)
+            {
+            }
+
+            protected function createMigrationEngineResolver(): MigrationEngineResolver
+            {
+                return $this->resolverMock;
+            }
+        };
+
+        $rollback = $service->runRollback('Client', $moduleDir, false, 'propel');
+        $status = $service->runStatus('Client', $moduleDir);
+
+        $this->assertTrue($rollback->isSuccess());
+        $this->assertTrue($status->isSuccess());
+        $this->assertCount(1, $engine->rollbackContexts);
+        $this->assertCount(1, $engine->statusContexts);
+        $this->assertFalse($engine->rollbackContexts[0]->isSimulate());
+        $this->assertFalse($engine->statusContexts[0]->isSimulate());
+
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations');
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config');
+        @rmdir($moduleDir);
     }
 
     public function testGetPlatformAndConnectionDelegatesToManagerAndGeneratorConfig(): void
@@ -193,6 +299,7 @@ class MigrationServiceTest extends TestCase
             {
             }
         };
+
         $manager = $this->createMock(MigrationManager::class);
         $connection = $this->createStub(ConnectionInterface::class);
         $manager->expects($this->once())->method('getAdapterConnection')->with('main')->willReturn($connection);
@@ -208,5 +315,67 @@ class MigrationServiceTest extends TestCase
 
         $this->assertSame($connection, $returnedConnection);
         $this->assertSame($platform, $returnedPlatform);
+    }
+}
+
+final class TestMigrationEngine implements MigrationEngineInterface
+{
+    public int $generateCalls = 0;
+    public ?string $lastGenerateModule = null;
+    public ?string $lastGenerateDir = null;
+    public ?int $lastGenerateTimestamp = null;
+    public ?MigrationManager $lastGenerateManager = null;
+    public ?MigrationExecutionContext $lastMigrateContext = null;
+    /** @var array<int, MigrationExecutionContext> */
+    public array $rollbackContexts = [];
+    /** @var array<int, MigrationExecutionContext> */
+    public array $statusContexts = [];
+
+    public function __construct(private string $name, private bool $available = true)
+    {
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->available;
+    }
+
+    public function migrate(MigrationExecutionContext $context): MigrationExecutionResult
+    {
+        $this->lastMigrateContext = $context;
+        return MigrationExecutionResult::success($this->name, 'ok');
+    }
+
+    public function rollback(MigrationExecutionContext $context): MigrationExecutionResult
+    {
+        $this->rollbackContexts[] = $context;
+        return MigrationExecutionResult::success($this->name, 'ok');
+    }
+
+    public function status(MigrationExecutionContext $context): MigrationExecutionResult
+    {
+        $this->statusContexts[] = $context;
+        return MigrationExecutionResult::success($this->name, 'ok');
+    }
+
+    public function generateFromDiff(
+        string $module,
+        array $migrationsUp,
+        array $migrationsDown,
+        string $migrationDir,
+        int $timestamp,
+        ?MigrationManager $manager = null
+    ): MigrationExecutionResult {
+        $this->generateCalls++;
+        $this->lastGenerateModule = $module;
+        $this->lastGenerateDir = $migrationDir;
+        $this->lastGenerateTimestamp = $timestamp;
+        $this->lastGenerateManager = $manager;
+        return MigrationExecutionResult::success($this->name, 'ok');
     }
 }

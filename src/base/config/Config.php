@@ -36,6 +36,8 @@ class Config
         'front.version' => 'v1',
         'version' => 'v1',
         'metadata.attributes.enabled' => true,
+        'migrations.engine' => 'phinx',
+        'migrations.legacy_fallback_enabled' => true,
     ];
     static public array $required = [
         'db.host',
@@ -120,6 +122,10 @@ class Config
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
         'i18n.provider.custom.enabled', // Use custom provider before gettext
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
+        'migrations.engine', // Default migration engine (phinx|propel)
+        'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine
+        'migrations.phinx.log_table_prefix', // Prefix for per-module phinx log table
+        'migrations.phinx.environment', // Runtime environment name used by phinx config
     ];
     protected bool $debug = false;
     public static array $cleanable_config_files = ['domains.json', 'urls.json'];
