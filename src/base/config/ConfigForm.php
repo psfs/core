@@ -103,16 +103,11 @@ class ConfigForm extends Form
 
     private function buildAddFieldButtonAttrs(): array
     {
-        $add = [
+        return [
             'class' => 'btn-warning md-default',
             'icon' => 'fa-plus',
+            'onclick' => 'javascript:addNewField(document.getElementById("' . $this->getName() . '"));',
         ];
-        if (Config::getParam('admin.version', 'v1') === 'v1') {
-            $add['onclick'] = 'javascript:addNewField(document.getElementById("' . $this->getName() . '"));';
-            return $add;
-        }
-        $add['ng-click'] = 'addNewField()';
-        return $add;
     }
 
     /**

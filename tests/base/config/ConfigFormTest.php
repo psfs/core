@@ -45,24 +45,13 @@ class ConfigFormTest extends TestCase
         $this->assertSame('form-horizontal', $form->getAttrs()['class']);
     }
 
-    public function testAddFieldButtonChangesWithAdminVersion(): void
+    public function testAddFieldButtonUsesLegacyOnclickContract(): void
     {
-        $v1Config = $this->configBackup;
-        $v1Config['admin.version'] = 'v1';
-        Config::save($v1Config, []);
-        Config::getInstance()->loadConfigData(true);
-        $v1Form = new ConfigForm('/admin/config', ['db.password'], [], []);
-        $v1Button = $v1Form->getButtons()['add_field'] ?? [];
-        $this->assertArrayHasKey('onclick', $v1Button);
-        $this->assertArrayNotHasKey('ng-click', $v1Button);
+        $form = new ConfigForm('/admin/config', ['db.password'], [], []);
+        $button = $form->getButtons()['add_field'] ?? [];
 
-        $v2Config = $this->configBackup;
-        $v2Config['admin.version'] = 'v2';
-        Config::save($v2Config, []);
-        Config::getInstance()->loadConfigData(true);
-        $v2Form = new ConfigForm('/admin/config', ['db.password'], [], []);
-        $v2Button = $v2Form->getButtons()['add_field'] ?? [];
-        $this->assertArrayHasKey('ng-click', $v2Button);
-        $this->assertArrayNotHasKey('onclick', $v2Button);
+        $this->assertArrayHasKey('onclick', $button);
+        $this->assertStringContainsString('addNewField', $button['onclick']);
+        $this->assertArrayNotHasKey('ng-click', $button);
     }
 }

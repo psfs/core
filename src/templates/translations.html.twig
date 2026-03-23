@@ -1,5 +1,4 @@
-{% set base_version = get_config('admin.version', 'v1') %}
-{% extends '@ROOT/' ~ base_version ~ '/base.html.twig' %}
+{% extends '@ROOT/v1/base.html.twig' %}
 {% block header %}
     <div class="page-header col-xs-12">
         <h2>{{ "Translations generation"|trans }}</h2>
@@ -25,7 +24,5 @@
     </md-content>
 {% endblock body_content %}
 {% block scripts %}
-    {% if base_version == 'v1' %}
-    <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
-    {% endif %}
+        <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
 {% endblock scripts %}

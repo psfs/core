@@ -1,5 +1,4 @@
-{% set base_version = get_config('admin.version', 'v1') %}
-{% extends '@ROOT/' ~base_version ~ '/base.html.twig' %}
+{% extends '@ROOT/v1/base.html.twig' %}
 {% block header %}
     <div class="page-header col-xs-12">
         <h2>{{ "PSFS Administrator Management Tool"|trans }}</h2>
@@ -7,7 +6,6 @@
     </div>
 {% endblock header %}
 {% block body_content %}
-    {% if base_version == 'v1' %}
     <div class="panel panel-default">
         <div class="panel-body">
             {% for user, admin in admins %}
@@ -22,34 +20,9 @@
             <span class="label label-primary">{{ "User"|trans }}</span>&nbsp;
         </div>
     </div>
-    {% else %}
-    <md-card class="panel panel-default">
-        <md-card-content>
-        {% for user, admin in admins %}
-            {% if admin.class == 'info' %}
-                {% set user_class = 'fa-user-plus' %}
-                {% set user_color = 'md-warn' %}
-            {% elseif admin.class == 'warning' %}
-                {% set user_class = 'fa-user' %}
-                {% set user_color = 'md-info' %}
-            {% else %}
-                {% set user_class = 'fa-user-o' %}
-                {% set user_color = 'md-primary' %}
-            {% endif %}
-            <md-button class="md-raised {{ user_color }}" ng-click="null">
-                <i class="fa {{ user_class }}"></i>
-                {{ user }}
-            </md-button>
-        {% else %}
-            <p class="well">{{ "No administrators defined"|trans }}</p>
-        {% endfor %}
-        </md-card-content>
-    </md-card>
-    {% endif %}
     {{ form(form) }}
 {% endblock body_content %}
 {% block scripts %}
-    {% if base_version == 'v1' %}
     <script type="text/javascript" src="{{ asset('@ROOT/js/admins.js') }}"></script>
     <script type="text/javascript" src="{{ asset('@ROOT/js/api/api-srv.js') }}"></script>
     <script type="application/javascript">
@@ -63,5 +36,4 @@
             });
         })();
     </script>
-    {% endif %}
 {% endblock scripts %}
