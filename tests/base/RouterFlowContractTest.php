@@ -11,6 +11,7 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\interfaces\PreConditionedRunInterface;
+use PSFS\base\types\helpers\SecurityHelper;
 
 class RouterFlowContractTest extends TestCase
 {
@@ -30,6 +31,8 @@ class RouterFlowContractTest extends TestCase
         $this->filesBackup = $_FILES;
         $this->configBackup = Config::getInstance()->dumpConfig();
         Security::dropInstance();
+        Security::setTest(true);
+        SecurityHelper::setTest(true);
         Request::dropInstance();
         StageTrackingRouter::resetTrace();
     }
@@ -43,6 +46,8 @@ class RouterFlowContractTest extends TestCase
         $_FILES = $this->filesBackup;
         Request::dropInstance();
         Security::dropInstance();
+        Security::setTest(false);
+        SecurityHelper::setTest(false);
         Config::save($this->configBackup, []);
         Config::getInstance()->loadConfigData(true);
         RouterFlowController::reset();
@@ -239,6 +244,8 @@ class RouterFlowContractTest extends TestCase
 
     public function testRestrictedRouteDenialStopsActionExecution(): void
     {
+        Security::setTest(false);
+        SecurityHelper::setTest(false);
         $router = new TestableRouter();
         $router->seedRoutes([
             'GET#|#/admin/private' => $this->buildAction('get', RouterFlowController::class, 'GET'),
@@ -265,6 +272,8 @@ class RouterFlowContractTest extends TestCase
                 $this->assertSame([], RouterFlowController::$calls);
             }
         } finally {
+            Security::setTest(true);
+            SecurityHelper::setTest(true);
             if (null === $adminsBackup) {
                 @unlink($adminsPath);
             } else {

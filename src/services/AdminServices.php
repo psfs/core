@@ -46,7 +46,8 @@ class AdminServices extends Service
         ResponseHelper::setHeader('HTTP/1.1 401 Unauthorized');
         ResponseHelper::setHeader('WWW-Authenticate: Basic Realm="' . $platform . '"');
         $message = t('Restricted area');
-        if (!self::isTest()) {
+        $isUnitTestExecution = defined('PSFS_UNIT_TESTING_EXECUTION') && true === PSFS_UNIT_TESTING_EXECUTION;
+        if (!self::isTest() && !$isUnitTestExecution) {
             echo $message;
             exit();
         }
