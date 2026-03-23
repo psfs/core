@@ -155,6 +155,23 @@ class ApiPhaseCHttpQueryContractTest extends TestCase
         $this->assertSame('Nombre base', (string)($es['data']['Name'] ?? ''));
     }
 
+    public function testApiLangHeaderDoesNotLeakIntoFollowingRequestWithoutHeader(): void
+    {
+        $config = array_merge(self::$configBackup, [
+            'default.language' => 'es',
+        ]);
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $en = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test/1', ['HTTP_X_API_LANG' => 'en']));
+        $default = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test/1'));
+
+        $this->assertTrue((bool)$en['success']);
+        $this->assertTrue((bool)$default['success']);
+        $this->assertSame('Base name', (string)($en['data']['Name'] ?? ''));
+        $this->assertSame('Nombre base', (string)($default['data']['Name'] ?? ''));
+    }
+
     public function testFastProfileBlocksUnboundedLimit(): void
     {
         $prevProfile = getenv('PSFS_TEST_PROFILE');

@@ -95,19 +95,21 @@ trait SessionTrait
 
     public function closeSession()
     {
-        unset($_SESSION);
-
-        if (@session_destroy() === false) {
-            Logger::log('[SessionTrait::closeSession] Unable to destroy session');
+        if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
+            @session_start();
         }
 
-        if (@session_regenerate_id(true) === false) {
-            Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
-        }
-
-        if (@session_start() === false) {
+        if (PHP_SESSION_ACTIVE === session_status()) {
+            session_unset();
+            if (@session_regenerate_id(true) === false) {
+                Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
+            }
+        } elseif (!headers_sent() && @session_start() === false) {
             Logger::log('[SessionTrait::closeSession] Unable to start session');
         }
+
+        $_SESSION = [];
+        $this->session = $_SESSION;
     }
 
 }

@@ -37,13 +37,26 @@ class AdminServices extends Service
     /**
      * @return string
      */
-    public function setAdminHeaders()
+    public function setAdminHeaders(bool $forceNewRealm = false)
     {
         $platform = trim(Config::getInstance()->get('platform.name', 'PSFS'));
+        if ($forceNewRealm) {
+            $platform .= ' reauth-' . substr(sha1((string)microtime(true)), 0, 8);
+        }
         ResponseHelper::setHeader('HTTP/1.1 401 Unauthorized');
         ResponseHelper::setHeader('WWW-Authenticate: Basic Realm="' . $platform . '"');
-        echo t('Restricted area');
-        exit();
+        $message = t('Restricted area');
+        if (!self::isTest()) {
+            echo $message;
+            exit();
+        }
+        return $message;
+    }
+
+    public function switchUser(): string
+    {
+        $this->security->clearAdminAuthentication();
+        return $this->setAdminHeaders(true);
     }
 
     /**

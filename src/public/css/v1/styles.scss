@@ -2,6 +2,31 @@
 html {
   background: white;
   body {
+    .skip-link {
+      position: absolute;
+      left: 0.75rem;
+      top: -3rem;
+      z-index: 2000;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0 0 4px 4px;
+      background: #111;
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      transition: top 120ms ease-in-out;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+    :focus-visible {
+      outline: 2px solid #0d6efd;
+      outline-offset: 2px;
+    }
+    .btn:focus,
+    .navbar-toggle:focus,
+    .back-to-top:focus {
+      outline-offset: 2px;
+    }
     &.container {
       position: relative !important;
       @media(min-width: 1200px) {
@@ -89,7 +114,7 @@ html {
               .btn {
                 min-width: 50px;
                 &:focus {
-                  outline: none;
+                  box-shadow: 0 0 0 2px rgba(13, 110, 253, .35);
                 }
               }
             }
@@ -139,6 +164,28 @@ html {
       position: fixed;
       bottom: 2%;
       right: 1%;
+    }
+    .bootbox.modal {
+      .modal-dialog {
+        margin-top: 5vh;
+        margin-bottom: 5vh;
+      }
+      .modal-content {
+        border-radius: 8px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, .28);
+      }
+      .modal-body {
+        max-height: calc(100vh - 220px);
+        overflow-y: auto;
+      }
+      .modal-header,
+      .modal-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+    .launcher-hint {
+      margin: 1rem 0 0;
     }
     .md-autocomplete-suggestions-container {
       .md-autocomplete-suggestions {

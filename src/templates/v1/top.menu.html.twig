@@ -1,9 +1,36 @@
 {% if error_page is not defined %}
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+{% set launcherMenu = [] %}
+{% for module, routes in __menu__ %}
+    {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ or module != 'PSFS' %}
+        {% set launcherModule = module == 'PSFS' ? 'Admin' : module %}
+        {% for route in routes.visible|default([]) %}
+            {% set launcherMenu = launcherMenu|merge([{
+                module: launcherModule,
+                label: route.label|trans,
+                icon: route.icon,
+                url: path(route.slug),
+                hidden: false
+            }]) %}
+        {% endfor %}
+        {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ and routes.hidden|default([])|length > 0 %}
+            {% for route in routes.hidden %}
+                {% set launcherMenu = launcherMenu|merge([{
+                    module: launcherModule,
+                    label: route.label|trans,
+                    icon: route.icon,
+                    url: path(route.slug),
+                    hidden: true
+                }]) %}
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" aria-label="{{ "Main navigation"|trans }}">
     <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+                    aria-controls="bs-example-navbar-collapse-1" aria-expanded="false" aria-label="{{ "Toggle navigation"|trans }}">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -15,10 +42,15 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{{ path('admin-switch-user') }}" data-switch-user>
+                        <i class="fa fa-exchange-alt"></i>&nbsp;<span>{{ 'Switch user'|trans }}</span>
+                    </a>
+                </li>
                 {% for module, routes in __menu__ %}
                 {% if __admin__.profile == __profiles__.__SUPER_ADMIN__ or module != 'PSFS' %}
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span>{% if module == 'PSFS' %}Admin{% else %}{{ module }}{% endif %}</span>
                         &nbsp;<i class="fa fa-caret-down"></i>
                     </a>
@@ -48,4 +80,7 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
+<script type="application/javascript">
+    window.__psfsAdminMenu = {{ launcherMenu|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+</script>
 {% endif %}

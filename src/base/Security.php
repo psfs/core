@@ -209,6 +209,28 @@ class Security
         return $this->checkAdminRole();
     }
 
+    public function clearAdminAuthentication(): void
+    {
+        $this->authorized = false;
+        $this->checked = false;
+        $this->user = null;
+        $this->admin = null;
+        $this->setSessionKey(AuthHelper::USER_ID_TOKEN, null);
+        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
+        ResponseHelper::setAuthHeaders(true);
+        ResponseHelper::setCookieHeaders([
+            [
+                'name' => AuthHelper::generateProfileHash(),
+                'value' => '',
+                'expire' => time() - 3600,
+                'httpOnly' => true,
+                'path' => '/',
+                'domain' => '',
+            ],
+        ]);
+        $this->closeSession();
+    }
+
     private function readIdentityFromSession(string $key): ?array
     {
         if (!$this->hasSessionKey($key)) {

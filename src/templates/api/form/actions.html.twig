@@ -1,8 +1,10 @@
-<div id="locale-selector" class="form-group col-xs-12 col-sm-1 pull-right" ng-show="hasI18n">
-    <select class="form-control" id="formLocale" name="formLocale">
-        <option value="es">es</option>
-        <option value="en">en</option>
-        <option value="fr">fr</option>
+<div id="locale-selector" class="form-group col-xs-12 col-sm-2 pull-right" ng-show="i18nLocales.length">
+    <select class="form-control"
+            id="formLocale"
+            name="formLocale"
+            ng-model="currentLocale"
+            ng-change="changeLocale(currentLocale)"
+            ng-options="(locale.Locale || locale.locale) as locale.Label for locale in i18nLocales track by (locale.Locale || locale.locale)">
     </select>
 </div>
 <div class="form-actions" role="group" ng-class="{'btn-group':formActions().length || isSaved()}">

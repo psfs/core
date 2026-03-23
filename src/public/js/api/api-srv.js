@@ -1,5 +1,42 @@
 'use strict';
 app = app || angular.module(module || 'psfs', []);
+var psfsManagerLocaleStore = (function () {
+    var prefix = 'psfs.manager.locale::';
+
+    function storage() {
+        try {
+            return window.localStorage;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function key() {
+        return prefix + window.location.pathname;
+    }
+
+    return {
+        get: function () {
+            var store = storage();
+            if (null === store) {
+                return null;
+            }
+            var value = store.getItem(key());
+            return (typeof value === 'string' && value.length) ? value : null;
+        },
+        set: function (value) {
+            var store = storage();
+            if (null === store) {
+                return;
+            }
+            if (typeof value === 'string' && value.length) {
+                store.setItem(key(), value);
+            } else {
+                store.removeItem(key());
+            }
+        }
+    };
+})();
 /**
  * Message Service
  * @type {*[]}
@@ -115,6 +152,97 @@ var entitySrv = ['$log', function ($log) {
     };
 }];
 app.service('$apiSrv', entitySrv);
+var managerLocationService = ['$window', function ($window) {
+    function getPath(url) {
+        var parser = document.createElement('a');
+        parser.href = url || '/';
+        return parser.pathname || '/';
+    }
+
+    function normalizePath(url) {
+        var path = getPath(url);
+        if (path.length > 1) {
+            path = path.replace(/\/+$/, '');
+        }
+        return path || '/';
+    }
+
+    function decodeId(id) {
+        if (!id) {
+            return null;
+        }
+        try {
+            return decodeURIComponent(id);
+        } catch (err) {
+            return id;
+        }
+    }
+
+    function encodeId(id) {
+        return encodeURIComponent(String(id));
+    }
+
+    function buildUrl(managerUrl, id) {
+        var path = normalizePath(managerUrl);
+        if (angular.isUndefined(id) || null === id || String(id).length === 0) {
+            return path;
+        }
+        return path + '/' + encodeId(id);
+    }
+
+    function getLegacyId() {
+        if (typeof URLSearchParams === 'function') {
+            return decodeId(new URLSearchParams($window.location.search || '').get('id'));
+        }
+        var match = ($window.location.search || '').match(/[?&]id=([^&]+)/i);
+        return match ? decodeId(match[1]) : null;
+    }
+
+    function getCurrentPathId(managerUrl) {
+        var path = normalizePath($window.location.pathname || '/');
+        var basePath = normalizePath(managerUrl);
+        if (path === basePath || path.indexOf(basePath + '/') !== 0) {
+            return null;
+        }
+        return decodeId(path.slice(basePath.length + 1));
+    }
+
+    function replace(managerUrl, id) {
+        if (!$window.history || !$window.history.replaceState) {
+            return;
+        }
+        var nextUrl = buildUrl(managerUrl, id);
+        if ($window.location.pathname === nextUrl && !($window.location.search || '').length) {
+            return;
+        }
+        $window.history.replaceState({}, '', nextUrl);
+    }
+
+    function resolveInitialId(managerUrl, initialItemId) {
+        var pathId = getCurrentPathId(managerUrl);
+        if (pathId) {
+            return pathId;
+        }
+        if (initialItemId) {
+            return initialItemId;
+        }
+        var legacyId = getLegacyId();
+        if (legacyId) {
+            replace(managerUrl, legacyId);
+            return legacyId;
+        }
+        return null;
+    }
+
+    return {
+        buildUrl: buildUrl,
+        getCurrentPathId: getCurrentPathId,
+        getLegacyId: getLegacyId,
+        replace: replace,
+        resolveInitialId: resolveInitialId
+    };
+}];
+app.service('$managerLocationSrv', managerLocationService);
 /**
  * Message Service
  * @type {*[]}
@@ -122,10 +250,14 @@ app.service('$apiSrv', entitySrv);
 var httpService = ['$rootScope', '$log', '$http', '$msgSrv', '$httpParamSerializer',
     function ($rootScope, $log, $http, $msgSrv, $httpParamSerializer) {
         var locale = document.getElementsByTagName('HTML')[0].getAttribute('lang') || 'es_ES';
+        var storedLocale = psfsManagerLocaleStore.get();
         try {
             locale = defaultLocale || locale;
         } catch (e) {
             // defaultLocale variable does not exists
+        }
+        if (null !== storedLocale) {
+            locale = storedLocale;
         }
         var srvConfig = {
             psfsToken: null,
@@ -348,6 +480,9 @@ var httpService = ['$rootScope', '$log', '$http', '$msgSrv', '$httpParamSerializ
                             angular.merge(srvConfig[key], value);
                         } else {
                             srvConfig[key] = value;
+                        }
+                        if (key === 'lang') {
+                            psfsManagerLocaleStore.set(srvConfig[key]);
                         }
                     });
                 }

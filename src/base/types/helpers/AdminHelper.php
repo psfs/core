@@ -56,6 +56,7 @@ class AdminHelper
             }
             if (isset($params['http']) && Request::VERB_GET === $params['http']
                 && preg_match('/^\/admin(\/|$)/', $params['default'])
+                && !preg_match('/^\/admin\/[^\/]+\/[^\/]+\/\{id\}$/', $params['default'])
                 && !in_array($params['slug'], ['n-a', 'admin-login', 'admin'], true)) {
                 $mode = $params['visible'] ? 'visible' : 'hidden';
                 $routes[$module][$mode][] = [

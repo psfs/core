@@ -5,6 +5,7 @@ namespace PSFS\base\types\helpers;
 use Exception;
 use PSFS\base\Cache;
 use PSFS\base\Logger;
+use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\types\traits\Helper\I18nDiscoveryTrait;
@@ -62,11 +63,21 @@ class I18nHelper
         bindtextdomain('translations', $localePath);
         textdomain('translations');
         bind_textdomain_codeset('translations', 'UTF-8');
-        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
-        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $locale);
+        if (self::shouldPersistLocaleSelection($force)) {
+            Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
+            Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $locale);
+        }
         if ($force) {
             t('', $customKey, true);
         }
+    }
+
+    private static function shouldPersistLocaleSelection(bool $force): bool
+    {
+        if ($force) {
+            return true;
+        }
+        return null === Request::header('X-API-LANG');
     }
 
     /**

@@ -11,6 +11,8 @@
         <input type="hidden" ng-model="api" ng-init="api = '{{ api }}'"/>
         <input type="hidden" ng-model="url" ng-init="url = '{{ url }}'"/>
         <input type="hidden" ng-model="formUrl" ng-init="formUrl = '{{ formUrl }}'"/>
+        <input type="hidden" ng-model="managerUrl" ng-init="managerUrl = '{{ managerUrl|e('js') }}'"/>
+        <input type="hidden" ng-model="initialItemId" ng-init="initialItemId = '{{ initialItemId|default('')|e('js') }}'"/>
         <input type="hidden" ng-model="domain" ng-init="domain = '{{ domain }}'"/>
         <input type="hidden" ng-model="listLabel" ng-init="listLabel = '{{ listLabel }}'"/>
         <input type="hidden" ng-model="modelId" ng-init="modelId = '{{ modelId }}'"/>

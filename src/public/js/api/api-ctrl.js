@@ -45,6 +45,7 @@
                         $scope.cleanFormStatus($scope.entity_form[i]);
                     }
                 }
+                $msgSrv.send('psfs.model.clean');
                 $msgSrv.send('populate_combos');
             }
 
@@ -61,7 +62,7 @@
                 }
                 $scope.loading = true;
                 try {
-                    $httpSrv.$get($scope.url, queryParams)
+                    return $httpSrv.$get($scope.url, queryParams)
                         .then(function(result) {
                             $scope.list = result.data.data;
                             $timeout(function(){
@@ -76,6 +77,7 @@
                 } catch(err) {
                     $log.error(err.message);
                 }
+                return null;
             }
 
             function catchError(response)

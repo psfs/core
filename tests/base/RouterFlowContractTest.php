@@ -142,6 +142,36 @@ class RouterFlowContractTest extends TestCase
         $this->assertSame(['get'], RouterFlowController::$calls);
     }
 
+    public function testAdminManagerCanonicalItemRouteWinsWhenIdIsPresent(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/admin/demo/users' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+            'GET#|#/admin/demo/users/{id}' => $this->buildAction('cached', RouterFlowController::class, 'GET', 0, ['id']),
+        ]);
+
+        $this->bootstrapRequest('/admin/demo/users/42', 'GET');
+        $result = $router->execute('/admin/demo/users/42');
+
+        $this->assertSame('cached:42', $result);
+        $this->assertSame(['cached'], RouterFlowController::$calls);
+    }
+
+    public function testAdminManagerBaseRouteStillResolvesWithoutId(): void
+    {
+        $router = new TestableRouter();
+        $router->seedRoutes([
+            'GET#|#/admin/demo/users' => $this->buildAction('get', RouterFlowController::class, 'GET'),
+            'GET#|#/admin/demo/users/{id}' => $this->buildAction('cached', RouterFlowController::class, 'GET', 0, ['id']),
+        ]);
+
+        $this->bootstrapRequest('/admin/demo/users', 'GET');
+        $result = $router->execute('/admin/demo/users');
+
+        $this->assertSame('get', $result);
+        $this->assertSame(['get'], RouterFlowController::$calls);
+    }
+
     public function testRequirementsValidationContract(): void
     {
         $router = new TestableRouter();

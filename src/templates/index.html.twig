@@ -7,8 +7,11 @@
 {% endblock header %}
 {% block body_content %}
     <section class="row">
-        <article class="col-xs-offset-3 col-xs-6 thumbnail">
-            <img src="{{ asset("@ROOT/image/admin.svg") }}" alt="welcome"/>
+        <article class="col-xs-offset-3 col-xs-6 thumbnail text-center">
+            <img src="{{ asset("@ROOT/image/admin.svg") }}" alt="{{ "Administration launcher for"|trans }} {{ get_config('platform.name') }}" class="img-responsive center-block"/>
+            <p class="text-muted launcher-hint">
+                {{ "Use the menu above to open a module"|trans }}
+            </p>
         </article>
     </section>
 {% endblock body_content %}

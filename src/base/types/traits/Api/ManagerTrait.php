@@ -49,25 +49,27 @@ trait ManagerTrait
     #[RouteAttribute('/admin/{__DOMAIN__}/{__API__}')]
     public function admin()
     {
-        if (Security::getInstance()->isUser()) {
-            throw new ApiException(t('You are not authorized to access this resource'), 403);
-        }
-        return AuthAdminController::getInstance()->render('api.admin.html.twig', array(
-            "api" => $this->getApi(),
-            "domain" => $this->getDomain(),
-            "listLabel" => Api::API_LIST_NAME_FIELD,
-            'modelId' => Api::API_MODEL_KEY_FIELD,
-            'formUrl' => preg_replace(
-                '/\/\{(.*)\}$/i',
-                '',
-                $this->getRoute(strtolower('admin-api-form-' . $this->getDomain() . '-' . $this->getApi()), true)
-            ),
-            "url" => preg_replace(
-                '/\/\{(.*)\}$/i',
-                '',
-                $this->getRoute(strtolower($this->getDomain() . '-' . 'api-' . $this->getApi() . "-pk"), true)
-            ),
-        ), [], '');
+        return $this->renderAdminManager();
+    }
+
+    /**
+     * @label {__API__} Manager item
+     * @GET
+     * @icon fa-database
+     * @visible false
+     * @route /admin/{__DOMAIN__}/{__API__}/{id}
+     * @param string $id
+     * @return string
+     * @throws ApiException
+     */
+    #[Label('{__API__} Manager item')]
+    #[HttpMethod('GET')]
+    #[Icon('fa-database')]
+    #[Visible(false)]
+    #[RouteAttribute('/admin/{__DOMAIN__}/{__API__}/{id}')]
+    public function adminItem(string $id)
+    {
+        return $this->renderAdminManager($id);
     }
 
     /**
@@ -92,6 +94,37 @@ trait ManagerTrait
         $form->actions = ApiFormHelper::checkApiActions(get_class($this), $this->getDomain(), $this->getApi());
 
         return $this->_json(new JsonResponse($form->toArray(), true), 200);
+    }
+
+    /**
+     * @throws ApiException
+     */
+    private function renderAdminManager(?string $itemId = null): string
+    {
+        if (Security::getInstance()->isUser()) {
+            throw new ApiException(t('You are not authorized to access this resource'), 403);
+        }
+
+        $managerRouteSlug = strtolower('admin-' . $this->getDomain() . '-' . $this->getApi());
+
+        return AuthAdminController::getInstance()->render('api.admin.html.twig', [
+            'api' => $this->getApi(),
+            'domain' => $this->getDomain(),
+            'listLabel' => Api::API_LIST_NAME_FIELD,
+            'modelId' => Api::API_MODEL_KEY_FIELD,
+            'initialItemId' => $itemId,
+            'managerUrl' => $this->getRoute($managerRouteSlug),
+            'formUrl' => preg_replace(
+                '/\/\{(.*)\}$/i',
+                '',
+                $this->getRoute(strtolower('admin-api-form-' . $this->getDomain() . '-' . $this->getApi()), true)
+            ),
+            'url' => preg_replace(
+                '/\/\{(.*)\}$/i',
+                '',
+                $this->getRoute(strtolower($this->getDomain() . '-' . 'api-' . $this->getApi() . '-pk'), true)
+            ),
+        ], [], '');
     }
 
 }

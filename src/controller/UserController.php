@@ -132,6 +132,20 @@ class UserController extends Admin
     }
 
     /**
+     * Force session reset and Basic re-authentication challenge.
+     * @GET
+     * @route /admin/switch-user
+     * @visible false
+     */
+    #[HttpMethod('GET')]
+    #[Route('/admin/switch-user')]
+    #[Visible(false)]
+    public function switchUser()
+    {
+        return $this->srv->switchUser();
+    }
+
+    /**
      * Delete PSFS admin users
      * @PUT
      * @route /admin/setup

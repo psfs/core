@@ -2,8 +2,30 @@
 html {
   background: white;
 }
-html body {
-  padding-top: 50px;
+html body .skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  z-index: 2000;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0 0 4px 4px;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 120ms ease-in-out;
+}
+html body .skip-link:focus {
+  top: 0;
+}
+html body :focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+html body .btn:focus,
+html body .navbar-toggle:focus,
+html body .back-to-top:focus {
+  outline-offset: 2px;
 }
 html body.container {
   position: relative !important;
@@ -17,6 +39,9 @@ html body.container {
   html body.container {
     width: 970px !important;
   }
+}
+html body {
+  padding-top: 50px;
 }
 html body * {
   font-family: "Roboto", Verdana;
@@ -89,7 +114,7 @@ html body .api-list .panel .panel-body .form-group .btn-group .btn, html body .a
   min-width: 50px;
 }
 html body .api-list .panel .panel-body .form-group .btn-group .btn:focus, html body .api-form .panel .panel-body .form-group .btn-group .btn:focus {
-  outline: none;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.35);
 }
 html body .api-list .panel .panel-body .form-group md-autocomplete md-autocomplete-wrap, html body .api-form .panel .panel-body .form-group md-autocomplete md-autocomplete-wrap {
   border-radius: 4px;
@@ -129,6 +154,26 @@ html body #back-to-top {
   position: fixed;
   bottom: 2%;
   right: 1%;
+}
+html body .bootbox.modal .modal-dialog {
+  margin-top: 5vh;
+  margin-bottom: 5vh;
+}
+html body .bootbox.modal .modal-content {
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+html body .bootbox.modal .modal-body {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+html body .bootbox.modal .modal-header,
+html body .bootbox.modal .modal-footer {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+html body .launcher-hint {
+  margin: 1rem 0 0;
 }
 html body .md-autocomplete-suggestions-container .md-autocomplete-suggestions * {
   color: black;

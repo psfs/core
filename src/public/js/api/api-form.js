@@ -3,13 +3,43 @@
 
     var formCtrl = ['$scope', '$httpSrv', '$msgSrv', '$log', '$apiSrv', '$mdDialog', '$q', '$timeout',
         function ($scope, $httpSrv, $msgSrv, $log, $apiSrv, $mdDialog, $q, $timeout) {
+            function getLocaleValue(locale) {
+                if (angular.isString(locale)) {
+                    return locale;
+                }
+                if (angular.isObject(locale)) {
+                    if ('Locale' in locale) {
+                        return locale.Locale;
+                    }
+                    if ('locale' in locale) {
+                        return locale.locale;
+                    }
+                }
+                return defaultLocale || 'es';
+            }
+
+            function syncCurrentLocale() {
+                if (!angular.isArray($scope.i18nLocales) || !$scope.i18nLocales.length) {
+                    return;
+                }
+                var available = $scope.i18nLocales.map(getLocaleValue),
+                    current = getLocaleValue($scope.currentLocale);
+                if (available.indexOf(current) === -1) {
+                    current = available[0];
+                }
+                $scope.currentLocale = current;
+                $httpSrv.$config({
+                    lang: current
+                });
+            }
+
             $scope.method = 'POST';
             $scope.itemLoading = false;
             $scope.combos = {};
             $scope.dates = {};
             $scope.limit = globalLimit || 25;
             $scope.extraActionExecution = false;
-            $scope.currentLocale = defaultLocale || 'es';
+            $scope.currentLocale = (($httpSrv.$exportConfig() || {}).lang) || defaultLocale || 'es';
             $scope.i18nLocales = [];
             $apiSrv.setEntity($scope.entity);
 
@@ -34,6 +64,7 @@
                             break;
                         }
                     }
+                    syncCurrentLocale();
                     $scope.itemLoading = false;
                     $timeout(function() {
                         $('.date').datepicker({
@@ -113,7 +144,7 @@
             }
 
 
-            function clearForm(edit) {
+            function clearForm(edit, selectedModel) {
                 $scope.itemLoading = false;
 
                 $scope.model = {};
@@ -125,7 +156,9 @@
                 }
                 $scope.entity_form.$setPristine();
                 clearAutocomplete();
-                if(edit) {
+                if(edit && selectedModel) {
+                    $msgSrv.send('psfs.model.select', selectedModel);
+                } else if(edit) {
                     $msgSrv.send('psfs.model.reload');
                 } else {
                     $msgSrv.send('psfs.model.clean');
@@ -150,8 +183,9 @@
                     } else {
                         promise = $httpSrv.$post($scope.url.replace(/\/$/, ''), model);
                     }
-                    promise.then(() => {
-                        clearForm(edit);
+                    promise.then(function(response) {
+                        var selectedModel = response && response.data ? response.data.data : null;
+                        clearForm(edit, selectedModel);
                     }, showError)
                     .finally(function() {
                         $msgSrv.send('psfs.list.reload');
@@ -409,11 +443,7 @@
             }
 
             function changeLocale(locale) {
-                if('Locale' in locale) {
-                    $scope.currentLocale = locale['Locale'];
-                } else {
-                    $scope.currentLocale = locale['locale'];
-                }
+                $scope.currentLocale = getLocaleValue(locale);
                 $httpSrv.$config({
                     lang: $scope.currentLocale
                 });

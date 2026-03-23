@@ -95,6 +95,20 @@ class I18nHelperTest extends TestCase
         Request::setLanguageHeader('');
     }
 
+    public function testSetLocaleWithApiHeaderDoesNotPersistGlobalSessionOverride(): void
+    {
+        $security = Security::getInstance();
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, 'es');
+        $security->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'es_ES');
+        Request::setLanguageHeader('en');
+
+        I18nHelper::setLocale();
+
+        $this->assertSame('es', $security->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY));
+        $this->assertSame('es_ES', $security->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY));
+        $this->assertSame('en_US', I18nHelper::extractLocale('es_ES'));
+    }
+
     public function testTranslateWithProvidersOrderCustomThenGettextThenOriginal(): void
     {
         I18nHelper::clearMissingTranslationsReport();
