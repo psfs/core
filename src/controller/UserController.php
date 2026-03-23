@@ -10,6 +10,8 @@ use PSFS\base\Request;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\Template;
+use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Icon;
 use PSFS\base\types\helpers\attributes\Label;
@@ -25,6 +27,56 @@ use PSFS\services\AdminServices;
  */
 class UserController extends Admin
 {
+    private static function normalizeLocaleCode(string $locale): ?string
+    {
+        $value = trim(str_replace('-', '_', $locale));
+        if ('' === $value) {
+            return null;
+        }
+        if (preg_match('/^[a-z]{2}$/i', $value) === 1) {
+            $lang = strtolower($value);
+            return $lang === 'en' ? 'en_US' : $lang . '_' . strtoupper($lang);
+        }
+        if (preg_match('/^[a-z]{2}_[a-z]{2}$/i', $value) === 1) {
+            [$lang, $region] = explode('_', $value, 2);
+            return strtolower($lang) . '_' . strtoupper($region);
+        }
+        if (preg_match('/^[a-z]{2}_[A-Z]{2}$/', $value) === 1) {
+            return $value;
+        }
+        return null;
+    }
+
+    private static function extractAllowedAdminLocales(): array
+    {
+        $configured = (string)\PSFS\base\config\Config::getParam('i18n.locales', 'en_US,es_ES');
+        $allowed = [];
+        foreach (explode(',', $configured) as $locale) {
+            $normalized = self::normalizeLocaleCode($locale);
+            if (null !== $normalized) {
+                $allowed[] = $normalized;
+            }
+        }
+        if (empty($allowed)) {
+            $allowed = ['en_US', 'es_ES'];
+        }
+        return array_values(array_unique($allowed));
+    }
+
+    private static function resolveSwitchLocale(string $requestedLocale, string $defaultLocale): string
+    {
+        $normalized = self::normalizeLocaleCode($requestedLocale);
+        $defaultNormalized = self::normalizeLocaleCode($defaultLocale) ?: 'en_US';
+        if (null === $normalized || !I18nHelper::isValidLocale($normalized)) {
+            return $defaultNormalized;
+        }
+        $allowed = self::extractAllowedAdminLocales();
+        if (!in_array($normalized, $allowed, true)) {
+            return $defaultNormalized;
+        }
+        return $normalized;
+    }
+
     private static function assertSuperAdminUserWriteAccess(): void
     {
         $security = Security::getInstance();
@@ -143,6 +195,39 @@ class UserController extends Admin
     public function switchUser()
     {
         return $this->srv->switchUser();
+    }
+
+    /**
+     * Force admin locale for the current session and redirect back.
+     * @GET
+     * @route /admin/locale/{locale}
+     * @visible false
+     */
+    #[HttpMethod('GET')]
+    #[Route('/admin/locale/{locale}')]
+    #[Visible(false)]
+    public function switchAdminLocale(string $locale): string
+    {
+        $targetLocale = self::resolveSwitchLocale(
+            $locale,
+            (string)$this->config->get('default.language', 'en_US')
+        );
+
+        I18nHelper::setLocale($targetLocale, null, true);
+        Security::getInstance()->updateSession();
+
+        $referer = Request::header('Referer');
+        $rootUrl = Request::getInstance()->getRootUrl();
+        if (is_string($referer)
+            && '' !== trim($referer)
+            && ('' === $rootUrl || str_starts_with($referer, $rootUrl))) {
+            ResponseHelper::setHeader('HTTP/1.1 302 Found');
+            ResponseHelper::setHeader('Location: ' . $referer);
+            return '';
+        }
+
+        $this->redirect('admin');
+        return '';
     }
 
     /**

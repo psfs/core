@@ -56,6 +56,17 @@ class Dispatcher extends Singleton
     private $actualUri;
 
     /**
+     * Setup-time routes that must keep working before the platform is fully configured.
+     * They are needed by the config/admin bootstrap UI (JSON helpers and save actions).
+     */
+    private const SETUP_ALLOWED_PATHS = [
+        '/admin/setup',
+        '/admin/config',
+        '/admin/config/params',
+        '/admin/routes/show',
+    ];
+
+    /**
      * Initializer method
      * @throws base\exception\GeneratorException
      */
@@ -81,15 +92,19 @@ class Dispatcher extends Singleton
     public function run($uri = null)
     {
         Inspector::stats('[Dispatcher] Begin runner', Inspector::SCOPE_DEBUG);
+        $targetUri = $uri ?? $this->actualUri;
 
         try {
             if ($this->config->isConfigured()) {
                 // Check CORS for requests
                 RequestHelper::checkCORS();
                 if (!Request::getInstance()->isFile()) {
-                    return $this->router->execute($uri ?? $this->actualUri);
+                    return $this->router->execute($targetUri);
                 }
             } else {
+                if ($this->isSetupRouteAllowed($targetUri)) {
+                    return $this->router->execute($targetUri);
+                }
                 // First boot flow: when there are no admins yet, force admin setup before config wizard.
                 if (!defined('PSFS_UNIT_TESTING_EXECUTION') && empty($this->security->getAdmins())) {
                     return UserController::showAdminManager();
@@ -110,6 +125,22 @@ class Dispatcher extends Singleton
 
         return $this->router->httpNotFound();
 
+    }
+
+    private function isSetupRouteAllowed(?string $uri): bool
+    {
+        if (!is_string($uri) || '' === $uri) {
+            return false;
+        }
+        $path = parse_url($uri, PHP_URL_PATH);
+        if (!is_string($path) || '' === $path) {
+            return false;
+        }
+        $normalizedPath = rtrim($path, '/');
+        if ('' === $normalizedPath) {
+            $normalizedPath = '/';
+        }
+        return in_array($normalizedPath, self::SETUP_ALLOWED_PATHS, true);
     }
 
     protected function handleException(\Exception $exception): string

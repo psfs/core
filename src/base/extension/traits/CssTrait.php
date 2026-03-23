@@ -77,7 +77,7 @@ trait CssTrait
                 $this->loopCssLines($file);
             }
             if ($debug) {
-                $data = file_get_contents($file);
+                $data .= file_get_contents($file);
                 AssetsHelper::storeContents($base . $filePath, $data);
             } else {
                 $data .= file_get_contents($file);

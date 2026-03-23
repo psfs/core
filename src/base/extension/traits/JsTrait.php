@@ -12,6 +12,40 @@ use PSFS\base\types\helpers\GeneratorHelper;
  */
 trait JsTrait
 {
+    protected function getManifestPath(string $base, string $hash): string
+    {
+        return $base . $hash . '.manifest';
+    }
+
+    protected function buildSourcesSignature(array $files): string
+    {
+        return hash('sha256', implode('|', $files));
+    }
+
+    protected function shouldRebuildProductionBundle(array $files, string $base, string $hash): bool
+    {
+        $bundlePath = $base . $hash . '.js';
+        $manifestPath = $this->getManifestPath($base, $hash);
+        if (!file_exists($bundlePath) || !file_exists($manifestPath)) {
+            return true;
+        }
+
+        $currentSignature = $this->buildSourcesSignature($files);
+        $storedSignature = trim((string)file_get_contents($manifestPath));
+        if ($storedSignature !== $currentSignature) {
+            return true;
+        }
+
+        $bundleMtime = (int)filemtime($bundlePath);
+        foreach ($files as $file) {
+            if (file_exists($file) && (int)filemtime($file) > $bundleMtime) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * @param array $compiledFiles
@@ -63,7 +97,7 @@ trait JsTrait
     {
         $base = $basePath . "js" . DIRECTORY_SEPARATOR;
         $debug = Config::getParam('debug');
-        if ($debug || !file_exists($base . $hash . ".js")) {
+        if ($debug || $this->shouldRebuildProductionBundle($files, $base, $hash)) {
             $data = '';
             if (0 < count($files)) {
                 $minifier = new JS();
@@ -82,6 +116,10 @@ trait JsTrait
                     AssetsHelper::storeContents($base . $hash . ".js", $data);
                 } else {
                     $this->dumpJs($hash, $base, $minifier);
+                    AssetsHelper::storeContents(
+                        $this->getManifestPath($base, $hash),
+                        $this->buildSourcesSignature($files)
+                    );
                 }
                 unset($minifier);
             }

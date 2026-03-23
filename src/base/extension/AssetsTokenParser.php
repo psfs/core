@@ -32,6 +32,10 @@ class AssetsTokenParser extends AbstractTokenParser
      */
     public function parse(Token $token)
     {
+        // Reset parser state on every block parse.
+        $this->values = [];
+        $this->end = false;
+
         $path = $this->parser->getStream()->getSourceContext()->getPath();
         $hash = $this->buildHash($path, $token->getLine());
         $name = $token->getValue();
@@ -96,7 +100,15 @@ class AssetsTokenParser extends AbstractTokenParser
         }
 
         $stream->expect(Token::BLOCK_START_TYPE);
-        $stream->expect(Token::NAME_TYPE);
+        // Accept both historical singular and plural closing tags.
+        // scripts => endscript / endscripts
+        // styles  => endstyle  / endstyles
+        $closingTag = $stream->expect(Token::NAME_TYPE)->getValue();
+        $expectedPlural = 'end' . $this->getTag();
+        $expectedSingular = $this->getTag() === 'scripts' ? 'endscript' : 'endstyle';
+        if ($closingTag !== $expectedPlural && $closingTag !== $expectedSingular) {
+            // Keep parser permissive for legacy templates using custom closings.
+        }
         $stream->expect(Token::BLOCK_END_TYPE);
     }
 
@@ -106,11 +118,13 @@ class AssetsTokenParser extends AbstractTokenParser
     protected function findTemplateNode()
     {
         $node = null;
-        if (0 < count($this->values)) {
+        if (!empty($this->values)) {
+            $node = $this->values[0];
+            $assets = [];
             foreach ($this->values as $value) {
-                list($tmp, $node) = $this->extractTmpAttribute($node, $value);
-                $node->setAttribute('value', $tmp);
+                $assets[] = $value->getAttribute('value');
             }
+            $node->setAttribute('value', $assets);
         }
         return $node;
     }

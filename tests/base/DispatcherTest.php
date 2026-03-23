@@ -187,6 +187,25 @@ class DispatcherTest extends TestCase
      * @throws GeneratorException
      * @throws Exception
      */
+    public function testNotConfiguredAllowsSetupJsonRoutes(): void
+    {
+        $config = $this->mockConfiguredDebugConfig(false);
+        $router = $this->mockDebugRouter();
+        $router->expects($this->once())
+            ->method('execute')
+            ->with('/admin/config/params')
+            ->willReturn('[]');
+
+        $dispatcher = $this->getInstance($config, $router);
+        Security::setTest(true);
+        $response = $dispatcher->run('/admin/config/params');
+        $this->assertSame('[]', $response);
+    }
+
+    /**
+     * @throws GeneratorException
+     * @throws Exception
+     */
     public function testNotAuthorized()
     {
         $this->expectExceptionMessage("NOT AUTHORIZED");
