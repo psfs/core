@@ -32,7 +32,7 @@ trait I18nDiscoveryTrait
         $poPath = escapeshellarg($localePath . 'translations.po');
         $moPath = escapeshellarg($localePath . 'translations.mo');
         $command = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$poPath} -o {$moPath}";
-        return shell_exec($command) ?: '';
+        return self::executeShellCommand($command);
     }
 
     /**
@@ -52,10 +52,7 @@ trait I18nDiscoveryTrait
         }
         try {
             while (false !== ($fileName = $directory->read())) {
-                GeneratorHelper::createDir($localePath);
-                if (!file_exists($localePath . 'translations.po')) {
-                    file_put_contents($localePath . 'translations.po', '');
-                }
+                self::ensureTranslationsPoFile($localePath);
                 $inspectPath = realpath($path . DIRECTORY_SEPARATOR . $fileName);
                 if (false !== $inspectPath && is_dir($path . DIRECTORY_SEPARATOR . $fileName) && preg_match(
                         '/^\./',
@@ -70,7 +67,7 @@ trait I18nDiscoveryTrait
                         $cmdPhp = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; xgettext " .
                             implode(' ', $escapedFiles) .
                             " --from-code=UTF-8 -j -L PHP --debug --force-po -o {$outputPo}";
-                        $commandOutput = shell_exec($cmdPhp) ?: '';
+                        $commandOutput = self::executeShellCommand($cmdPhp);
                     }
                     $res = t('Reviewing directory: ') . $inspectPath;
                     $res .= t('Executed command: ') . $cmdPhp;
@@ -82,6 +79,19 @@ trait I18nDiscoveryTrait
             }
         } finally {
             $directory->close();
+        }
+    }
+
+    protected static function executeShellCommand(string $command): string
+    {
+        return shell_exec($command) ?: '';
+    }
+
+    protected static function ensureTranslationsPoFile(string $localePath): void
+    {
+        GeneratorHelper::createDir($localePath);
+        if (!file_exists($localePath . 'translations.po')) {
+            file_put_contents($localePath . 'translations.po', '');
         }
     }
 }

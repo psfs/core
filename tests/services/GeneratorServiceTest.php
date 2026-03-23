@@ -3,9 +3,14 @@
 namespace PSFS\tests\services;
 
 use PHPUnit\Framework\TestCase;
+use Propel\Generator\Config\GeneratorConfig;
+use Propel\Generator\Manager\MigrationManager;
+use Propel\Generator\Model\Database;
+use Propel\Generator\Model\Schema;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\traits\BoostrapTrait;
 use PSFS\services\GeneratorService as Service;
+use PSFS\services\MigrationService;
 
 /**
  * Class GeneratorServiceTest
@@ -20,6 +25,123 @@ class GeneratorServiceTest extends TestCase
     public function testBaseClass()
     {
         $this->assertTrue(true);
+    }
+
+    public function testBuildReversedSchemaAddsOnlyDatabasesReturnedByMigrationService(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $manager = $this->createMock(MigrationManager::class);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $migrationService = $this->createMock(MigrationService::class);
+
+        $appPrimary = new Database('primary');
+        $appSecondary = new Database('secondary');
+        $manager->method('getDatabases')->willReturn([$appPrimary, $appSecondary]);
+        $generatorConfig->method('getBuildConnections')->willReturn([]);
+
+        $reversedPrimary = new Database('primary');
+        $calls = 0;
+        $migrationService->expects($this->exactly(2))
+            ->method('checkSourceDatabase')
+            ->willReturnCallback(
+                static function (
+                    MigrationManager $actualManager,
+                    GeneratorConfig $actualConfig,
+                    Database $actualAppDatabase,
+                    array $actualConnections,
+                    bool $debugLogger
+                ) use (
+                    $manager,
+                    $generatorConfig,
+                    $appPrimary,
+                    $appSecondary,
+                    $reversedPrimary,
+                    &$calls
+                ): array {
+                    TestCase::assertSame($manager, $actualManager);
+                    TestCase::assertSame($generatorConfig, $actualConfig);
+                    TestCase::assertSame([], $actualConnections);
+                    TestCase::assertTrue($debugLogger);
+                    $calls++;
+
+                    if (1 === $calls) {
+                        TestCase::assertSame($appPrimary, $actualAppDatabase);
+                        return [$reversedPrimary, 2];
+                    }
+
+                    TestCase::assertSame($appSecondary, $actualAppDatabase);
+                    return [null, 0];
+                }
+            );
+
+        /** @var Schema $schema */
+        $schema = $this->invokePrivateMethod(
+            $service,
+            'buildReversedSchema',
+            [$manager, $generatorConfig, $migrationService, true]
+        );
+
+        $databases = $schema->getDatabases();
+        $this->assertCount(1, $databases);
+        $this->assertSame('primary', $databases[0]->getName());
+    }
+
+    public function testBuildMigrationDiffsSkipsMissingDatabaseAndNoDiffAndBuildsUpDownForChanges(): void
+    {
+        $service = $this->newServiceWithoutConstructor(GeneratorServiceTestDouble::class);
+        $service->excludedTables = ['skip_me'];
+        $service->diffsByName = [
+            'with_diff' => new GeneratorServiceDiffStub('reverse-with-diff'),
+            'without_diff' => false,
+        ];
+
+        $manager = $this->createMock(MigrationManager::class);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $migrationService = $this->createMock(MigrationService::class);
+
+        $databaseWithDiff = new Database('with_diff');
+        $databaseWithoutDiff = new Database('without_diff');
+        $databaseMissingInSchema = new Database('missing_schema');
+        $reversedSchema = new Schema();
+        $reversedSchema->addDatabase($databaseWithDiff);
+        $reversedSchema->addDatabase($databaseWithoutDiff);
+        $reversedSchema->addDatabase($databaseMissingInSchema);
+
+        $schemaDatabaseWithDiff = new Database('with_diff');
+        $schemaDatabaseWithoutDiff = new Database('without_diff');
+        $manager->method('getDatabase')->willReturnCallback(
+            static function (string $name) use ($schemaDatabaseWithDiff, $schemaDatabaseWithoutDiff): ?Database {
+                return match ($name) {
+                    'with_diff' => $schemaDatabaseWithDiff,
+                    'without_diff' => $schemaDatabaseWithoutDiff,
+                    default => null,
+                };
+            }
+        );
+
+        $platform = new class {
+            public function getModifyDatabaseDDL($diff): string
+            {
+                return 'ddl:' . (is_string($diff) ? $diff : 'with-diff');
+            }
+        };
+        $migrationService->expects($this->once())
+            ->method('getPlatformAndConnection')
+            ->with($manager, 'with_diff', $generatorConfig)
+            ->willReturn([null, $platform]);
+
+        [$up, $down] = $this->invokePrivateMethod(
+            $service,
+            'buildMigrationDiffs',
+            [$manager, $generatorConfig, $migrationService, $reversedSchema, false]
+        );
+
+        $this->assertSame(['with_diff' => 'ddl:with-diff'], $up);
+        $this->assertSame(['with_diff' => 'ddl:reverse-with-diff'], $down);
+        $this->assertSame(
+            ['with_diff' => ['skip_me'], 'without_diff' => ['skip_me']],
+            $service->capturedExcludedTablesByDatabase
+        );
     }
 
     public static array $filesToCheckWithoutSchema = [
@@ -116,5 +238,63 @@ class GeneratorServiceTest extends TestCase
         foreach (self::$filesToCheckWithoutSchema as $fileName) {
             $this->assertFileExists($modulePath . $fileName, $fileName . ' do not exists after generate module from scratch');
         }
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $className
+     * @return T
+     */
+    private function newServiceWithoutConstructor(string $className): object
+    {
+        $reflection = new \ReflectionClass($className);
+        return $reflection->newInstanceWithoutConstructor();
+    }
+
+    /**
+     * @param object $instance
+     * @param string $method
+     * @param array<int, mixed> $arguments
+     * @return mixed
+     */
+    private function invokePrivateMethod(object $instance, string $method, array $arguments = [])
+    {
+        $reflectionMethod = new \ReflectionMethod(Service::class, $method);
+        $reflectionMethod->setAccessible(true);
+        return $reflectionMethod->invokeArgs($instance, $arguments);
+    }
+}
+
+final class GeneratorServiceDiffStub
+{
+    public function __construct(private string $reverseDiff)
+    {
+    }
+
+    public function getReverseDiff(): string
+    {
+        return $this->reverseDiff;
+    }
+}
+
+final class GeneratorServiceTestDouble extends Service
+{
+    /** @var array<int, string> */
+    public array $excludedTables = [];
+    /** @var array<string, mixed> */
+    public array $diffsByName = [];
+    /** @var array<string, array<int, string>> */
+    public array $capturedExcludedTablesByDatabase = [];
+
+    protected function resolveExcludedTables(GeneratorConfig $generatorConfig): array
+    {
+        return $this->excludedTables;
+    }
+
+    protected function computeDatabaseDiff(Database $database, Database $appDataDatabase, array $excludedTables)
+    {
+        $name = $database->getName();
+        $this->capturedExcludedTablesByDatabase[$name] = $excludedTables;
+        return $this->diffsByName[$name] ?? false;
     }
 }

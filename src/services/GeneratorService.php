@@ -281,8 +281,7 @@ class GeneratorService extends SimpleService
         Logger::log('Comparing models...');
         $migrationsUp = [];
         $migrationsDown = [];
-        $configManager = new ConfigurationManager($generatorConfig->getSection('paths')['phpConfDir']);
-        $excludedTables = (array)$configManager->getSection('exclude_tables');
+        $excludedTables = $this->resolveExcludedTables($generatorConfig);
 
         foreach ($reversedSchema->getDatabases() as $database) {
             $name = $database->getName();
@@ -294,14 +293,7 @@ class GeneratorService extends SimpleService
                 Logger::log(sprintf('<error>Database "%s" does not exist in schema.xml. Skipped.</error>', $name));
                 continue;
             }
-            $databaseDiff = DatabaseComparator::computeDiff(
-                $database,
-                $appDataDatabase,
-                true,
-                false,
-                false,
-                $excludedTables
-            );
+            $databaseDiff = $this->computeDatabaseDiff($database, $appDataDatabase, $excludedTables);
             if (!$databaseDiff) {
                 if ($debugLogger) {
                     Logger::log(
@@ -316,6 +308,34 @@ class GeneratorService extends SimpleService
         }
 
         return [$migrationsUp, $migrationsDown];
+    }
+
+    /**
+     * @param GeneratorConfig $generatorConfig
+     * @return array
+     */
+    protected function resolveExcludedTables(GeneratorConfig $generatorConfig): array
+    {
+        $configManager = new ConfigurationManager($generatorConfig->getSection('paths')['phpConfDir']);
+        return (array)$configManager->getSection('exclude_tables');
+    }
+
+    /**
+     * @param Database $database
+     * @param Database $appDataDatabase
+     * @param array $excludedTables
+     * @return mixed
+     */
+    protected function computeDatabaseDiff(Database $database, Database $appDataDatabase, array $excludedTables)
+    {
+        return DatabaseComparator::computeDiff(
+            $database,
+            $appDataDatabase,
+            true,
+            false,
+            false,
+            $excludedTables
+        );
     }
 
     /**

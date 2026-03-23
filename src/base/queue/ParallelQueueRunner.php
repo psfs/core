@@ -18,24 +18,21 @@ class ParallelQueueRunner
         if ($workers < 1) {
             throw new RuntimeException('Workers must be >= 1');
         }
-        if (!function_exists('proc_open')) {
+        if (!$this->canSpawnProcesses()) {
             throw new RuntimeException('proc_open is required to run queue workers in parallel');
         }
         $processes = [];
         for ($index = 1; $index <= $workers; $index++) {
             $command = $this->buildWorkerCommand($queueName, $maxJobs, $idleSleepUs, $stopWhenEmpty);
-            $descriptor = [
-                0 => ['pipe', 'r'],
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ];
-            $process = proc_open($command, $descriptor, $pipes, BASE_DIR);
+            $descriptor = $this->createProcessDescriptor();
+            $pipes = [];
+            $process = $this->openProcess($command, $descriptor, $pipes, BASE_DIR);
             if (!is_resource($process)) {
                 throw new RuntimeException(sprintf('Unable to spawn worker %d', $index));
             }
-            fclose($pipes[0]);
-            stream_set_blocking($pipes[1], false);
-            stream_set_blocking($pipes[2], false);
+            $this->closeStream($pipes[0] ?? null);
+            $this->setStreamBlocking($pipes[1] ?? null, false);
+            $this->setStreamBlocking($pipes[2] ?? null, false);
             $processes[] = [
                 'index' => $index,
                 'process' => $process,
@@ -53,18 +50,18 @@ class ParallelQueueRunner
             foreach ($processes as $key => $processData) {
                 $this->flushStream($processData['stdout'], sprintf('[worker:%d]', $processData['index']), $output);
                 $this->flushStream($processData['stderr'], sprintf('[worker:%d:err]', $processData['index']), $output);
-                $status = proc_get_status($processData['process']);
+                $status = $this->getProcessStatus($processData['process']);
                 if ($status['running']) {
                     $running = true;
                     continue;
                 }
-                $exitCode = max($exitCode, proc_close($processData['process']));
-                fclose($processData['stdout']);
-                fclose($processData['stderr']);
+                $exitCode = max($exitCode, $this->closeProcess($processData['process']));
+                $this->closeStream($processData['stdout']);
+                $this->closeStream($processData['stderr']);
                 unset($processes[$key]);
             }
             if ($running) {
-                usleep(100000);
+                $this->sleep(100000);
             }
         } while ($running || [] !== $processes);
 
@@ -90,7 +87,7 @@ class ParallelQueueRunner
         if (null === $output || !is_resource($stream)) {
             return;
         }
-        $chunk = stream_get_contents($stream);
+        $chunk = $this->readStream($stream);
         if (false === $chunk || '' === $chunk) {
             return;
         }
@@ -98,6 +95,59 @@ class ParallelQueueRunner
             if ('' !== $line) {
                 $output->writeln($prefix . ' ' . $line);
             }
+        }
+    }
+
+    protected function canSpawnProcesses(): bool
+    {
+        return function_exists('proc_open');
+    }
+
+    protected function createProcessDescriptor(): array
+    {
+        return [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+    }
+
+    protected function openProcess(string $command, array $descriptor, array &$pipes, string $cwd)
+    {
+        return proc_open($command, $descriptor, $pipes, $cwd);
+    }
+
+    protected function setStreamBlocking($stream, bool $blocking): void
+    {
+        if (is_resource($stream)) {
+            stream_set_blocking($stream, $blocking);
+        }
+    }
+
+    protected function readStream($stream)
+    {
+        return stream_get_contents($stream);
+    }
+
+    protected function getProcessStatus($process): array
+    {
+        return proc_get_status($process);
+    }
+
+    protected function closeProcess($process): int
+    {
+        return proc_close($process);
+    }
+
+    protected function sleep(int $microseconds): void
+    {
+        usleep($microseconds);
+    }
+
+    protected function closeStream($stream): void
+    {
+        if (is_resource($stream)) {
+            fclose($stream);
         }
     }
 }

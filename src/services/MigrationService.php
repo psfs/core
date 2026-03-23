@@ -25,9 +25,9 @@ class MigrationService extends SimpleService
     public function getConnectionManager(string $module, string $path): array
     {
         $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
-        $generatorConfig = $this->getConfigGenerator($modulePath);
+        $generatorConfig = $this->resolveGeneratorConfig($modulePath);
 
-        $manager = new MigrationManager();
+        $manager = $this->createMigrationManager();
         $manager->setGeneratorConfig($generatorConfig);
         $manager->setSchemas(
             $this->getSchemas(
@@ -63,7 +63,7 @@ class MigrationService extends SimpleService
         }
 
         if ($debugLogger) {
-            Logger::log(sprintf('Connecting to database "%s" using DSN "%s"', $name, $params['dsn']));
+            Logger::log(sprintf('Connecting to database "%s" using DSN "%s"', $name, (string)($params['dsn'] ?? '')));
         }
 
         list($conn, $platform) = $this->getPlatformAndConnection($manager, $name, $generatorConfig);
@@ -131,13 +131,33 @@ class MigrationService extends SimpleService
         array $migrationsDown,
         GeneratorConfig $generatorConfig
     ): void {
-        $timestamp = time();
+        $timestamp = $this->getCurrentTimestamp();
         $migrationFileName = $manager->getMigrationFileName($timestamp);
         $migrationClassBody = $manager->getMigrationClassBody($migrationsUp, $migrationsDown, $timestamp);
 
         $file = $generatorConfig->getSection('paths')['migrationDir'] . DIRECTORY_SEPARATOR . $migrationFileName;
-        file_put_contents($file, $migrationClassBody);
+        $this->writeFile($file, $migrationClassBody);
 
         Logger::log(sprintf('"%s" file successfully created.', $file));
+    }
+
+    protected function createMigrationManager(): MigrationManager
+    {
+        return new MigrationManager();
+    }
+
+    protected function resolveGeneratorConfig(string $modulePath): GeneratorConfig
+    {
+        return $this->getConfigGenerator($modulePath);
+    }
+
+    protected function getCurrentTimestamp(): int
+    {
+        return time();
+    }
+
+    protected function writeFile(string $file, string $content): void
+    {
+        file_put_contents($file, $content);
     }
 }
