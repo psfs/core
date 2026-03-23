@@ -25,6 +25,48 @@ class JobRegistryTest extends TestCase
 
         new JobRegistry([TestNotificationJob::class, DuplicateNotificationJob::class], []);
     }
+
+    public function testGetThrowsForUnknownCode(): void
+    {
+        $registry = new JobRegistry([TestNotificationJob::class], []);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Queue job "missing" is not registered');
+
+        $registry->get('missing');
+    }
+
+    public function testRegistryRejectsMissingClass(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Queue job class "PSFS\\tests\\base\\queue\\MissingQueueJob" does not exist');
+
+        new JobRegistry(['PSFS\\tests\\base\\queue\\MissingQueueJob'], []);
+    }
+
+    public function testRegistryRejectsClassThatDoesNotImplementQueueJobInterface(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('must implement PSFS\\base\\queue\\QueueJobInterface');
+
+        new JobRegistry([InvalidQueueJobClass::class], []);
+    }
+
+    public function testRegistryIgnoresAbstractClasses(): void
+    {
+        $registry = new JobRegistry([AbstractQueueJob::class, TestAuditJob::class], []);
+
+        $this->assertFalse($registry->has('abstract-job'));
+        $this->assertTrue($registry->has('audit'));
+        $this->assertSame([TestAuditJob::code() => TestAuditJob::class], $registry->all());
+    }
+
+    public function testRegistryAllowsSameClassRegisteredMoreThanOnce(): void
+    {
+        $registry = new JobRegistry([TestNotificationJob::class, TestNotificationJob::class], []);
+
+        $this->assertSame([TestNotificationJob::code() => TestNotificationJob::class], $registry->all());
+    }
 }
 
 class TestNotificationJob implements QueueJobInterface
@@ -75,5 +117,22 @@ class DuplicateNotificationJob implements QueueJobInterface
 
     public function handle(): void
     {
+    }
+}
+
+class InvalidQueueJobClass
+{
+}
+
+abstract class AbstractQueueJob implements QueueJobInterface
+{
+    public static function code(): string
+    {
+        return 'abstract-job';
+    }
+
+    public static function fromPayload(array $payload): QueueJobInterface
+    {
+        return new TestNotificationJob();
     }
 }

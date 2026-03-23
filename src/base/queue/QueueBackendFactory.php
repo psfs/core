@@ -4,9 +4,12 @@ namespace PSFS\base\queue;
 
 class QueueBackendFactory
 {
-    public static function createPersistent(?JobQueueInterface $fallback = null): JobQueueInterface
+    /**
+     * @param null|callable():RedisJobQueue $redisFactory
+     */
+    public static function createPersistent(?JobQueueInterface $fallback = null, ?callable $redisFactory = null): JobQueueInterface
     {
-        $redis = new RedisJobQueue();
+        $redis = $redisFactory ? $redisFactory() : new RedisJobQueue();
         if ($redis->isAvailable()) {
             return $redis;
         }
