@@ -52,12 +52,12 @@
       "src/bootstrap.php"
     ],
     "psr-4": {
-      "PSFS\\": "src/",
-      "PSFS\\tests\\": "tests"
+      "PSFS\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
+      "PSFS\\tests\\": "tests",
       "PSFS\\apitests\\": "tests_api/"
     }
   },
