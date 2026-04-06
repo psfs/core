@@ -55,7 +55,7 @@ class RequestResponseSecurityContractTest extends TestCase
 
         $this->assertEquals($origin, RequestHelper::resolveAllowedOrigin($origin, 'https://api.example.com,https://admin.example.com'));
         $this->assertEquals($origin, RequestHelper::resolveAllowedOrigin($origin, 'https://*.example.com'));
-        $this->assertEquals('*', RequestHelper::resolveAllowedOrigin($origin, '*'));
+        $this->assertEquals($origin, RequestHelper::resolveAllowedOrigin($origin, '*'));
         $this->assertNull(RequestHelper::resolveAllowedOrigin($origin, 'https://other.example.com'));
         $this->assertNull(RequestHelper::resolveAllowedOrigin('', 'https://api.example.com'));
     }
@@ -111,6 +111,27 @@ class RequestResponseSecurityContractTest extends TestCase
         $this->assertArrayHasKey('access-control-allow-methods', ResponseHelper::$headers_sent);
         $this->assertArrayHasKey('access-control-allow-headers', ResponseHelper::$headers_sent);
         $this->assertArrayNotHasKey('http status', ResponseHelper::$headers_sent);
+    }
+
+    public function testCheckCorsReflectsOriginWhenWildcardIsConfigured(): void
+    {
+        $config = $this->configBackup;
+        $config['cors.enabled'] = '*';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $request = Request::getInstance();
+        $request->setServer([
+            'REQUEST_METHOD' => 'GET',
+            'HTTP_ORIGIN' => 'https://spa.example.com/app',
+        ]);
+
+        ResponseHelper::$headers_sent = [];
+        RequestHelper::checkCORS();
+
+        $this->assertSame('true', ResponseHelper::$headers_sent['access-control-allow-credentials'] ?? null);
+        $this->assertSame('https://spa.example.com', ResponseHelper::$headers_sent['access-control-allow-origin'] ?? null);
+        $this->assertSame('Origin', ResponseHelper::$headers_sent['vary'] ?? null);
     }
 
     public function testCheckCorsSkipsHeadersWhenOriginIsNotAllowed(): void

@@ -19,6 +19,7 @@ class RequestHelper
             'Access-Control-Allow-Origin',
             'Access-Control-Expose-Headers',
             'Origin',
+            'Pragma',
             'X-Requested-With',
             'Content-Type',
             'Accept',
@@ -51,7 +52,7 @@ class RequestHelper
         }
 
         if ($corsEnabled === '*') {
-            return '*';
+            return $normalizedOrigin;
         }
 
         if (is_array($corsEnabled)) {
@@ -161,13 +162,9 @@ class RequestHelper
             if ($allowedOrigin !== null) {
                 if (!headers_sent()) {
                     // TODO include these headers in Template class output method
-                    if ($allowedOrigin === '*') {
-                        ResponseHelper::setHeader('Access-Control-Allow-Origin: *');
-                    } else {
-                        ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
-                        ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . $allowedOrigin);
-                        ResponseHelper::setHeader('Vary: Origin');
-                    }
+                    ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
+                    ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . self::normalizeOrigin($origin));
+                    ResponseHelper::setHeader('Vary: Origin');
                     ResponseHelper::setHeader(
                         'Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD'
                     );
