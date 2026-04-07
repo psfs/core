@@ -14,12 +14,9 @@ class RequestHelper
     public static function getCorsHeaders(): array
     {
         $headers = [
-            'Access-Control-Allow-Methods',
-            'Access-Control-Allow-Headers',
-            'Access-Control-Allow-Origin',
-            'Access-Control-Expose-Headers',
             'Origin',
             'Pragma',
+            'Priority',
             'X-Requested-With',
             'Content-Type',
             'Accept',
