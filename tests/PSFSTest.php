@@ -104,6 +104,10 @@ class PSFSTest extends TestCase
         $corsHeaders = RequestHelper::getCorsHeaders();
         $this->assertIsArray($corsHeaders, 'Wrong returned headers');
         $headers = [
+            'Access-Control-Allow-Methods',
+            'Access-Control-Allow-Headers',
+            'Access-Control-Allow-Origin',
+            'Access-Control-Expose-Headers',
             'Origin',
             'Pragma',
             'Priority',
