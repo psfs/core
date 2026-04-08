@@ -137,6 +137,22 @@ class RequestTest extends TestCase
         $this->assertIsArray($request->getRawData());
     }
 
+    public function testRawBodyCanBeInjectedFromServerContext(): void
+    {
+        Request::dropInstance();
+        $_SERVER['PSFS_RAW_BODY'] = '{"foo":"bar"}';
+        $_REQUEST = [];
+        $_GET = [];
+        $_POST = [];
+        $_COOKIE = [];
+        $_FILES = [];
+
+        $request = Request::getInstance();
+        $request->init();
+
+        $this->assertSame('bar', $request->getRawData()['foo'] ?? null);
+    }
+
     private function bootstrapRequest(): void
     {
         $_SERVER = [

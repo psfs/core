@@ -45,6 +45,16 @@ class CustomTranslateExtension extends AbstractExtension
      */
     protected static $filename = '';
 
+    public static function resetRuntimeState(): void
+    {
+        self::dropInstance();
+        self::$translations = [];
+        self::$translationsKeys = [];
+        self::$locale = 'en_US';
+        self::$filename = '';
+        self::$generate = false;
+    }
+
     /**
      * @return array|mixed
      */

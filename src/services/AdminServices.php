@@ -3,6 +3,8 @@
 namespace PSFS\services;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\RequestTerminationException;
+use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\Security;
 use PSFS\base\Service;
 use PSFS\base\Template;
@@ -49,6 +51,9 @@ class AdminServices extends Service
         $isUnitTestExecution = defined('PSFS_UNIT_TESTING_EXECUTION') && true === PSFS_UNIT_TESTING_EXECUTION;
         if (!self::isTest() && !$isUnitTestExecution) {
             echo $message;
+            if (RuntimeMode::isLongRunningServer()) {
+                throw new RequestTerminationException($message);
+            }
             exit();
         }
         return $message;

@@ -2,12 +2,13 @@
 
 namespace PSFS\base\types\traits;
 
-use JetBrains\PhpStorm\NoReturn;
 use PSFS\base\Cache;
 use PSFS\base\config\Config;
+use PSFS\base\exception\RequestTerminationException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\Security;
 use PSFS\base\Template;
 use PSFS\base\types\helpers\EventHelper;
@@ -186,7 +187,6 @@ trait OutputTrait
     }
 
 
-    #[NoReturn]
     public function closeRender(): void
     {
         Logger::log('Close template render');
@@ -198,6 +198,9 @@ trait OutputTrait
         Security::getInstance()->updateSession();
         EventHelper::handleEvents(EventHelper::EVENT_END_REQUEST);
         Logger::log('End request: ' . Request::requestUri(), LOG_INFO);
+        if (RuntimeMode::isLongRunningServer()) {
+            throw new RequestTerminationException('Request finalized');
+        }
         exit;
     }
 

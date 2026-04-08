@@ -3,6 +3,7 @@
 namespace PSFS\base\types\traits\Security;
 
 use PSFS\base\Logger;
+use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\types\helpers\AuthHelper;
 
 /**
@@ -56,7 +57,8 @@ trait SessionTrait
 
     protected function initSession()
     {
-        if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
+        $canStartSession = RuntimeMode::isLongRunningServer() || !headers_sent();
+        if (PHP_SESSION_NONE === session_status() && $canStartSession) {
             session_start();
         }
         // Fix for phpunits
@@ -95,7 +97,8 @@ trait SessionTrait
 
     public function closeSession()
     {
-        if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
+        $canStartSession = RuntimeMode::isLongRunningServer() || !headers_sent();
+        if (PHP_SESSION_NONE === session_status() && $canStartSession) {
             @session_start();
         }
 
@@ -104,7 +107,7 @@ trait SessionTrait
             if (@session_regenerate_id(true) === false) {
                 Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
             }
-        } elseif (!headers_sent() && @session_start() === false) {
+        } elseif (($canStartSession) && @session_start() === false) {
             Logger::log('[SessionTrait::closeSession] Unable to start session');
         }
 

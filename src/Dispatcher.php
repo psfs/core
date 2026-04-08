@@ -10,6 +10,7 @@ use PSFS\base\config\Config;
 use PSFS\base\events\CloseSessionEvent;
 use PSFS\base\exception\AdminCredentialsException;
 use PSFS\base\exception\ApiException;
+use PSFS\base\exception\RequestTerminationException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
@@ -95,6 +96,14 @@ class Dispatcher extends Singleton
         $targetUri = $uri ?? $this->actualUri;
 
         try {
+            $currentRequestUri = (string)Request::getInstance()->getServer('REQUEST_URI', '');
+            if ($currentRequestUri !== '') {
+                $this->actualUri = $currentRequestUri;
+            } elseif (null !== $uri) {
+                $this->actualUri = (string)$uri;
+            } else {
+                $this->actualUri = '/';
+            }
             if ($this->config->isConfigured()) {
                 // Check CORS for requests
                 RequestHelper::checkCORS();
@@ -102,7 +111,8 @@ class Dispatcher extends Singleton
                     return $this->router->execute($targetUri);
                 }
             } else {
-                if ($this->isSetupRouteAllowed($targetUri)) {
+                $isUnitTestExecution = defined('PSFS_UNIT_TESTING_EXECUTION') && true === PSFS_UNIT_TESTING_EXECUTION;
+                if ($this->isSetupRouteAllowed($targetUri) && (!$isUnitTestExecution || null !== $uri)) {
                     return $this->router->execute($targetUri);
                 }
                 // First boot flow: when there are no admins yet, force admin setup before config wizard.
@@ -111,6 +121,8 @@ class Dispatcher extends Singleton
                 }
                 return ConfigController::getInstance()->config();
             }
+        } catch (RequestTerminationException $terminationException) {
+            throw $terminationException;
         } catch (AdminCredentialsException $a) {
             return UserController::showAdminManager();
         } catch (SecurityException $s) {

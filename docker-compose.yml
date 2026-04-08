@@ -26,6 +26,43 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  php-swoole:
+    image: c15k02k18/php:8.3-alpine${DEBUG:-}
+    pull_policy: always
+    restart: always
+    tty: true
+    profiles:
+      - swoole
+    volumes:
+      - .:/var/www
+      - ./docker/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - psfs-network
+    working_dir: "/var/www"
+    ports:
+      - "${HOST_PORT_SWOOLE:-8011}:8080"
+    command: >
+      php /var/www/src/bin/psfs psfs:swoole:start
+      --host=0.0.0.0
+      --port=8080
+      --workers=${PSFS_SWOOLE_WORKERS:-2}
+      --max-request=${PSFS_SWOOLE_MAX_REQUEST:-1000}
+      --pid-file=/tmp/psfs-swoole.pid
+      --log-file=/tmp/psfs-swoole.log
+    environment:
+      XDEBUG_CONFIG: "remote_host=localhost"
+      PHP_IDE_CONFIG: "serverName=PSFSCore"
+      PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
+      PHP_OPCACHE: "${PHP_OPCACHE:-0}"
+      PSFS_RUNTIME: "swoole"
+    depends_on:
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   redis:
     restart: always
     image: valkey/valkey:latest

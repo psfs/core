@@ -30,6 +30,17 @@ class EventHelper
         if (!array_key_exists($eventName, self::$events)) {
             self::$events[$eventName] = [];
         }
-        self::$events[$eventName][] = $eventClass;
+        if (!in_array($eventClass, self::$events[$eventName], true)) {
+            self::$events[$eventName][] = $eventClass;
+        }
+    }
+
+    public static function clear(?string $eventName = null): void
+    {
+        if (null === $eventName) {
+            self::$events = [];
+            return;
+        }
+        unset(self::$events[$eventName]);
     }
 }

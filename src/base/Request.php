@@ -2,6 +2,8 @@
 
 namespace PSFS\base;
 
+use PSFS\base\exception\RequestTerminationException;
+use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\traits\Helper\ServerTrait;
 use PSFS\base\types\traits\SingletonTrait;
@@ -59,7 +61,11 @@ class Request
         $this->header = $this->parseHeaders();
         $this->data = is_array($_REQUEST) ? $_REQUEST : [];
         $this->query = is_array($_GET) ? $_GET : [];
-        $this->raw = json_decode(file_get_contents('php://input'), true) ?: [];
+        $rawBody = (string)$this->getServer('PSFS_RAW_BODY', '');
+        if ('' === $rawBody) {
+            $rawBody = (string)file_get_contents('php://input');
+        }
+        $this->raw = json_decode($rawBody, true) ?: [];
         $this->isLoaded = true;
     }
 
@@ -255,6 +261,9 @@ class Request
         header('Location: ' . $url);
         ob_end_clean();
         Security::getInstance()->updateSession();
+        if (RuntimeMode::isLongRunningServer()) {
+            throw new RequestTerminationException((string)t('Redirect...'));
+        }
         exit(t('Redirect...'));
     }
 

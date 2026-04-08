@@ -3,6 +3,7 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
+use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\types\traits\Helper\ResponseNotFoundTrait;
@@ -29,7 +30,7 @@ class ResponseHelper
             if (!self::appendMultiHeaderValue($key, $value)) {
                 return;
             }
-            if (!self::isTest()) {
+            if (!self::isTest() && !RuntimeMode::isLongRunningServer()) {
                 header($line, false);
             }
             return;
@@ -39,7 +40,7 @@ class ResponseHelper
             return;
         }
 
-        if (!self::isTest()) {
+        if (!self::isTest() && !RuntimeMode::isLongRunningServer()) {
             header($line, true);
         }
         self::$headers_sent[$key] = $value;
@@ -49,7 +50,7 @@ class ResponseHelper
     {
         $key = ResponseHeaderHelper::normalizeHeaderKey($header);
         if (array_key_exists($key, self::$headers_sent)) {
-            if (!self::isTest()) {
+            if (!self::isTest() && !RuntimeMode::isLongRunningServer()) {
                 header_remove($header);
             }
             unset(self::$headers_sent[$key]);
@@ -65,7 +66,7 @@ class ResponseHelper
             return;
         }
 
-        $canEmitHeaders = !self::isTest() && false === headers_sent();
+        $canEmitHeaders = !self::isTest() && !RuntimeMode::isLongRunningServer() && false === headers_sent();
         $isSecureRequest = self::isSecureRequest();
         $defaultDomain = Request::getInstance()->getServerName();
         $seen = [];

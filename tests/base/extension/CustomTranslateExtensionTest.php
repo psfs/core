@@ -210,6 +210,30 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertNotSame('', $translated);
     }
 
+    public function testResetRuntimeStateClearsStaticCacheState(): void
+    {
+        $this->setRuntimeCatalog('en_GB', ['HELLO' => 'hello']);
+        CustomTranslateExtension::resetRuntimeState();
+
+        $reflection = new \ReflectionClass(CustomTranslateExtension::class);
+        $translations = $reflection->getProperty('translations');
+        $translations->setAccessible(true);
+        $translationsKeys = $reflection->getProperty('translationsKeys');
+        $translationsKeys->setAccessible(true);
+        $locale = $reflection->getProperty('locale');
+        $locale->setAccessible(true);
+        $filename = $reflection->getProperty('filename');
+        $filename->setAccessible(true);
+        $generate = $reflection->getProperty('generate');
+        $generate->setAccessible(true);
+
+        $this->assertSame([], $translations->getValue());
+        $this->assertSame([], $translationsKeys->getValue());
+        $this->assertSame('en_US', $locale->getValue());
+        $this->assertSame('', $filename->getValue());
+        $this->assertFalse($generate->getValue());
+    }
+
     private function overrideConfig(array $override): void
     {
         $config = $this->configBackup;

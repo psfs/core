@@ -2,9 +2,11 @@
 
 namespace PSFS\base\types\helpers;
 
+use PSFS\base\exception\RequestTerminationException;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\runtime\RuntimeMode;
 
 /**
  * @package PSFS\base\types\helpers
@@ -174,6 +176,9 @@ class RequestHelper
                 if ($request->getMethod() === Request::VERB_OPTIONS) {
                     Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
                     ResponseHelper::setStatusHeader('HTTP/1.1 204 No Content');
+                    if (RuntimeMode::isLongRunningServer()) {
+                        throw new RequestTerminationException('CORS preflight request finalized');
+                    }
                     exit();
                 }
             }

@@ -84,4 +84,10 @@ class Inspector
     {
         return self::processStats($scope);
     }
+
+    public static function reset(): void
+    {
+        self::$profiling = [];
+        self::$debug = [];
+    }
 }

@@ -69,6 +69,25 @@ php -S 0.0.0.0:8080 -t ./html
 
 and is published on the host as `${HOST_PORT}:8080`.
 
+## Swoole runtime (event worker mode)
+
+PSFS now includes Swoole runtime commands:
+
+```bash
+docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:check
+docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
+docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:status
+docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:reload
+docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:stop
+```
+
+Optional compose profile (keeps baseline `php -S` untouched):
+
+```bash
+docker compose --profile swoole up -d php-swoole
+docker compose --profile swoole ps
+```
+
 ## Consumer install
 
 If you want to use PSFS as a Composer dependency in another project:
@@ -104,6 +123,22 @@ docker exec -e XDEBUG_MODE=coverage <php_container> php vendor/bin/phpunit --cov
 ```
 
 Do not run `php`, `composer`, or `phpunit` directly on the host for project validation.
+
+## Benchmark (`php -S` vs Swoole direct)
+
+Run 5 benchmark iterations per mode and aggregate median/IQR:
+
+```bash
+chmod +x tools/benchmark/run-benchmark.sh
+tools/benchmark/run-benchmark.sh
+```
+
+Artifacts:
+
+- `cache/benchmark/baseline/run-*.json`
+- `cache/benchmark/swoole/run-*.json`
+- `cache/benchmark/baseline-summary.json`
+- `cache/benchmark/swoole-summary.json`
 
 ## Security/Auth contract (v2)
 
