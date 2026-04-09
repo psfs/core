@@ -26,7 +26,7 @@ class ApiController extends AuthAdminController
      * @Injectable
      * @var \PSFS\services\DocumentorService $srv
      */
-    #[Injectable]
+    #[Injectable(class: DocumentorService::class)]
     protected DocumentorService $srv;
 
     /**

@@ -16,7 +16,7 @@ trait TemplateTrait
      * @Injectable
      * @var \PSFS\base\Template
      */
-    #[Injectable]
+    #[Injectable(class: Template::class)]
     protected Template $tpl;
 
     /**

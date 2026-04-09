@@ -3,6 +3,7 @@
 namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\Security;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Api\Crud\ApiListTrait;
 use PSFS\base\types\traits\Router\ModulesTrait;
@@ -110,6 +111,19 @@ class MetadataReaderTest extends TestCase
         $this->assertTrue(MetadataReader::hasInjectable($docProperty, (string)$docProperty->getDocComment()));
     }
 
+    public function testResolveInjectableDefinitionPrefersAttributeOverAnnotation(): void
+    {
+        $this->setAttributesEnabled(true);
+        $property = new \ReflectionProperty(MetadataReaderAttributeExample::class, 'withInjectableAttribute');
+        $doc = (string)$property->getDocComment();
+
+        $definition = MetadataReader::resolveInjectableDefinition($property, $doc);
+
+        $this->assertTrue($definition['isInjectable']);
+        $this->assertSame('attribute', $definition['source']);
+        $this->assertSame('\\PSFS\\base\\Security', $definition['class']);
+    }
+
     public function testExtractVarTypeUsesAttributePropertyTypeAndDocFallback(): void
     {
         $this->setAttributesEnabled(true);
@@ -200,7 +214,7 @@ class MetadataReaderTest extends TestCase
 
         $modulesTraitFinder = new \ReflectionProperty(ModulesTraitHostExample::class, 'finder');
         $this->assertTrue(MetadataReader::hasInjectable($modulesTraitFinder, (string)$modulesTraitFinder->getDocComment()));
-        $this->assertSame('Finder', MetadataReader::extractVarType($modulesTraitFinder, (string)$modulesTraitFinder->getDocComment()));
+        $this->assertSame('\\Symfony\\Component\\Finder\\Finder', MetadataReader::extractVarType($modulesTraitFinder, (string)$modulesTraitFinder->getDocComment()));
 
         $apiListTraitOrder = new \ReflectionProperty(ApiListTraitHostExample::class, 'order');
         $this->assertTrue(MetadataReader::hasInjectable($apiListTraitOrder, (string)$apiListTraitOrder->getDocComment()));
@@ -248,7 +262,7 @@ class MetadataReaderDocExample
 
 class MetadataReaderAttributeExample
 {
-    #[Injectable]
+    #[Injectable(class: Security::class)]
     private $withInjectableAttribute;
 
     #[VarType('\Vendor\Package\InjectedType')]

@@ -15,6 +15,8 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\exception\SecurityException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\Router;
+use PSFS\base\Security;
 use PSFS\base\Singleton;
 use PSFS\base\types\helpers\EventHelper;
 use PSFS\base\types\helpers\I18nHelper;
@@ -37,21 +39,21 @@ class Dispatcher extends Singleton
      * @Injectable
      * @var \PSFS\base\Security $security
      */
-    #[Injectable]
+    #[Injectable(class: Security::class)]
     protected $security;
 
     /**
      * @Injectable
      * @var \PSFS\base\Router $router
      */
-    #[Injectable]
+    #[Injectable(class: Router::class)]
     protected $router;
 
     /**
      * @Injectable
      * @var \PSFS\base\config\Config $config
      */
-    #[Injectable]
+    #[Injectable(class: Config::class)]
     protected $config;
 
     private $actualUri;

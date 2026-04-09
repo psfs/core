@@ -28,7 +28,7 @@ class GeneratorController extends Admin
      * @Injectable
      * @var \PSFS\services\GeneratorService Service that generates directory structures
      */
-    #[Injectable]
+    #[Injectable(class: GeneratorService::class)]
     protected GeneratorService $gen;
 
     /**

@@ -29,8 +29,8 @@ trait ModulesTrait
      * @Injectable
      * @var Finder
      */
-    #[Injectable]
-    private $finder;
+    #[Injectable(class: Finder::class)]
+    protected $finder;
     /**
      * @var array
      */

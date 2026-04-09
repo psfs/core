@@ -4,9 +4,11 @@ namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\tests\examples\AttributeInjectableSingletonTestExample;
 use PSFS\tests\examples\SingletonClassTestExample;
+use PSFS\base\Security;
 use ReflectionClass;
 use ReflectionException;
 
@@ -62,4 +64,62 @@ class InjectorHelperTest extends TestCase
             Config::getInstance()->loadConfigData(true);
         }
     }
+
+    public function testExtractPropertiesThrowsWhenInjectablePropertyIsNotProtected(): void
+    {
+        $configBackup = Config::getInstance()->dumpConfig();
+        try {
+            $override = $configBackup;
+            $override['metadata.attributes.enabled'] = true;
+            Config::save($override, []);
+            Config::getInstance()->loadConfigData(true);
+
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('must be protected');
+
+            $reflector = new ReflectionClass(InvalidInjectableVisibilityExample::class);
+            InjectorHelper::extractProperties($reflector);
+        } finally {
+            Config::save($configBackup, []);
+            Config::getInstance()->loadConfigData(true);
+        }
+    }
+
+    public function testResolveInjectableRuntimeDefinitionUsesAttributeRuntimeFlags(): void
+    {
+        $configBackup = Config::getInstance()->dumpConfig();
+        try {
+            $override = $configBackup;
+            $override['metadata.attributes.enabled'] = true;
+            Config::save($override, []);
+            Config::getInstance()->loadConfigData(true);
+
+            $definition = InjectorHelper::resolveInjectableRuntimeDefinition(
+                RuntimeInjectableDefinitionExample::class,
+                'security',
+                '\\PSFS\\base\\Security'
+            );
+
+            $this->assertTrue($definition['isInjectable']);
+            $this->assertSame('\\PSFS\\base\\Security', $definition['class']);
+            $this->assertFalse($definition['singleton']);
+            $this->assertFalse($definition['required']);
+            $this->assertSame('attribute', $definition['source']);
+        } finally {
+            Config::save($configBackup, []);
+            Config::getInstance()->loadConfigData(true);
+        }
+    }
+}
+
+class InvalidInjectableVisibilityExample
+{
+    #[Injectable(class: Security::class)]
+    private $security;
+}
+
+class RuntimeInjectableDefinitionExample
+{
+    #[Injectable(class: Security::class, singleton: false, required: false)]
+    protected $security;
 }

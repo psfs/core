@@ -25,13 +25,13 @@ abstract class Admin extends AuthAdminController
      * @Injectable
      * @var \PSFS\base\config\Config Configuration service
      */
-    #[Injectable]
+    #[Injectable(class: Config::class)]
     protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\services\AdminServices Admin service
      */
-    #[Injectable]
+    #[Injectable(class: AdminServices::class)]
     protected AdminServices $srv;
 
     /**

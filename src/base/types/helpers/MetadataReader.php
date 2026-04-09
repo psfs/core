@@ -43,20 +43,17 @@ class MetadataReader
 
     public static function hasInjectable(?ReflectionProperty $property, ?string $doc = ''): bool
     {
-        if (self::attributesEnabled() && null !== $property) {
-            if (count($property->getAttributes(Injectable::class)) > 0) {
-                return true;
-            }
-            if (!empty($doc) && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc)) {
-                self::logLegacyFallback('annotation_injectable');
-            }
-        }
-        return !empty($doc) && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1;
+        $injectable = self::resolveInjectableDefinition($property, $doc);
+        return $injectable['isInjectable'];
     }
 
     public static function extractVarType(?ReflectionProperty $property, ?string $doc = ''): ?string
     {
         if (self::attributesEnabled() && null !== $property) {
+            $injectable = self::resolveInjectableDefinition($property, $doc ?: '');
+            if ($injectable['source'] === 'attribute' && is_string($injectable['class'])) {
+                return $injectable['class'];
+            }
             $attr = $property->getAttributes(VarType::class);
             if (!empty($attr)) {
                 $instance = $attr[0]->newInstance();
@@ -71,6 +68,57 @@ class MetadataReader
             }
         }
         return self::readVarTypeFromDoc($doc ?: '');
+    }
+
+    /**
+     * @return array{
+     *     isInjectable:bool,
+     *     class:?string,
+     *     singleton:bool,
+     *     required:bool,
+     *     source:?string
+     * }
+     */
+    public static function resolveInjectableDefinition(?ReflectionProperty $property, ?string $doc = ''): array
+    {
+        $definition = [
+            'isInjectable' => false,
+            'class' => null,
+            'singleton' => true,
+            'required' => true,
+            'source' => null,
+        ];
+        $doc = $doc ?: '';
+
+        if (null !== $property && self::attributesEnabled()) {
+            $attrs = $property->getAttributes(Injectable::class);
+            if (!empty($attrs)) {
+                $attribute = $attrs[0]->newInstance();
+                return [
+                    'isInjectable' => true,
+                    'class' => $attribute->class,
+                    'singleton' => $attribute->singleton,
+                    'required' => $attribute->required,
+                    'source' => 'attribute',
+                ];
+            }
+            if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
+                self::logLegacyFallback('annotation_injectable');
+            }
+        }
+
+        if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
+            $className = self::readVarTypeFromDoc($doc);
+            return [
+                'isInjectable' => $className !== null && trim($className) !== '',
+                'class' => $className,
+                'singleton' => true,
+                'required' => true,
+                'source' => 'annotation',
+            ];
+        }
+
+        return $definition;
     }
 
     public static function getLegacyFallbackLogs(): array

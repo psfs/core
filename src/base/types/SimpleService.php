@@ -17,13 +17,13 @@ abstract class SimpleService extends Singleton
      * @Injectable
      * @var \PSFS\base\Logger
      */
-    #[Injectable]
+    #[Injectable(class: Logger::class)]
     protected Logger $log;
     /**
      * @Injectable
      * @var \PSFS\base\Cache
      */
-    #[Injectable]
+    #[Injectable(class: Cache::class)]
     protected Cache $cache;
 
     /**

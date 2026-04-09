@@ -2,6 +2,7 @@
 
 namespace PSFS\base\types\helpers;
 
+use InvalidArgumentException;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use ReflectionClass;
@@ -70,10 +71,14 @@ class InjectorHelper
         $type = ReflectionProperty::IS_PROTECTED,
         $pattern = self::INJECTABLE_PATTERN
     ) {
+        if ($pattern === self::INJECTABLE_PATTERN) {
+            return self::extractInjectableProperties($reflector, $type);
+        }
+
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
             $doc = $property->getDocComment() ?: '';
-            if (MetadataReader::hasInjectable($property, $doc) || preg_match($pattern, $doc)) {
+            if (preg_match($pattern, $doc) === 1) {
                 $instanceType = self::extractVarType($doc, $property);
                 if (null !== $instanceType) {
                     $properties[$property->getName()] = $instanceType;
@@ -81,6 +86,53 @@ class InjectorHelper
             }
         }
         return $properties;
+    }
+
+    private static function extractInjectableProperties(ReflectionClass $reflector, int $type): array
+    {
+        $properties = [];
+        foreach ($reflector->getProperties() as $property) {
+            $doc = $property->getDocComment() ?: '';
+            $injectable = MetadataReader::resolveInjectableDefinition($property, $doc);
+            if ($injectable['isInjectable'] !== true) {
+                continue;
+            }
+            self::assertInjectableVisibility($reflector, $property);
+            if (!self::matchesPropertyVisibility($property, $type)) {
+                continue;
+            }
+            $instanceType = is_string($injectable['class']) ? trim($injectable['class']) : '';
+            if ($instanceType === '') {
+                throw new InvalidArgumentException(sprintf(
+                    '[Injectable] Missing dependency class for %s::$%s',
+                    $reflector->getName(),
+                    $property->getName()
+                ));
+            }
+            $properties[$property->getName()] = $instanceType;
+        }
+        return $properties;
+    }
+
+    private static function assertInjectableVisibility(ReflectionClass $reflector, ReflectionProperty $property): void
+    {
+        if (!$property->isProtected()) {
+            throw new InvalidArgumentException(sprintf(
+                '[Injectable] %s::$%s must be protected',
+                $reflector->getName(),
+                $property->getName()
+            ));
+        }
+    }
+
+    private static function matchesPropertyVisibility(ReflectionProperty $property, int $type): bool
+    {
+        return match ($type) {
+            ReflectionProperty::IS_PUBLIC => $property->isPublic(),
+            ReflectionProperty::IS_PROTECTED => $property->isProtected(),
+            ReflectionProperty::IS_PRIVATE => $property->isPrivate(),
+            default => ($property->getModifiers() & $type) !== 0,
+        };
     }
 
     /**
@@ -173,6 +225,33 @@ class InjectorHelper
     }
 
     /**
+     * @param string $calledClass
+     * @param string $propertyName
+     * @param mixed $cachedDefinition
+     * @return array{isInjectable:bool,class:?string,singleton:bool,required:bool,source:?string}
+     * @throws ReflectionException
+     */
+    public static function resolveInjectableRuntimeDefinition(
+        string $calledClass,
+        string $propertyName,
+        mixed $cachedDefinition = null
+    ): array {
+        $reflector = new ReflectionClass($calledClass);
+        if (!$reflector->hasProperty($propertyName)) {
+            return self::normalizeCachedInjectableDefinition($cachedDefinition);
+        }
+
+        $property = $reflector->getProperty($propertyName);
+        $doc = $property->getDocComment() ?: '';
+        $definition = MetadataReader::resolveInjectableDefinition($property, $doc);
+        if (($definition['isInjectable'] ?? false) === true) {
+            return $definition;
+        }
+
+        return self::normalizeCachedInjectableDefinition($cachedDefinition);
+    }
+
+    /**
      * @param $class
      * @return array
      * @throws ReflectionException
@@ -187,5 +266,44 @@ class InjectorHelper
         }
         $properties = array_merge($properties, self::extractProperties($selfReflector));
         return $properties;
+    }
+
+    /**
+     * @param mixed $cachedDefinition
+     * @return array{isInjectable:bool,class:?string,singleton:bool,required:bool,source:?string}
+     */
+    private static function normalizeCachedInjectableDefinition(mixed $cachedDefinition): array
+    {
+        if (is_string($cachedDefinition) && trim($cachedDefinition) !== '') {
+            return [
+                'isInjectable' => true,
+                'class' => trim($cachedDefinition),
+                'singleton' => true,
+                'required' => true,
+                'source' => 'cache',
+            ];
+        }
+
+        if (is_array($cachedDefinition) && is_string($cachedDefinition['class'] ?? null)) {
+            return [
+                'isInjectable' => true,
+                'class' => trim((string)$cachedDefinition['class']),
+                'singleton' => array_key_exists('singleton', $cachedDefinition)
+                    ? (bool)$cachedDefinition['singleton']
+                    : true,
+                'required' => array_key_exists('required', $cachedDefinition)
+                    ? (bool)$cachedDefinition['required']
+                    : true,
+                'source' => 'cache',
+            ];
+        }
+
+        return [
+            'isInjectable' => false,
+            'class' => null,
+            'singleton' => true,
+            'required' => true,
+            'source' => null,
+        ];
     }
 }

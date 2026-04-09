@@ -80,7 +80,7 @@ class Singleton
      * @return $this
      * @throws Exception
      */
-    public function load($variable, $singleton = true, $classNameSpace = null)
+    public function load($variable, $singleton = true, $classNameSpace = null, bool $required = true)
     {
         $calledClass = static::class;
         try {
@@ -98,6 +98,10 @@ class Singleton
             }
         } catch (Exception $e) {
             Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
+            if (!$required) {
+                Logger::log('[Injectable][optional] Skipping optional dependency: ' . $variable, LOG_WARNING);
+                return $this;
+            }
             throw $e;
         }
         return $this;
@@ -120,8 +124,21 @@ class Singleton
             }
 
             if (!empty($properties) && is_array($properties)) {
-                foreach ($properties as $property => $class) {
-                    $this->load($property, true, $class);
+                foreach ($properties as $property => $cachedDefinition) {
+                    $definition = InjectorHelper::resolveInjectableRuntimeDefinition(
+                        get_class($this),
+                        (string)$property,
+                        $cachedDefinition
+                    );
+                    if (($definition['isInjectable'] ?? false) !== true) {
+                        continue;
+                    }
+                    $this->load(
+                        $property,
+                        (bool)$definition['singleton'],
+                        $definition['class'],
+                        (bool)$definition['required']
+                    );
                 }
             }
             $this->setLoaded();

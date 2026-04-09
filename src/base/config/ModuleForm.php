@@ -16,7 +16,7 @@ class ModuleForm extends Form
      * @Injectable
      * @var \PSFS\base\Router
      */
-    #[Injectable]
+    #[Injectable(class: Router::class)]
     protected Router $router;
 
     /**

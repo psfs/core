@@ -27,7 +27,7 @@ trait ApiListTrait
      * @Injectable
      * @var \PSFS\base\dto\Order
      */
-    #[Injectable]
+    #[Injectable(class: Order::class)]
     protected Order $order;
 
     /**

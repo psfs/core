@@ -32,13 +32,13 @@ class GeneratorService extends SimpleService
      * @Injectable
      * @var \PSFS\base\config\Config
      */
-    #[Injectable]
+    #[Injectable(class: Config::class)]
     protected Config $config;
     /**
      * @Injectable
      * @var \PSFS\base\Security
      */
-    #[Injectable]
+    #[Injectable(class: Security::class)]
     protected Security $security;
 
     /**
