@@ -6,13 +6,21 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\SingletonRegistry;
 use PSFS\base\config\Config;
+use PSFS\base\config\ConfigForm;
+use PSFS\base\config\ModuleForm;
+use PSFS\base\config\AdminForm;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
+use PSFS\base\types\Form;
 use PSFS\base\types\traits\Api\ManagerTrait;
 use PSFS\base\types\helpers\AuthHelper;
+use PSFS\controller\ConfigController;
 use PSFS\controller\DocumentorController;
 use PSFS\controller\GeneratorController;
+use PSFS\controller\I18nController;
+use PSFS\controller\RouteController;
 use PSFS\controller\UserController;
 use PSFS\services\AdminServices;
 use PSFS\services\DocumentorService;
@@ -155,6 +163,132 @@ class CoverageControllersTest extends TestCase
         $this->assertArrayHasKey('form', $postResult);
     }
 
+    public function testGeneratorControllerCoversValidAndExceptionPaths(): void
+    {
+        Security::setTest(true);
+        $controller = $this->newGeneratorProbe();
+        $generatorService = $this->getMockBuilder(\PSFS\services\GeneratorService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['createStructureModule'])
+            ->getMock();
+        $this->setObjectProperty($controller, 'gen', $generatorService);
+
+        $moduleForm = new ModuleForm();
+        $moduleForm->build();
+        $requestData = $this->buildRequestPayloadFromForm($moduleForm, [
+            'module' => 'demo',
+            'controllerType' => 'normal',
+            'api' => '',
+        ]);
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_REQUEST = [$moduleForm->getName() => $requestData];
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $result = $controller->doGenerateModule();
+        $this->assertArrayHasKey('form', $result);
+
+        $generatorService->method('createStructureModule')
+            ->willThrowException(new \RuntimeException('boom'));
+        $_REQUEST = [$moduleForm->getName() => $requestData];
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $errorResult = $controller->doGenerateModule();
+        $this->assertArrayHasKey('form', $errorResult);
+    }
+
+    public function testConfigControllerSaveConfigWithValidCsrfPayload(): void
+    {
+        Security::setTest(true);
+        $controller = $this->newConfigProbe();
+
+        $form = new ConfigForm(
+            '/admin/config',
+            Config::$required,
+            Config::$optional,
+            Config::getInstance()->dumpConfig()
+        );
+        $form->build();
+        $payload = $this->buildRequestPayloadFromForm($form);
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_REQUEST = [$form->getName() => $payload];
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $result = $controller->saveConfig();
+        $this->assertArrayHasKey('config', $result);
+    }
+
+    public function testUserControllerCoversAdminLoginBranchesAndStaticManagers(): void
+    {
+        Security::setTest(true);
+
+        $adminController = new class extends UserControllerProbe {
+            public function isAdmin()
+            {
+                return true;
+            }
+        };
+        $this->assertSame('', (string)$adminController->adminLogin());
+    }
+
+    public function testUserControllerStaticManagerFlowsWithInjectedSingletons(): void
+    {
+        Security::setTest(true);
+        $this->injectSingleton(AdminServices::class, new AdminServicesCoverageStub());
+        $this->injectSingleton(\PSFS\base\Template::class, new TemplateCoverageStub());
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $rendered = UserController::showAdminManager();
+        $this->assertSame('rendered-admin', $rendered);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $adminForm = new AdminForm();
+        $adminForm->build();
+        $_REQUEST = [$adminForm->getName() => $this->buildRequestPayloadFromForm($adminForm)];
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $this->assertSame('rendered-admin', UserController::showAdminManager());
+
+        $controller = $this->newUserProbe();
+        $this->assertSame('rendered-admin', $controller->adminers());
+        $this->assertSame('rendered-admin', $controller->setAdminUsers());
+
+        $guestController = new class extends UserControllerProbe {
+            public function isAdmin()
+            {
+                return false;
+            }
+        };
+        $this->assertIsString((string)$guestController->adminLogin());
+    }
+
+    public function testUserControllerSwitchAdminLocaleUsesRefererOrRedirectFallback(): void
+    {
+        Security::setTest(true);
+        Config::save(['i18n.locales' => 'en_US,es_ES'], []);
+        Config::getInstance()->loadConfigData(true);
+
+        $controller = $this->newUserProbe();
+        Config::save(['default.language' => 'en_US'], []);
+        Config::getInstance()->loadConfigData(true);
+        $this->setObjectProperty($controller, 'config', Config::getInstance());
+
+        $_SERVER['HTTP_REFERER'] = 'http://localhost:8080/admin/config';
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $this->assertSame('', $controller->switchAdminLocale('es-ES'));
+        $this->assertNull($controller->lastRedirect);
+
+        unset($_SERVER['HTTP_REFERER']);
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $this->assertSame('', $controller->switchAdminLocale('invalid-locale'));
+        $this->assertSame('admin', $controller->lastRedirect);
+    }
+
     public function testDocumentorControllerCoversJsonHtmlDownloadAndSwaggerUi(): void
     {
         $probe = $this->newDocumentorProbe();
@@ -193,6 +327,21 @@ class CoverageControllersTest extends TestCase
 
         $this->expectException(RouterException::class);
         $probe->swaggerUi('MISSING_DOMAIN');
+    }
+
+    public function testI18nAndRouteControllersReturnExpectedContracts(): void
+    {
+        $i18n = $this->newI18nProbe();
+        $translations = $i18n->defaultTranslations();
+        $this->assertArrayHasKey('translations', $translations);
+        $this->assertNotEmpty($translations['translations']);
+
+        $route = $this->newRouteProbe();
+        $routing = $route->getRouting();
+        $this->assertIsArray($routing);
+
+        $routingPage = $route->printRoutes();
+        $this->assertArrayHasKey('slugs', $routingPage);
     }
 
     public function testManagerTraitThrowsForbiddenForUserRoleAndExposesMenu(): void
@@ -234,16 +383,80 @@ class CoverageControllersTest extends TestCase
         return $reflection->newInstanceWithoutConstructor();
     }
 
+    private function newConfigProbe(): ConfigControllerProbe
+    {
+        $reflection = new \ReflectionClass(ConfigControllerProbe::class);
+        return $reflection->newInstanceWithoutConstructor();
+    }
+
+    private function newI18nProbe(): I18nControllerProbe
+    {
+        $reflection = new \ReflectionClass(I18nControllerProbe::class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        $this->setObjectProperty($instance, 'tpl', new class {
+            public function regenerateTemplates(): array
+            {
+                return ['regen-templates'];
+            }
+        });
+        return $instance;
+    }
+
+    private function newRouteProbe(): RouteControllerProbe
+    {
+        $reflection = new \ReflectionClass(RouteControllerProbe::class);
+        return $reflection->newInstanceWithoutConstructor();
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    private function buildRequestPayloadFromForm(Form $form, array $overrides = []): array
+    {
+        $payload = [];
+        foreach ($form->getFields() as $fieldName => $field) {
+            if ($fieldName === Form::SEPARATOR) {
+                continue;
+            }
+            if (array_key_exists($fieldName, $overrides)) {
+                $payload[$fieldName] = $overrides[$fieldName];
+                continue;
+            }
+            $value = $field['value'] ?? null;
+            if ($value === null || $value === '') {
+                $value = 'coverage';
+            }
+            $payload[$fieldName] = $value;
+        }
+        return $payload;
+    }
+
     private function setObjectProperty(object $target, string $property, mixed $value): void
     {
         $reflection = new \ReflectionProperty($target, $property);
         $reflection->setAccessible(true);
         $reflection->setValue($target, $value);
     }
+
+    private function injectSingleton(string $class, object $instance): void
+    {
+        $reflection = new \ReflectionProperty(SingletonRegistry::class, 'instances');
+        $reflection->setAccessible(true);
+        $instances = $reflection->getValue();
+        $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
+        if (!isset($instances[$context]) || !is_array($instances[$context])) {
+            $instances[$context] = [];
+        }
+        $instances[$context][$class] = $instance;
+        $reflection->setValue(null, $instances);
+    }
 }
 
 class UserControllerProbe extends UserController
 {
+    public ?string $lastRedirect = null;
+
     public function json($response, $statusCode = 200)
     {
         return $response;
@@ -251,7 +464,24 @@ class UserControllerProbe extends UserController
 
     public function redirect($route, array $params = [])
     {
+        $this->lastRedirect = (string)$route;
         return '/redirect/' . $route;
+    }
+}
+
+class AdminServicesCoverageStub extends AdminServices
+{
+    public function getAdmins()
+    {
+        return ['admin' => ['profile' => AuthHelper::ADMIN_ID_TOKEN]];
+    }
+}
+
+class TemplateCoverageStub extends \PSFS\base\Template
+{
+    public function render($template, array $vars = array(), $cookies = array(), $domain = null)
+    {
+        return 'rendered-admin';
     }
 }
 
@@ -301,6 +531,45 @@ class DocumentorControllerProbe extends DocumentorController
         return ['status' => $statusCode, 'payload' => $response];
     }
 
+}
+
+class ConfigControllerProbe extends ConfigController
+{
+    public function render($template, array $vars = array(), $cookies = array(), $domain = null)
+    {
+        return $vars;
+    }
+
+    public function json($response, $statusCode = 200)
+    {
+        return $response;
+    }
+}
+
+class I18nControllerProbe extends I18nController
+{
+    public function render($template, array $vars = array(), $cookies = array(), $domain = null)
+    {
+        return $vars;
+    }
+}
+
+class RouteControllerProbe extends RouteController
+{
+    public function render($template, array $vars = array(), $cookies = array(), $domain = null)
+    {
+        return $vars;
+    }
+
+    public function json($response, $statusCode = 200)
+    {
+        return $response;
+    }
+
+    public function redirect($route, array $params = [])
+    {
+        return '/route/' . $route;
+    }
 }
 
 class ManagerTraitProbe

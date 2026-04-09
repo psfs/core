@@ -3,6 +3,7 @@
 namespace PSFS\tests\runtime\swoole;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PSFS\runtime\swoole\SwooleRequestHandler;
 
 class SwooleRequestHandlerTest extends TestCase
@@ -577,6 +578,97 @@ class SwooleRequestHandlerTest extends TestCase
             ['single=1; Path=/', 'second=2; Path=/'],
             $merged['set-cookie'] ?? []
         );
+    }
+
+    public function testParseCookieLineRejectsEmptyCookieName(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'parseCookieLine');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($handler, '=abc; Path=/'));
+    }
+
+    public function testEnsureSessionCookieHeaderHandlesStringSetCookieContainer(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'ensureSessionCookieHeader');
+        $method->setAccessible(true);
+
+        session_name('PHPSESSID');
+        session_id('plain-cookie-session');
+        session_start();
+        try {
+            $headers = ['set-cookie' => 'x=y; Path=/'];
+            $method->invokeArgs($handler, [&$headers]);
+            $this->assertIsArray($headers['set-cookie']);
+            $this->assertCount(2, $headers['set-cookie']);
+        } finally {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+        }
+    }
+
+    public function testTryServeStaticAssetRejectsSymlinkOutsidePublicRoot(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'tryServeStaticAsset');
+        $method->setAccessible(true);
+        $response = new SwooleResponseDouble();
+
+        $link = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-swoole-outside-link';
+        @unlink($link);
+        symlink('/etc/hosts', $link);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/tmp-swoole-outside-link';
+
+        try {
+            $this->assertFalse($method->invoke($handler, $response));
+            $this->assertSame('', $response->body);
+        } finally {
+            @unlink($link);
+        }
+    }
+
+    #[RunInSeparateProcess]
+    public function testHandleProcessesNonStaticRouteThroughDispatcherPipeline(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $request = new class {
+            public array $server = [
+                'request_uri' => '/admin/login',
+                'request_method' => 'GET',
+                'server_port' => 8080,
+                'remote_addr' => '127.0.0.1',
+            ];
+            public array $header = [
+                'host' => 'localhost:8080',
+            ];
+            public array $get = [];
+            public array $post = [];
+            public array $cookie = [];
+            public array $files = [];
+            public function rawContent(): string
+            {
+                return '';
+            }
+        };
+
+        $response = new SwooleResponseDouble();
+        $bufferLevel = ob_get_level();
+        ob_start();
+        try {
+            $handler->handle($request, $response);
+        } finally {
+            while (ob_get_level() > $bufferLevel) {
+                @ob_end_clean();
+            }
+        }
+
+        $this->assertGreaterThanOrEqual(200, $response->statusCode);
+        $this->assertArrayNotHasKey(\PSFS\runtime\swoole\SwooleRequestHandler::RAW_BODY_SERVER_KEY, $_SERVER);
     }
 
 }

@@ -4,9 +4,11 @@ namespace PSFS\tests\base\type\helper;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
+use PSFS\base\exception\ConfigException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\DeployHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Class GeneratorHelperTest
@@ -67,6 +69,82 @@ class GeneratorHelperTest extends TestCase
         }
     }
 
+    public function testCreateRootDocumentWritesVerboseMessagesAndRespectsVerifiableFiles(): void
+    {
+        $tmpRoot = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-coverage-root';
+        GeneratorHelper::deleteDir($tmpRoot);
+        GeneratorHelper::createDir($tmpRoot);
+        file_put_contents($tmpRoot . DIRECTORY_SEPARATOR . 'humans.txt', 'keep');
+
+        $output = new BufferedOutput();
+        GeneratorHelper::createRoot($tmpRoot, $output, false);
+        $buffer = $output->fetch();
+
+        $this->assertStringContainsString('Start creating html files', $buffer);
+        $this->assertStringContainsString('humans.txt already exists', $buffer);
+        $this->assertStringContainsString('index.php created successfully', $buffer);
+        $this->assertSame('keep', (string)file_get_contents($tmpRoot . DIRECTORY_SEPARATOR . 'humans.txt'));
+
+        GeneratorHelper::deleteDir($tmpRoot);
+    }
+
+    public function testHelperValidatesCustomApiNamespacesAndExtractsClassName(): void
+    {
+        $this->assertSame('Demo', GeneratorHelper::extractClassFromNamespace('Root\\Api\\Demo'));
+        $this->assertIsString(GeneratorHelper::getTemplatePath());
+
+        GeneratorHelper::checkCustomNamespaceApi(GeneratorHelperAbstractApiStub::class);
+
+        $this->expectException(GeneratorException::class);
+        GeneratorHelper::checkCustomNamespaceApi(GeneratorHelperConcreteApiStub::class);
+    }
+
+    public function testHelperRejectsInvalidCustomApiNamespaces(): void
+    {
+        try {
+            GeneratorHelper::checkCustomNamespaceApi(\stdClass::class);
+            $this->fail('Expected exception for non API class');
+        } catch (GeneratorException $exception) {
+            $this->assertStringContainsString('must extend', $exception->getMessage());
+        }
+
+        $this->expectException(GeneratorException::class);
+        GeneratorHelper::checkCustomNamespaceApi('Non\\Existing\\Api');
+    }
+
+    public function testCopyResourcesAndDeleteDirSymlinkAndFailurePath(): void
+    {
+        $srcDir = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-generator-src';
+        $srcFile = $srcDir . DIRECTORY_SEPARATOR . 'hello.txt';
+        $targetDest = '/tmp-generator-dest';
+
+        GeneratorHelper::deleteDir($srcDir);
+        GeneratorHelper::createDir($srcDir);
+        file_put_contents($srcFile, 'hello');
+
+        GeneratorHelper::copyResources($targetDest, false, $srcDir, false);
+        $this->assertFileExists(WEB_DIR . $targetDest . DIRECTORY_SEPARATOR . 'tmp-generator-src' . DIRECTORY_SEPARATOR . 'hello.txt');
+
+        $targetFile = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-generator-file-target';
+        file_put_contents($targetFile, 'not-a-directory');
+        try {
+            GeneratorHelper::copyResources('/tmp-generator-file-target', true, $srcFile, false);
+            $this->fail('Expected ConfigException when destination parent is a file');
+        } catch (ConfigException) {
+            $this->assertTrue(true);
+        }
+
+        $symlink = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-generator-link';
+        @unlink($symlink);
+        symlink($srcDir, $symlink);
+        GeneratorHelper::deleteDir($symlink);
+        $this->assertFileDoesNotExist($symlink);
+
+        GeneratorHelper::deleteDir(WEB_DIR . $targetDest);
+        GeneratorHelper::deleteDir($srcDir);
+        @unlink($targetFile);
+    }
+
     /**
      * @throws \Exception
      */
@@ -109,5 +187,21 @@ class GeneratorHelperTest extends TestCase
         foreach ($artifacts as $artifact) {
             $this->assertFileDoesNotExist($artifact);
         }
+    }
+}
+
+abstract class GeneratorHelperAbstractApiStub extends \PSFS\base\types\Api
+{
+    public function getModelTableMap()
+    {
+        return self::class;
+    }
+}
+
+class GeneratorHelperConcreteApiStub extends \PSFS\base\types\Api
+{
+    public function getModelTableMap()
+    {
+        return self::class;
     }
 }

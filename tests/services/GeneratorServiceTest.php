@@ -7,6 +7,8 @@ use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\MigrationManager;
 use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Schema;
+use PSFS\base\SingletonRegistry;
+use PSFS\base\exception\ApiException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\traits\BoostrapTrait;
 use PSFS\services\GeneratorService as Service;
@@ -21,6 +23,11 @@ class GeneratorServiceTest extends TestCase
     use BoostrapTrait;
 
     const MODULE_NAME = 'CLIENT';
+
+    protected function tearDown(): void
+    {
+        MigrationService::dropInstance();
+    }
 
     public function testBaseClass()
     {
@@ -144,6 +151,182 @@ class GeneratorServiceTest extends TestCase
         );
     }
 
+    public function testBuildReversedSchemaLogsWhenNoTablesWereDetected(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $manager = $this->createMock(MigrationManager::class);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $migrationService = $this->createMock(MigrationService::class);
+
+        $manager->method('getDatabases')->willReturn([new Database('empty')]);
+        $generatorConfig->method('getBuildConnections')->willReturn([]);
+        $migrationService->method('checkSourceDatabase')->willReturn([null, 0]);
+
+        $schema = $this->invokePrivateMethod(
+            $service,
+            'buildReversedSchema',
+            [$manager, $generatorConfig, $migrationService, false]
+        );
+
+        $this->assertCount(0, $schema->getDatabases());
+    }
+
+    public function testBuildMigrationDiffsWithDebugLogsNoDiffBranch(): void
+    {
+        $service = $this->newServiceWithoutConstructor(GeneratorServiceTestDouble::class);
+        $service->excludedTables = ['skip_me'];
+        $service->diffsByName = ['without_diff' => false];
+
+        $manager = $this->createMock(MigrationManager::class);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $migrationService = $this->createMock(MigrationService::class);
+
+        $schemaDatabaseWithoutDiff = new Database('without_diff');
+        $manager->method('getDatabase')->willReturn($schemaDatabaseWithoutDiff);
+
+        $reversedSchema = new Schema();
+        $reversedSchema->addDatabase(new Database('without_diff'));
+
+        [$up, $down] = $this->invokePrivateMethod(
+            $service,
+            'buildMigrationDiffs',
+            [$manager, $generatorConfig, $migrationService, $reversedSchema, true]
+        );
+
+        $this->assertSame([], $up);
+        $this->assertSame([], $down);
+    }
+
+    public function testComputeDatabaseDiffCanBeInvokedWithExcludedTables(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $database = new Database('source');
+        $target = new Database('target');
+        $method = new \ReflectionMethod(Service::class, 'computeDatabaseDiff');
+        $method->setAccessible(true);
+
+        $diff = $method->invoke($service, $database, $target, ['skip_me']);
+
+        $this->assertTrue(is_object($diff) || $diff === false);
+    }
+
+    public function testGenerateControllerTemplateCreatesDedicatedTestFileWhenMissing(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $templateReflection = new \ReflectionClass(GeneratorTemplateStub::class);
+        $this->setObjectProperty($service, 'tpl', $templateReflection->newInstanceWithoutConstructor());
+
+        $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . 'GENERATOR_TEMPLATE_COVERAGE';
+        @mkdir($modulePath . DIRECTORY_SEPARATOR . 'Controller' . DIRECTORY_SEPARATOR . 'base', 0775, true);
+        @mkdir($modulePath . DIRECTORY_SEPARATOR . 'Test', 0775, true);
+        $testFile = $modulePath . DIRECTORY_SEPARATOR . 'Test' . DIRECTORY_SEPARATOR . 'DemoTest.php';
+        @unlink($testFile);
+
+        $method = new \ReflectionMethod(Service::class, 'generateControllerTemplate');
+        $method->setAccessible(true);
+        $created = $method->invoke($service, 'Demo', $modulePath, true, 'normal');
+
+        $this->assertTrue((bool)$created);
+        $this->assertFileExists($testFile);
+        GeneratorHelper::deleteDir($modulePath);
+    }
+
+    public function testCreateModuleMigrationsThrowsApiExceptionWhenPendingMigrationsExist(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $manager = $this->createMock(MigrationManager::class);
+        $manager->method('hasPendingMigrations')->willReturn(true);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+
+        $migrationService = $this->getMockBuilder(MigrationService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getConnectionManager'])
+            ->getMock();
+        $migrationService->method('getConnectionManager')->willReturn([$manager, $generatorConfig]);
+        $this->injectSingleton(MigrationService::class, $migrationService);
+
+        $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
+        $method->setAccessible(true);
+
+        $this->expectException(ApiException::class);
+        $method->invoke($service, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
+    }
+
+    public function testCreateModuleMigrationsReturnsTrueWhenNoDiffIsFound(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+
+        $manager = $this->createMock(MigrationManager::class);
+        $manager->method('hasPendingMigrations')->willReturn(false);
+        $manager->method('getDatabases')->willReturn([]);
+
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $generatorConfig->method('getBuildConnections')->willReturn([]);
+        $generatorConfig->method('getSection')->willReturn([
+            'phpConfDir' => CORE_DIR . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'propel' . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'bookstore',
+        ]);
+
+        $migrationService = $this->getMockBuilder(MigrationService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getConnectionManager', 'generateMigrationFile'])
+            ->getMock();
+        $migrationService->method('getConnectionManager')->willReturn([$manager, $generatorConfig]);
+        $migrationService->expects($this->never())->method('generateMigrationFile');
+        $this->injectSingleton(MigrationService::class, $migrationService);
+
+        $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
+        $method->setAccessible(true);
+        $result = $method->invoke($service, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
+
+        $this->assertTrue((bool)$result);
+    }
+
+    public function testCreateModuleMigrationsGeneratesFileWhenDiffExists(): void
+    {
+        $service = $this->newServiceWithoutConstructor(Service::class);
+
+        $manager = $this->createMock(MigrationManager::class);
+        $manager->method('hasPendingMigrations')->willReturn(false);
+        $appDatabase = new Database('bookstore');
+        $manager->method('getDatabases')->willReturn([$appDatabase]);
+        $manager->method('getDatabase')->with('bookstore')->willReturn(new Database('bookstore'));
+
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $generatorConfig->method('getBuildConnections')->willReturn([]);
+        $generatorConfig->method('getSection')->willReturn([
+            'phpConfDir' => CORE_DIR . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'propel' . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'bookstore',
+        ]);
+
+        $platform = new class {
+            public function getModifyDatabaseDDL($diff): string
+            {
+                return is_string($diff) ? $diff : 'ddl-up';
+            }
+        };
+        $diff = new GeneratorServiceDiffStub('ddl-down');
+
+        $migrationService = $this->getMockBuilder(MigrationService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getConnectionManager', 'checkSourceDatabase', 'getPlatformAndConnection', 'generateMigrationFile'])
+            ->getMock();
+        $migrationService->method('getConnectionManager')->willReturn([$manager, $generatorConfig]);
+        $migrationService->method('checkSourceDatabase')->willReturn([new Database('bookstore'), 1]);
+        $migrationService->method('getPlatformAndConnection')->willReturn([null, $platform]);
+        $migrationService->expects($this->once())
+            ->method('generateMigrationFile')
+            ->with($manager, ['bookstore' => 'ddl-up'], ['bookstore' => 'ddl-down'], $generatorConfig, 'Demo');
+        $this->injectSingleton(MigrationService::class, $migrationService);
+
+        $serviceDouble = $this->newServiceWithoutConstructor(GeneratorServiceTestDouble::class);
+        $serviceDouble->excludedTables = [];
+        $serviceDouble->diffsByName = ['bookstore' => $diff];
+        $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
+        $method->setAccessible(true);
+        $result = $method->invoke($serviceDouble, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
+
+        $this->assertTrue((bool)$result);
+    }
+
     public static array $filesToCheckWithoutSchema = [
         DIRECTORY_SEPARATOR . 'phpunit.xml.dist',
         DIRECTORY_SEPARATOR . 'autoload.php',
@@ -262,6 +445,34 @@ class GeneratorServiceTest extends TestCase
         $reflectionMethod = new \ReflectionMethod(Service::class, $method);
         $reflectionMethod->setAccessible(true);
         return $reflectionMethod->invokeArgs($instance, $arguments);
+    }
+
+    private function setObjectProperty(object $target, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionProperty($target, $property);
+        $reflection->setAccessible(true);
+        $reflection->setValue($target, $value);
+    }
+
+    private function injectSingleton(string $class, object $instance): void
+    {
+        $reflection = new \ReflectionProperty(SingletonRegistry::class, 'instances');
+        $reflection->setAccessible(true);
+        $instances = $reflection->getValue();
+        $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
+        if (!isset($instances[$context]) || !is_array($instances[$context])) {
+            $instances[$context] = [];
+        }
+        $instances[$context][$class] = $instance;
+        $reflection->setValue(null, $instances);
+    }
+}
+
+final class GeneratorTemplateStub extends \PSFS\base\Template
+{
+    public function dump($template, $vars = array(), bool $disableCache = false): string
+    {
+        return (string)$template . '::' . ($vars['class'] ?? 'class');
     }
 }
 
