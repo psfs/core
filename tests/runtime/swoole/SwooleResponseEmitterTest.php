@@ -51,6 +51,66 @@ class SwooleResponseEmitterTest extends TestCase
         $this->assertSame('abc', $response->cookies[0]['value'] ?? null);
         $this->assertSame('{"ok":true}', $response->body);
     }
+
+    public function testEmitCookieDefaultsToLaxSameSiteWhenInvalidAttributeIsProvided(): void
+    {
+        $emitter = new SwooleResponseEmitter();
+        $response = new SwooleEmitterResponseDouble();
+
+        $emitter->emit($response, 200, [
+            'set-cookie' => ['sid=abc; Path=/; HttpOnly; SameSite=invalid'],
+        ], '');
+
+        $this->assertSame('Lax', $response->cookies[0]['samesite'] ?? null);
+        $this->assertTrue((bool)($response->cookies[0]['httponly'] ?? false));
+    }
+
+    public function testEnsureSessionCookieHeaderAddsSessionCookieWhenActiveAndMissing(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $emitter = new SwooleResponseEmitter();
+        $headers = ['set-cookie' => ['other=1; Path=/']];
+
+        $previousName = session_name();
+        session_name('PSFSSESSID');
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => false,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+        session_start();
+
+        try {
+            $emitter->ensureSessionCookieHeader($headers);
+        } finally {
+            session_write_close();
+            session_name($previousName);
+        }
+
+        $this->assertCount(2, $headers['set-cookie']);
+        $this->assertStringStartsWith('PSFSSESSID=', $headers['set-cookie'][1]);
+        $this->assertStringContainsString('; HttpOnly', $headers['set-cookie'][1]);
+        $this->assertStringContainsString('; SameSite=Strict', $headers['set-cookie'][1]);
+    }
+
+    public function testEnsureSessionCookieHeaderSkipsWhenSessionIsInactive(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $emitter = new SwooleResponseEmitter();
+        $headers = [];
+        $emitter->ensureSessionCookieHeader($headers);
+
+        $this->assertSame([], $headers);
+    }
 }
 
 class SwooleEmitterResponseDouble

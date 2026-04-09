@@ -11,6 +11,7 @@ use PSFS\base\extension\TemplateFunctions;
 use PSFS\base\types\Form;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\I18nHelper;
 
 class TemplateFunctionsTestForm extends Form
 {
@@ -119,6 +120,34 @@ class TemplateFunctionsTest extends TestCase
     public function testAssetReturnsEmptyWhenDomainPathCannotBeResolved(): void
     {
         $this->assertSame('', TemplateFunctions::asset('/missing/path.css'));
+    }
+
+    public function testAvailableLocalesNormalizesMergesAndSortsConfiguredSessionAndDefaultLocales(): void
+    {
+        Config::save(array_merge($this->configBackup, [
+            'i18n.locales' => 'es_ES,en,pt-br,invalid,',
+            'default.language' => 'ca_es',
+        ]), []);
+        Config::getInstance()->loadConfigData(true);
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, 'de_de');
+
+        $locales = TemplateFunctions::availableLocales();
+
+        $this->assertSame(['ca_ES', 'de_DE', 'en_US', 'es_ES', 'pt_BR'], $locales);
+    }
+
+    public function testAvailableLocalesFallbacksToEnglishAndSpanishWhenConfigIsEmpty(): void
+    {
+        Config::save(array_merge($this->configBackup, [
+            'i18n.locales' => '',
+            'default.language' => 'en_US',
+        ]), []);
+        Config::getInstance()->loadConfigData(true);
+        Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, null);
+
+        $locales = TemplateFunctions::availableLocales();
+
+        $this->assertSame(['en_US', 'es_ES'], $locales);
     }
 
     public function testButtonWidgetAndFormRenderingFunctions(): void

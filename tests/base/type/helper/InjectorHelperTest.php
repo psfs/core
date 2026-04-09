@@ -110,6 +110,37 @@ class InjectorHelperTest extends TestCase
             Config::getInstance()->loadConfigData(true);
         }
     }
+
+    public function testResolveInjectableRuntimeDefinitionFallsBackToCachedDefinitionsWhenPropertyIsMissing(): void
+    {
+        $fromString = InjectorHelper::resolveInjectableRuntimeDefinition(
+            RuntimeInjectableDefinitionExample::class,
+            'missingProperty',
+            '\\PSFS\\base\\Security'
+        );
+
+        $this->assertTrue($fromString['isInjectable']);
+        $this->assertSame('\\PSFS\\base\\Security', $fromString['class']);
+        $this->assertTrue($fromString['singleton']);
+        $this->assertTrue($fromString['required']);
+        $this->assertSame('cache', $fromString['source']);
+
+        $fromArray = InjectorHelper::resolveInjectableRuntimeDefinition(
+            RuntimeInjectableDefinitionExample::class,
+            'missingProperty',
+            [
+                'class' => '\\PSFS\\base\\Router',
+                'singleton' => false,
+                'required' => false,
+            ]
+        );
+
+        $this->assertTrue($fromArray['isInjectable']);
+        $this->assertSame('\\PSFS\\base\\Router', $fromArray['class']);
+        $this->assertFalse($fromArray['singleton']);
+        $this->assertFalse($fromArray['required']);
+        $this->assertSame('cache', $fromArray['source']);
+    }
 }
 
 class InvalidInjectableVisibilityExample

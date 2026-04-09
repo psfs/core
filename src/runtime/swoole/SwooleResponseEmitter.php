@@ -2,6 +2,7 @@
 
 namespace PSFS\runtime\swoole;
 
+use PSFS\base\types\helpers\ResponseCookieHelper;
 use PSFS\base\types\helpers\ResponseHeaderHelper;
 
 class SwooleResponseEmitter
@@ -90,29 +91,7 @@ class SwooleResponseEmitter
         }
 
         $params = session_get_cookie_params();
-        $lifetime = (int)($params['lifetime'] ?? 0);
-        $line = $sessionName . '=' . rawurlencode($sessionId);
-        if ($lifetime > 0) {
-            $line .= '; Expires=' . gmdate('D, d M Y H:i:s T', time() + $lifetime);
-            $line .= '; Max-Age=' . $lifetime;
-        }
-
-        $path = (string)($params['path'] ?? '/');
-        $line .= '; Path=' . ($path === '' ? '/' : $path);
-        $domain = (string)($params['domain'] ?? '');
-        if ($domain !== '') {
-            $line .= '; Domain=' . $domain;
-        }
-        if (!empty($params['secure'])) {
-            $line .= '; Secure';
-        }
-        if (!empty($params['httponly'])) {
-            $line .= '; HttpOnly';
-        }
-        $sameSite = (string)($params['samesite'] ?? '');
-        if ($sameSite !== '') {
-            $line .= '; SameSite=' . $sameSite;
-        }
+        $line = ResponseCookieHelper::buildSessionCookieHeaderValue($sessionName, $sessionId, $params);
 
         $existing[] = $line;
         $headers[$cookieKey] = $existing;
@@ -152,54 +131,7 @@ class SwooleResponseEmitter
 
     private function parseCookieLine(string $line): ?array
     {
-        $parts = array_map('trim', explode(';', $line));
-        if ($parts === [] || !str_contains((string)$parts[0], '=')) {
-            return null;
-        }
-        [$name, $value] = explode('=', (string)$parts[0], 2);
-        $cookie = [
-            'name' => trim($name),
-            'value' => rawurldecode(trim($value)),
-            'expires' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => false,
-            'httponly' => false,
-            'samesite' => 'Lax',
-        ];
-        if ($cookie['name'] === '') {
-            return null;
-        }
-        for ($index = 1, $count = count($parts); $index < $count; $index++) {
-            $fragment = (string)$parts[$index];
-            if ($fragment === '') {
-                continue;
-            }
-            if (!str_contains($fragment, '=')) {
-                $flag = strtolower($fragment);
-                if ($flag === 'secure') {
-                    $cookie['secure'] = true;
-                }
-                if ($flag === 'httponly') {
-                    $cookie['httponly'] = true;
-                }
-                continue;
-            }
-            [$key, $value] = explode('=', $fragment, 2);
-            $key = strtolower(trim($key));
-            $value = trim($value);
-            if ($key === 'expires') {
-                $parsed = strtotime($value);
-                $cookie['expires'] = $parsed === false ? 0 : $parsed;
-            } elseif ($key === 'path') {
-                $cookie['path'] = $value !== '' ? $value : '/';
-            } elseif ($key === 'domain') {
-                $cookie['domain'] = $value;
-            } elseif ($key === 'samesite') {
-                $cookie['samesite'] = $value;
-            }
-        }
-        return $cookie;
+        return ResponseCookieHelper::parseSetCookieHeaderValue($line);
     }
 
     private function normalizeOutputHeaderName(string $normalizedKey): string
@@ -214,4 +146,5 @@ class SwooleResponseEmitter
         $parts = array_map(static fn($part) => ucfirst(strtolower(trim($part))), $parts);
         return implode('-', $parts);
     }
+
 }

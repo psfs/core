@@ -33,7 +33,10 @@ class I18nDiscoveryTraitTest extends TestCase
 
     public function testFindTranslationsReturnsEmptyArrayForMissingPath(): void
     {
-        $result = I18nDiscoveryTraitTestDouble::findTranslations('/path/that/does/not/exist', $this->locale);
+        $result = iterator_to_array(
+            I18nDiscoveryTraitTestDouble::findTranslations('/path/that/does/not/exist', $this->locale),
+            false
+        );
 
         $this->assertSame([], $result);
     }
@@ -44,7 +47,10 @@ class I18nDiscoveryTraitTest extends TestCase
         mkdir($modulePath, 0777, true);
         file_put_contents($modulePath . DIRECTORY_SEPARATOR . 'Sample.php', '<?php echo "ok";');
 
-        $results = I18nDiscoveryTraitTestDouble::findTranslations($this->scanPath, $this->locale);
+        $results = iterator_to_array(
+            I18nDiscoveryTraitTestDouble::findTranslations($this->scanPath, $this->locale),
+            false
+        );
 
         $this->assertNotEmpty($results);
         $this->assertStringContainsString('Reviewing directory:', $results[0]);

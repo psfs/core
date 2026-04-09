@@ -157,15 +157,7 @@ trait MutationTrait
     {
         if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns), true)) {
             $tableMap = $this->getTableMap();
-
-            $column = null;
-            if ($tableMap->hasColumn('NAME')) {
-                $column = $tableMap->getColumn('NAME');
-            } elseif ($tableMap->hasColumn('TITLE')) {
-                $column = $tableMap->getColumn('TITLE');
-            } elseif ($tableMap->hasColumn('LABEL')) {
-                $column = $tableMap->getColumn('LABEL');
-            }
+            $column = $this->resolveDefaultListColumn($tableMap);
             if (null !== $column) {
                 $this->extraColumns[$column->getFullyQualifiedName()] = Api::API_LIST_NAME_FIELD;
             } else {
@@ -212,7 +204,7 @@ trait MutationTrait
     protected function extractApiLang()
     {
         $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
-        $this->lang = Request::header(APi::HEADER_API_LANG, $defaultLanguage);
+        $this->lang = Request::header(Api::HEADER_API_LANG, $defaultLanguage);
     }
 
     /**
@@ -327,5 +319,15 @@ trait MutationTrait
         }
         $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
         return (string)Request::header(Api::HEADER_API_LANG, $defaultLanguage);
+    }
+
+    private function resolveDefaultListColumn(TableMap $tableMap): ?ColumnMap
+    {
+        foreach (['NAME', 'TITLE', 'LABEL'] as $columnName) {
+            if ($tableMap->hasColumn($columnName)) {
+                return $tableMap->getColumn($columnName);
+            }
+        }
+        return null;
     }
 }

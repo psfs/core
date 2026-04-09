@@ -26,32 +26,13 @@ class InjectorHelper
     {
         $variables = [];
         foreach ($reflector->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $instanceType = self::extractVarType($property->getDocComment(), $property);
+            $doc = $property->getDocComment() ?: '';
+            $instanceType = self::extractVarType($doc, $property);
             if (null !== $instanceType) {
-                $isRequired = self::checkIsRequired($property->getDocComment(), $property);
-                $label = self::getLabel($property->getDocComment(), $property);
-                $values = self::getValues($property->getDocComment(), $property);
-                $isArray = (bool)preg_match('/\[\]$/', $instanceType);
-                if ($isArray) {
-                    $instanceType = str_replace('[]', '', $instanceType);
-                }
-                if ($instanceType === '\\DateTime' || !Router::exists($instanceType)) {
-                    list($type, $format) = DocumentorHelper::translateSwaggerFormats($instanceType);
-                    $variables[$property->getName()] = [
-                        'type' => $type,
-                        'format' => $format,
-                        'required' => $isRequired,
-                        'description' => $label,
-                    ];
-                } else {
-                    $instance = new ReflectionClass($instanceType);
-                    $variables[$property->getName()] = [
-                        'is_array' => $isArray,
-                        'class' => $instanceType,
-                        'type' => $instance->getShortName(),
-                        'properties' => self::extractVariables($instance),
-                    ];
-                }
+                $isRequired = self::checkIsRequired($doc, $property);
+                $label = self::getLabel($doc, $property);
+                $values = self::getValues($doc, $property);
+                $variables[$property->getName()] = self::buildVariableDefinition($instanceType, $isRequired, $label);
                 if (!empty($values)) {
                     $variables[$property->getName()]['enum'] = $values;
                 }
@@ -305,5 +286,46 @@ class InjectorHelper
             'required' => true,
             'source' => null,
         ];
+    }
+
+    /**
+     * @param string $instanceType
+     * @param bool $required
+     * @param mixed $label
+     * @return array<string, mixed>
+     * @throws ReflectionException
+     */
+    private static function buildVariableDefinition(string $instanceType, bool $required, mixed $label): array
+    {
+        [$normalizedType, $isArray] = self::normalizeInstanceType($instanceType);
+        if ($normalizedType === '\\DateTime' || !Router::exists($normalizedType)) {
+            list($type, $format) = DocumentorHelper::translateSwaggerFormats($normalizedType);
+            return [
+                'type' => $type,
+                'format' => $format,
+                'required' => $required,
+                'description' => $label,
+            ];
+        }
+
+        $instance = new ReflectionClass($normalizedType);
+        return [
+            'is_array' => $isArray,
+            'class' => $normalizedType,
+            'type' => $instance->getShortName(),
+            'properties' => self::extractVariables($instance),
+        ];
+    }
+
+    /**
+     * @return array{string,bool}
+     */
+    private static function normalizeInstanceType(string $instanceType): array
+    {
+        $isArray = (bool)preg_match('/\[\]$/', $instanceType);
+        if ($isArray) {
+            $instanceType = str_replace('[]', '', $instanceType);
+        }
+        return [$instanceType, $isArray];
     }
 }

@@ -75,22 +75,41 @@ class PhinxMigrationEngine implements MigrationEngineInterface
      */
     private function normalizeStatements(array $migrationSql): array
     {
-        $statements = [];
+        return array_values(iterator_to_array($this->iterateNormalizedStatements($migrationSql), false));
+    }
+
+    /**
+     * @param array<string, mixed> $migrationSql
+     * @return \Generator<int, string>
+     */
+    private function iterateNormalizedStatements(array $migrationSql): \Generator
+    {
         foreach ($migrationSql as $sql) {
             if (is_array($sql)) {
                 foreach ($sql as $raw) {
                     if (is_string($raw)) {
-                        $statements = array_merge($statements, $this->splitter->split($raw));
+                        yield from $this->splitAndNormalize($raw);
                     }
                 }
                 continue;
             }
             if (is_string($sql)) {
-                $statements = array_merge($statements, $this->splitter->split($sql));
+                yield from $this->splitAndNormalize($sql);
             }
         }
+    }
 
-        return array_values(array_filter(array_map('trim', $statements), static fn(string $stmt): bool => '' !== $stmt));
+    /**
+     * @return \Generator<int, string>
+     */
+    private function splitAndNormalize(string $sql): \Generator
+    {
+        foreach ($this->splitter->split($sql) as $statement) {
+            $statement = trim($statement);
+            if ('' !== $statement) {
+                yield $statement;
+            }
+        }
     }
 
     /**

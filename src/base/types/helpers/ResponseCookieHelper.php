@@ -111,4 +111,94 @@ class ResponseCookieHelper
 
         return implode('; ', $parts);
     }
+
+    /**
+     * @return array{name:string,value:string,expires:int,path:string,domain:string,secure:bool,httponly:bool,samesite:string,max_age:int}
+     */
+    public static function parseSetCookieHeaderValue(string $line): ?array
+    {
+        $parts = array_map('trim', explode(';', $line));
+        if ($parts === [] || !str_contains((string)$parts[0], '=')) {
+            return null;
+        }
+        [$name, $value] = explode('=', (string)$parts[0], 2);
+        $cookie = [
+            'name' => trim($name),
+            'value' => rawurldecode(trim($value)),
+            'expires' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => false,
+            'httponly' => false,
+            'samesite' => 'Lax',
+            'max_age' => 0,
+        ];
+        if ($cookie['name'] === '') {
+            return null;
+        }
+        for ($index = 1, $count = count($parts); $index < $count; $index++) {
+            $fragment = (string)$parts[$index];
+            if ($fragment === '') {
+                continue;
+            }
+            if (!str_contains($fragment, '=')) {
+                $flag = strtolower($fragment);
+                if ($flag === 'secure') {
+                    $cookie['secure'] = true;
+                    continue;
+                }
+                if ($flag === 'httponly') {
+                    $cookie['httponly'] = true;
+                }
+                continue;
+            }
+            [$key, $value] = explode('=', $fragment, 2);
+            $key = strtolower(trim($key));
+            $value = trim($value);
+            if ($key === 'expires') {
+                $parsed = strtotime($value);
+                $cookie['expires'] = $parsed === false ? 0 : $parsed;
+                continue;
+            }
+            if ($key === 'max-age') {
+                $cookie['max_age'] = max(0, (int)$value);
+                continue;
+            }
+            if ($key === 'path') {
+                $cookie['path'] = $value !== '' ? $value : '/';
+                continue;
+            }
+            if ($key === 'domain') {
+                $cookie['domain'] = $value;
+                continue;
+            }
+            if ($key === 'samesite') {
+                $cookie['samesite'] = self::normalizeSameSite($value);
+            }
+        }
+        return $cookie;
+    }
+
+    public static function buildSessionCookieHeaderValue(string $sessionName, string $sessionId, array $params): string
+    {
+        $lifetime = max(0, (int)($params['lifetime'] ?? 0));
+        $payload = [
+            'name' => $sessionName,
+            'value' => $sessionId,
+            'options' => [
+                'expires' => $lifetime > 0 ? time() + $lifetime : 0,
+                'path' => (string)($params['path'] ?? '/'),
+                'domain' => (string)($params['domain'] ?? ''),
+                'secure' => (bool)($params['secure'] ?? false),
+                'httponly' => (bool)($params['httponly'] ?? false),
+                'samesite' => self::normalizeSameSite((string)($params['samesite'] ?? 'Lax')),
+            ],
+        ];
+
+        $line = self::renderSetCookieHeaderValue($payload);
+        if ($lifetime > 0) {
+            $line .= '; Max-Age=' . $lifetime;
+        }
+        return $line;
+    }
 }

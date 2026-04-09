@@ -50,19 +50,58 @@ class FileJobQueue implements JobQueueInterface
         $lockPath = $queueFile . '.lock';
 
         return FileHelper::withExclusiveLock($lockPath, function () use ($queueFile) {
-            $lines = @file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            if (false === $lines || [] === $lines) {
+            $input = @fopen($queueFile, 'rb');
+            if (false === $input) {
                 return null;
             }
-            $raw = array_shift($lines);
-            $rewritten = [] === $lines ? '' : implode(PHP_EOL, $lines) . PHP_EOL;
-            if (!FileHelper::writeFileAtomic($queueFile, $rewritten)) {
+            $tmpPath = $this->createTempQueuePath($queueFile);
+            $output = @fopen($tmpPath, 'wb');
+            if (false === $output) {
+                @fclose($input);
+                return $this->dequeueUsingFullRead($queueFile);
+            }
+
+            $first = null;
+            $hasRemaining = false;
+            try {
+                while (($line = fgets($input)) !== false) {
+                    $line = trim($line);
+                    if ('' === $line) {
+                        continue;
+                    }
+                    if (null === $first) {
+                        $first = $line;
+                        continue;
+                    }
+                    if (false === @fwrite($output, $line . PHP_EOL)) {
+                        return null;
+                    }
+                    $hasRemaining = true;
+                }
+            } finally {
+                @fclose($input);
+                @fclose($output);
+            }
+
+            if (null === $first) {
+                @unlink($tmpPath);
                 return null;
             }
-            if ('' === $rewritten) {
+
+            if ($hasRemaining) {
+                if (!@rename($tmpPath, $queueFile)) {
+                    $remaining = @file_get_contents($tmpPath);
+                    @unlink($tmpPath);
+                    if (false === $remaining || !FileHelper::writeFileAtomic($queueFile, $remaining)) {
+                        return null;
+                    }
+                }
+            } else {
                 FileHelper::deleteFile($queueFile);
+                @unlink($tmpPath);
             }
-            $decoded = json_decode((string)$raw, true);
+
+            $decoded = json_decode($first, true);
             return is_array($decoded) ? $decoded : null;
         });
     }
@@ -78,8 +117,21 @@ class FileJobQueue implements JobQueueInterface
         if (!file_exists($queueFile)) {
             return 0;
         }
-        $lines = @file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        return false === $lines ? 0 : count($lines);
+        $handle = @fopen($queueFile, 'rb');
+        if (false === $handle) {
+            return 0;
+        }
+        $count = 0;
+        try {
+            while (($line = fgets($handle)) !== false) {
+                if ('' !== trim($line)) {
+                    $count++;
+                }
+            }
+        } finally {
+            @fclose($handle);
+        }
+        return $count;
     }
 
     private function queueFile(string $queue): string
@@ -89,5 +141,29 @@ class FileJobQueue implements JobQueueInterface
             $slug = 'default';
         }
         return $this->basePath . DIRECTORY_SEPARATOR . $slug . '-' . sha1($queue) . '.queue';
+    }
+
+    private function dequeueUsingFullRead(string $queueFile): ?array
+    {
+        $lines = @file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (false === $lines || [] === $lines) {
+            return null;
+        }
+        $raw = array_shift($lines);
+        $rewritten = [] === $lines ? '' : implode(PHP_EOL, $lines) . PHP_EOL;
+        if (!FileHelper::writeFileAtomic($queueFile, $rewritten)) {
+            return null;
+        }
+        if ('' === $rewritten) {
+            FileHelper::deleteFile($queueFile);
+        }
+        $decoded = json_decode((string)$raw, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    private function createTempQueuePath(string $queueFile): string
+    {
+        $random = uniqid('tmp_', true);
+        return $queueFile . '.' . $random;
     }
 }

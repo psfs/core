@@ -17,12 +17,14 @@ use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\LocaleHelper;
 
 /**
  * @package PSFS\base\extension
  */
 class TemplateFunctions
 {
+    private const FALLBACK_ADMIN_LOCALES = 'en_US,es_ES';
 
     const ASSETS_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::asset';
     const ROUTE_FUNCTION = '\\PSFS\\base\\extension\\TemplateFunctions::route';
@@ -107,57 +109,15 @@ class TemplateFunctions
      */
     public static function availableLocales(): array
     {
-        $locales = [];
-
         $configuredLocales = (string)Config::getParam('i18n.locales', '');
-        if ('' === trim($configuredLocales)) {
-            $configuredLocales = 'en_US,es_ES';
-        }
-        foreach (explode(',', $configuredLocales) as $locale) {
-            $normalized = self::normalizeLocaleCode($locale);
-            if (null !== $normalized) {
-                $locales[] = $normalized;
-            }
-        }
-
         $sessionLocale = Security::getInstance()->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY);
-        if (is_string($sessionLocale) && '' !== trim($sessionLocale)) {
-            $normalized = self::normalizeLocaleCode($sessionLocale);
-            if (null !== $normalized) {
-                $locales[] = $normalized;
-            }
-        }
-
         $defaultLocale = (string)Config::getParam('default.language', 'en_US');
-        $normalizedDefault = self::normalizeLocaleCode($defaultLocale);
-        if (null !== $normalizedDefault) {
-            $locales[] = $normalizedDefault;
-        }
-
-        $locales = array_values(array_unique($locales));
-        sort($locales, SORT_NATURAL);
-
-        return $locales;
-    }
-
-    private static function normalizeLocaleCode(string $locale): ?string
-    {
-        $value = trim(str_replace('-', '_', $locale));
-        if ('' === $value) {
-            return null;
-        }
-        if (preg_match('/^[a-z]{2}$/i', $value) === 1) {
-            $lang = strtolower($value);
-            return $lang === 'en' ? 'en_US' : $lang . '_' . strtoupper($lang);
-        }
-        if (preg_match('/^[a-z]{2}_[a-z]{2}$/i', $value) === 1) {
-            $parts = explode('_', $value, 2);
-            return strtolower($parts[0]) . '_' . strtoupper($parts[1]);
-        }
-        if (preg_match('/^[a-z]{2}_[A-Z]{2}$/', $value) === 1) {
-            return $value;
-        }
-        return null;
+        return LocaleHelper::buildAvailableLocales(
+            $configuredLocales,
+            is_string($sessionLocale) ? $sessionLocale : null,
+            $defaultLocale,
+            self::FALLBACK_ADMIN_LOCALES
+        );
     }
 
     /**

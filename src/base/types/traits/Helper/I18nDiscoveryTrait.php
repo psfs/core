@@ -9,17 +9,17 @@ trait I18nDiscoveryTrait
     /**
      * @param string $path
      * @param string $locale
-     * @return array
+     * @return \Generator<int, string>
      * @throws GeneratorException
      */
-    public static function findTranslations(string $path, string $locale): array
+    public static function findTranslations(string $path, string $locale): \Generator
     {
         if (!self::isValidLocale($locale)) {
             throw new GeneratorException(t('Invalid locale format'));
         }
         $localePath = realpath(BASE_DIR . DIRECTORY_SEPARATOR . 'locale');
         $localePath .= DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR;
-        return iterator_to_array(self::yieldTranslations($path, $localePath), false);
+        return self::yieldTranslations($path, $localePath);
     }
 
     /**

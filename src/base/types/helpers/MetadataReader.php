@@ -161,20 +161,12 @@ class MetadataReader
         if (null === $doc || '' === $doc) {
             return $default;
         }
-        if ($tag === 'http') {
-            preg_match('/@(GET|POST|PUT|DELETE|HEAD|PATCH)(\n|\r)/i', $doc, $routeMethod);
-            return !empty($routeMethod) ? strtoupper($routeMethod[1]) : ($default ?? 'ALL');
-        }
-        if ($tag === 'visible') {
-            preg_match('/@visible\ (.*)(\n|\r)/im', $doc, $matches);
-            $value = !empty($matches) ? $matches[1] : '';
-            return !str_contains((string)$value, 'false');
-        }
-        if ($tag === 'cache') {
-            return (bool)self::readFromDocValue('cache', $doc, $default ?? false);
-        }
-
-        return self::readFromDocValue($tag, $doc, $default);
+        return match ($tag) {
+            'http' => self::readHttpMethodFromDoc($doc, $default),
+            'visible' => self::readVisibleFromDoc($doc),
+            'cache' => (bool)self::readFromDocValue('cache', $doc, $default ?? false),
+            default => self::readFromDocValue($tag, $doc, $default),
+        };
     }
 
     private static function readFromDocValue(string $needle, string $doc, mixed $default): mixed
@@ -211,5 +203,18 @@ class MetadataReader
         }
         self::$legacyFallbackLogs[$context] = true;
         Logger::log('[LegacyMetadata] ' . $context, LOG_NOTICE);
+    }
+
+    private static function readHttpMethodFromDoc(string $doc, mixed $default = null): string
+    {
+        preg_match('/@(GET|POST|PUT|DELETE|HEAD|PATCH)(\n|\r)/i', $doc, $routeMethod);
+        return !empty($routeMethod) ? strtoupper($routeMethod[1]) : ($default ?? 'ALL');
+    }
+
+    private static function readVisibleFromDoc(string $doc): bool
+    {
+        preg_match('/@visible\ (.*)(\n|\r)/im', $doc, $matches);
+        $value = !empty($matches) ? $matches[1] : '';
+        return !str_contains((string)$value, 'false');
     }
 }
