@@ -16,7 +16,7 @@ filter:
     - vendor/
 
 checks:
-    php: true
+  php: true
 
 tools:
   php_cs_fixer:
@@ -29,48 +29,90 @@ build:
       version: "8.2"
       ini:
         memory_limit: "-1"
-        xdebug.mode: coverage
-        xdebug.start_with_request: "no"
+
+        # 🚀 PCOV en lugar de Xdebug (clave)
+        pcov.enabled: "1"
+        pcov.directory: "src"
+
+        # 🔒 Desactivar todo lo que meta ruido
+        xdebug.mode: "off"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
+
+        # ⚡ Menos overhead en runtime
+        zend.assertions: "-1"
+
   nodes:
+
+    # 🔍 ANÁLISIS (sin tests → más rápido)
     analysis:
       tests:
         override:
           - php-scrutinizer-run
+
+    # 🧪 TESTS CON SERVICIOS
     services-tests:
       services:
         mysql: "8.4"
         redis: "6"
+
       environment:
         variables:
           APP_ENVIRONMENT: "test"
+
           API_DB_HOST: "127.0.0.1"
           API_DB_PORT: "3306"
           API_DB_NAME: "scrutinizer"
           API_DB_USER: "root"
           API_DB_PASSWORD: ""
+
           DB_HOST: "127.0.0.1"
           DB_PORT: "3306"
           DB_NAME: "scrutinizer"
           DB_USER: "root"
           DB_PASSWORD: ""
+
           PSFS_REDIS_HOST: "127.0.0.1"
           PSFS_REDIS_PORT: "6379"
           PSFS_REDIS_TIMEOUT: "1.5"
+
       dependencies:
         override:
-          - composer install -o --no-interaction --no-progress --prefer-dist
+          # ⚡ Composer optimizado
+          - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+
+          # 🧠 Warmup DB (evita problemas de timing)
           - php tests/bootstrap/prepare_api_mysql.php
-          - php -r '$f="config/config.json"; $d=file_exists($f)?json_decode((string)file_get_contents($f),true):[]; if(!is_array($d)){$d=[];} $d["psfs.redis"]=true; $d["redis.host"]="127.0.0.1"; $d["redis.port"]=6379; $d["redis.timeout"]=1.5; $d["cache.config.ttl"]=$d["cache.config.ttl"]??60; $d["cache.reflections.ttl"]=$d["cache.reflections.ttl"]??300; file_put_contents($f, json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));'
+
+          # ⚙️ Config dinámica
+          - php -r '
+            $f="config/config.json";
+            $d=file_exists($f)?json_decode((string)file_get_contents($f),true):[];
+            if(!is_array($d)){$d=[];}
+            $d["psfs.redis"]=true;
+            $d["redis.host"]="127.0.0.1";
+            $d["redis.port"]=6379;
+            $d["redis.timeout"]=1.5;
+            $d["cache.config.ttl"]=$d["cache.config.ttl"]??60;
+            $d["cache.reflections.ttl"]=$d["cache.reflections.ttl"]??300;
+            file_put_contents($f, json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+            '
+
       project_setup:
         override:
           - true
+
       tests:
         stop_on_failure: true
         override:
-          - command: "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never"
+          - command: >
+              php -d pcov.enabled=1
+              -d pcov.directory=src
+              vendor/bin/phpunit
+              --configuration phpunit.xml.dist
+              --colors=never
+              --coverage-clover cache/coverage/coverage.xml
             idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
