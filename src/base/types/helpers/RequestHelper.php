@@ -2,11 +2,8 @@
 
 namespace PSFS\base\types\helpers;
 
-use PSFS\base\exception\RequestTerminationException;
 use PSFS\base\config\Config;
-use PSFS\base\Logger;
 use PSFS\base\Request;
-use PSFS\base\runtime\RuntimeMode;
 
 /**
  * @package PSFS\base\types\helpers
@@ -158,31 +155,22 @@ class RequestHelper
     {
         Inspector::stats('[RequestHelper] Checking CORS', Inspector::SCOPE_DEBUG);
         $corsEnabled = Config::getParam('cors.enabled');
-        $request = Request::getInstance();
-        if (null !== $corsEnabled) {
-            $origin = $request->getServer('HTTP_ORIGIN');
-            $allowedOrigin = self::resolveAllowedOrigin($origin, $corsEnabled);
-            if ($allowedOrigin !== null) {
-                if (!headers_sent()) {
-                    // TODO include these headers in Template class output method
-                    ResponseHelper::setHeader('Access-Control-Allow-Credentials: true');
-                    ResponseHelper::setHeader('Access-Control-Allow-Origin: ' . self::normalizeOrigin($origin));
-                    ResponseHelper::setHeader('Vary: Origin');
-                    ResponseHelper::setHeader(
-                        'Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS, HEAD'
-                    );
-                    ResponseHelper::setHeader('Access-Control-Allow-Headers: ' . implode(', ', self::getCorsHeaders()));
-                }
-                if ($request->getMethod() === Request::VERB_OPTIONS) {
-                    Logger::log('Returning OPTIONS header confirmation for CORS pre flight requests', LOG_DEBUG);
-                    ResponseHelper::setStatusHeader('HTTP/1.1 204 No Content');
-                    if (RuntimeMode::isLongRunningServer()) {
-                        throw new RequestTerminationException('CORS preflight request finalized');
-                    }
-                    exit();
-                }
-            }
+        if (null === $corsEnabled) {
+            return;
         }
+
+        $request = Request::getInstance();
+        $origin = $request->getServer('HTTP_ORIGIN');
+        $allowedOrigin = self::resolveAllowedOrigin($origin, $corsEnabled);
+        if ($allowedOrigin === null) {
+            return;
+        }
+
+        CorsLifecycleHelper::apply(
+            $allowedOrigin,
+            $request->getMethod() === Request::VERB_OPTIONS,
+            self::getCorsHeaders()
+        );
     }
 
     /**

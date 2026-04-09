@@ -93,34 +93,17 @@ class Dispatcher extends Singleton
     public function run($uri = null)
     {
         Inspector::stats('[Dispatcher] Begin runner', Inspector::SCOPE_DEBUG);
-        $targetUri = $uri ?? $this->actualUri;
+        $targetUri = DispatcherRuntimeHelper::resolveTargetUri($uri, $this->actualUri);
+        $this->actualUri = DispatcherRuntimeHelper::resolveActualRequestUri(
+            $uri,
+            Request::getInstance()->getServer('REQUEST_URI', '')
+        );
 
         try {
-            $currentRequestUri = (string)Request::getInstance()->getServer('REQUEST_URI', '');
-            if ($currentRequestUri !== '') {
-                $this->actualUri = $currentRequestUri;
-            } elseif (null !== $uri) {
-                $this->actualUri = (string)$uri;
-            } else {
-                $this->actualUri = '/';
-            }
             if ($this->config->isConfigured()) {
-                // Check CORS for requests
-                RequestHelper::checkCORS();
-                if (!Request::getInstance()->isFile()) {
-                    return $this->router->execute($targetUri);
-                }
-            } else {
-                $isUnitTestExecution = defined('PSFS_UNIT_TESTING_EXECUTION') && true === PSFS_UNIT_TESTING_EXECUTION;
-                if ($this->isSetupRouteAllowed($targetUri) && (!$isUnitTestExecution || null !== $uri)) {
-                    return $this->router->execute($targetUri);
-                }
-                // First boot flow: when there are no admins yet, force admin setup before config wizard.
-                if (!defined('PSFS_UNIT_TESTING_EXECUTION') && empty($this->security->getAdmins())) {
-                    return UserController::showAdminManager();
-                }
-                return ConfigController::getInstance()->config();
+                return $this->runConfiguredRequest($targetUri);
             }
+            return $this->runSetupRequest($targetUri, $uri);
         } catch (RequestTerminationException $terminationException) {
             throw $terminationException;
         } catch (AdminCredentialsException $a) {
@@ -139,20 +122,32 @@ class Dispatcher extends Singleton
 
     }
 
-    private function isSetupRouteAllowed(?string $uri): bool
+    private function runConfiguredRequest(string $targetUri): mixed
     {
-        if (!is_string($uri) || '' === $uri) {
-            return false;
+        RequestHelper::checkCORS();
+        if (DispatcherRuntimeHelper::isUnitTestExecution()) {
+            return $this->router->execute($targetUri);
         }
-        $path = parse_url($uri, PHP_URL_PATH);
-        if (!is_string($path) || '' === $path) {
-            return false;
+        if (DispatcherRuntimeHelper::isFileTargetUri($targetUri)) {
+            return $this->router->httpNotFound();
         }
-        $normalizedPath = rtrim($path, '/');
-        if ('' === $normalizedPath) {
-            $normalizedPath = '/';
+        return $this->router->execute($targetUri);
+    }
+
+    private function runSetupRequest(string $targetUri, mixed $uri): mixed
+    {
+        if (DispatcherRuntimeHelper::canRunSetupRoute($targetUri, $uri, self::SETUP_ALLOWED_PATHS)) {
+            return $this->router->execute($targetUri);
         }
-        return in_array($normalizedPath, self::SETUP_ALLOWED_PATHS, true);
+        if ($this->mustForceAdminSetup()) {
+            return UserController::showAdminManager();
+        }
+        return ConfigController::getInstance()->config();
+    }
+
+    private function mustForceAdminSetup(): bool
+    {
+        return !defined('PSFS_UNIT_TESTING_EXECUTION') && empty($this->security->getAdmins());
     }
 
     protected function handleException(\Exception $exception): string

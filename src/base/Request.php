@@ -4,6 +4,7 @@ namespace PSFS\base;
 
 use PSFS\base\exception\RequestTerminationException;
 use PSFS\base\runtime\RuntimeMode;
+use PSFS\base\types\helpers\RequestPayloadHelper;
 use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\traits\Helper\ServerTrait;
 use PSFS\base\types\traits\SingletonTrait;
@@ -56,35 +57,16 @@ class Request
     public function init()
     {
         $this->setServer(ServerHelper::getServerData());
-        $this->cookies = is_array($_COOKIE) ? $_COOKIE : [];
-        $this->upload = is_array($_FILES) ? $_FILES : [];
-        $this->header = $this->parseHeaders();
-        $this->data = is_array($_REQUEST) ? $_REQUEST : [];
-        $this->query = is_array($_GET) ? $_GET : [];
-        $rawBody = (string)$this->getServer('PSFS_RAW_BODY', '');
-        if ('' === $rawBody) {
-            $rawBody = (string)file_get_contents('php://input');
-        }
-        $this->raw = json_decode($rawBody, true) ?: [];
-        $this->isLoaded = true;
-    }
+        $this->header = RequestPayloadHelper::parseHeaders($this->server);
 
-    /**
-     * @return array
-     */
-    private function parseHeaders(): array
-    {
-        $headers = [];
-        if (function_exists('apache_request_headers')) {
-            $headers = apache_request_headers();
-        } else {
-            foreach ($_SERVER as $h => $v) {
-                if (preg_match('/HTTP_(.+)/', $h, $hp)) {
-                    $headers[$hp[1]] = $v;
-                }
-            }
-        }
-        return $headers;
+        $bags = RequestPayloadHelper::hydratePayloadBags($_COOKIE, $_FILES, $_REQUEST, $_GET);
+        $this->cookies = $bags['cookies'];
+        $this->upload = $bags['upload'];
+        $this->data = $bags['data'];
+        $this->query = $bags['query'];
+
+        $this->raw = RequestPayloadHelper::decodeRawBody(RequestPayloadHelper::extractRawBody($this->server));
+        $this->isLoaded = true;
     }
 
     /**
