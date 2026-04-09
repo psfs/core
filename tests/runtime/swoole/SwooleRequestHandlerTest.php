@@ -478,6 +478,107 @@ class SwooleRequestHandlerTest extends TestCase
         $this->assertSame('ok', $response->body);
     }
 
+    public function testEmitResponseSkipsMalformedCookieAndEmptyHeaderName(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $response = new SwooleResponseDouble();
+
+        $handler->emitResponse($response, 200, [
+            'set-cookie' => [
+                'invalid-cookie-line',
+                'session=abc; Path=/; HttpOnly',
+            ],
+            '' => 'ignored',
+        ], 'ok');
+
+        $this->assertSame(1, count($response->cookies));
+        $this->assertArrayNotHasKey('', $response->headers);
+    }
+
+    public function testHydrateBasicAuthServerVarsRejectsInvalidBase64Payload(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'hydrateBasicAuthServerVars');
+        $method->setAccessible(true);
+
+        $_SERVER['PHP_AUTH_USER'] = 'u';
+        $_SERVER['PHP_AUTH_PW'] = 'p';
+        $_SERVER['AUTH_TYPE'] = 'Basic';
+        $method->invoke($handler, ['authorization' => 'Basic ###']);
+
+        $this->assertArrayNotHasKey('PHP_AUTH_USER', $_SERVER);
+        $this->assertArrayNotHasKey('PHP_AUTH_PW', $_SERVER);
+        $this->assertArrayNotHasKey('AUTH_TYPE', $_SERVER);
+    }
+
+    public function testEnsureSessionCookieHeaderIncludesDomainSecureAndSameSite(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'ensureSessionCookieHeader');
+        $method->setAccessible(true);
+
+        session_name('PHPSESSID');
+        session_set_cookie_params([
+            'lifetime' => 60,
+            'path' => '/',
+            'domain' => 'example.test',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+        session_id('cookie-flags');
+        session_start();
+        try {
+            $headers = [];
+            $method->invokeArgs($handler, [&$headers]);
+            $line = (string)(($headers['set-cookie'] ?? [])[0] ?? '');
+            $this->assertStringContainsString('Domain=example.test', $line);
+            $this->assertStringContainsString('Secure', $line);
+            $this->assertStringContainsString('SameSite=Strict', $line);
+        } finally {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+        }
+    }
+
+    public function testParseCookieLineHandlesExpiresAndDomainFragments(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'parseCookieLine');
+        $method->setAccessible(true);
+
+        $cookie = $method->invoke(
+            $handler,
+            'token=abc; Expires=not-a-date; Domain=example.test; Path=; ; HttpOnly'
+        );
+
+        $this->assertIsArray($cookie);
+        $this->assertSame(0, $cookie['expires'] ?? null);
+        $this->assertSame('example.test', $cookie['domain'] ?? null);
+        $this->assertSame('/', $cookie['path'] ?? null);
+        $this->assertTrue($cookie['httponly'] ?? false);
+    }
+
+    public function testMergeHeadersNormalizesSingleAndSkipsBlankNativeHeaders(): void
+    {
+        $handler = new SwooleRequestHandler();
+        $method = new \ReflectionMethod($handler, 'mergeHeaders');
+        $method->setAccessible(true);
+
+        $merged = $method->invoke($handler, [
+            'set-cookie' => 'single=1; Path=/',
+        ], [
+            '   ',
+            'Set-Cookie: second=2; Path=/',
+        ]);
+
+        $this->assertSame(
+            ['single=1; Path=/', 'second=2; Path=/'],
+            $merged['set-cookie'] ?? []
+        );
+    }
+
 }
 
 class SwooleResponseDouble
