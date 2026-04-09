@@ -30,28 +30,24 @@ build:
       ini:
         memory_limit: "-1"
 
-        # 🚀 PCOV en lugar de Xdebug (clave)
+        # 🚀 PCOV instead of Xdebug (key)
         pcov.enabled: "1"
         pcov.directory: "src"
 
-        # 🔒 Desactivar todo lo que meta ruido
+        # 🔒 Desactivate all possible noise
         xdebug.mode: "off"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
-
-        # ⚡ Menos overhead en runtime
-        zend.assertions: "-1"
-
   nodes:
 
-    # 🔍 ANÁLISIS (sin tests → más rápido)
+    # 🔍 Analysys (without tests, faster)
     analysis:
       tests:
         override:
           - php-scrutinizer-run
 
-    # 🧪 TESTS CON SERVICIOS
+    # 🧪 Test with services
     services-tests:
       services:
         mysql: "8.4"
@@ -79,13 +75,17 @@ build:
 
       dependencies:
         override:
-          # ⚡ Composer optimizado
+          # Installing PCOV
+          - pecl install pcov
+          - echo "extension=pcov.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+          - php -m | grep pcov
+          # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
-          # 🧠 Warmup DB (evita problemas de timing)
+          # 🧠 Warmup DB (skip timing problems)
           - php tests/bootstrap/prepare_api_mysql.php
 
-          # ⚙️ Config dinámica
+          # ⚙️ Dynamic config
           - php -r '
             $f="config/config.json";
             $d=file_exists($f)?json_decode((string)file_get_contents($f),true):[];
