@@ -29,7 +29,11 @@ build:
       version: "8.2"
       ini:
         memory_limit: "-1"
-        xdebug.mode: develop
+        xdebug.mode: coverage
+        xdebug.start_with_request: "no"
+        opcache.enable_cli: "0"
+        opcache.jit: "0"
+        opcache.jit_buffer_size: "0"
   nodes:
     analysis:
       tests:
@@ -66,7 +70,7 @@ build:
       tests:
         stop_on_failure: true
         override:
-          - command: "sh tools/ci/phpunit_with_progress.sh"
+          - command: "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never"
             idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
