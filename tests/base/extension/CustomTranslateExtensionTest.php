@@ -11,6 +11,7 @@ use PSFS\base\types\helpers\FileHelper;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\I18nHelper;
 
+#[Group('xdebug_coverage_unsafe')]
 class CustomTranslateExtensionTest extends TestCase
 {
     private array $configBackup = [];
@@ -136,7 +137,6 @@ class CustomTranslateExtensionTest extends TestCase
         }
     }
 
-    #[Group('xdebug_coverage_unsafe')]
     public function testWrapperSourceOfTruthProviderOrderContract(): void
     {
         $this->overrideConfig([
