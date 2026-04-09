@@ -2,6 +2,7 @@
 
 namespace PSFS\tests\base\extension;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\extension\CustomTranslateExtension;
@@ -135,6 +136,7 @@ class CustomTranslateExtensionTest extends TestCase
         }
     }
 
+    #[Group('xdebug_coverage_unsafe')]
     public function testWrapperSourceOfTruthProviderOrderContract(): void
     {
         $this->overrideConfig([
