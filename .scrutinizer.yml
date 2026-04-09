@@ -66,7 +66,7 @@ build:
       tests:
         stop_on_failure: true
         override:
-          - command: "sh -lc 'if command -v phpdbg >/dev/null 2>&1; then XDEBUG_MODE=off phpdbg -qrr vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never --coverage-clover cache/coverage/coverage.xml; else XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never --coverage-clover cache/coverage/coverage.xml; fi'"
+          - command: "sh tools/ci/phpunit_with_progress.sh"
             idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
