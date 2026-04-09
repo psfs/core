@@ -6,9 +6,11 @@ namespace PSFS\base\types\helpers\attributes;
 class DefaultValue implements MetadataAttributeContract
 {
     use MetadataAttributeValueResolverTrait;
+    use MetadataStringNormalizerTrait;
 
     public function __construct(public string $value)
     {
+        $this->value = $this->normalizeString($this->value, 'DefaultValue', true);
     }
 
     public static function tag(): string

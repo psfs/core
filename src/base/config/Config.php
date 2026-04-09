@@ -119,7 +119,6 @@ class Config
         'redis.timeout', // Redis timeout for read-through caches
         'job.queue.redis.prefix', // Redis key prefix for PSFS async queue subsystem
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
-        'i18n.provider.custom.enabled', // Use custom provider before gettext
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
         'migrations.engine', // Default migration engine (phinx|propel)
         'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine

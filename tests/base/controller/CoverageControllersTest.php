@@ -19,7 +19,6 @@ use PSFS\base\types\helpers\AuthHelper;
 use PSFS\controller\ConfigController;
 use PSFS\controller\DocumentorController;
 use PSFS\controller\GeneratorController;
-use PSFS\controller\I18nController;
 use PSFS\controller\RouteController;
 use PSFS\controller\UserController;
 use PSFS\services\AdminServices;
@@ -329,13 +328,8 @@ class CoverageControllersTest extends TestCase
         $probe->swaggerUi('MISSING_DOMAIN');
     }
 
-    public function testI18nAndRouteControllersReturnExpectedContracts(): void
+    public function testRouteControllerReturnsExpectedContracts(): void
     {
-        $i18n = $this->newI18nProbe();
-        $translations = $i18n->defaultTranslations();
-        $this->assertArrayHasKey('translations', $translations);
-        $this->assertNotEmpty($translations['translations']);
-
         $route = $this->newRouteProbe();
         $routing = $route->getRouting();
         $this->assertIsArray($routing);
@@ -387,19 +381,6 @@ class CoverageControllersTest extends TestCase
     {
         $reflection = new \ReflectionClass(ConfigControllerProbe::class);
         return $reflection->newInstanceWithoutConstructor();
-    }
-
-    private function newI18nProbe(): I18nControllerProbe
-    {
-        $reflection = new \ReflectionClass(I18nControllerProbe::class);
-        $instance = $reflection->newInstanceWithoutConstructor();
-        $this->setObjectProperty($instance, 'tpl', new class {
-            public function regenerateTemplates(): array
-            {
-                return ['regen-templates'];
-            }
-        });
-        return $instance;
     }
 
     private function newRouteProbe(): RouteControllerProbe
@@ -543,14 +524,6 @@ class ConfigControllerProbe extends ConfigController
     public function json($response, $statusCode = 200)
     {
         return $response;
-    }
-}
-
-class I18nControllerProbe extends I18nController
-{
-    public function render($template, array $vars = array(), $cookies = array(), $domain = null)
-    {
-        return $vars;
     }
 }
 

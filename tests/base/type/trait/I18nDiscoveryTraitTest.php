@@ -14,7 +14,6 @@ class I18nDiscoveryTraitTest extends TestCase
 
     protected function setUp(): void
     {
-        I18nDiscoveryTraitTestDouble::$commands = [];
         $this->localePath = BASE_DIR . DIRECTORY_SEPARATOR . 'locale' . DIRECTORY_SEPARATOR . $this->locale;
         $this->scanPath = CACHE_DIR . DIRECTORY_SEPARATOR . 'i18n_discovery_' . uniqid('', true);
     }
@@ -25,14 +24,11 @@ class I18nDiscoveryTraitTest extends TestCase
         $this->deleteDir($this->localePath);
     }
 
-    public function testCompileTranslationsUsesWrappedShellExecutor(): void
+    public function testCompileTranslationsReturnsCustomCatalogMessage(): void
     {
         $result = I18nDiscoveryTraitTestDouble::compileTranslations('/tmp/custom/');
 
-        $this->assertSame('EXEC_OK', $result);
-        $this->assertCount(1, I18nDiscoveryTraitTestDouble::$commands);
-        $this->assertStringContainsString('msgfmt', I18nDiscoveryTraitTestDouble::$commands[0]);
-        $this->assertStringContainsString('/tmp/custom/translations.po', I18nDiscoveryTraitTestDouble::$commands[0]);
+        $this->assertStringContainsString('Legacy PO/MO compilation disabled', $result);
     }
 
     public function testFindTranslationsReturnsEmptyArrayForMissingPath(): void
@@ -40,7 +36,6 @@ class I18nDiscoveryTraitTest extends TestCase
         $result = I18nDiscoveryTraitTestDouble::findTranslations('/path/that/does/not/exist', $this->locale);
 
         $this->assertSame([], $result);
-        $this->assertSame([], I18nDiscoveryTraitTestDouble::$commands);
     }
 
     public function testFindTranslationsScansPhpDirectoriesAndCreatesPoFile(): void
@@ -54,11 +49,7 @@ class I18nDiscoveryTraitTest extends TestCase
         $this->assertNotEmpty($results);
         $this->assertStringContainsString('Reviewing directory:', $results[0]);
         $this->assertStringContainsString('Executed command:', $results[0]);
-        $this->assertStringContainsString('xgettext', $results[0]);
-        $this->assertStringContainsString('EXEC_OK', $results[0]);
-        $this->assertFileExists(
-            $this->localePath . DIRECTORY_SEPARATOR . 'LC_MESSAGES' . DIRECTORY_SEPARATOR . 'translations.po'
-        );
+        $this->assertStringContainsString('Legacy PO extraction disabled', $results[0]);
     }
 
     private function deleteDir(string $path): void
@@ -89,12 +80,4 @@ class I18nDiscoveryTraitTestDouble
 {
     use I18nLocaleTrait;
     use I18nDiscoveryTrait;
-
-    public static array $commands = [];
-
-    protected static function executeShellCommand(string $command): string
-    {
-        self::$commands[] = $command;
-        return 'EXEC_OK';
-    }
 }

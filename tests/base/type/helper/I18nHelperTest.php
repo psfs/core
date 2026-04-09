@@ -109,7 +109,7 @@ class I18nHelperTest extends TestCase
         $this->assertSame('en_US', I18nHelper::extractLocale('es_ES'));
     }
 
-    public function testTranslateWithProvidersOrderCustomThenGettextThenOriginal(): void
+    public function testTranslateWithProvidersOrderCustomThenOriginal(): void
     {
         I18nHelper::clearMissingTranslationsReport();
         I18nHelper::setLocale('en_GB', force: true);
@@ -118,18 +118,18 @@ class I18nHelperTest extends TestCase
         $catalog = [$knownMessage => 'Custom translation first'];
         $catalogMap = [mb_convert_case($knownMessage, MB_CASE_LOWER, 'UTF-8') => $knownMessage];
 
-        $fromCustom = I18nHelper::translateWithProviders($knownMessage, 'en_GB', $catalog, $catalogMap, true);
+        $fromCustom = I18nHelper::translateWithProviders($knownMessage, 'en_GB', $catalog, $catalogMap);
         $this->assertSame('Custom translation first', $fromCustom);
 
-        $fromGettext = I18nHelper::translateWithProviders($knownMessage, 'en_GB', [], [], true);
-        $this->assertSame(gettext($knownMessage), $fromGettext);
+        $fromOriginalKnown = I18nHelper::translateWithProviders($knownMessage, 'en_GB', [], []);
+        $this->assertSame($knownMessage, $fromOriginalKnown);
 
         $missingMessage = '__I18N_MISSING_' . uniqid('', true);
-        $fromOriginal = I18nHelper::translateWithProviders($missingMessage, 'en_GB', [], [], false);
+        $fromOriginal = I18nHelper::translateWithProviders($missingMessage, 'en_GB', [], []);
         $this->assertSame($missingMessage, $fromOriginal);
 
         // Missing report should be recorded once per locale/message.
-        I18nHelper::translateWithProviders($missingMessage, 'en_GB', [], [], false);
+        I18nHelper::translateWithProviders($missingMessage, 'en_GB', [], []);
         $report = I18nHelper::getMissingTranslationsReport();
         $this->assertArrayHasKey('en_GB', $report);
         $matches = array_values(array_filter($report['en_GB'], static fn ($msg) => $msg === $missingMessage));
@@ -144,7 +144,7 @@ class I18nHelperTest extends TestCase
         $catalog = [$message => ''];
         $catalogMap = [mb_convert_case($message, MB_CASE_LOWER, 'UTF-8') => $message];
 
-        $translated = I18nHelper::translateWithProviders($message, 'en_GB', $catalog, $catalogMap, true);
+        $translated = I18nHelper::translateWithProviders($message, 'en_GB', $catalog, $catalogMap);
 
         $this->assertSame('', $translated);
         $report = I18nHelper::getMissingTranslationsReport();
@@ -153,16 +153,16 @@ class I18nHelperTest extends TestCase
         }
     }
 
-    public function testTranslateWithProvidersReportsMissingOnceWhenGettextFallbackIsUsed(): void
+    public function testTranslateWithProvidersReportsMissingOnceWhenOriginalFallbackIsUsed(): void
     {
         I18nHelper::clearMissingTranslationsReport();
         I18nHelper::setLocale('en_GB', force: true);
-        $message = '__GETTEXT_FALLBACK_MISSING_' . uniqid('', true);
+        $message = '__ORIGINAL_FALLBACK_MISSING_' . uniqid('', true);
 
-        $first = I18nHelper::translateWithProviders($message, 'en_GB', [], [], true);
-        $second = I18nHelper::translateWithProviders($message, 'en_GB', [], [], true);
+        $first = I18nHelper::translateWithProviders($message, 'en_GB', [], []);
+        $second = I18nHelper::translateWithProviders($message, 'en_GB', [], []);
 
-        $this->assertSame(gettext($message), $first);
+        $this->assertSame($message, $first);
         $this->assertSame($first, $second);
         $report = I18nHelper::getMissingTranslationsReport();
         $this->assertArrayHasKey('en_GB', $report);

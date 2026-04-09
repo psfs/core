@@ -3,7 +3,6 @@
 namespace PSFS\base\types\traits\Helper;
 
 use PSFS\base\exception\GeneratorException;
-use PSFS\base\types\helpers\GeneratorHelper;
 
 trait I18nDiscoveryTrait
 {
@@ -29,10 +28,7 @@ trait I18nDiscoveryTrait
      */
     public static function compileTranslations(string $localePath): string
     {
-        $poPath = escapeshellarg($localePath . 'translations.po');
-        $moPath = escapeshellarg($localePath . 'translations.mo');
-        $command = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; msgfmt {$poPath} -o {$moPath}";
-        return self::executeShellCommand($command);
+        return t('Legacy PO/MO compilation disabled. Custom JSON catalogs are the only translation source.');
     }
 
     /**
@@ -52,26 +48,18 @@ trait I18nDiscoveryTrait
         }
         try {
             while (false !== ($fileName = $directory->read())) {
-                self::ensureTranslationsPoFile($localePath);
                 $inspectPath = realpath($path . DIRECTORY_SEPARATOR . $fileName);
                 if (false !== $inspectPath && is_dir($path . DIRECTORY_SEPARATOR . $fileName) && preg_match(
                         '/^\./',
                         $fileName
                     ) == 0) {
                     $phpFiles = glob($inspectPath . DIRECTORY_SEPARATOR . '*.php') ?: [];
-                    $outputPo = escapeshellarg($localePath . 'translations.po');
-                    $commandOutput = '';
-                    $cmdPhp = t('No PHP files found in directory');
+                    $cmdPhp = t('Legacy PO extraction disabled in custom i18n mode');
                     if (!empty($phpFiles)) {
-                        $escapedFiles = array_map('escapeshellarg', $phpFiles);
-                        $cmdPhp = "export PATH=\$PATH:/opt/local/bin:/bin:/sbin; xgettext " .
-                            implode(' ', $escapedFiles) .
-                            " --from-code=UTF-8 -j -L PHP --debug --force-po -o {$outputPo}";
-                        $commandOutput = self::executeShellCommand($cmdPhp);
+                        $cmdPhp .= ': ' . count($phpFiles) . ' PHP files scanned';
                     }
                     $res = t('Reviewing directory: ') . $inspectPath;
                     $res .= t('Executed command: ') . $cmdPhp;
-                    $res .= $commandOutput;
                     usleep(10);
                     yield $res;
                     yield from self::yieldTranslations($inspectPath, $localePath);
@@ -79,19 +67,6 @@ trait I18nDiscoveryTrait
             }
         } finally {
             $directory->close();
-        }
-    }
-
-    protected static function executeShellCommand(string $command): string
-    {
-        return shell_exec($command) ?: '';
-    }
-
-    protected static function ensureTranslationsPoFile(string $localePath): void
-    {
-        GeneratorHelper::createDir($localePath);
-        if (!file_exists($localePath . 'translations.po')) {
-            file_put_contents($localePath . 'translations.po', '');
         }
     }
 }

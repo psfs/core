@@ -6,9 +6,11 @@ namespace PSFS\base\types\helpers\attributes;
 class Icon implements MetadataAttributeContract
 {
     use MetadataAttributeValueResolverTrait;
+    use MetadataStringNormalizerTrait;
 
     public function __construct(public string $value)
     {
+        $this->value = $this->normalizeString($this->value, 'Icon');
     }
 
     public static function tag(): string

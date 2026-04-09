@@ -63,7 +63,7 @@ class CustomTranslateExtensionTest extends TestCase
         $this->assertSame($override, $translated);
     }
 
-    public function testFallbackGettextWhenTranslationMissingInCustomCatalog(): void
+    public function testFallsBackToOriginalWhenTranslationMissingInCustomCatalog(): void
     {
         $this->overrideConfig([
             'debug' => false,
@@ -73,7 +73,7 @@ class CustomTranslateExtensionTest extends TestCase
 
         $message = '__MISSING_I18N_' . uniqid('', true);
         $translated = CustomTranslateExtension::_($message);
-        $this->assertSame(gettext($message), $translated);
+        $this->assertSame($message, $translated);
 
         $report = I18nHelper::getMissingTranslationsReport();
         $this->assertArrayHasKey('en_GB', $report);
@@ -154,9 +154,9 @@ class CustomTranslateExtensionTest extends TestCase
         // Source of truth wrapper contract: merged custom/base catalog first.
         $this->assertSame('Custom provider wins', CustomTranslateExtension::_($knownMessage));
 
-        // Then gettext fallback when catalog does not contain the key.
+        // Then original message fallback when catalog does not contain the key.
         $this->setRuntimeCatalog('en_GB', []);
-        $this->assertSame(gettext($knownMessage), CustomTranslateExtension::_($knownMessage));
+        $this->assertSame($knownMessage, CustomTranslateExtension::_($knownMessage));
 
         // Finally original message when neither provider resolves it.
         $missingMessage = '__I18N_WRAPPER_MISSING_' . uniqid('', true);

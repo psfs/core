@@ -56,13 +56,10 @@ class I18nHelper
         // Load translations
         putenv("LC_ALL=" . $locale);
         setlocale(LC_ALL, $locale);
-        // Load the locale path
+        // Keep locale directory available for custom catalogs.
         $localePath = BASE_DIR . DIRECTORY_SEPARATOR . 'locale';
         Logger::log('Set locale dir ' . $localePath);
         GeneratorHelper::createDir($localePath);
-        bindtextdomain('translations', $localePath);
-        textdomain('translations');
-        bind_textdomain_codeset('translations', 'UTF-8');
         if (self::shouldPersistLocaleSelection($force)) {
             Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
             Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $locale);

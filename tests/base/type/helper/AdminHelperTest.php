@@ -36,10 +36,10 @@ final class AdminHelperTest extends TestCase
             ],
             [
                 'http' => 'GET',
-                'default' => '/admin/translations/{locale}',
-                'slug' => 'admin-translations-locale',
-                'label' => 'Locale generator',
-                'icon' => 'fa-language',
+                'default' => '/admin/switch-user',
+                'slug' => 'admin-switch-user',
+                'label' => 'Switch user',
+                'icon' => 'fa-exchange-alt',
                 'module' => 'PSFS',
                 'visible' => false,
             ],
@@ -48,7 +48,7 @@ final class AdminHelperTest extends TestCase
         $this->assertCount(1, $routes['DEMO']['visible']);
         $this->assertSame('admin-demo-users', $routes['DEMO']['visible'][0]['slug']);
         $this->assertCount(1, $routes['PSFS']['hidden']);
-        $this->assertSame('admin-translations-locale', $routes['PSFS']['hidden'][0]['slug']);
+        $this->assertSame('admin-switch-user', $routes['PSFS']['hidden'][0]['slug']);
         $this->assertArrayNotHasKey('hidden', $routes['DEMO']);
     }
 }

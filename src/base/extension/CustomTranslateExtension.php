@@ -233,7 +233,6 @@ class CustomTranslateExtension extends AbstractExtension
             self::translationsCheckLoad($customKey, $forceReload);
         }
         // Set default translation to catch missing strings
-        $isDebugMode = (bool)Config::getParam('debug', false);
         $catalog = array_key_exists(self::$locale, self::$translations) ? self::$translations[self::$locale] : [];
         $catalogKeys = array_key_exists(
             self::$locale,
@@ -243,8 +242,7 @@ class CustomTranslateExtension extends AbstractExtension
             $message,
             self::$locale,
             $catalog,
-            $catalogKeys,
-            !$forceReload && !$isDebugMode
+            $catalogKeys
         );
         if (self::$generate) {
             self::generate($message, $translation);
