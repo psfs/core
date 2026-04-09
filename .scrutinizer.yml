@@ -26,10 +26,10 @@ tools:
 build:
   environment:
     php:
-      version: "8.3"
+      version: "8.2"
       ini:
         memory_limit: "-1"
-        xdebug.mode: coverage
+        xdebug.mode: develop
   nodes:
     analysis:
       tests:
@@ -66,7 +66,7 @@ build:
       tests:
         stop_on_failure: true
         override:
-          - command: "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never"
+          - command: "sh -lc 'if command -v phpdbg >/dev/null 2>&1; then XDEBUG_MODE=off phpdbg -qrr vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never --coverage-clover cache/coverage/coverage.xml; else XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.xml.dist --colors=never --coverage-clover cache/coverage/coverage.xml; fi'"
             idle_timeout: 1200
             coverage:
               file: "cache/coverage/coverage.xml"
