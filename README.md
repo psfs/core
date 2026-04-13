@@ -6,95 +6,81 @@
 
 PSFS is a lightweight PHP framework for MVC/API applications (Twig + Propel + Symfony components).
 
-## Runtime baseline
+## 5-minute setup
 
-- Execution and validation use Docker Compose.
-- Target PHP runtime: **8.3**.
-- Main services: `php`, `redis`, `db`.
-- Host port is configured via `.env` (`HOST_PORT=8008` by default).
+Prerequisites:
 
-## Quick start
+- Docker + Docker Compose
+- Git
 
+<!-- validated -->
 ```bash
 docker compose up -d
 docker compose ps
-```
-
-Run project commands inside the PHP container:
-
-```bash
 docker exec core-php-1 php -v
-docker exec core-php-1 composer install
-docker exec core-php-1 php vendor/bin/phpunit --no-coverage
+docker exec core-php-1 composer install --no-interaction --prefer-dist
 ```
 
-If your PHP container name differs:
+If your PHP container name is not `core-php-1`:
 
+<!-- validated -->
 ```bash
 docker compose ps
 docker ps --format '{{.Names}}'
 ```
 
-## Swoole runtime
+## Daily command map
 
-Check and run Swoole commands through `src/bin/psfs`:
-
+<!-- example-only -->
 ```bash
-docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:check
-docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
-docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:status
-docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:reload
-docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:stop
-```
+# Run key tests
+docker exec core-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
 
-Optional compose profile:
+# List PSFS CLI commands
+docker exec core-php-1 php src/bin/psfs list
 
-```bash
-docker compose --profile swoole up -d php-swoole
-docker compose --profile swoole ps
-```
-
-## Security baseline (v2)
-
-- Auth/cookies are versioned as `v2`.
-- Legacy fallback remains read-only until explicit removal approval.
-- Invalid auth must result in `null/null` and stop request flow.
-- Cookie policy target:
-  - `HttpOnly=true`
-  - `Secure=true` on HTTPS
-  - `SameSite=Lax|Strict`
-  - `Path=/`
-  - coherent `Domain`
-  - TTL aligned with session/auth policy
-
-## CI/CD security gates
-
-Security pipeline blocks merge/release when:
-
-- a `must_pass` security control test fails,
-- any high/critical finding is unresolved,
-- hardening or quality gate returns non-pass.
-
-Local pre-check:
-
-```bash
+# Security local pre-check (act)
 act push --container-architecture linux/amd64
 ```
 
-## Install as dependency
+## Choose your path
 
+### Onboarding path
+
+1. Read [Operations Playbook](./doc/OPERATIONS.md)
+2. Execute the "First day" flow
+3. Use troubleshooting matrix when blocked
+
+### Core contributor path
+
+1. Read [Core Contracts](./doc/CONTRACTS.md)
+2. Read [Async Jobs and Connectors Contracts](./doc/contracts/async-jobs-connectors-contracts.md)
+3. Read [Security Plan and Artifacts](./doc/security/PLAN.md)
+
+## Propel models and migrations
+
+For operational Propel flow (schema, model generation context, migration execution, rollback, failure modes), see:
+
+- [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+
+## Documentation quality gate
+
+Use the docs checker before opening PRs that touch docs:
+
+<!-- validated -->
 ```bash
-composer require psfs/core
-./vendor/bin/psfs psfs:create:root
+bash scripts/docs/validate_docs.sh
 ```
 
-## Documentation
+## Documentation index
 
-- [Contracts](./doc/CONTRACTS.md)
-- [Versioning policy](./doc/VERSIONING.md)
-- [Async jobs and connectors contracts](./doc/contracts/async-jobs-connectors-contracts.md)
+- [Operations Playbook](./doc/OPERATIONS.md)
+- [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+- [Core Contracts](./doc/CONTRACTS.md)
+- [Versioning](./doc/VERSIONING.md)
+- [Async Jobs and Connectors Contracts](./doc/contracts/async-jobs-connectors-contracts.md)
 
-## Notes
+## Rules
 
-- Do not run `php`, `composer`, or `phpunit` directly on host for project validation.
-- Human review is required before committing automated/agent-driven changes.
+- Run project commands inside Docker containers.
+- Keep command blocks explicitly tagged as `validated` or `example-only`.
