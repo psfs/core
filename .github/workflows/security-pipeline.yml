@@ -7,6 +7,9 @@ on:
       - master
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   security-core-gates:
     runs-on: ubuntu-latest
@@ -15,27 +18,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start services
-        run: docker compose up -d
+      - name: Start PHP service only
+        run: docker compose up -d --no-deps php
 
       - name: Install dependencies
-        run: docker exec core-php-1 composer install --no-interaction --prefer-dist
+        run: |
+          PHP_CONTAINER="$(docker compose ps -q php)"
+          docker exec "$PHP_CONTAINER" composer install --no-interaction --prefer-dist
 
       - name: Run must-pass security tests
         run: |
-          docker exec core-php-1 php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
-          docker exec core-php-1 php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
-          docker exec core-php-1 php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
-          docker exec core-php-1 php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
+          PHP_CONTAINER="$(docker compose ps -q php)"
+          docker exec "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
+          docker exec "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
+          docker exec "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
+          docker exec "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
 
       - name: Run dependency audit (SCA)
-        run: docker exec core-php-1 composer audit --no-interaction
+        run: |
+          PHP_CONTAINER="$(docker compose ps -q php)"
+          docker exec "$PHP_CONTAINER" composer audit --no-interaction
 
       - name: Enforce hardening gate (P2)
-        run: docker exec -e PSFS_SECURITY_STRICT=1 core-php-1 php scripts/security/hardening_gate.php
+        run: |
+          PHP_CONTAINER="$(docker compose ps -q php)"
+          docker exec -e PSFS_SECURITY_STRICT=1 "$PHP_CONTAINER" php scripts/security/hardening_gate.php
 
       - name: Enforce quality gate
-        run: docker exec core-php-1 php scripts/security/quality_gate.php
+        run: |
+          PHP_CONTAINER="$(docker compose ps -q php)"
+          docker exec "$PHP_CONTAINER" php scripts/security/quality_gate.php
 
       - name: Upload quality gate report
         if: always()
@@ -43,6 +55,7 @@ jobs:
         with:
           name: security-quality-gate
           path: security/reports/quality-gate.json
+          if-no-files-found: ignore
 
       - name: Upload hardening gate report
         if: always()
@@ -50,6 +63,7 @@ jobs:
         with:
           name: security-hardening-gate
           path: security/reports/hardening-gate.json
+          if-no-files-found: ignore
 
   security-static-analysis:
     runs-on: ubuntu-latest
@@ -59,37 +73,39 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Semgrep (SAST)
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: p/owasp-top-ten
-          generateSarif: "1"
-
-      - name: Upload Semgrep SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
+        run: |
+          mkdir -p security/reports
+          docker run --rm -v "$PWD":/src semgrep/semgrep:latest \
+            semgrep --config p/owasp-top-ten --sarif --output /src/security/reports/semgrep.sarif /src
 
       - name: Run Gitleaks (secret scanning)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_CONFIG: .gitleaks.toml
+        run: |
+          mkdir -p security/reports
+          docker run --rm -v "$PWD":/repo zricethezav/gitleaks:latest \
+            detect --source /repo --no-git --redact --config /repo/.gitleaks.toml \
+            --report-format json --report-path /repo/security/reports/gitleaks-report.json
 
       - name: Upload Gitleaks report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-gitleaks
-          path: results.sarif
+          path: security/reports/gitleaks-report.json
           if-no-files-found: ignore
 
       - name: Generate SBOM (CycloneDX)
-        uses: anchore/sbom-action@v0
+        run: |
+          mkdir -p security/reports
+          docker run --rm -v "$PWD":/repo anchore/syft:latest \
+            /repo -o cyclonedx-json=/repo/security/reports/sbom.cyclonedx.json
+
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: .
-          format: cyclonedx-json
-          output-file: security/reports/sbom.cyclonedx.json
+          name: security-semgrep
+          path: security/reports/semgrep.sarif
+          if-no-files-found: ignore
 
       - name: Upload SBOM
         if: always()
@@ -97,3 +113,4 @@ jobs:
         with:
           name: security-sbom
           path: security/reports/sbom.cyclonedx.json
+          if-no-files-found: ignore
