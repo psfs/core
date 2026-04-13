@@ -84,7 +84,7 @@ function runTests(array $tests): array
     $results = [];
 
     foreach ($tests as $test) {
-        $cmd = 'XDEBUG_MODE=coverage php vendor/bin/phpunit --colors=never --do-not-fail-on-warning --do-not-fail-on-risky --filter '
+        $cmd = 'php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '
             . escapeshellarg('/^.*' . preg_quote($test, '/') . '$/')
             . ' 2>&1';
         out("[QUALITY_GATE] Running must_pass test: {$test}");
