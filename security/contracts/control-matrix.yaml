@@ -1,0 +1,42 @@
+version: "1.0"
+generated_at: "2026-04-14T00:30:00Z"
+controls:
+  - control_id: "CTRL-AUTH-001"
+    componente: "AuthApi"
+    descripcion: "Precedencia token: header valido > cookie valida > query legacy solo compat"
+    tipo: "preventivo"
+    owasp_mapping: ["A01", "A07"]
+    severity: "critical"
+    validation:
+      test: "AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery"
+      gate: "must_pass"
+
+  - control_id: "CTRL-AUTH-002"
+    componente: "AuthApi"
+    descripcion: "Header token malformado debe degradar a cookie valida"
+    tipo: "preventivo"
+    owasp_mapping: ["A01", "A07"]
+    severity: "critical"
+    validation:
+      test: "AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie"
+      gate: "must_pass"
+
+  - control_id: "CTRL-COOKIE-002"
+    componente: "ResponseCookieHelper"
+    descripcion: "Cookies con HttpOnly=true, Path=/, SameSite validado, Secure segun contexto"
+    tipo: "preventivo"
+    owasp_mapping: ["A02", "A05", "A07"]
+    severity: "high"
+    validation:
+      test: "RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay"
+      gate: "must_pass"
+
+  - control_id: "CTRL-CORS-003"
+    componente: "RequestHelper"
+    descripcion: "Origen CORS normalizado y allowlist estricta; deny por defecto"
+    tipo: "preventivo"
+    owasp_mapping: ["A05", "A10"]
+    severity: "high"
+    validation:
+      test: "RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet"
+      gate: "must_pass"

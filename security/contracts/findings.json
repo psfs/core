@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-04-14T00:30:00Z",
+  "findings": [
+    {
+      "id": "F-AUTH-2026-001",
+      "severidad": "high",
+      "status": "resolved",
+      "componente": "AuthApi",
+      "descripcion": "Fallback token malformado corregido",
+      "evidencia": "AuthApi::resolveApiToken revisa cookie configurada y cookie default"
+    },
+    {
+      "id": "F-TEST-2026-002",
+      "severidad": "low",
+      "status": "resolved",
+      "componente": "Security tests",
+      "descripcion": "Risky por debug handler residual en notFound test",
+      "evidencia": "Test ajustado para ejecutar sin debug/profiling"
+    }
+  ]
+}

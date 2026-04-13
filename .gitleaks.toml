@@ -1,0 +1,14 @@
+[allowlist]
+description = "PSFS baseline allowlist for non-secret deterministic artifacts"
+paths = [
+  '''^vendor/''',
+  '''^\.idea/''',
+  '''^security/reports/'''
+]
+regexes = [
+  '''FLASH_MESSAGE_TOKEN\s*=\s*['\"][a-f0-9]{40}['\"]''',
+  '''USER_ID_TOKEN\s*=\s*['\"][a-f0-9]{40}['\"]''',
+  '''MANAGER_ID_TOKEN\s*=\s*['\"][a-f0-9]{40}['\"]''',
+  '''ADMIN_ID_TOKEN\s*=\s*['\"][a-f0-9]{40}['\"]''',
+  '''SESSION_TOKEN\s*=\s*['\"][a-f0-9]{40}['\"]'''
+]

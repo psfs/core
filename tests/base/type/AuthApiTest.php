@@ -118,8 +118,6 @@ class AuthApiTest extends TestCase
     public function testResolveApiTokenRejectsLegacyQueryByDefault(): void
     {
         $api = $this->newAuthApiWithoutConstructor();
-        Config::save(array_merge($this->configBackup, ['api.query_token.compat' => false]), []);
-        Config::getInstance()->loadConfigData(true);
         $this->setQuery($api, ['API_TOKEN' => 'legacy-token']);
         Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => '']);
 

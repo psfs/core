@@ -35,6 +35,8 @@ class Config
         'debug' => true,
         'front.version' => 'v1',
         'version' => 'v1',
+        'api.query_token.compat' => false,
+        'api.token.cookie' => 'X-API-SEC-TOKEN',
         'metadata.attributes.enabled' => true,
         'migrations.engine' => 'phinx',
         'migrations.legacy_fallback_enabled' => true,

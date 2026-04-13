@@ -31,6 +31,9 @@ jobs:
       - name: Run dependency audit (SCA)
         run: docker exec core-php-1 composer audit --no-interaction
 
+      - name: Enforce hardening gate (P2)
+        run: docker exec -e PSFS_SECURITY_STRICT=1 core-php-1 php scripts/security/hardening_gate.php
+
       - name: Enforce quality gate
         run: docker exec core-php-1 php scripts/security/quality_gate.php
 
@@ -40,6 +43,13 @@ jobs:
         with:
           name: security-quality-gate
           path: security/reports/quality-gate.json
+
+      - name: Upload hardening gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-hardening-gate
+          path: security/reports/hardening-gate.json
 
   security-static-analysis:
     runs-on: ubuntu-latest

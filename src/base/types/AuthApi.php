@@ -84,7 +84,7 @@ abstract class AuthApi extends Api
             return '';
         }
 
-        $legacyCompat = (bool)Config::getParam('api.query_token.compat', true);
+        $legacyCompat = (bool)Config::getParam('api.query_token.compat', false);
         if (!$legacyCompat) {
             Logger::log(
                 '[AuthApi] Legacy API token in query string has been rejected by policy',
