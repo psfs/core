@@ -13,45 +13,43 @@ env:
 jobs:
   security-core-gates:
     runs-on: ubuntu-latest
-    env:
-      DEBUG: ""
-      XDEBUG_MODE: off
-      COMPOSER_MEMORY_LIMIT: -1
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start PHP service only
-        run: docker compose up -d --no-deps php
+      - name: Setup PHP 8.3 (no Docker)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+          extensions: curl, gmp
 
       - name: Install dependencies
-        run: |
-          PHP_CONTAINER="$(docker compose ps -q php)"
-          docker exec -e COMPOSER_MEMORY_LIMIT=-1 "$PHP_CONTAINER" composer install --no-interaction --prefer-dist
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Run must-pass security tests
         run: |
-          PHP_CONTAINER="$(docker compose ps -q php)"
-          docker exec -e XDEBUG_MODE=off "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
-          docker exec -e XDEBUG_MODE=off "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
-          docker exec -e XDEBUG_MODE=off "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
-          docker exec -e XDEBUG_MODE=off "$PHP_CONTAINER" php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
+          php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
+          php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
+          php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
+          php vendor/bin/phpunit --colors=never --no-coverage --do-not-fail-on-warning --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
 
       - name: Run dependency audit (SCA)
-        run: |
-          PHP_CONTAINER="$(docker compose ps -q php)"
-          docker exec -e COMPOSER_MEMORY_LIMIT=-1 "$PHP_CONTAINER" composer audit --no-interaction
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
+        run: composer audit --no-interaction
 
       - name: Enforce hardening gate (P2)
-        run: |
-          PHP_CONTAINER="$(docker compose ps -q php)"
-          docker exec -e PSFS_SECURITY_STRICT=1 -e XDEBUG_MODE=off "$PHP_CONTAINER" php scripts/security/hardening_gate.php
+        env:
+          PSFS_SECURITY_STRICT: '1'
+        run: php scripts/security/hardening_gate.php
 
       - name: Enforce quality gate
-        run: |
-          PHP_CONTAINER="$(docker compose ps -q php)"
-          docker exec -e XDEBUG_MODE=off "$PHP_CONTAINER" php scripts/security/quality_gate.php
+        run: php scripts/security/quality_gate.php
 
       - name: Upload quality gate report
         if: always()
