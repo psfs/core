@@ -32,3 +32,15 @@ doc/guides/
 doc/migrations/
 doc/naming/
 doc/rollout/
+doc/analysis/
+
+# Security architecture/internal ops docs:
+# ignore by default to avoid publishing sensitive threat model/controls/prompts.
+doc/security/**
+!doc/security/README.public.md
+
+# Explicit generated security artifacts (defensive redundancy)
+doc/security/**/quality-gate.json
+doc/security/**/*-report.json
+doc/security/**/security-testing-*.xml
+doc/security/**/security-testing-*.sarif

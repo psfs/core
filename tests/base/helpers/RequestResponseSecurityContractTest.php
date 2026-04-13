@@ -270,6 +270,11 @@ class RequestResponseSecurityContractTest extends TestCase
         $request = Request::getInstance();
         ResponseHelper::setTest(false);
         Template::setTest(true);
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        $config['profiling.enable'] = false;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
 
         $request->setServer([
             'REQUEST_METHOD' => 'GET',
