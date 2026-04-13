@@ -104,9 +104,9 @@ function runTests(array $tests): array
     return $results;
 }
 
-$controlMatrixPath = 'doc/security/contracts/control-matrix.yaml';
-$findingsPath = 'doc/security/contracts/findings.json';
-$outputPath = 'doc/security/quality-gate.json';
+$controlMatrixPath = getenv('PSFS_SECURITY_CONTROL_MATRIX') ?: 'security/contracts/control-matrix.yaml';
+$findingsPath = getenv('PSFS_SECURITY_FINDINGS') ?: 'security/contracts/findings.json';
+$outputPath = getenv('PSFS_SECURITY_QUALITY_GATE_REPORT') ?: 'security/reports/quality-gate.json';
 
 $mustPassTests = parseMustPassTests($controlMatrixPath);
 $findings = loadFindings($findingsPath);
@@ -129,6 +129,9 @@ $report = [
     'tests' => $testResults,
 ];
 
+if (!is_dir(dirname($outputPath))) {
+    mkdir(dirname($outputPath), 0775, true);
+}
 file_put_contents($outputPath, json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 out("[QUALITY_GATE] status={$status} report={$outputPath}");
 

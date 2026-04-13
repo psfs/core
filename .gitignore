@@ -44,3 +44,7 @@ doc/security/**/quality-gate.json
 doc/security/**/*-report.json
 doc/security/**/security-testing-*.xml
 doc/security/**/security-testing-*.sarif
+
+# CI runtime security artifacts
+security/reports/*
+!security/reports/.gitkeep

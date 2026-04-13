@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  security-gates:
+  security-core-gates:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,14 +21,14 @@ jobs:
       - name: Install dependencies
         run: docker exec core-php-1 composer install --no-interaction --prefer-dist
 
-      - name: Run security contract tests
+      - name: Run must-pass security tests
         run: |
           docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
           docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
           docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
           docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
 
-      - name: Run composer audit
+      - name: Run dependency audit (SCA)
         run: docker exec core-php-1 composer audit --no-interaction
 
       - name: Enforce quality gate
@@ -39,4 +39,51 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: security-quality-gate
-          path: doc/security/quality-gate.json
+          path: security/reports/quality-gate.json
+
+  security-static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep (SAST)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/owasp-top-ten
+          generateSarif: "1"
+
+      - name: Upload Semgrep SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Run Gitleaks (secret scanning)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      - name: Upload Gitleaks report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-gitleaks
+          path: results.sarif
+          if-no-files-found: ignore
+
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: security/reports/sbom.cyclonedx.json
+
+      - name: Upload SBOM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-sbom
+          path: security/reports/sbom.cyclonedx.json
