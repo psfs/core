@@ -54,6 +54,7 @@ class FileJobQueue implements JobQueueInterface
             if (false === $input) {
                 return null;
             }
+
             $tmpPath = $this->createTempQueuePath($queueFile);
             $output = @fopen($tmpPath, 'wb');
             if (false === $output) {
@@ -61,47 +62,22 @@ class FileJobQueue implements JobQueueInterface
                 return $this->dequeueUsingFullRead($queueFile);
             }
 
-            $first = null;
-            $hasRemaining = false;
-            try {
-                while (($line = fgets($input)) !== false) {
-                    $line = trim($line);
-                    if ('' === $line) {
-                        continue;
-                    }
-                    if (null === $first) {
-                        $first = $line;
-                        continue;
-                    }
-                    if (false === @fwrite($output, $line . PHP_EOL)) {
-                        return null;
-                    }
-                    $hasRemaining = true;
-                }
-            } finally {
-                @fclose($input);
-                @fclose($output);
-            }
-
-            if (null === $first) {
+            $result = $this->dequeueIntoTemp($input, $output);
+            if ($result === null) {
                 @unlink($tmpPath);
                 return null;
             }
 
-            if ($hasRemaining) {
-                if (!@rename($tmpPath, $queueFile)) {
-                    $remaining = @file_get_contents($tmpPath);
-                    @unlink($tmpPath);
-                    if (false === $remaining || !FileHelper::writeFileAtomic($queueFile, $remaining)) {
-                        return null;
-                    }
-                }
-            } else {
-                FileHelper::deleteFile($queueFile);
+            if ($result['first'] === null) {
                 @unlink($tmpPath);
+                return null;
             }
 
-            $decoded = json_decode($first, true);
+            if (!$this->commitDequeuedState($queueFile, $tmpPath, $result['has_remaining'])) {
+                return null;
+            }
+
+            $decoded = json_decode($result['first'], true);
             return is_array($decoded) ? $decoded : null;
         });
     }
@@ -165,5 +141,61 @@ class FileJobQueue implements JobQueueInterface
     {
         $random = uniqid('tmp_', true);
         return $queueFile . '.' . $random;
+    }
+
+    /**
+     * @param resource $input
+     * @param resource $output
+     * @return array{first:?string,has_remaining:bool}|null
+     */
+    private function dequeueIntoTemp($input, $output): ?array
+    {
+        $first = null;
+        $hasRemaining = false;
+
+        try {
+            while (($line = fgets($input)) !== false) {
+                $line = trim($line);
+                if ($line === '') {
+                    continue;
+                }
+
+                if ($first === null) {
+                    $first = $line;
+                    continue;
+                }
+
+                if (false === @fwrite($output, $line . PHP_EOL)) {
+                    return null;
+                }
+                $hasRemaining = true;
+            }
+        } finally {
+            @fclose($input);
+            @fclose($output);
+        }
+
+        return [
+            'first' => $first,
+            'has_remaining' => $hasRemaining,
+        ];
+    }
+
+    private function commitDequeuedState(string $queueFile, string $tmpPath, bool $hasRemaining): bool
+    {
+        if (!$hasRemaining) {
+            FileHelper::deleteFile($queueFile);
+            @unlink($tmpPath);
+            return true;
+        }
+
+        if (@rename($tmpPath, $queueFile)) {
+            return true;
+        }
+
+        $remaining = @file_get_contents($tmpPath);
+        @unlink($tmpPath);
+
+        return false !== $remaining && FileHelper::writeFileAtomic($queueFile, $remaining);
     }
 }

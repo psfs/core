@@ -26,62 +26,97 @@ class SwooleStaticAssetServer
     public function tryServe(object $response): bool
     {
         $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        if (!in_array($method, ['GET', 'HEAD'], true)) {
+        if (!$this->isSupportedMethod($method)) {
             return false;
         }
 
-        $uriPath = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
-        if ($uriPath === '' || $uriPath === '/') {
+        $relativePath = $this->resolveRelativePathFromRequest();
+        if ($relativePath === null) {
             return false;
         }
 
-        $relativePath = ltrim(rawurldecode($uriPath), '/');
-        if ($relativePath === '' || str_contains($relativePath, "\0")) {
+        $candidate = $this->resolveCandidateAssetPath($relativePath);
+        if ($candidate === null) {
             return false;
         }
 
-        $publicRoot = realpath(WEB_DIR);
-        if ($publicRoot === false) {
-            return false;
-        }
-
-        $candidate = realpath($publicRoot . DIRECTORY_SEPARATOR . $relativePath);
-        if ($candidate === false || !is_file($candidate)) {
-            return false;
-        }
-        if (!str_starts_with($candidate, $publicRoot . DIRECTORY_SEPARATOR) && $candidate !== $publicRoot) {
-            return false;
-        }
-
-        if (method_exists($response, 'status')) {
-            $response->status(200);
-        }
-        if (method_exists($response, 'header')) {
-            $response->header('Content-Type', $this->resolveStaticMimeType($candidate));
-        }
+        $this->setResponseStatus($response, 200);
+        $this->setResponseHeader($response, 'Content-Type', $this->resolveStaticMimeType($candidate));
 
         if ($method === 'HEAD') {
-            if (method_exists($response, 'end')) {
-                $response->end('');
-            }
+            $this->endResponse($response, '');
             return true;
         }
 
         $payload = file_get_contents($candidate);
         if ($payload === false) {
-            if (method_exists($response, 'status')) {
-                $response->status(500);
-            }
-            if (method_exists($response, 'end')) {
-                $response->end('Internal server error');
-            }
+            $this->setResponseStatus($response, 500);
+            $this->endResponse($response, 'Internal server error');
             return true;
         }
 
+        $this->endResponse($response, $payload);
+        return true;
+    }
+
+    private function isSupportedMethod(string $method): bool
+    {
+        return in_array($method, ['GET', 'HEAD'], true);
+    }
+
+    private function resolveRelativePathFromRequest(): ?string
+    {
+        $uriPath = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+        if ($uriPath === '' || $uriPath === '/') {
+            return null;
+        }
+
+        $relativePath = ltrim(rawurldecode($uriPath), '/');
+        if ($relativePath === '' || str_contains($relativePath, "\0")) {
+            return null;
+        }
+
+        return $relativePath;
+    }
+
+    private function resolveCandidateAssetPath(string $relativePath): ?string
+    {
+        $publicRoot = realpath(WEB_DIR);
+        if ($publicRoot === false) {
+            return null;
+        }
+
+        $candidate = realpath($publicRoot . DIRECTORY_SEPARATOR . $relativePath);
+        if ($candidate === false || !is_file($candidate)) {
+            return null;
+        }
+
+        if (!str_starts_with($candidate, $publicRoot . DIRECTORY_SEPARATOR) && $candidate !== $publicRoot) {
+            return null;
+        }
+
+        return $candidate;
+    }
+
+    private function setResponseStatus(object $response, int $status): void
+    {
+        if (method_exists($response, 'status')) {
+            $response->status($status);
+        }
+    }
+
+    private function setResponseHeader(object $response, string $name, string $value): void
+    {
+        if (method_exists($response, 'header')) {
+            $response->header($name, $value);
+        }
+    }
+
+    private function endResponse(object $response, string $payload): void
+    {
         if (method_exists($response, 'end')) {
             $response->end($payload);
         }
-        return true;
     }
 
     private function resolveStaticMimeType(string $path): string

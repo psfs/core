@@ -121,8 +121,28 @@ class ResponseCookieHelper
         if ($parts === [] || !str_contains((string)$parts[0], '=')) {
             return null;
         }
-        [$name, $value] = explode('=', (string)$parts[0], 2);
-        $cookie = [
+
+        $cookie = self::parseCookieNameValue((string)$parts[0]);
+        if ($cookie['name'] === '') {
+            return null;
+        }
+
+        $attributes = array_slice($parts, 1);
+        foreach ($attributes as $attribute) {
+            self::applyCookieAttribute($cookie, (string)$attribute);
+        }
+
+        return $cookie;
+    }
+
+    /**
+     * @return array{name:string,value:string,expires:int,path:string,domain:string,secure:bool,httponly:bool,samesite:string,max_age:int}
+     */
+    private static function parseCookieNameValue(string $fragment): array
+    {
+        [$name, $value] = explode('=', $fragment, 2);
+
+        return [
             'name' => trim($name),
             'value' => rawurldecode(trim($value)),
             'expires' => 0,
@@ -133,50 +153,71 @@ class ResponseCookieHelper
             'samesite' => 'Lax',
             'max_age' => 0,
         ];
-        if ($cookie['name'] === '') {
-            return null;
+    }
+
+    /**
+     * @param array{name:string,value:string,expires:int,path:string,domain:string,secure:bool,httponly:bool,samesite:string,max_age:int} $cookie
+     */
+    private static function applyCookieAttribute(array &$cookie, string $fragment): void
+    {
+        $fragment = trim($fragment);
+        if ($fragment === '') {
+            return;
         }
-        for ($index = 1, $count = count($parts); $index < $count; $index++) {
-            $fragment = (string)$parts[$index];
-            if ($fragment === '') {
-                continue;
-            }
-            if (!str_contains($fragment, '=')) {
-                $flag = strtolower($fragment);
-                if ($flag === 'secure') {
-                    $cookie['secure'] = true;
-                    continue;
-                }
-                if ($flag === 'httponly') {
-                    $cookie['httponly'] = true;
-                }
-                continue;
-            }
-            [$key, $value] = explode('=', $fragment, 2);
-            $key = strtolower(trim($key));
-            $value = trim($value);
-            if ($key === 'expires') {
-                $parsed = strtotime($value);
-                $cookie['expires'] = $parsed === false ? 0 : $parsed;
-                continue;
-            }
-            if ($key === 'max-age') {
-                $cookie['max_age'] = max(0, (int)$value);
-                continue;
-            }
-            if ($key === 'path') {
-                $cookie['path'] = $value !== '' ? $value : '/';
-                continue;
-            }
-            if ($key === 'domain') {
-                $cookie['domain'] = $value;
-                continue;
-            }
-            if ($key === 'samesite') {
-                $cookie['samesite'] = self::normalizeSameSite($value);
-            }
+
+        if (!str_contains($fragment, '=')) {
+            self::applyCookieFlag($cookie, strtolower($fragment));
+            return;
         }
-        return $cookie;
+
+        [$key, $value] = explode('=', $fragment, 2);
+        self::applyCookieKeyValue($cookie, strtolower(trim($key)), trim($value));
+    }
+
+    /**
+     * @param array{name:string,value:string,expires:int,path:string,domain:string,secure:bool,httponly:bool,samesite:string,max_age:int} $cookie
+     */
+    private static function applyCookieFlag(array &$cookie, string $flag): void
+    {
+        if ($flag === 'secure') {
+            $cookie['secure'] = true;
+            return;
+        }
+
+        if ($flag === 'httponly') {
+            $cookie['httponly'] = true;
+        }
+    }
+
+    /**
+     * @param array{name:string,value:string,expires:int,path:string,domain:string,secure:bool,httponly:bool,samesite:string,max_age:int} $cookie
+     */
+    private static function applyCookieKeyValue(array &$cookie, string $key, string $value): void
+    {
+        if ($key === 'expires') {
+            $parsed = strtotime($value);
+            $cookie['expires'] = $parsed === false ? 0 : $parsed;
+            return;
+        }
+
+        if ($key === 'max-age') {
+            $cookie['max_age'] = max(0, (int)$value);
+            return;
+        }
+
+        if ($key === 'path') {
+            $cookie['path'] = $value !== '' ? $value : '/';
+            return;
+        }
+
+        if ($key === 'domain') {
+            $cookie['domain'] = $value;
+            return;
+        }
+
+        if ($key === 'samesite') {
+            $cookie['samesite'] = self::normalizeSameSite($value);
+        }
     }
 
     public static function buildSessionCookieHeaderValue(string $sessionName, string $sessionId, array $params): string

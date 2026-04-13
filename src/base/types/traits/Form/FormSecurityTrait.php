@@ -118,42 +118,32 @@ trait FormSecurityTrait
             return true;
         }
         $tokenKeyField = $this->getName() . self::CSRF_TOKEN_KEY_FIELD_SUFFIX;
-        if (null === $tokenField
-            || !array_key_exists($tokenField, $this->fields)
-            || !array_key_exists($tokenKeyField, $this->fields)
-        ) {
+        if (!$this->hasTokenFields($tokenField, $tokenKeyField)) {
             return false;
         }
 
-        if (!array_key_exists('value', $this->fields[$tokenField])) {
-            return false;
-        }
-        if (!array_key_exists('value', $this->fields[$tokenKeyField])) {
+        [$submittedToken, $submittedTokenKey] = $this->readSubmittedTokenPair($tokenField, $tokenKeyField);
+        if ($submittedToken === null || $submittedTokenKey === null) {
             return false;
         }
 
-        $submittedToken = (string)$this->fields[$tokenField]['value'];
         if (!$this->isValidCsrfTokenValue($submittedToken)) {
-            $submittedTokenKey = (string)$this->fields[$tokenKeyField]['value'];
-            $storage = $this->getCsrfStorage();
-            if ($this->isValidCsrfTokenKey($submittedTokenKey) && array_key_exists($submittedTokenKey, $storage)) {
-                unset($storage[$submittedTokenKey]);
-                $this->setCsrfStorage($storage);
-            }
+            $this->purgeSubmittedTokenIfNeeded($submittedTokenKey);
             return false;
         }
-        $submittedTokenKey = (string)$this->fields[$tokenKeyField]['value'];
+
         if (!$this->isValidCsrfTokenKey($submittedTokenKey)) {
             return false;
         }
 
         $formKey = $this->getCsrfFormKey();
         $storage = $this->purgeExpiredCsrfStorage($this->getCsrfStorage());
-        if (!array_key_exists($submittedTokenKey, $storage)) {
+        $entry = $storage[$submittedTokenKey] ?? null;
+        if (!is_array($entry)) {
             $this->setCsrfStorage($storage);
             return false;
         }
-        $entry = $storage[$submittedTokenKey];
+
         $sessionToken = (string)($entry['token'] ?? '');
         $expiresAt = (int)($entry['expires_at'] ?? 0);
         $storedForm = (string)($entry['form'] ?? '');
@@ -170,6 +160,45 @@ trait FormSecurityTrait
         $this->crfs = $sessionToken;
 
         return $valid;
+    }
+
+    private function hasTokenFields($tokenField, string $tokenKeyField): bool
+    {
+        if ($tokenField === null) {
+            return false;
+        }
+
+        return array_key_exists($tokenField, $this->fields)
+            && array_key_exists($tokenKeyField, $this->fields);
+    }
+
+    /**
+     * @return array{0:?string,1:?string}
+     */
+    private function readSubmittedTokenPair(string $tokenField, string $tokenKeyField): array
+    {
+        if (!array_key_exists('value', $this->fields[$tokenField])) {
+            return [null, null];
+        }
+        if (!array_key_exists('value', $this->fields[$tokenKeyField])) {
+            return [null, null];
+        }
+
+        return [
+            (string)$this->fields[$tokenField]['value'],
+            (string)$this->fields[$tokenKeyField]['value'],
+        ];
+    }
+
+    private function purgeSubmittedTokenIfNeeded(string $submittedTokenKey): void
+    {
+        $storage = $this->getCsrfStorage();
+        if (!$this->isValidCsrfTokenKey($submittedTokenKey) || !array_key_exists($submittedTokenKey, $storage)) {
+            return;
+        }
+
+        unset($storage[$submittedTokenKey]);
+        $this->setCsrfStorage($storage);
     }
 
     /**

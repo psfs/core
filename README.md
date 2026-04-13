@@ -1,197 +1,100 @@
-# PSFS
-[![Build Status](https://scrutinizer-ci.com/g/psfs/core/badges/build.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/build-status/master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
+# PSFS Core
+
 [![Packagist Stable Version](https://img.shields.io/packagist/v/psfs/core)](https://packagist.org/packages/psfs/core)
 [![Development Line](https://img.shields.io/badge/dev--master-2.2.x--dev-0A7BBB)](https://github.com/psfs/core/tree/master)
 [![PHP 8.3](https://img.shields.io/badge/PHP-8.3-777BB4.svg?logo=php&logoColor=white)](https://www.php.net/releases/8.3/en.php)
 
-## PHP Simple Fast & Secure Framework
-
-PSFS is a lightweight PHP framework focused on MVC/API applications with Twig, Propel, and Symfony components.
+PSFS is a lightweight PHP framework for MVC/API applications (Twig + Propel + Symfony components).
 
 ## Runtime baseline
 
-- Project execution and validation run with Docker Compose.
-- Runtime PHP version is **8.3**.
-- Default host port is defined in the root `.env` via `HOST_PORT=8008`.
-- Main local services in `docker-compose.yml` are `php`, `redis`, and `db`.
+- Execution and validation use Docker Compose.
+- Target PHP runtime: **8.3**.
+- Main services: `php`, `redis`, `db`.
+- Host port is configured via `.env` (`HOST_PORT=8008` by default).
 
-Direct PHP requirements declared in `composer.json`:
-
-- `php >=8`
-- `ext-json`
-- `ext-curl`
-- `ext-gmp`
-
-Core package constraints currently used by the framework:
-
-```text
-psfs/propel: dev-master
-symfony/console: ^7.4
-symfony/finder: ^7.4
-symfony/translation: ^7.4
-twig/twig: ^3.24
-monolog/monolog: ^3.10
-matthiasmullie/minify: ^1.3
-firebase/php-jwt: ^7.0
-```
-
-## Local development
-
-Start the stack:
+## Quick start
 
 ```bash
 docker compose up -d
 docker compose ps
 ```
 
-The PHP container is usually named `core-php-1`. If needed, discover it with:
+Run project commands inside the PHP container:
+
+```bash
+docker exec core-php-1 php -v
+docker exec core-php-1 composer install
+docker exec core-php-1 php vendor/bin/phpunit --no-coverage
+```
+
+If your PHP container name differs:
 
 ```bash
 docker compose ps
 docker ps --format '{{.Names}}'
 ```
 
-Run project commands from the PHP container:
+## Swoole runtime
+
+Check and run Swoole commands through `src/bin/psfs`:
 
 ```bash
-docker exec <php_container> php -v
-docker exec <php_container> composer install
-docker exec <php_container> php vendor/bin/phpunit
+docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:check
+docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
+docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:status
+docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:reload
+docker exec core-php-1 php /var/www/src/bin/psfs psfs:swoole:stop
 ```
 
-The application server exposed by Docker runs:
-
-```bash
-php -S 0.0.0.0:8080 -t ./html
-```
-
-and is published on the host as `${HOST_PORT}:8080`.
-
-## Swoole runtime (event worker mode)
-
-PSFS now includes Swoole runtime commands:
-
-```bash
-docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:check
-docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
-docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:status
-docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:reload
-docker exec <php_container> php /var/www/src/bin/psfs psfs:swoole:stop
-```
-
-Optional compose profile (keeps baseline `php -S` untouched):
+Optional compose profile:
 
 ```bash
 docker compose --profile swoole up -d php-swoole
 docker compose --profile swoole ps
 ```
 
-## Consumer install
+## Security baseline (v2)
 
-If you want to use PSFS as a Composer dependency in another project:
+- Auth/cookies are versioned as `v2`.
+- Legacy fallback remains read-only until explicit removal approval.
+- Invalid auth must result in `null/null` and stop request flow.
+- Cookie policy target:
+  - `HttpOnly=true`
+  - `Secure=true` on HTTPS
+  - `SameSite=Lax|Strict`
+  - `Path=/`
+  - coherent `Domain`
+  - TTL aligned with session/auth policy
+
+## CI/CD security gates
+
+Security pipeline blocks merge/release when:
+
+- a `must_pass` security control test fails,
+- any high/critical finding is unresolved,
+- hardening or quality gate returns non-pass.
+
+Local pre-check:
 
 ```bash
-composer init
+act push --container-architecture linux/amd64
+```
+
+## Install as dependency
+
+```bash
 composer require psfs/core
 ./vendor/bin/psfs psfs:create:root
 ```
 
-The `psfs:create:root` command generates the document root structure.
-
-Published package note:
-
-- Packagist stable release is currently `2.0.1`.
-- Repository head is on the `2.2.x-dev` development line.
-
-## Validation
-
-Mandatory baseline before review:
-
-```bash
-docker compose up -d
-docker compose ps
-docker exec <php_container> php -v
-docker exec <php_container> php vendor/bin/phpunit
-```
-
-Optional coverage when Xdebug is available:
-
-```bash
-docker exec -e XDEBUG_MODE=coverage <php_container> php vendor/bin/phpunit --coverage-text
-```
-
-Do not run `php`, `composer`, or `phpunit` directly on the host for project validation.
-
-## Benchmark (`php -S` vs Swoole direct)
-
-Run 5 benchmark iterations per mode and aggregate median/IQR:
-
-```bash
-chmod +x tools/benchmark/run-benchmark.sh
-tools/benchmark/run-benchmark.sh
-```
-
-Artifacts:
-
-- `cache/benchmark/baseline/run-*.json`
-- `cache/benchmark/swoole/run-*.json`
-- `cache/benchmark/baseline-summary.json`
-- `cache/benchmark/swoole-summary.json`
-
-## Security/Auth contract (v2)
-
-- Auth/cookies are versioned as **v2** with **legacy fallback in read-only mode**.
-- Expected result for invalid auth is `null/null` and the request flow must be stopped.
-- Compatibility policy: active fallbacks are temporary and can be removed only with explicit user approval.
-- Target cookie policy:
-  - `HttpOnly=true`
-  - `Secure=true` when running on HTTPS
-  - `SameSite=Lax` or `SameSite=Strict`
-  - `Path=/`
-  - coherent `Domain`
-  - TTL aligned with auth/session policy
-
-## Review and commit policy
-
-- Changes must be reviewed by a human before commit.
-- Do not auto-commit after automated changes or agent execution.
-
-## Environment variables
-
-Relevant Docker/runtime variables:
-
-```text
-APP_ENVIRONMENT=(local|dev|...|prod)
-HOST_PORT=8008
-DEBUG=-xdebug
-PHP_TIMEZONE=Europe/Madrid
-PHP_OPCACHE=0
-MYSQL_USER=psfs
-MYSQL_PASSWORD=psfs
-MYSQL_ROOT_PASSWORD=psfs
-MYSQL_DATABASE=psfs
-```
-
-`DEBUG=-xdebug` loads the Xdebug image variant. An empty value uses the default PHP image.
-
-## Versioning
-
-- Packagist stable release: `2.0.1`
-- Active development line: `dev-master -> 2.2.x-dev`
-- Release/tag policy is documented in `doc/VERSIONING.md`
-
 ## Documentation
 
-- [General information and contracts](./doc/CONTRACTS.md)
+- [Contracts](./doc/CONTRACTS.md)
 - [Versioning policy](./doc/VERSIONING.md)
-- [Async queue and connector contracts](./doc/contracts/async-jobs-connectors-contracts.md)
-- [Security policy](./SECURITY.md)
+- [Async jobs and connectors contracts](./doc/contracts/async-jobs-connectors-contracts.md)
 
-## Roadmap
+## Notes
 
-- Framework documentation
-  - PhpDoc for all files
-- Testing
-  - 100% tests coverage
+- Do not run `php`, `composer`, or `phpunit` directly on host for project validation.
+- Human review is required before committing automated/agent-driven changes.
