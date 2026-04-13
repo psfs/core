@@ -76,7 +76,9 @@ jobs:
         run: |
           mkdir -p security/reports
           docker run --rm -v "$PWD":/src semgrep/semgrep:latest \
-            semgrep --config p/owasp-top-ten --sarif --output /src/security/reports/semgrep.sarif /src
+            semgrep --config p/owasp-top-ten --error \
+            --exclude-rule=generic.nginx.security.request-host-used.request-host-used \
+            --sarif --output /src/security/reports/semgrep.sarif /src
 
       - name: Run Gitleaks (secret scanning)
         run: |

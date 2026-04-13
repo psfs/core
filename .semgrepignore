@@ -1,0 +1,12 @@
+# Third-party/minified assets (scan separately if needed)
+src/public/js/swagger/**
+
+# Generated/third-party dependency trees
+vendor/**
+node_modules/**
+
+# Build and cache outputs
+cache/**
+coverage/**
+dist/**
+build/**
