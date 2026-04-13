@@ -163,7 +163,10 @@ class AuthApiTest extends TestCase
         $secret = 'module-secret';
         $token = SecurityHelper::generateToken($secret, 'psfs');
         $this->setQuery($api, ['API_TOKEN' => $token]);
-        Config::save(array_merge($this->configBackup, ['psfs.api.secret' => $secret]), []);
+        Config::save(array_merge($this->configBackup, [
+            'psfs.api.secret' => $secret,
+            'api.query_token.compat' => true,
+        ]), []);
         Config::getInstance()->loadConfigData(true);
 
         Request::getInstance()->setServer(['HTTP_X_API_SEC_TOKEN' => '']);

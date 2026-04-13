@@ -1,0 +1,42 @@
+name: Security Pipeline
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  security-gates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Install dependencies
+        run: docker exec core-php-1 composer install --no-interaction --prefer-dist
+
+      - name: Run security contract tests
+        run: |
+          docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenPrecedenceHeaderCookieAndQuery$/'
+          docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*AuthApiTest::testResolveApiTokenRejectsMalformedHeaderTokenAndFallsBackToCookie$/'
+          docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCookiePayloadMatrixAndSecurityInterplay$/'
+          docker exec -e XDEBUG_MODE=coverage core-php-1 php vendor/bin/phpunit --colors=never --do-not-fail-on-risky --filter '/^.*RequestResponseSecurityContractTest::testCheckCorsSetsHeadersForAllowedOriginOnGet$/'
+
+      - name: Run composer audit
+        run: docker exec core-php-1 composer audit --no-interaction
+
+      - name: Enforce quality gate
+        run: docker exec core-php-1 php scripts/security/quality_gate.php
+
+      - name: Upload quality gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-quality-gate
+          path: doc/security/quality-gate.json

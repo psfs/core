@@ -66,11 +66,18 @@ abstract class AuthApi extends Api
             return $token;
         }
 
-        $cookieName = Config::getParam('api.token.cookie', self::DEFAULT_API_TOKEN_COOKIE);
-        $cookieToken = $this->sanitizeToken((string)$request->getCookie($cookieName), self::TOKEN_SOURCE_COOKIE);
-        if (!empty($cookieToken)) {
-            self::trackTokenSource(self::TOKEN_SOURCE_COOKIE);
-            return $cookieToken;
+        $configuredCookieName = trim((string)Config::getParam('api.token.cookie', self::DEFAULT_API_TOKEN_COOKIE));
+        $cookieCandidates = array_values(array_unique(array_filter([
+            $configuredCookieName,
+            self::DEFAULT_API_TOKEN_COOKIE,
+        ], static fn($name) => is_string($name) && trim($name) !== '')));
+
+        foreach ($cookieCandidates as $cookieName) {
+            $cookieToken = $this->sanitizeToken((string)$request->getCookie($cookieName), self::TOKEN_SOURCE_COOKIE);
+            if (!empty($cookieToken)) {
+                self::trackTokenSource(self::TOKEN_SOURCE_COOKIE);
+                return $cookieToken;
+            }
         }
 
         if (!array_key_exists(self::LEGACY_QUERY_TOKEN_PARAM, $this->query)) {
