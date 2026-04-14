@@ -89,18 +89,25 @@ trait MutationTrait
         if (null === $tableMap) {
             return null;
         }
-        $map = $tableMap::getTableMap();
-        $className = $map?->getClassName();
-        if (is_string($className) && $className !== '') {
-            return $className;
-        }
+
         if (method_exists($tableMap, 'getOMClass')) {
             try {
                 $legacyClassName = $tableMap::getOMClass(false);
-                return is_string($legacyClassName) && $legacyClassName !== '' ? $legacyClassName : null;
+                if (is_string($legacyClassName) && $legacyClassName !== '') {
+                    return $legacyClassName;
+                }
             } catch (\Throwable) {
-                // Keep null when table map cannot resolve OM class.
+                // Fall back to table map introspection below.
             }
+        }
+        try {
+            $map = $tableMap::getTableMap();
+            $className = $map?->getClassName();
+            if (is_string($className) && $className !== '') {
+                return $className;
+            }
+        } catch (\Throwable) {
+            // Keep null when table map cannot be resolved in early runtime.
         }
         return null;
     }
@@ -111,7 +118,22 @@ trait MutationTrait
     private function getTableMap()
     {
         $tableMapClass = $this->getModelTableMap();
-        return (null !== $tableMapClass) ? $tableMapClass::getTableMap() : null;
+        if (null === $tableMapClass) {
+            return null;
+        }
+        try {
+            return $tableMapClass::getTableMap();
+        } catch (\Throwable) {
+            if (method_exists($tableMapClass, 'buildTableMap')) {
+                try {
+                    $tableMapClass::buildTableMap();
+                    return $tableMapClass::getTableMap();
+                } catch (\Throwable) {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 
     /**
@@ -121,11 +143,21 @@ trait MutationTrait
     protected function getPkDbName()
     {
         $tableMap = $this->getTableMap();
+        $tableMapClass = is_object($tableMap) ? get_class($tableMap) : '';
+        $tableName = ($tableMapClass !== '' && defined($tableMapClass . '::TABLE_NAME'))
+            ? (string)constant($tableMapClass . '::TABLE_NAME')
+            : '';
+        if ($tableName === '') {
+            $tableName = method_exists($tableMap, 'getName') ? (string)$tableMap->getName() : '';
+        }
+        if ($tableName === '') {
+            $tableName = method_exists($tableMap, 'getPhpName') ? (string)$tableMap->getPhpName() : '';
+        }
         $pks = $tableMap->getPrimaryKeys();
         if (count($pks) === 1) {
             $pks = array_keys($pks);
             return [
-                $tableMap::TABLE_NAME . '.' . $pks[0] => Api::API_MODEL_KEY_FIELD
+                $tableName . '.' . $pks[0] => Api::API_MODEL_KEY_FIELD
             ];
         }
         if (count($pks) > 1) {
@@ -133,8 +165,8 @@ trait MutationTrait
             $principal = '';
             $sep = 'CONCAT(';
             foreach ($pks as $pk) {
-                $apiPks[$tableMap::TABLE_NAME . '.' . $pk->getName()] = $pk->getPhpName();
-                $principal .= $sep . $tableMap::TABLE_NAME . '.' . $pk->getName();
+                $apiPks[$tableName . '.' . $pk->getName()] = $pk->getPhpName();
+                $principal .= $sep . $tableName . '.' . $pk->getName();
                 $sep = ', "' . Api::API_PK_SEPARATOR . '", ';
             }
             $principal .= ')';

@@ -30,7 +30,17 @@ trait ConnectionTrait
      */
     protected function createConnection(TableMap $tableMap)
     {
-        $this->con = Propel::getConnection($tableMap::DATABASE_NAME);
+        $tableMapClass = get_class($tableMap);
+        $databaseName = (defined($tableMapClass . '::DATABASE_NAME'))
+            ? (string)constant($tableMapClass . '::DATABASE_NAME')
+            : '';
+        if ($databaseName === '' && method_exists($tableMap, 'getDatabaseName')) {
+            $databaseName = (string)$tableMap->getDatabaseName();
+        }
+        if ($databaseName === '') {
+            $databaseName = (string)Config::getParam('database.name', 'default');
+        }
+        $this->con = Propel::getConnection($databaseName);
         $this->con->beginTransaction();
         if (method_exists($this->con, 'useDebug')) {
             Logger::log('Enabling debug queries mode', LOG_INFO);

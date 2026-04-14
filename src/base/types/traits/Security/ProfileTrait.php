@@ -13,6 +13,15 @@ use PSFS\base\types\helpers\AuthHelper;
 trait ProfileTrait
 {
     /**
+     * Contract: provided by SessionTrait.
+     *
+     * @param mixed $key
+     * @param mixed $data
+     * @return mixed
+     */
+    abstract public function setSessionKey($key, $data = null);
+
+    /**
      * @var array
      */
     protected $user = null;

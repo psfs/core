@@ -27,6 +27,14 @@ class I18nHelper
     static array $langs = ['en_US', 'en_GB', 'es_ES', 'fr_FR', 'pt_PT', 'de_DE'];
 
     /**
+     * @return array<int, string>
+     */
+    protected static function getAvailableLocales(): array
+    {
+        return self::$langs;
+    }
+
+    /**
      * @param string $absoluteFileName
      * @return array
      * @throws \PSFS\base\exception\GeneratorException

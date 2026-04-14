@@ -11,6 +11,17 @@ use PSFS\base\types\helpers\ServerHelper;
 trait I18nLocaleTrait
 {
     /**
+     * @return array<int, string>
+     */
+    protected static function getAvailableLocales(): array
+    {
+        if (property_exists(static::class, 'langs') && is_array(static::$langs)) {
+            return static::$langs;
+        }
+        return ['en_US', 'en_GB', 'es_ES', 'fr_FR', 'pt_PT', 'de_DE'];
+    }
+
+    /**
      * @param string $locale
      * @return bool
      */
@@ -51,7 +62,7 @@ trait I18nLocaleTrait
         }
         $locale = self::normalizeLocale((string)$locale);
         $defaultLocales = explode(',', Config::getParam('i18n.locales', ''));
-        if (!in_array($locale, array_merge($defaultLocales, self::$langs), true)) {
+        if (!in_array($locale, array_merge($defaultLocales, self::getAvailableLocales()), true)) {
             $locale = Config::getParam('default.language', $default);
         }
         return is_string($locale) ? $locale : (string)Config::getParam('default.language', 'en_US');
@@ -61,7 +72,7 @@ trait I18nLocaleTrait
     {
         $value = trim($locale ?: 'en_US');
         if (preg_match('/^[a-z]{2}_[A-Z]{2}$/', $value) === 1) {
-            if (in_array($value, self::$langs, true)) {
+            if (in_array($value, self::getAvailableLocales(), true)) {
                 return $value;
             }
             [$lang] = explode('_', $value, 2);

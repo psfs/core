@@ -22,7 +22,7 @@ trait RouterCacheFlowTrait
      * @param array $params
      * @return bool
      */
-    private function checkRequirements(array $action, $params = [])
+    protected function checkRequirements(array $action, $params = [])
     {
         Inspector::stats('[Router] Checking request requirements', Inspector::SCOPE_DEBUG);
         if (!empty($params) && !empty($action['requirements'])) {

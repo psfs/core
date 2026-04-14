@@ -92,7 +92,10 @@ class Template
     public function addPath($path, $domain = '')
     {
         if (file_exists($path)) {
-            $this->tpl->getLoader()->addPath($path, $domain);
+            $loader = $this->tpl->getLoader();
+            if ($loader instanceof FilesystemLoader) {
+                $loader->addPath($path, $domain);
+            }
         }
         return $this;
     }
@@ -315,6 +318,9 @@ class Template
     private function generateTemplatesCache()
     {
         $loader = $this->tpl->getLoader();
+        if (!$loader instanceof FilesystemLoader) {
+            return;
+        }
         $availablePaths = $loader->getPaths();
         if (!empty($availablePaths)) {
             foreach ($availablePaths as $path) {

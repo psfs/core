@@ -4,6 +4,7 @@ namespace PSFS\base\types\traits\Form;
 
 use PSFS\base\exception\FormException;
 use PSFS\base\Request;
+use PSFS\base\types\interfaces\FormType;
 
 /**
  * @package PSFS\base\types\traits\Form
@@ -11,6 +12,11 @@ use PSFS\base\Request;
 trait FormDataTrait
 {
     use FormValidatorTrait;
+
+    /**
+     * Contract: provided by FormType implementations.
+     */
+    abstract public function getName();
 
     /**
      * @var array
@@ -71,7 +77,7 @@ trait FormDataTrait
         $tokenKeyField = $this->getName() . '_token_key';
         if (!empty($this->fields)) {
             foreach ($this->fields as $key => $field) {
-                if (self::SEPARATOR !== $key && $key !== $tokenField && $key !== $tokenKeyField) {
+                if (FormType::SEPARATOR !== $key && $key !== $tokenField && $key !== $tokenKeyField) {
                     $data[$key] = array_key_exists('value', $field) ? $field['value'] : null;
                 }
             }

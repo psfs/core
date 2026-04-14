@@ -44,6 +44,13 @@ trait ApiEndpointExtractorTrait
     abstract protected function checkDtoAttributes(array $dto, array $modelInfo, string $dtoName): array;
 
     /**
+     * Contract: implemented by composing trait/class (DocumentorHelperTrait).
+     *
+     * @return array<int, string>
+     */
+    abstract protected function getNativeMethods(): array;
+
+    /**
      * @param string $namespace
      * @param ReflectionMethod $method
      * @param ReflectionClass $reflection
@@ -134,7 +141,7 @@ trait ApiEndpointExtractorTrait
     private function supportsNativeQueryParams(array $methodInfo, ReflectionMethod $method): bool
     {
         return in_array($methodInfo['method'], [Request::VERB_GET, Request::VERB_POST], true)
-            && in_array($method->getShortName(), self::$nativeMethods, true);
+            && in_array($method->getShortName(), $this->getNativeMethods(), true);
     }
 
     private function buildNativeQueryParams(): array

@@ -19,6 +19,15 @@ use PSFS\base\types\interfaces\PreConditionedRunInterface;
 trait RouterExecutionTrait
 {
     /**
+     * Contract: provided by RouterCacheFlowTrait.
+     *
+     * @param array $action
+     * @param array $params
+     * @return bool
+     */
+    abstract protected function checkRequirements(array $action, $params = []);
+
+    /**
      * @param string $class
      * @param string $method
      */

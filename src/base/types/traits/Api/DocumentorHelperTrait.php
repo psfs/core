@@ -34,6 +34,14 @@ trait DocumentorHelperTrait
     ];
 
     /**
+     * @return array<int, string>
+     */
+    protected function getNativeMethods(): array
+    {
+        return self::$nativeMethods;
+    }
+
+    /**
      * @param array|string $namespace
      * @param true $isArray
      * @return array

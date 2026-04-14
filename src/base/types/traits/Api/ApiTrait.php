@@ -284,8 +284,14 @@ trait ApiTrait
 
     protected function resolveTableMapDatabaseName(TableMap $tableMap): string
     {
+        if (method_exists($tableMap, 'getDatabaseName')) {
+            $databaseName = (string)$tableMap->getDatabaseName();
+            if ($databaseName !== '') {
+                return $databaseName;
+            }
+        }
         if (defined(get_class($tableMap) . '::DATABASE_NAME')) {
-            return constant(get_class($tableMap) . '::DATABASE_NAME');
+            return (string)constant(get_class($tableMap) . '::DATABASE_NAME');
         }
         return Config::getParam('database.name', 'default');
     }
