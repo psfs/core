@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Api\Crud;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use PSFS\base\dto\Order;
 use PSFS\base\Logger;
+use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\traits\Api\MutationTrait;
@@ -139,22 +140,22 @@ trait ApiListTrait
 
     private function apiComboField(): string
     {
-        return '__combo';
+        return Api::API_COMBO_FIELD;
     }
 
     private function apiOrderField(): string
     {
-        return '__order';
+        return Api::API_ORDER_FIELD;
     }
 
     private function apiPageField(): string
     {
-        return '__page';
+        return Api::API_PAGE_FIELD;
     }
 
     private function apiLimitField(): string
     {
-        return '__limit';
+        return Api::API_LIMIT_FIELD;
     }
 
 }

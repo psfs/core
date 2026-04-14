@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Api;
 use Exception;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\types\Api;
 use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\MetadataReader;
 use PSFS\base\types\helpers\attributes\Header;
@@ -148,21 +149,21 @@ trait ApiEndpointExtractorTrait
     {
         return [
             [
-                "name" => "__limit",
+                "name" => Api::API_LIMIT_FIELD,
                 "in" => "query",
                 "description" => t("Record limit to return, -1 to return all records"),
                 "required" => false,
                 "type" => "integer",
             ],
             [
-                "name" => "__page",
+                "name" => Api::API_PAGE_FIELD,
                 "in" => "query",
                 "description" => t("Page to return"),
                 "required" => false,
                 "type" => "integer",
             ],
             [
-                "name" => "__fields",
+                "name" => Api::API_FIELDS_RESULT_FIELD,
                 "in" => "query",
                 "description" => t("Fields to return"),
                 "required" => false,

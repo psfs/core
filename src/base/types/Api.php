@@ -25,9 +25,13 @@ abstract class Api extends Singleton
 {
     use ManagerTrait, ApiListTrait, ApiCrudResponseTrait;
 
+    const API_COMBO_FIELD = '__combo';
     const API_LIST_NAME_FIELD = '__name__';
     const API_FIELDS_RESULT_FIELD = '__fields';
     const API_MODEL_KEY_FIELD = '__pk';
+    const API_ORDER_FIELD = '__order';
+    const API_PAGE_FIELD = '__page';
+    const API_LIMIT_FIELD = '__limit';
     const API_PK_SEPARATOR = '__|__';
 
     const API_ACTION_LIST = 'list';
