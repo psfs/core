@@ -26,17 +26,17 @@ class FileJobQueue implements JobQueueInterface
 
         return true === FileHelper::withExclusiveLock($lockPath, function () use ($queueFile, $line) {
             $dir = dirname($queueFile);
-            if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+            if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
                 return false;
             }
-            $handle = @fopen($queueFile, 'ab');
+            $handle = fopen($queueFile, 'ab');
             if (false === $handle) {
                 return false;
             }
             try {
-                return false !== @fwrite($handle, $line);
+                return false !== fwrite($handle, $line);
             } finally {
-                @fclose($handle);
+                fclose($handle);
             }
         });
     }
@@ -50,26 +50,30 @@ class FileJobQueue implements JobQueueInterface
         $lockPath = $queueFile . '.lock';
 
         return FileHelper::withExclusiveLock($lockPath, function () use ($queueFile) {
-            $input = @fopen($queueFile, 'rb');
+            $input = fopen($queueFile, 'rb');
             if (false === $input) {
                 return null;
             }
 
             $tmpPath = $this->createTempQueuePath($queueFile);
-            $output = @fopen($tmpPath, 'wb');
+            $output = fopen($tmpPath, 'wb');
             if (false === $output) {
-                @fclose($input);
+                fclose($input);
                 return $this->dequeueUsingFullRead($queueFile);
             }
 
             $result = $this->dequeueIntoTemp($input, $output);
             if ($result === null) {
-                @unlink($tmpPath);
+                if (file_exists($tmpPath)) {
+                    unlink($tmpPath);
+                }
                 return null;
             }
 
             if ($result['first'] === null) {
-                @unlink($tmpPath);
+                if (file_exists($tmpPath)) {
+                    unlink($tmpPath);
+                }
                 return null;
             }
 
@@ -93,7 +97,7 @@ class FileJobQueue implements JobQueueInterface
         if (!file_exists($queueFile)) {
             return 0;
         }
-        $handle = @fopen($queueFile, 'rb');
+        $handle = fopen($queueFile, 'rb');
         if (false === $handle) {
             return 0;
         }
@@ -105,7 +109,7 @@ class FileJobQueue implements JobQueueInterface
                 }
             }
         } finally {
-            @fclose($handle);
+            fclose($handle);
         }
         return $count;
     }
@@ -121,7 +125,7 @@ class FileJobQueue implements JobQueueInterface
 
     private function dequeueUsingFullRead(string $queueFile): ?array
     {
-        $lines = @file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if (false === $lines || [] === $lines) {
             return null;
         }
@@ -165,14 +169,14 @@ class FileJobQueue implements JobQueueInterface
                     continue;
                 }
 
-                if (false === @fwrite($output, $line . PHP_EOL)) {
+                if (false === fwrite($output, $line . PHP_EOL)) {
                     return null;
                 }
                 $hasRemaining = true;
             }
         } finally {
-            @fclose($input);
-            @fclose($output);
+            fclose($input);
+            fclose($output);
         }
 
         return [
@@ -185,16 +189,20 @@ class FileJobQueue implements JobQueueInterface
     {
         if (!$hasRemaining) {
             FileHelper::deleteFile($queueFile);
-            @unlink($tmpPath);
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             return true;
         }
 
-        if (@rename($tmpPath, $queueFile)) {
+        if (rename($tmpPath, $queueFile)) {
             return true;
         }
 
-        $remaining = @file_get_contents($tmpPath);
-        @unlink($tmpPath);
+        $remaining = file_get_contents($tmpPath);
+        if (file_exists($tmpPath)) {
+            unlink($tmpPath);
+        }
 
         return false !== $remaining && FileHelper::writeFileAtomic($queueFile, $remaining);
     }

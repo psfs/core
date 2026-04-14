@@ -67,7 +67,7 @@ trait FormValidatorTrait
      * @param string $key
      * @return array
      */
-    private function checkFieldValidation($field, $key)
+    protected function checkFieldValidation($field, $key)
     {
         // Check if required
         $valid = true;

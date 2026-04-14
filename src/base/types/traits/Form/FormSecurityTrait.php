@@ -6,16 +6,44 @@ use PSFS\base\config\Config;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\types\Form;
+use PSFS\base\types\interfaces\FormType;
 
 /**
  * @package PSFS\base\types\traits\Form
  */
 trait FormSecurityTrait
 {
-    private const CSRF_SESSION_TOKEN_KEY = '__PSFS_CSRF_FORM_TOKENS__';
-    private const CSRF_DEFAULT_EXPIRATION_SECONDS = 1800;
-    private const CSRF_TOKEN_KEY_FIELD_SUFFIX = '_token_key';
-    private const CSRF_TOKEN_REGEX = '/^[a-f0-9]{64}$/';
+    /**
+     * Contract: provided by FormType implementations.
+     */
+    abstract public function getName();
+
+    /**
+     * Contract: provided by FormDataTrait.
+     *
+     * @param mixed $name
+     * @param array $value
+     * @return mixed
+     */
+    abstract public function add($name, array $value = []);
+
+    /**
+     * Contract: provided by FormValidatorTrait.
+     *
+     * @param mixed $field
+     * @param mixed $key
+     * @return array
+     */
+    abstract protected function checkFieldValidation($field, $key);
+
+    /**
+     * Contract: provided by FormValidatorTrait.
+     *
+     * @param mixed $field
+     * @param mixed $error
+     * @return mixed
+     */
+    abstract public function setError($field, $error = 'Validation error');
 
     /**
      * @var
@@ -32,7 +60,7 @@ trait FormSecurityTrait
         }
 
         $tokenField = $this->getName() . '_token';
-        $tokenKeyField = $this->getName() . self::CSRF_TOKEN_KEY_FIELD_SUFFIX;
+        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
         $formKey = $this->getCsrfFormKey();
         $storage = $this->purgeExpiredCsrfStorage($this->getCsrfStorage());
 
@@ -89,17 +117,16 @@ trait FormSecurityTrait
     {
         $valid = true;
         $tokenField = $this->getName() . '_token';
-        $tokenKeyField = $this->getName() . self::CSRF_TOKEN_KEY_FIELD_SUFFIX;
+        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
         // Check crfs token
         if (!$this->existsFormToken($tokenField)) {
-            $this->errors[$tokenField] = t('Invalid form');
-            $this->fields[$tokenField]['error'] = $this->errors[$tokenField];
+            $this->setError($tokenField, t('Invalid form'));
             $valid = false;
         }
         // Validate all the fields
         if ($valid && !empty($this->fields)) {
             foreach ($this->fields as $key => &$field) {
-                if ($key === $tokenField || $key === $tokenKeyField || $key === self::SEPARATOR) {
+                if ($key === $tokenField || $key === $tokenKeyField || $key === FormType::SEPARATOR) {
                     continue;
                 }
                 list($field, $valid) = $this->checkFieldValidation($field, $key);
@@ -117,7 +144,7 @@ trait FormSecurityTrait
         if ($this->method !== 'POST') {
             return true;
         }
-        $tokenKeyField = $this->getName() . self::CSRF_TOKEN_KEY_FIELD_SUFFIX;
+        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
         if (!$this->hasTokenFields($tokenField, $tokenKeyField)) {
             return false;
         }
@@ -214,7 +241,7 @@ trait FormSecurityTrait
      */
     private function getCsrfExpiration(): int
     {
-        $expiration = (int)Config::getParam('csrf.expiration', self::CSRF_DEFAULT_EXPIRATION_SECONDS);
+        $expiration = (int)Config::getParam('csrf.expiration', $this->csrfDefaultExpirationSeconds());
         return max(60, $expiration);
     }
 
@@ -243,7 +270,7 @@ trait FormSecurityTrait
      */
     private function getCsrfStorage(): array
     {
-        $storage = Security::getInstance()->getSessionKey(self::CSRF_SESSION_TOKEN_KEY);
+        $storage = Security::getInstance()->getSessionKey($this->csrfSessionTokenKey());
         return is_array($storage) ? $storage : [];
     }
 
@@ -254,7 +281,7 @@ trait FormSecurityTrait
     private function setCsrfStorage(array $storage): void
     {
         $security = Security::getInstance();
-        $security->setSessionKey(self::CSRF_SESSION_TOKEN_KEY, $storage);
+        $security->setSessionKey($this->csrfSessionTokenKey(), $storage);
         // Persist CSRF token state immediately to avoid losing it in flows that don't reach normal shutdown hooks.
         $security->updateSession();
     }
@@ -294,12 +321,32 @@ trait FormSecurityTrait
 
     private function isValidCsrfTokenValue(string $token): bool
     {
-        return preg_match(self::CSRF_TOKEN_REGEX, $token) === 1;
+        return preg_match($this->csrfTokenRegex(), $token) === 1;
     }
 
     private function isValidCsrfTokenKey(string $tokenKey): bool
     {
-        return preg_match(self::CSRF_TOKEN_REGEX, $tokenKey) === 1;
+        return preg_match($this->csrfTokenRegex(), $tokenKey) === 1;
+    }
+
+    private function csrfSessionTokenKey(): string
+    {
+        return '__PSFS_CSRF_FORM_TOKENS__';
+    }
+
+    private function csrfDefaultExpirationSeconds(): int
+    {
+        return 1800;
+    }
+
+    private function csrfTokenKeyFieldSuffix(): string
+    {
+        return '_token_key';
+    }
+
+    private function csrfTokenRegex(): string
+    {
+        return '/^[a-f0-9]{64}$/';
     }
 
 }

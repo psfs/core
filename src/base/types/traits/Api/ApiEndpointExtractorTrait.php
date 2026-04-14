@@ -19,6 +19,31 @@ use ReflectionProperty;
 trait ApiEndpointExtractorTrait
 {
     /**
+     * Contract: implemented by composing trait/class (DocumentorHelperTrait).
+     */
+    abstract protected function extractApi(?string $comments = '', ?ReflectionClass $reflector = null): string;
+
+    /**
+     * Contract: implemented by composing trait/class (DocumentorHelperTrait).
+     */
+    abstract protected function checkDeprecated($comments = '');
+
+    /**
+     * Contract: implemented by composing trait/class (DocumentorHelperTrait).
+     */
+    abstract protected function extractReturn($model, $comments = '');
+
+    /**
+     * Contract: implemented by composing trait/class (DocumentorHelperTrait).
+     */
+    abstract protected function extractPayload($model, $comments = '');
+
+    /**
+     * Contract: implemented by composing trait/class (SwaggerDtoComposerTrait).
+     */
+    abstract protected function checkDtoAttributes(array $dto, array $modelInfo, string $dtoName): array;
+
+    /**
      * @param string $namespace
      * @param ReflectionMethod $method
      * @param ReflectionClass $reflection

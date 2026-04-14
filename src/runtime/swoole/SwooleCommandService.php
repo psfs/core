@@ -2,6 +2,7 @@
 
 namespace PSFS\runtime\swoole;
 
+use LogicException;
 use PSFS\base\runtime\RuntimeMode;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -46,7 +47,7 @@ class NativeSwooleRuntimeInspector implements SwooleRuntimeInspectorInterface
 {
     public function hasSwooleSupport(): bool
     {
-        return extension_loaded('swoole') && class_exists(\Swoole\Http\Server::class);
+        return extension_loaded('swoole') && class_exists('Swoole\\Http\\Server');
     }
 
     public function getRuntimeMode(): string
@@ -86,10 +87,10 @@ class NativeSwooleSignalSender implements SwooleSignalSenderInterface
             return false;
         }
         if (function_exists('posix_kill')) {
-            return @posix_kill($pid, $signal);
+            return posix_kill($pid, $signal);
         }
         $signalName = $signal === 10 ? 'USR1' : 'TERM';
-        $result = @exec('kill -' . $signalName . ' ' . (int)$pid . ' 2>/dev/null', $output, $code);
+        $result = exec('kill -' . $signalName . ' ' . (int)$pid . ' 2>/dev/null', $output, $code);
         return $result !== false && $code === 0;
     }
 }
@@ -120,7 +121,12 @@ class NativeSwooleHttpServerFactory implements SwooleHttpServerFactoryInterface
 {
     public function create(string $host, int $port): SwooleHttpServerInterface
     {
-        return new NativeSwooleHttpServerAdapter(new \Swoole\Http\Server($host, $port));
+        $serverClass = 'Swoole\\Http\\Server';
+        if (!class_exists($serverClass)) {
+            throw new LogicException('Swoole Http Server class is not available');
+        }
+        $server = new $serverClass($host, $port);
+        return new NativeSwooleHttpServerAdapter($server);
     }
 }
 
@@ -130,16 +136,12 @@ class SwooleCommandService
     private $handlerFactory;
 
     public function __construct(
-        private ?SwooleRuntimeInspectorInterface $runtimeInspector = null,
-        private ?SwoolePidStoreInterface $pidStore = null,
-        private ?SwooleSignalSenderInterface $signalSender = null,
-        private ?SwooleHttpServerFactoryInterface $serverFactory = null,
+        private SwooleRuntimeInspectorInterface $runtimeInspector = new NativeSwooleRuntimeInspector(),
+        private SwoolePidStoreInterface $pidStore = new NativeSwoolePidStore(),
+        private SwooleSignalSenderInterface $signalSender = new NativeSwooleSignalSender(),
+        private SwooleHttpServerFactoryInterface $serverFactory = new NativeSwooleHttpServerFactory(),
         ?callable $handlerFactory = null
     ) {
-        $this->runtimeInspector = $this->runtimeInspector ?? new NativeSwooleRuntimeInspector();
-        $this->pidStore = $this->pidStore ?? new NativeSwoolePidStore();
-        $this->signalSender = $this->signalSender ?? new NativeSwooleSignalSender();
-        $this->serverFactory = $this->serverFactory ?? new NativeSwooleHttpServerFactory();
         $this->handlerFactory = $handlerFactory ?? static fn() => new SwooleRequestHandler();
     }
 
@@ -259,4 +261,3 @@ class SwooleCommandService
         return $hasExtension ? 0 : 1;
     }
 }
-

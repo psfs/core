@@ -12,6 +12,11 @@ use ReflectionClass;
 trait PostmanFormaterTrait
 {
     /**
+     * Contract: implemented by composing trait/class (SwaggerFormaterTrait).
+     */
+    abstract protected function shouldIncludeSwaggerEndpoint(array $endpoint): bool;
+
+    /**
      * @param array $module
      * @param array $endpoints
      * @return array

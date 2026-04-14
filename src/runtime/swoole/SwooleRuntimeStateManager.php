@@ -30,10 +30,16 @@ class SwooleRuntimeStateManager
     public function cleanupAfterRequest(string $contextId): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
-            @session_write_close();
+            $closed = session_write_close();
+            if (false === $closed) {
+                // Continue cleanup even if session close failed.
+            }
         }
         if (function_exists('session_id')) {
-            @session_id('');
+            $sessionId = session_id('');
+            if (false === $sessionId) {
+                // Ignore invalid session id reset attempts.
+            }
         }
 
         $_SESSION = [];
@@ -43,7 +49,7 @@ class SwooleRuntimeStateManager
         CustomTranslateExtension::resetRuntimeState();
 
         if (function_exists('header_remove')) {
-            @header_remove();
+            header_remove();
         }
 
         if (

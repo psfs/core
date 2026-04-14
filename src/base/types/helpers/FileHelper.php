@@ -17,7 +17,8 @@ class FileHelper
      */
     public static function writeFile(string $path, mixed $data): int|bool
     {
-        return @file_put_contents($path, $data);
+        $written = file_put_contents($path, $data);
+        return false === $written ? false : $written;
     }
 
     /**
@@ -29,7 +30,13 @@ class FileHelper
     public static function writeFileAtomic(string $path, mixed $data, int $flags = 0): bool
     {
         $dir = dirname($path);
-        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+        if (file_exists($dir) && !is_dir($dir)) {
+            return false;
+        }
+        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+            return false;
+        }
+        if (is_dir($path)) {
             return false;
         }
         $existingMode = file_exists($path) ? (fileperms($path) & 0777) : 0644;
@@ -37,16 +44,20 @@ class FileHelper
         if (false === $tmpPath) {
             return false;
         }
-        $bytes = @file_put_contents($tmpPath, $data, $flags | LOCK_EX);
+        $bytes = file_put_contents($tmpPath, $data, $flags | LOCK_EX);
         if (false === $bytes) {
-            @unlink($tmpPath);
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             return false;
         }
-        if (@rename($tmpPath, $path) === false) {
-            @unlink($tmpPath);
+        if (rename($tmpPath, $path) === false) {
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             return false;
         }
-        @chmod($path, $existingMode > 0 ? $existingMode : 0644);
+        chmod($path, $existingMode > 0 ? $existingMode : 0644);
         return true;
     }
 
@@ -61,7 +72,13 @@ class FileHelper
             return false;
         }
         $dir = dirname($target);
-        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+        if (file_exists($dir) && !is_dir($dir)) {
+            return false;
+        }
+        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+            return false;
+        }
+        if (is_dir($target)) {
             return false;
         }
         $mode = fileperms($source) & 0777;
@@ -69,15 +86,19 @@ class FileHelper
         if (false === $tmpPath) {
             return false;
         }
-        if (@copy($source, $tmpPath) === false) {
-            @unlink($tmpPath);
+        if (copy($source, $tmpPath) === false) {
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             return false;
         }
-        if (@rename($tmpPath, $target) === false) {
-            @unlink($tmpPath);
+        if (rename($tmpPath, $target) === false) {
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             return false;
         }
-        @chmod($target, $mode > 0 ? $mode : 0644);
+        chmod($target, $mode > 0 ? $mode : 0644);
         return true;
     }
 
@@ -90,7 +111,10 @@ class FileHelper
         if (!file_exists($path)) {
             return true;
         }
-        return @unlink($path);
+        if (is_dir($path)) {
+            return false;
+        }
+        return unlink($path);
     }
 
     /**
@@ -102,10 +126,13 @@ class FileHelper
     public static function withExclusiveLock(string $lockPath, callable $callback): mixed
     {
         $dir = dirname($lockPath);
-        if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
+        if (file_exists($dir) && !is_dir($dir)) {
             return null;
         }
-        $handle = @fopen($lockPath, 'c+');
+        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+            return null;
+        }
+        $handle = fopen($lockPath, 'c+');
         if (false === $handle) {
             return null;
         }
@@ -115,8 +142,8 @@ class FileHelper
             }
             return $callback();
         } finally {
-            @flock($handle, LOCK_UN);
-            @fclose($handle);
+            flock($handle, LOCK_UN);
+            fclose($handle);
         }
     }
 
@@ -128,7 +155,7 @@ class FileHelper
     {
         $data = false;
         if (file_exists($path)) {
-            $data = @file_get_contents($path);
+            $data = file_get_contents($path);
         }
         return $data;
     }

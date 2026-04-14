@@ -9,12 +9,12 @@ use Symfony\Component\Finder\Finder;
 class JobRegistry
 {
     /**
-     * @var array<string, class-string<QueueJobInterface>>
+     * @var array<string, string>
      */
     private array $jobs = [];
 
     /**
-     * @param array<int, class-string<QueueJobInterface>>|null $jobClasses
+     * @param array<int, string>|null $jobClasses
      * @param array<int, string>|null $paths
      */
     public function __construct(?array $jobClasses = null, ?array $paths = null)
@@ -31,7 +31,7 @@ class JobRegistry
     }
 
     /**
-     * @return class-string<QueueJobInterface>
+     * @return string
      */
     public function get(string $code): string
     {
@@ -42,7 +42,7 @@ class JobRegistry
     }
 
     /**
-     * @return array<string, class-string<QueueJobInterface>>
+     * @return array<string, string>
      */
     public function all(): array
     {
@@ -50,7 +50,7 @@ class JobRegistry
     }
 
     /**
-     * @param class-string<QueueJobInterface> $className
+     * @param string $className
      */
     public function register(string $className): void
     {
@@ -73,7 +73,7 @@ class JobRegistry
 
     /**
      * @param array<int, string> $paths
-     * @return array<int, class-string<QueueJobInterface>>
+     * @return array<int, string>
      */
     private function discoverJobClasses(array $paths): array
     {
