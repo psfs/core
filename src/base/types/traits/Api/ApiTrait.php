@@ -40,9 +40,8 @@ trait ApiTrait
      */
     public function getApi()
     {
-        $model = explode("\\", (string)($this->getModelNamespace() ?? ''));
-
-        return $model[count($model) - 1];
+        $parts = $this->extractModelNamespaceParts();
+        return $parts[count($parts) - 1];
     }
 
     /**
@@ -50,8 +49,8 @@ trait ApiTrait
      */
     public function getDomain()
     {
-        $model = explode("\\", $this->getModelNamespace() ?? '');
-        return strlen($model[0]) || 1 === count($model) ? $model[0] : $model[1];
+        $parts = $this->extractModelNamespaceParts();
+        return strlen($parts[0]) || 1 === count($parts) ? $parts[0] : $parts[1];
     }
 
     /**
@@ -77,7 +76,7 @@ trait ApiTrait
 
     protected function hydrateFromRequest()
     {
-        $class = new \ReflectionClass($this->getModelNamespace());
+        $class = $this->newModelReflection();
         $this->model = $class->newInstance();
         $this->hydrateModelFromRequest($this->model, $this->data);
     }
@@ -85,19 +84,38 @@ trait ApiTrait
 
     protected function hydrateBulkRequest()
     {
-        $class = new \ReflectionClass($this->getModelNamespace());
+        $class = $this->newModelReflection();
         $this->list = [];
         foreach ($this->data as $item) {
-            if (is_array($item)) {
-                if (count($this->list) < Config::getParam('api.block.limit', 1000)) {
-                    $model = $class->newInstance();
-                    $this->hydrateModelFromRequest($model, $item);
-                    $this->list[] = $model;
-                } else {
-                    Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, [count($this->data) . t('items')]);
-                }
+            if (!is_array($item)) {
+                continue;
             }
+            if ($this->hasBulkCapacity()) {
+                $model = $class->newInstance();
+                $this->hydrateModelFromRequest($model, $item);
+                $this->list[] = $model;
+                continue;
+            }
+            Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, [count($this->data) . t('items')]);
         }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function extractModelNamespaceParts(): array
+    {
+        return explode("\\", (string)($this->getModelNamespace() ?? ''));
+    }
+
+    private function newModelReflection(): \ReflectionClass
+    {
+        return new \ReflectionClass((string)$this->getModelNamespace());
+    }
+
+    private function hasBulkCapacity(): bool
+    {
+        return count($this->list) < Config::getParam('api.block.limit', 1000);
     }
 
 

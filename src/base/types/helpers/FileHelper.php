@@ -4,12 +4,14 @@ namespace PSFS\base\types\helpers;
 
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use PSFS\base\types\traits\Helper\FileAtomicTrait;
 
 /**
  * @package PSFS\base\types\helpers
  */
 class FileHelper
 {
+    use FileAtomicTrait;
     /**
      * @param mixed $data
      * @param string $path
@@ -29,36 +31,14 @@ class FileHelper
      */
     public static function writeFileAtomic(string $path, mixed $data, int $flags = 0): bool
     {
-        $dir = dirname($path);
-        if (file_exists($dir) && !is_dir($dir)) {
-            return false;
-        }
-        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+        if (!self::ensureParentDirectory($path)) {
             return false;
         }
         if (is_dir($path)) {
             return false;
         }
         $existingMode = file_exists($path) ? (fileperms($path) & 0777) : 0644;
-        $tmpPath = tempnam($dir, '.tmp-psfs-');
-        if (false === $tmpPath) {
-            return false;
-        }
-        $bytes = file_put_contents($tmpPath, $data, $flags | LOCK_EX);
-        if (false === $bytes) {
-            if (file_exists($tmpPath)) {
-                unlink($tmpPath);
-            }
-            return false;
-        }
-        if (rename($tmpPath, $path) === false) {
-            if (file_exists($tmpPath)) {
-                unlink($tmpPath);
-            }
-            return false;
-        }
-        chmod($path, $existingMode > 0 ? $existingMode : 0644);
-        return true;
+        return self::writeTempAndSwap($path, $data, $flags, $existingMode);
     }
 
     /**
@@ -71,35 +51,14 @@ class FileHelper
         if (!file_exists($source)) {
             return false;
         }
-        $dir = dirname($target);
-        if (file_exists($dir) && !is_dir($dir)) {
-            return false;
-        }
-        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+        if (!self::ensureParentDirectory($target)) {
             return false;
         }
         if (is_dir($target)) {
             return false;
         }
         $mode = fileperms($source) & 0777;
-        $tmpPath = tempnam($dir, '.tmp-psfs-');
-        if (false === $tmpPath) {
-            return false;
-        }
-        if (copy($source, $tmpPath) === false) {
-            if (file_exists($tmpPath)) {
-                unlink($tmpPath);
-            }
-            return false;
-        }
-        if (rename($tmpPath, $target) === false) {
-            if (file_exists($tmpPath)) {
-                unlink($tmpPath);
-            }
-            return false;
-        }
-        chmod($target, $mode > 0 ? $mode : 0644);
-        return true;
+        return self::copyTempAndSwap($source, $target, $mode);
     }
 
     /**
@@ -125,26 +84,10 @@ class FileHelper
      */
     public static function withExclusiveLock(string $lockPath, callable $callback): mixed
     {
-        $dir = dirname($lockPath);
-        if (file_exists($dir) && !is_dir($dir)) {
+        if (!self::ensureParentDirectory($lockPath)) {
             return null;
         }
-        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
-            return null;
-        }
-        $handle = fopen($lockPath, 'c+');
-        if (false === $handle) {
-            return null;
-        }
-        try {
-            if (!flock($handle, LOCK_EX)) {
-                return null;
-            }
-            return $callback();
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
+        return self::withExclusiveFileLock($lockPath, $callback);
     }
 
     /**

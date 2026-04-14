@@ -8,6 +8,7 @@ use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Collection\ArrayCollection;
 use Propel\Runtime\Map\ColumnMap;
+use Propel\Runtime\Map\RelationMap;
 use Propel\Runtime\Map\TableMap;
 use PSFS\base\Request;
 use PSFS\base\config\Config;
@@ -26,6 +27,8 @@ class ApiCoverageTableMap extends TableMap
     private array $byName = [];
     /** @var array<int|string, ColumnMap> */
     private array $pkList = [];
+    private bool $hasI18nRelation = false;
+    private ?RelationMap $i18nRelation = null;
     /**
      * @param array<int|string, ColumnMap> $pkList
      */
@@ -94,6 +97,25 @@ class ApiCoverageTableMap extends TableMap
     {
         return parent::getPhpName() ?: 'Demo';
     }
+
+    public function configureI18nRelation(RelationMap $relation): void
+    {
+        $this->hasI18nRelation = true;
+        $this->i18nRelation = $relation;
+    }
+
+    public function hasRelation(string $name): bool
+    {
+        return $this->hasI18nRelation;
+    }
+
+    public function getRelation(string $name): RelationMap
+    {
+        if (!$this->i18nRelation instanceof RelationMap) {
+            throw new \RuntimeException('Missing i18n relation');
+        }
+        return $this->i18nRelation;
+    }
 }
 
 class ApiCoverageTableMapClass
@@ -111,6 +133,108 @@ class ApiCoverageTableMapClass
     }
 }
 
+class ApiCoverageTableMapWithoutOmClass
+{
+    public static function getOMClass(bool $withPrefix = false): string
+    {
+        throw new \RuntimeException('om class unavailable');
+    }
+
+    public static function getTableMap(): object
+    {
+        return new class {
+            public function getClassName(): string
+            {
+                return ApiCoverageActiveRecord::class;
+            }
+        };
+    }
+}
+
+class ApiCoverageTableMapAlwaysFailing
+{
+    public static function getOMClass(bool $withPrefix = false): string
+    {
+        throw new \RuntimeException('om class unavailable');
+    }
+
+    public static function getTableMap(): object
+    {
+        throw new \RuntimeException('table map unavailable');
+    }
+}
+
+class ApiCoverageBuildableTableMapClass
+{
+    public static bool $built = false;
+    public static ?ApiCoverageTableMap $tableMap = null;
+
+    public static function getOMClass(bool $withPrefix = false): string
+    {
+        throw new \RuntimeException('om class unavailable');
+    }
+
+    public static function getTableMap(): ApiCoverageTableMap
+    {
+        if (!self::$built || !self::$tableMap instanceof ApiCoverageTableMap) {
+            throw new \RuntimeException('table map unavailable');
+        }
+        return self::$tableMap;
+    }
+
+    public static function buildTableMap(): void
+    {
+        self::$built = true;
+        if (!self::$tableMap instanceof ApiCoverageTableMap) {
+            self::$tableMap = new ApiCoverageTableMap();
+        }
+    }
+}
+
+class ApiCoverageBrokenBuildTableMapClass
+{
+    public static function getTableMap(): ApiCoverageTableMap
+    {
+        throw new \RuntimeException('table map unavailable');
+    }
+
+    public static function buildTableMap(): void
+    {
+        throw new \RuntimeException('build failure');
+    }
+}
+
+class ApiCoverageI18nLocalTable extends TableMap
+{
+    /**
+     * @param array<int, ColumnMap> $columns
+     */
+    public function __construct(private readonly array $columnsList)
+    {
+    }
+
+    /**
+     * @return array<int, ColumnMap>
+     */
+    public function getColumns(): array
+    {
+        return $this->columnsList;
+    }
+}
+
+class ApiCoverageI18nMapTableMapProxy
+{
+    public static ?TableMap $localTable = null;
+
+    public static function getTableMap(): TableMap
+    {
+        if (!self::$localTable instanceof TableMap) {
+            throw new \RuntimeException('Missing i18n local table');
+        }
+        return self::$localTable;
+    }
+}
+
 class ApiCoverageDouble extends Api
 {
     /** @var array<int, ActiveRecordInterface> */
@@ -120,12 +244,18 @@ class ApiCoverageDouble extends Api
     public ?ActiveRecordInterface $singleModel = null;
     public ?\Exception $postException = null;
     public ?\Exception $bulkException = null;
+    public ?\Exception $hydrateModelException = null;
     public mixed $paginateList = null;
     public ?ActiveRecordInterface $postModel = null;
+    public string|null $tableMapClass = ApiCoverageTableMapClass::class;
+    public bool $hydrateRequestDataCalled = false;
+    public bool $checkFieldTypeCalled = false;
+    public bool $hydrateOrdersCalled = false;
+    public bool $createConnectionCalled = false;
 
     public function getModelTableMap()
     {
-        return ApiCoverageTableMapClass::class;
+        return $this->tableMapClass;
     }
 
     public function init()
@@ -135,11 +265,13 @@ class ApiCoverageDouble extends Api
 
     protected function hydrateRequestData()
     {
-        // no-op for unit tests
+        $this->hydrateRequestDataCalled = true;
+        parent::hydrateRequestData();
     }
 
     protected function hydrateOrders()
     {
+        $this->hydrateOrdersCalled = true;
         if (!isset($this->order)) {
             $this->order = new Order(false);
         }
@@ -147,7 +279,13 @@ class ApiCoverageDouble extends Api
 
     protected function checkFieldType()
     {
-        // no-op for unit tests
+        $this->checkFieldTypeCalled = true;
+        parent::checkFieldType();
+    }
+
+    protected function createConnection($tablemap)
+    {
+        $this->createConnectionCalled = true;
     }
 
     protected function hydrateFromRequest()
@@ -190,7 +328,10 @@ class ApiCoverageDouble extends Api
 
     protected function hydrateModelFromRequest(ActiveRecordInterface $model, array $data = [])
     {
-        // no-op for unit tests
+        if ($this->hydrateModelException instanceof \Exception) {
+            throw $this->hydrateModelException;
+        }
+        parent::hydrateModelFromRequest($model, $data);
     }
 
     protected function paginate()
@@ -227,6 +368,11 @@ class ApiCoverageDouble extends Api
         $this->hydrateFromRequest();
     }
 
+    public function callParentInitForTests(): void
+    {
+        parent::init();
+    }
+
     public function callHydrateBulkRequest(): void
     {
         $this->hydrateBulkRequest();
@@ -248,6 +394,11 @@ class ApiCoverageDouble extends Api
     public function callGetDomain(): string
     {
         return (string)$this->getDomain();
+    }
+
+    public function getActionForTests(): string
+    {
+        return (string)$this->action;
     }
 
     /**
@@ -347,6 +498,36 @@ class ApiCoverageDouble extends Api
         $this->cleanData($data);
         return $data;
     }
+
+    public function callGetModelNamespaceForTests(): ?string
+    {
+        return $this->getModelNamespace();
+    }
+
+    public function callGetTableMapForTests(): ?TableMap
+    {
+        $reflection = new \ReflectionMethod($this, 'getTableMap');
+        $reflection->setAccessible(true);
+        return $reflection->invoke($this);
+    }
+
+    public function callHydrateModelFromRequestForTests(ActiveRecordInterface $model, array $data = []): void
+    {
+        $this->hydrateModelFromRequest($model, $data);
+    }
+
+    public function callCheckI18nForTests(ModelCriteria $query): void
+    {
+        $this->checkI18n($query);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function callParseExtraColumnsForTests(): array
+    {
+        return $this->parseExtraColumns();
+    }
 }
 
 class ApiCoverageTraitDouble extends Api
@@ -363,7 +544,7 @@ class ApiCoverageTraitDouble extends Api
 
     protected function hydrateRequestData()
     {
-        // no-op for unit tests
+        parent::hydrateRequestData();
     }
 
     protected function hydrateOrders()
@@ -375,7 +556,7 @@ class ApiCoverageTraitDouble extends Api
 
     protected function checkFieldType()
     {
-        // no-op for unit tests
+        parent::checkFieldType();
     }
 
     protected function paginate()
@@ -451,6 +632,7 @@ class ApiCoverageModelCriteria extends ModelCriteria
     public mixed $findResult = null;
     public array $withColumns = [];
     public ?string $throwOnFilterByField = null;
+    public ?string $usedI18nLang = null;
 
     public function __construct()
     {
@@ -488,6 +670,12 @@ class ApiCoverageModelCriteria extends ModelCriteria
         $this->withColumns[] = [$clause, $name];
         return $this;
     }
+
+    public function useI18nQuery($lang = null)
+    {
+        $this->usedI18nLang = (string)$lang;
+        return $this;
+    }
 }
 
 class ApiCoverageActiveRecord implements ActiveRecordInterface
@@ -499,6 +687,8 @@ class ApiCoverageActiveRecord implements ActiveRecordInterface
     public array $arrayResult = [];
     public ?string $locale = null;
     public array $receivedFromArray = [];
+    public array $translations = [];
+    public ?\Throwable $deleteException = null;
 
     public function isPrimaryKeyNull(): bool
     {
@@ -533,10 +723,19 @@ class ApiCoverageActiveRecord implements ActiveRecordInterface
 
     public function delete($con = null): void
     {
+        if ($this->deleteException instanceof \Throwable) {
+            throw $this->deleteException;
+        }
         if ($this->throwOnDelete) {
             throw new \RuntimeException('delete failure');
         }
         $this->deleteCalled = true;
+    }
+
+    public function setTitle(mixed $value): self
+    {
+        $this->translations['Title'] = $value;
+        return $this;
     }
 }
 
@@ -1226,5 +1425,339 @@ final class ApiCoreCoverageTest extends TestCase
 
         $this->assertSame('safe', $cleaned['name']);
         $this->assertSame('ok', $cleaned['nested']['bio']);
+    }
+
+    public function testConstructorActionMappingCoversAllActions(): void
+    {
+        $this->assertSame(Api::API_ACTION_LIST, (new ApiCoverageDouble('modelList'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_LIST, (new ApiCoverageDouble('unknownAction'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_GET, (new ApiCoverageDouble('get'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_POST, (new ApiCoverageDouble('post'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_PUT, (new ApiCoverageDouble('put'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_DELETE, (new ApiCoverageDouble('delete'))->getActionForTests());
+        $this->assertSame(Api::API_ACTION_BULK, (new ApiCoverageDouble('bulk'))->getActionForTests());
+    }
+
+    public function testInitTriggersHydrationAndConnectionCreation(): void
+    {
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->setPrimaryKeyList([]);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $api = new ApiCoverageDouble();
+        $api->callParentInitForTests();
+
+        $this->assertTrue($api->hydrateRequestDataCalled);
+        $this->assertTrue($api->hydrateOrdersCalled);
+        $this->assertTrue($api->checkFieldTypeCalled);
+        $this->assertTrue($api->createConnectionCalled);
+    }
+
+    public function testGetModelNamespaceSupportsLegacyAndFallbackStrategies(): void
+    {
+        $api = new ApiCoverageDouble();
+        $api->tableMapClass = null;
+        $this->assertNull($api->callGetModelNamespaceForTests());
+
+        $api->tableMapClass = ApiCoverageTableMapWithoutOmClass::class;
+        $this->assertSame(ApiCoverageActiveRecord::class, $api->callGetModelNamespaceForTests());
+
+        $api->tableMapClass = ApiCoverageTableMapAlwaysFailing::class;
+        $this->assertNull($api->callGetModelNamespaceForTests());
+    }
+
+    public function testGetTableMapSupportsBuildTableMapFallback(): void
+    {
+        ApiCoverageBuildableTableMapClass::$built = false;
+        ApiCoverageBuildableTableMapClass::$tableMap = null;
+
+        $api = new ApiCoverageDouble();
+        $api->tableMapClass = ApiCoverageBuildableTableMapClass::class;
+        $tableMap = $api->callGetTableMapForTests();
+
+        $this->assertInstanceOf(ApiCoverageTableMap::class, $tableMap);
+        $this->assertTrue(ApiCoverageBuildableTableMapClass::$built);
+    }
+
+    public function testGetTableMapReturnsNullWhenMissingOrBuildFails(): void
+    {
+        $api = new ApiCoverageDouble();
+        $api->tableMapClass = null;
+        $this->assertNull($api->callGetTableMapForTests());
+
+        $api->tableMapClass = ApiCoverageTableMapAlwaysFailing::class;
+        $this->assertNull($api->callGetTableMapForTests());
+
+        $api->tableMapClass = ApiCoverageBrokenBuildTableMapClass::class;
+        $this->assertNull($api->callGetTableMapForTests());
+    }
+
+    public function testPutExceptionBranchIncludesPreviousContext(): void
+    {
+        Config::save(array_merge($this->configBackup, ['debug' => true]), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $api = new ApiCoverageDouble();
+        $api->singleModel = new ApiCoverageActiveRecord();
+        $api->hydrateModelException = new \RuntimeException(
+            'put exploded',
+            55,
+            new \RuntimeException('root-cause')
+        );
+
+        $json = $api->put('15');
+        $payload = json_decode($json, true);
+
+        $this->assertFalse((bool)$payload['success']);
+        $this->assertStringContainsString('put exploded', (string)$payload['message']);
+    }
+
+    public function testPostExceptionBranchIncludesPreviousContext(): void
+    {
+        Config::save(array_merge($this->configBackup, ['debug' => false]), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $api = new ApiCoverageDouble();
+        $api->setModelForTests(new ApiCoverageActiveRecord());
+        $api->postException = new \RuntimeException(
+            'post exploded',
+            90,
+            new \RuntimeException('root-cause')
+        );
+
+        $json = $api->post();
+        $payload = json_decode($json, true);
+
+        $this->assertFalse((bool)$payload['success']);
+        $this->assertStringContainsString('90', (string)$payload['message']);
+    }
+
+    public function testDeleteExceptionBranchHandlesPreviousException(): void
+    {
+        $api = new ApiCoverageDouble();
+        $model = new ApiCoverageActiveRecord();
+        $model->deleteException = new \RuntimeException('delete failed', 12, new \RuntimeException('db cause'));
+        $api->singleModel = $model;
+        $api->setConnectionForTests(new ApiCoverageConnectionFake());
+
+        $json = $api->delete('20');
+        $payload = json_decode($json, true);
+
+        $this->assertFalse((bool)$payload['success']);
+    }
+
+    public function testModelListHandlesFieldTypeMappingPath(): void
+    {
+        Config::save(array_merge($this->configBackup, ['api.field.types' => true]), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $pk = $this->createMock(ColumnMap::class);
+        $pk->method('getPhpName')->willReturn('Id');
+        $pk->method('getName')->willReturn('ID');
+        $pk->method('isPrimaryKey')->willReturn(true);
+        $pk->method('isForeignKey')->willReturn(false);
+        $pk->method('getFullyQualifiedName')->willReturn('demo.ID');
+
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->setPrimaryKeyList(['ID' => $pk]);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $_GET = [Api::API_FIELDS_RESULT_FIELD => 'Id'];
+        $_REQUEST = $_GET;
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $list = new class extends ArrayCollection {
+            public function __construct()
+            {
+                parent::__construct([['ID' => 1, 'NAME' => 'Alice']]);
+            }
+
+            public function getData(): array
+            {
+                return [['ID' => 1, 'NAME' => 'Alice']];
+            }
+        };
+
+        $api = new ApiCoverageDouble();
+        $api->paginateList = $list;
+        $payload = json_decode($api->modelList(), true);
+
+        $this->assertTrue((bool)$payload['success']);
+        $this->assertNotEmpty($payload['data']);
+    }
+
+    public function testModelListGracefullyHandlesPaginationException(): void
+    {
+        $api = new class extends ApiCoverageDouble {
+            protected function paginate()
+            {
+                throw new \RuntimeException('pagination failure');
+            }
+        };
+
+        $payload = json_decode($api->modelList(), true);
+        $this->assertTrue((bool)$payload['success']);
+        $this->assertSame(0, (int)$payload['total']);
+    }
+
+    public function testCheckI18nAddsColumnsAndLocaleAwarePkAlias(): void
+    {
+        if (!class_exists('PSFS\\tests\\base\\type\\Map\\ApiCoverageActiveRecordI18nTableMap', false)) {
+            class_alias(
+                ApiCoverageI18nMapTableMapProxy::class,
+                'PSFS\\tests\\base\\type\\Map\\ApiCoverageActiveRecordI18nTableMap'
+            );
+        }
+
+        $titleColumn = $this->createMock(ColumnMap::class);
+        $titleColumn->method('isPrimaryKey')->willReturn(false);
+        $titleColumn->method('isForeignKey')->willReturn(false);
+        $titleColumn->method('getFullyQualifiedName')->willReturn('demo_i18n.TITLE');
+        $titleColumn->method('getPhpName')->willReturn('Title');
+        $titleColumn->method('getName')->willReturn('TITLE');
+
+        $localePk = $this->createMock(ColumnMap::class);
+        $localePk->method('isPrimaryKey')->willReturn(true);
+        $localePk->method('isForeignKey')->willReturn(false);
+        $localePk->method('getFullyQualifiedName')->willReturn('demo_i18n.LOCALE');
+        $localePk->method('getPhpName')->willReturn('Locale');
+        $localePk->method('getName')->willReturn('LOCALE');
+
+        ApiCoverageI18nMapTableMapProxy::$localTable = new ApiCoverageI18nLocalTable([$titleColumn, $localePk]);
+        $relation = $this->createMock(RelationMap::class);
+        $relation->method('getLocalTable')->willReturn(ApiCoverageI18nMapTableMapProxy::$localTable);
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->configureI18nRelation($relation);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $_SERVER['HTTP_X_API_LANG'] = 'it_IT';
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $api = new ApiCoverageDouble();
+        $query = new ApiCoverageModelCriteria();
+        $api->callCheckI18nForTests($query);
+
+        $this->assertSame('it_IT', $query->usedI18nLang);
+        $this->assertNotEmpty($query->withColumns);
+    }
+
+    public function testHydrateModelFromRequestAppliesI18nSetters(): void
+    {
+        $titleColumn = $this->createMock(ColumnMap::class);
+        $titleColumn->method('isPrimaryKey')->willReturn(false);
+        $titleColumn->method('isForeignKey')->willReturn(false);
+        $titleColumn->method('getPhpName')->willReturn('Title');
+        $titleColumn->method('getName')->willReturn('TITLE');
+        $titleColumn->method('getFullyQualifiedName')->willReturn('demo_i18n.TITLE');
+
+        $localTable = new ApiCoverageI18nLocalTable([$titleColumn]);
+        $relation = $this->createMock(RelationMap::class);
+        $relation->method('getLocalTable')->willReturn($localTable);
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->configureI18nRelation($relation);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $model = new ApiCoverageActiveRecord();
+        $api = new ApiCoverageDouble();
+        $api->callHydrateModelFromRequestForTests($model, ['Title' => 'Hola', 'locale' => 'es_ES']);
+
+        $this->assertSame(['Title' => 'Hola', 'locale' => 'es_ES'], $model->receivedFromArray);
+    }
+
+    public function testHydrateModelFromRequestCatchesI18nRelationErrors(): void
+    {
+        $relation = $this->createMock(RelationMap::class);
+        $relation->method('getLocalTable')->willThrowException(new \RuntimeException('i18n relation fail'));
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->configureI18nRelation($relation);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $model = new ApiCoverageActiveRecord();
+        $api = new ApiCoverageDouble();
+        $api->callHydrateModelFromRequestForTests($model, ['Title' => 'Hola']);
+
+        $this->assertSame(['Title' => 'Hola'], $model->receivedFromArray);
+    }
+
+    public function testGetPkDbNameThrowsWhenModelHasNoPrimaryKey(): void
+    {
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->setPrimaryKeyList([]);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $api = new ApiCoverageDouble();
+        $this->expectException(\PSFS\base\exception\ApiException::class);
+        $api->callGetPkDbName();
+    }
+
+    public function testAddDefaultListFieldFallsBackToClassListNameWithoutLabelColumns(): void
+    {
+        $pk = $this->createMock(ColumnMap::class);
+        $pk->method('getName')->willReturn('ID');
+        $pk->method('getPhpName')->willReturn('Id');
+        $pk->method('getFullyQualifiedName')->willReturn('demo.ID');
+
+        $tableMap = new ApiCoverageTableMap();
+        $tableMap->setPhpName('Demo');
+        $tableMap->setColumnsList([]);
+        $tableMap->setPrimaryKeyList([$pk]);
+        ApiCoverageTableMapClass::$tableMap = $tableMap;
+
+        $api = new ApiCoverageDouble();
+        $query = new ApiCoverageModelCriteria();
+        $api->callAddExtraColumns($query, Api::API_ACTION_LIST);
+
+        $this->assertNotEmpty($query->withColumns);
+        $listExpression = array_keys($api->getExtraColumns())[0];
+        $this->assertStringContainsString('CONCAT("Demo #"', $listExpression);
+    }
+
+    public function testParseExtraColumnsNormalizesAliasesToLowercase(): void
+    {
+        $api = new ApiCoverageDouble();
+        $api->setExtraColumns([
+            'demo.ID' => Api::API_MODEL_KEY_FIELD,
+            'demo.NAME' => Api::API_LIST_NAME_FIELD,
+        ]);
+
+        $parsed = $api->callParseExtraColumnsForTests();
+
+        $this->assertSame('__pk', $parsed[Api::API_MODEL_KEY_FIELD]);
+        $this->assertSame('__name__', $parsed[Api::API_LIST_NAME_FIELD]);
+    }
+
+    public function testHydrateRequestDataMergesQueryAndPayload(): void
+    {
+        $_GET = ['page' => '2'];
+        $_REQUEST = $_GET;
+        Request::dropInstance();
+        Request::getInstance()->init();
+        $_SERVER['PSFS_RAW_BODY'] = '{"Name":"Bob"}';
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $api = new class extends ApiCoverageDouble {
+            public function callParentHydrateRequestData(): void
+            {
+                parent::hydrateRequestData();
+            }
+
+            public function queryForTests(): array
+            {
+                return $this->query;
+            }
+
+            public function dataForTests(): array
+            {
+                return $this->data;
+            }
+        };
+
+        $api->callParentHydrateRequestData();
+
+        $this->assertSame('2', $api->queryForTests()['page'] ?? null);
+        $this->assertSame('Bob', $api->dataForTests()['Name'] ?? null);
     }
 }

@@ -143,16 +143,7 @@ trait MutationTrait
     protected function getPkDbName()
     {
         $tableMap = $this->getTableMap();
-        $tableMapClass = is_object($tableMap) ? get_class($tableMap) : '';
-        $tableName = ($tableMapClass !== '' && defined($tableMapClass . '::TABLE_NAME'))
-            ? (string)constant($tableMapClass . '::TABLE_NAME')
-            : '';
-        if ($tableName === '') {
-            $tableName = method_exists($tableMap, 'getName') ? (string)$tableMap->getName() : '';
-        }
-        if ($tableName === '') {
-            $tableName = method_exists($tableMap, 'getPhpName') ? (string)$tableMap->getPhpName() : '';
-        }
+        $tableName = $this->resolveTableName($tableMap);
         $pks = $tableMap->getPrimaryKeys();
         if (count($pks) === 1) {
             $pks = array_keys($pks);
@@ -161,19 +152,43 @@ trait MutationTrait
             ];
         }
         if (count($pks) > 1) {
-            $apiPks = [];
-            $principal = '';
-            $sep = 'CONCAT(';
-            foreach ($pks as $pk) {
-                $apiPks[$tableName . '.' . $pk->getName()] = $pk->getPhpName();
-                $principal .= $sep . $tableName . '.' . $pk->getName();
-                $sep = ', "' . Api::API_PK_SEPARATOR . '", ';
-            }
-            $principal .= ')';
-            $apiPks[$principal] = Api::API_MODEL_KEY_FIELD;
-            return $apiPks;
+            return $this->buildCompositePkMap($tableName, $pks);
         }
         throw new ApiException(t('The API model is not properly mapped, there is no Primary Key or it is composite'));
+    }
+
+    private function resolveTableName(TableMap $tableMap): string
+    {
+        $tableMapClass = get_class($tableMap);
+        $tableName = (defined($tableMapClass . '::TABLE_NAME'))
+            ? (string)constant($tableMapClass . '::TABLE_NAME')
+            : '';
+        if ($tableName === '' && method_exists($tableMap, 'getName')) {
+            $tableName = (string)$tableMap->getName();
+        }
+        if ($tableName === '' && method_exists($tableMap, 'getPhpName')) {
+            $tableName = (string)$tableMap->getPhpName();
+        }
+        return $tableName;
+    }
+
+    /**
+     * @param array<int, ColumnMap> $primaryKeys
+     * @return array<string, string>
+     */
+    private function buildCompositePkMap(string $tableName, array $primaryKeys): array
+    {
+        $apiPks = [];
+        $principal = '';
+        $sep = 'CONCAT(';
+        foreach ($primaryKeys as $pk) {
+            $apiPks[$tableName . '.' . $pk->getName()] = $pk->getPhpName();
+            $principal .= $sep . $tableName . '.' . $pk->getName();
+            $sep = ', "' . Api::API_PK_SEPARATOR . '", ';
+        }
+        $principal .= ')';
+        $apiPks[$principal] = Api::API_MODEL_KEY_FIELD;
+        return $apiPks;
     }
 
     /**
@@ -287,10 +302,10 @@ trait MutationTrait
         foreach ($data as &$value) {
             if (is_array($value)) {
                 $this->cleanData($value);
-            } else {
-                if (is_string($value)) {
-                    $value = $this->sanitizeString($value);
-                }
+                continue;
+            }
+            if (is_string($value)) {
+                $value = $this->sanitizeString($value);
             }
         }
     }

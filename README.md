@@ -1,11 +1,12 @@
 # PSFS Core
 
 [![Build Status](https://scrutinizer-ci.com/g/psfs/core/badges/build.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/build-status/master)
+[![Security Pipeline](https://github.com/psfs/core/actions/workflows/security-pipeline.yml/badge.svg)](https://github.com/psfs/core/actions/workflows/security-pipeline.yml)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Packagist Stable Version](https://img.shields.io/packagist/v/psfs/core)](https://packagist.org/packages/psfs/core)
-[![Development Line](https://img.shields.io/badge/dev--master-2.2.x--dev-0A7BBB)](https://github.com/psfs/core/tree/master)
-[![PHP 8.3](https://img.shields.io/badge/PHP-8.3-777BB4.svg?logo=php&logoColor=white)](https://www.php.net/releases/8.3/en.php)
+[![Minimum PHP Version](http://img.shields.io/badge/php-%3E%3D%208-8892BF.svg)](https://php.net/)
+[![License](https://poser.pugx.org/propel/propel/license.svg)](https://packagist.org/packages/psfs/core)
 
 PSFS is a lightweight PHP framework for MVC/API applications (Twig + Propel + Symfony components).
 

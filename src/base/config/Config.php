@@ -244,18 +244,7 @@ class Config
         $finalData = self::saveExtraParams($data);
         $saved = false;
         try {
-            $finalData = array_filter($finalData, function ($key, $value) {
-                if (in_array($key, self::$required, true)) {
-                    return true;
-                }
-
-                // Keep explicit false/0 flags (security toggles rely on them).
-                if (is_bool($value) || is_int($value) || is_float($value)) {
-                    return true;
-                }
-
-                return $value !== null && $value !== '';
-            }, ARRAY_FILTER_USE_BOTH);
+            $finalData = array_filter($finalData, [self::class, 'shouldPersistConfigEntry'], ARRAY_FILTER_USE_BOTH);
             ksort($finalData, SORT_NATURAL | SORT_FLAG_CASE);
             $instance = self::getInstance();
             $saved = $instance->repository->save($finalData);
@@ -333,6 +322,20 @@ class Config
             }
         }
         return $done;
+    }
+
+    private static function shouldPersistConfigEntry(mixed $value, string $key): bool
+    {
+        if (in_array($key, self::$required, true)) {
+            return true;
+        }
+
+        // Keep explicit false/0 flags (security toggles rely on them).
+        if (is_bool($value) || is_int($value) || is_float($value)) {
+            return true;
+        }
+
+        return $value !== null && $value !== '';
     }
 
     protected function createRepository(): ConfigRepositoryInterface

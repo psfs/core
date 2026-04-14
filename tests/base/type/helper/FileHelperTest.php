@@ -156,4 +156,76 @@ class FileHelperTest extends TestCase
         $this->cleanupDirs[] = $targetAsDir;
         $this->assertFalse(FileHelper::writeFileAtomic($targetAsDir, 'nope'));
     }
+
+    public function testWriteFileAtomicFailsWhenParentPathIsAFile(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-parent-file';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+
+        $parentAsFile = $dir . DIRECTORY_SEPARATOR . 'not-a-dir';
+        file_put_contents($parentAsFile, 'x');
+        $this->cleanupFiles[] = $parentAsFile;
+
+        $target = $parentAsFile . DIRECTORY_SEPARATOR . 'file.txt';
+        $this->assertFalse(FileHelper::writeFileAtomic($target, 'data'));
+    }
+
+    public function testCopyFileAtomicFailsWhenTargetParentPathIsAFile(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-copy-parent-file';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+
+        $source = $dir . DIRECTORY_SEPARATOR . 'source.txt';
+        file_put_contents($source, 'copy-me');
+        $this->cleanupFiles[] = $source;
+
+        $parentAsFile = $dir . DIRECTORY_SEPARATOR . 'target-parent';
+        file_put_contents($parentAsFile, 'x');
+        $this->cleanupFiles[] = $parentAsFile;
+
+        $target = $parentAsFile . DIRECTORY_SEPARATOR . 'target.txt';
+        $this->assertFalse(FileHelper::copyFileAtomic($source, $target));
+    }
+
+    public function testCopyFileAtomicReturnsFalseWhenTargetIsDirectory(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-copy-target-dir';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+
+        $source = $dir . DIRECTORY_SEPARATOR . 'source.txt';
+        file_put_contents($source, 'copy-me');
+        $this->cleanupFiles[] = $source;
+
+        $targetDir = $dir . DIRECTORY_SEPARATOR . 'target-dir';
+        GeneratorHelper::createDir($targetDir);
+        $this->cleanupDirs[] = $targetDir;
+
+        $this->assertFalse(FileHelper::copyFileAtomic($source, $targetDir));
+    }
+
+    public function testDeleteFileReturnsFalseWhenPathIsDirectory(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-delete-dir';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+
+        $this->assertFalse(FileHelper::deleteFile($dir));
+    }
+
+    public function testWithExclusiveLockReturnsNullWhenParentPathIsFile(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-lock-parent-file';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+
+        $parentAsFile = $dir . DIRECTORY_SEPARATOR . 'not-a-dir';
+        file_put_contents($parentAsFile, 'x');
+        $this->cleanupFiles[] = $parentAsFile;
+
+        $lockPath = $parentAsFile . DIRECTORY_SEPARATOR . 'lock.file';
+        $this->assertNull(FileHelper::withExclusiveLock($lockPath, static fn() => 'never'));
+    }
 }

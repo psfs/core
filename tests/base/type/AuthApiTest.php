@@ -34,6 +34,7 @@ class AuthApiTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->ensureConfigDirectory();
         $this->configBackup = Config::getInstance()->dumpConfig();
         $this->serverBackup = $_SERVER;
         $this->cookieBackup = $_COOKIE;
@@ -225,5 +226,12 @@ class AuthApiTest extends TestCase
         $_FILES = [];
         Request::dropInstance();
         Request::getInstance()->init();
+    }
+
+    private function ensureConfigDirectory(): void
+    {
+        if (!is_dir(CONFIG_DIR)) {
+            mkdir(CONFIG_DIR, 0775, true);
+        }
     }
 }

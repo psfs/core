@@ -5,12 +5,14 @@ namespace PSFS\tests\base\type\helper;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Values;
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\tests\examples\AttributeInjectableSingletonTestExample;
 use PSFS\tests\examples\SingletonClassTestExample;
 use PSFS\base\Security;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 
 class InjectorHelperTest extends TestCase
 {
@@ -141,6 +143,103 @@ class InjectorHelperTest extends TestCase
         $this->assertFalse($fromArray['required']);
         $this->assertSame('cache', $fromArray['source']);
     }
+
+    public function testExtractVariablesHandlesPropertiesWithoutExplicitVarType(): void
+    {
+        $reflector = new ReflectionClass(InjectorVariableWithoutTypeExample::class);
+        $variables = InjectorHelper::extractVariables($reflector);
+
+        $this->assertArrayHasKey('publicWithoutType', $variables);
+        $this->assertSame('string', $variables['publicWithoutType']['type'] ?? null);
+    }
+
+    public function testExtractVariablesIncludesEnumWhenValuesAreDeclared(): void
+    {
+        $reflector = new ReflectionClass(InjectorVariableWithValuesExample::class);
+        $variables = InjectorHelper::extractVariables($reflector);
+
+        $this->assertArrayHasKey('status', $variables);
+        $this->assertSame(['draft', 'published'], $variables['status']['enum'] ?? null);
+    }
+
+    public function testExtractPropertiesThrowsWhenInjectableClassIsMissing(): void
+    {
+        $configBackup = Config::getInstance()->dumpConfig();
+        try {
+            $override = $configBackup;
+            $override['metadata.attributes.enabled'] = true;
+            Config::save($override, []);
+            Config::getInstance()->loadConfigData(true);
+
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('cannot be empty');
+            InjectorHelper::extractProperties(new ReflectionClass(InvalidInjectableClassExample::class));
+        } finally {
+            Config::save($configBackup, []);
+            Config::getInstance()->loadConfigData(true);
+        }
+    }
+
+    public function testExtractPropertiesCanFilterByPrivateVisibility(): void
+    {
+        $properties = InjectorHelper::extractProperties(
+            new ReflectionClass(PrivateInjectableDocExample::class),
+            ReflectionProperty::IS_PRIVATE,
+            '/@Injectable/im'
+        );
+
+        $this->assertArrayHasKey('security', $properties);
+        $this->assertSame('\\PSFS\\base\\Security', $properties['security']);
+    }
+
+    public function testGetValuesAndDefaultValueFromDoc(): void
+    {
+        $reflector = new ReflectionClass(InjectorVariableWithValuesExample::class);
+        $property = $reflector->getProperty('status');
+        $doc = (string)$property->getDocComment();
+
+        $this->assertSame(['draft', 'published'], InjectorHelper::getValues($doc, $property));
+        $this->assertSame('draft', InjectorHelper::getDefaultValue($doc, $property));
+    }
+
+    public function testGetValuesSupportsAttributeArrayValues(): void
+    {
+        $configBackup = Config::getInstance()->dumpConfig();
+        try {
+            $override = $configBackup;
+            $override['metadata.attributes.enabled'] = true;
+            Config::save($override, []);
+            Config::getInstance()->loadConfigData(true);
+
+            $reflector = new ReflectionClass(InjectorVariableWithArrayValuesAttributeExample::class);
+            $property = $reflector->getProperty('status');
+            $doc = (string)$property->getDocComment();
+
+            $this->assertSame(['alpha', 'beta'], InjectorHelper::getValues($doc, $property));
+        } finally {
+            Config::save($configBackup, []);
+            Config::getInstance()->loadConfigData(true);
+        }
+    }
+
+    public function testResolveInjectableRuntimeDefinitionFallsBackWhenPropertyIsNotInjectable(): void
+    {
+        $definition = InjectorHelper::resolveInjectableRuntimeDefinition(
+            RuntimeInjectableDefinitionExample::class,
+            'notInjectable',
+            '\\PSFS\\base\\Security'
+        );
+
+        $this->assertTrue($definition['isInjectable']);
+        $this->assertSame('\\PSFS\\base\\Security', $definition['class']);
+        $this->assertSame('cache', $definition['source']);
+    }
+
+    public function testGetClassPropertiesIncludesParentDefinitions(): void
+    {
+        $properties = InjectorHelper::getClassProperties(ChildInjectableExample::class);
+        $this->assertArrayHasKey('security', $properties);
+    }
 }
 
 class InvalidInjectableVisibilityExample
@@ -153,4 +252,56 @@ class RuntimeInjectableDefinitionExample
 {
     #[Injectable(class: Security::class, singleton: false, required: false)]
     protected $security;
+
+    protected string $notInjectable = 'x';
+}
+
+class InjectorVariableWithoutTypeExample
+{
+    /** Just docs without @var */
+    public $publicWithoutType;
+}
+
+class InjectorVariableWithValuesExample
+{
+    /**
+     * @var string
+     * @values draft|published
+     * @default draft
+     */
+    public string $status = 'draft';
+}
+
+class InvalidInjectableClassExample
+{
+    #[Injectable(class: '')]
+    protected $security;
+}
+
+class PrivateInjectableDocExample
+{
+    /**
+     * @Injectable
+     * @var \PSFS\base\Security
+     */
+    private $security;
+}
+
+class ParentInjectableExample
+{
+    /**
+     * @Injectable
+     * @var \PSFS\base\Security
+     */
+    protected $security;
+}
+
+class ChildInjectableExample extends ParentInjectableExample
+{
+}
+
+class InjectorVariableWithArrayValuesAttributeExample
+{
+    #[Values(['alpha', 'beta'])]
+    public string $status = 'alpha';
 }

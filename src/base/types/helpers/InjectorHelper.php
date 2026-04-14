@@ -25,23 +25,33 @@ class InjectorHelper
     {
         $variables = [];
         foreach ($reflector->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $doc = $property->getDocComment() ?: '';
-            $instanceType = self::extractVarType($doc, $property);
-            if (null !== $instanceType) {
-                $isRequired = self::checkIsRequired($doc, $property);
-                $label = self::getLabel($doc, $property);
-                $values = self::getValues($doc, $property);
-                $variables[$property->getName()] = InjectorDefinitionHelper::buildVariableDefinition(
-                    $instanceType,
-                    $isRequired,
-                    $label
-                );
-                if (!empty($values)) {
-                    $variables[$property->getName()]['enum'] = $values;
-                }
+            $definition = self::buildVariableDefinition($property);
+            if (is_array($definition)) {
+                $variables[$property->getName()] = $definition;
             }
         }
         return $variables;
+    }
+
+    private static function buildVariableDefinition(ReflectionProperty $property): ?array
+    {
+        $doc = $property->getDocComment() ?: '';
+        $instanceType = self::extractVarType($doc, $property);
+        if (null === $instanceType) {
+            return null;
+        }
+
+        $definition = InjectorDefinitionHelper::buildVariableDefinition(
+            $instanceType,
+            self::checkIsRequired($doc, $property),
+            self::getLabel($doc, $property)
+        );
+        $values = self::getValues($doc, $property);
+        if (!empty($values)) {
+            $definition['enum'] = $values;
+        }
+
+        return $definition;
     }
 
     /**
@@ -171,7 +181,10 @@ class InjectorHelper
         if (is_array($values)) {
             return $values;
         }
-        return false !== strpos($values, '|') ? explode('|', $values) : $values;
+        if (is_string($values) && false !== strpos($values, '|')) {
+            return explode('|', $values);
+        }
+        return $values;
     }
 
     /**
@@ -200,12 +213,17 @@ class InjectorHelper
             $property->getDocComment(),
             $property
         ) : $classNameSpace;
-        if (true === $singleton && method_exists($varInstanceType, 'getInstance')) {
-            $instance = $varInstanceType::getInstance();
-        } else {
-            $instance = new $varInstanceType();
+
+        return self::buildInjectableInstance((string)$varInstanceType, (bool)$singleton);
+    }
+
+    private static function buildInjectableInstance(string $instanceType, bool $singleton): mixed
+    {
+        if ($singleton && method_exists($instanceType, 'getInstance')) {
+            return $instanceType::getInstance();
         }
-        return $instance;
+
+        return new $instanceType();
     }
 
     /**
