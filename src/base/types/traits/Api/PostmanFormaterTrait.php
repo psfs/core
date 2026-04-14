@@ -20,7 +20,7 @@ trait PostmanFormaterTrait
     {
         $collection = [
             'info' => [
-                '_postman_id' => uniqid('psfs-', true),
+                '_postman_id' => $this->buildPostmanCollectionId($module),
                 'name' => t('Module API collection ') . $module['name'],
                 'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
             ],
@@ -62,6 +62,17 @@ trait PostmanFormaterTrait
         }
 
         return $collection;
+    }
+
+    /**
+     * Build a stable identifier so generated collections are deterministic.
+     *
+     * @param array $module
+     * @return string
+     */
+    private function buildPostmanCollectionId(array $module): string
+    {
+        return 'psfs-' . substr(hash('sha256', (string)($module['name'] ?? 'module')), 0, 24);
     }
 
     private function buildPostmanItem(array $module, array $endpoint): array
@@ -146,4 +157,3 @@ trait PostmanFormaterTrait
         ];
     }
 }
-

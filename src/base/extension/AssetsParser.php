@@ -97,7 +97,11 @@ class AssetsParser
             $this->files[] = $localFilename;
         } elseif (!empty($this->domains)) {
             foreach ($this->domains as $domain => $paths) {
-                $domainFilename = str_replace($domain, $paths["public"], (string)$filename);
+                $publicPath = $paths['public'] ?? null;
+                if (!is_string($publicPath) || $publicPath === '') {
+                    continue;
+                }
+                $domainFilename = str_replace($domain, $publicPath, (string)$filename);
                 if (file_exists($domainFilename) && preg_match('/\.' . $this->type . '$/i', (string)$domainFilename)) {
                     $this->files[] = $domainFilename;
                 }

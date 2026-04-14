@@ -221,7 +221,11 @@ class TemplateFunctions
         $filenamePath = $path;
         if (!empty($domains) && !file_exists($path)) {
             foreach ($domains as $domain => $paths) {
-                $domainFilename = str_replace($domain, $paths['public'], $path);
+                $publicPath = $paths['public'] ?? null;
+                if (!is_string($publicPath) || $publicPath === '') {
+                    continue;
+                }
+                $domainFilename = str_replace($domain, $publicPath, $path);
                 if (file_exists($domainFilename)) {
                     $filenamePath = $domainFilename;
                     break;

@@ -5,6 +5,7 @@ namespace PSFS\tests\base\controller;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
 use PSFS\base\Request;
+use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\SingletonRegistry;
 use PSFS\base\config\Config;
@@ -291,12 +292,20 @@ class CoverageControllersTest extends TestCase
     public function testDocumentorControllerCoversJsonHtmlDownloadAndSwaggerUi(): void
     {
         $probe = $this->newDocumentorProbe();
+        $router = Router::getInstance();
+        $this->setObjectProperty($router, 'domains', [
+            '@ROOT/' => ['base' => '/tmp/root/'],
+        ]);
+
         $service = $this->getMockBuilder(DocumentorService::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getModules', 'extractApiEndpoints', 'swaggerFormatter', 'postmanFormatter'])
+            ->onlyMethods(['getModules', 'buildEndpointSpec', 'extractApiEndpoints', 'swaggerFormatter', 'postmanFormatter', 'openApiFormatter'])
             ->getMock();
         $service->method('getModules')->willReturnCallback(
             static fn (string $domain): array => $domain === 'EMPTY' ? [] : ['M']
+        );
+        $service->method('buildEndpointSpec')->willReturnCallback(
+            static fn (array $module): array => ['endpoints' => $module]
         );
         $service->method('extractApiEndpoints')->willReturnCallback(
             static fn (array $module): array => ['endpoints' => $module]
@@ -307,11 +316,20 @@ class CoverageControllersTest extends TestCase
         $service->method('postmanFormatter')->willReturnCallback(
             static fn (array $module, array $doc): array => ['postman' => $doc]
         );
+        $service->method('openApiFormatter')->willReturnCallback(
+            static fn (array $module, array $doc): array => ['openapi' => $doc]
+        );
         $probe->setService($service);
 
         $probe->setRequestData(['type' => 'swagger']);
         $swagger = $probe->createApiDocs('ROOT');
         $this->assertSame(200, $swagger['status']);
+        $this->assertArrayHasKey('swagger', $swagger['payload']);
+
+        $probe->setRequestData(['type' => 'openapi']);
+        $openapi = $probe->createApiDocs('ROOT');
+        $this->assertSame(200, $openapi['status']);
+        $this->assertArrayHasKey('openapi', $openapi['payload']);
 
         $probe->setRequestData(['type' => 'html']);
         $html = $probe->createApiDocs('ROOT');
@@ -320,6 +338,18 @@ class CoverageControllersTest extends TestCase
         $probe->setRequestData([]);
         $json = $probe->createApiDocs('ROOT');
         $this->assertSame(200, $json['status']);
+
+        $probe->setRequestData(['type' => 'swagger', 'download' => 1]);
+        $this->assertNull($probe->createApiDocs('ROOT'));
+        $this->assertSame('swagger.json', $probe->lastDownload['filename'] ?? null);
+
+        $probe->setRequestData(['type' => 'postman', 'download' => 1]);
+        $this->assertNull($probe->createApiDocs('ROOT'));
+        $this->assertSame('postman.collection.json', $probe->lastDownload['filename'] ?? null);
+
+        $probe->setRequestData(['type' => 'openapi', 'download' => 1]);
+        $this->assertNull($probe->createApiDocs('ROOT'));
+        $this->assertSame('openapi.json', $probe->lastDownload['filename'] ?? null);
 
         $render = $probe->swaggerUi('ROOT');
         $this->assertSame('swagger.html.twig', $render['template']);
@@ -477,6 +507,7 @@ class GeneratorControllerProbe extends GeneratorController
 class DocumentorControllerProbe extends DocumentorController
 {
     private array $requestData = [];
+    public ?array $lastDownload = null;
 
     public function setService(DocumentorService $service): void
     {
@@ -510,6 +541,15 @@ class DocumentorControllerProbe extends DocumentorController
     public function json($response, $statusCode = 200)
     {
         return ['status' => $statusCode, 'payload' => $response];
+    }
+
+    public function download($response, $contentType = 'text/plain', $filename = 'file.txt'): void
+    {
+        $this->lastDownload = [
+            'contentType' => $contentType,
+            'filename' => $filename,
+            'payload' => (string)$response,
+        ];
     }
 
 }

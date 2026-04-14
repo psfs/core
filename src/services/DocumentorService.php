@@ -65,6 +65,19 @@ class DocumentorService extends SimpleService
     }
 
     /**
+     * Build a normalized endpoint specification model used by all output formatters.
+     * Current v1 model reuses extracted endpoint metadata and keeps legacy shape.
+     *
+     * @param array $module
+     * @return array
+     * @throws ReflectionException
+     */
+    public function buildEndpointSpec(array $module): array
+    {
+        return $this->extractApiEndpoints($module);
+    }
+
+    /**
      * @param $namespace
      * @param $module
      * @return array

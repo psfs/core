@@ -5,8 +5,9 @@
     <title>Swagger UI</title>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700"
           rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
     {{ resource("@ROOT/css/swagger/swagger-ui.css", '/css') }}
-    <link rel="stylesheet" type="text/css" href="/css/swagger-ui.css">
+    <link rel="stylesheet" type="text/css" href="/css/swagger-ui.css" onerror="this.remove()">
     <link rel="icon" type="image/png" href="{{ asset('@ROOT/image/swagger/favicon-32x32.png') }}" sizes="32x32"/>
     <link rel="icon" type="image/png" href="{{ asset('@ROOT/image/swagger/favicon-16x16.png') }}" sizes="16x16"/>
     <style>
@@ -34,13 +35,25 @@
 
 {{ resource("@ROOT/js/swagger/swagger-ui-bundle.js", '/js') }}
 {{ resource("@ROOT/js/swagger/swagger-ui-standalone-preset.js", '/js') }}
-<script src="/js/swagger-ui-bundle.js"></script>
-<script src="/js/swagger-ui-standalone-preset.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+<script>
+    // Fallback to local bundled assets if CDN is not reachable.
+    if (typeof window.SwaggerUIBundle === 'undefined') {
+        document.write('<script src="/js/swagger-ui-bundle.js"><\/script>');
+        document.write('<script src="/js/swagger-ui-standalone-preset.js"><\/script>');
+    }
+</script>
 <script>
     window.onload = function () {
-        // Build a system
+        const selectedType = new URLSearchParams(window.location.search).get('type') === 'openapi' ? 'openapi' : 'swagger';
+        const baseDocUri = "{{ path('domain-api-doc', true, {domain:domain}) }}";
         const ui = SwaggerUIBundle({
-            url: "{{ path('domain-api-doc', true, {domain:domain}) }}?type=swagger",
+            urls: [
+                {url: baseDocUri + '?type=swagger', name: 'Swagger 2.0 (legacy)'},
+                {url: baseDocUri + '?type=openapi', name: 'OpenAPI 3.1'},
+            ],
+            "urls.primaryName": selectedType === 'openapi' ? 'OpenAPI 3.1' : 'Swagger 2.0 (legacy)',
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [

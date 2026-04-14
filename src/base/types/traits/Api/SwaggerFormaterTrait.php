@@ -15,6 +15,7 @@ trait SwaggerFormaterTrait
     use SwaggerDtoComposerTrait;
     use ApiEndpointExtractorTrait;
     use PostmanFormaterTrait;
+    use OpenApiFormaterTrait;
 
     /**
      * @return array
@@ -135,7 +136,7 @@ trait SwaggerFormaterTrait
         }
     }
 
-    private function shouldIncludeSwaggerEndpoint(array $endpoint): bool
+    protected function shouldIncludeSwaggerEndpoint(array $endpoint): bool
     {
         return !preg_match('/^\/(admin|api)\//i', $endpoint['url']) && strlen($endpoint['url']) > 0;
     }

@@ -1,4 +1,4 @@
-# Documentor Contracts (Swagger + Postman)
+# Documentor Contracts (Swagger + OpenAPI + Postman)
 
 ## Scope
 - `src/controller/DocumentorController.php`
@@ -15,24 +15,30 @@
 - Required keys: `info`, `variable`, `item`.
 - `info.schema` must be `https://schema.getpostman.com/json/collection/v2.1.0/collection.json`.
 
-3. Download mode
+3. `GET /{domain}/api/doc?type=openapi`
+- Returns OpenAPI 3.1 JSON.
+- Required keys: `openapi`, `info`, `servers`, `paths`, `components.schemas`.
+
+4. Download mode
 - `download=1&type=swagger` returns `swagger.json`.
 - `download=1&type=postman` returns `postman.collection.json`.
+- `download=1&type=openapi` returns `openapi.json`.
 
-4. Filtering rules
+5. Filtering rules
 - Endpoints under `/admin/*` and `/api/*` are excluded from generated docs.
 - Route visibility/deprecation behavior remains unchanged.
 
-5. Postman request shaping
+6. Postman request shaping
 - URL path params are emitted using `:param` syntax.
 - Query/header metadata is projected from endpoint metadata.
 - For `POST`/`PUT`, payload is exported as raw JSON with known fields.
 
 ## Compatibility
 - No public route changes.
-- Swagger behavior kept as-is.
-- Postman support is additive (replaces previous `Pending...` placeholder only).
+- Swagger behavior kept as-is (legacy).
+- OpenAPI support is additive and recommended for new integrations.
+- Postman support remains additive.
 
 ## Test Evidence
-- `tests/services/DocumentorServiceTest.php` validates Swagger + Postman contract skeleton.
-
+- `tests/services/DocumentorServiceTest.php` validates Swagger + OpenAPI + Postman contract skeleton.
+- `tests/base/controller/CoverageControllersTest.php` validates controller paths, downloads and Swagger UI route.

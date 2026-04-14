@@ -44,7 +44,11 @@ class AssetsHelper
         $filenamePath = null;
         if (!file_exists($filePath) && 0 < count($domains)) {
             foreach ($domains as $domain => $paths) {
-                $domainFilename = str_replace($domain, $paths["public"], $string);
+                $publicPath = $paths['public'] ?? null;
+                if (!is_string($publicPath) || $publicPath === '') {
+                    continue;
+                }
+                $domainFilename = str_replace($domain, $publicPath, $string);
                 if (file_exists($domainFilename)) {
                     $filenamePath = $domainFilename;
                     break;

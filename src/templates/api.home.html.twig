@@ -14,13 +14,18 @@
             <md-list-item class="noright" ng-click="null">
                 <p>{{ _domain }}</p>
                 {% set swagger_uri = path('domain-api-doc', true, {'domain':_domain}) ~ '?type=swagger' %}
-                <md-button ng-href="/admin/{{ _domain }}/swagger-ui" class="md-icon-button" target="_blank">
+                {% set openapi_uri = path('domain-api-doc', true, {'domain':_domain}) ~ '?type=openapi' %}
+                <md-button ng-href="/admin/{{ _domain }}/swagger-ui?type=openapi" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "View documentation in HTML"|trans }}</md-tooltip>
                     <md-icon class="fa fa-book-spells"></md-icon>
                 </md-button>
                 <md-button ng-href="{{ swagger_uri }}" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "View documentation in Swagger format"|trans }}</md-tooltip>
                     <md-icon class="fal fa-file-check"></md-icon>
+                </md-button>
+                <md-button ng-href="{{ openapi_uri }}" class="md-icon-button" target="_blank">
+                    <md-tooltip md-direction="top">{{ "View documentation in OpenAPI 3.1 format"|trans }}</md-tooltip>
+                    <md-icon class="fal fa-file-code"></md-icon>
                 </md-button>
                 <md-button ng-href="{{ path('domain-api-doc', true, {'domain':_domain}) }}?type=postman" class="md-icon-button" target="_blank">
                     <md-tooltip md-direction="top">{{ "View documentation in Postman format"|trans }}</md-tooltip>

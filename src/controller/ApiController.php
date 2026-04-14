@@ -20,6 +20,7 @@ class ApiController extends AuthAdminController
     const PSFS_DOC = 'psfs';
     const SWAGGER_DOC = 'swagger';
     const POSTMAN_DOC = 'postman';
+    const OPENAPI_DOC = 'openapi';
     const HTML_DOC = 'html';
 
     /**
@@ -49,6 +50,7 @@ class ApiController extends AuthAdminController
                 self::PSFS_DOC,
                 self::SWAGGER_DOC,
                 self::POSTMAN_DOC,
+                self::OPENAPI_DOC,
                 self::HTML_DOC,
             ]
         ]);

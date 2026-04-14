@@ -90,6 +90,21 @@ class DocumentorServiceTest extends GeneratorServiceTest
         );
         $this->assertArrayHasKey('request', $postman['item'][0]['item'][0]);
         $this->assertArrayHasKey('url', $postman['item'][0]['item'][0]['request']);
+        $this->assertMatchesRegularExpression('/^psfs-[a-f0-9]{24}$/', $postman['info']['_postman_id']);
+
+        $openapi = $documentorService->openApiFormatter($module, $doc);
+        $this->assertSame('3.1.0', $openapi['openapi']);
+        $this->assertArrayHasKey('paths', $openapi);
+        $this->assertArrayHasKey('components', $openapi);
+        $this->assertArrayHasKey('schemas', $openapi['components']);
+        $this->assertArrayHasKey('servers', $openapi);
+        $this->assertNotEmpty($openapi['paths']);
+
+        $firstPath = array_key_first($openapi['paths']);
+        $this->assertNotNull($firstPath);
+        $firstMethod = array_key_first($openapi['paths'][$firstPath]);
+        $this->assertNotNull($firstMethod);
+        $this->assertArrayHasKey('responses', $openapi['paths'][$firstPath][$firstMethod]);
         $this->clearContext($modulePath);
     }
 }
