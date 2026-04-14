@@ -110,7 +110,7 @@ trait CssTrait
     }
 
     /**
-     * @param string|array $source
+     * @param array $source
      * @param string $file
      */
     protected function extractCssResources($source, $file)

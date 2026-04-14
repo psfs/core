@@ -19,7 +19,6 @@ use PSFS\base\types\traits\SingletonTrait;
 
 
 if (!defined('LOG_DIR')) {
-    GeneratorHelper::createDir(BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
     define('LOG_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'logs');
 }
 
@@ -29,6 +28,10 @@ if (!defined('LOG_DIR')) {
 class Logger
 {
     const DEFAULT_NAMESPACE = 'PSFS';
+    private const OUTPUT_FILE = 'file';
+    private const OUTPUT_STDOUT = 'stdout';
+    private const OUTPUT_STDERR = 'stderr';
+
     use SingletonTrait;
 
     /**
@@ -47,6 +50,7 @@ class Logger
      * @var string
      */
     protected string $logLevel;
+    private bool $closeStreamOnDestruct = true;
 
     /**
      * @throws GeneratorException
@@ -56,8 +60,9 @@ class Logger
     public function __construct()
     {
         $args = func_get_args();
-        list($logger, $debug, $path) = $this->setup($args);
-        $this->stream = fopen($path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', 'ab+');
+        list($logger, $debug, $target, $closeStreamOnDestruct) = $this->setup($args);
+        $this->closeStreamOnDestruct = $closeStreamOnDestruct;
+        $this->stream = fopen($target, 'ab+');
         if (false !== $this->stream && is_resource($this->stream)) {
             $this->addPushLogger($logger, $debug);
         } else {
@@ -68,7 +73,9 @@ class Logger
 
     public function __destruct()
     {
-        fclose($this->stream);
+        if ($this->closeStreamOnDestruct && is_resource($this->stream)) {
+            fclose($this->stream);
+        }
     }
 
     /**
@@ -108,8 +115,26 @@ class Logger
             $namespace = $args[0][0] ?? 'PSFS';
             $debug = $args[0][1] ?? true;
         }
+        [$target, $closeStreamOnDestruct] = $this->resolveLogOutputTarget();
+        return [LogHelper::cleanLoggerName($namespace), $debug, $target, $closeStreamOnDestruct];
+    }
+
+    /**
+     * @return array{0:string,1:bool}
+     * @throws GeneratorException
+     */
+    private function resolveLogOutputTarget(): array
+    {
+        $output = strtolower(trim((string)Config::getParam('log.output', self::OUTPUT_FILE)));
+        if ($output === self::OUTPUT_STDOUT) {
+            return ['php://stdout', false];
+        }
+        if ($output === self::OUTPUT_STDERR) {
+            return ['php://stderr', false];
+        }
+
         $path = $this->createLoggerPath();
-        return [LogHelper::cleanLoggerName($namespace), $debug, $path];
+        return [$path . DIRECTORY_SEPARATOR . date('Ymd') . '.log', true];
     }
 
     /**

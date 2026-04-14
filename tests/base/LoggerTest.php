@@ -90,4 +90,31 @@ class LoggerTest extends TestCase
         Config::save($defaultConfig, []);
     }
 
+    public function testLoggerSupportsStdoutOutputTarget(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $configProperty->setAccessible(true);
+        $defaultConfig = $configProperty->getValue($config);
+        $overrideConfig = $defaultConfig;
+        $overrideConfig['log.output'] = 'stdout';
+        $configProperty->setValue($config, $overrideConfig);
+
+        try {
+            $reflection = new \ReflectionClass(Logger::class);
+            /** @var Logger $logger */
+            $logger = $reflection->newInstanceWithoutConstructor();
+
+            $method = new \ReflectionMethod(Logger::class, 'resolveLogOutputTarget');
+            $method->setAccessible(true);
+            [$target, $closeStreamOnDestruct] = $method->invoke($logger);
+
+            $this->assertSame('php://stdout', $target);
+            $this->assertFalse($closeStreamOnDestruct);
+        } finally {
+            Logger::dropInstance();
+            $configProperty->setValue($config, $defaultConfig);
+        }
+    }
+
 }
