@@ -44,7 +44,8 @@ class MigrationService extends SimpleService
             )
         );
         $manager->setConnections($generatorConfig->getBuildConnections());
-        $manager->setMigrationTable($generatorConfig->getConfigProperty('migrations.tableName'));
+        $migrationTable = (string)($generatorConfig->getConfigProperty('migrations.tableName') ?: 'migration');
+        $manager->setMigrationTable($migrationTable);
         $manager->setWorkingDirectory($generatorConfig->getSection('paths')['migrationDir']);
         return [$manager, $generatorConfig];
     }
@@ -121,8 +122,9 @@ class MigrationService extends SimpleService
         ?string $name,
         GeneratorConfig $generatorConfig
     ): array {
-        $conn = $manager->getAdapterConnection($name);
-        $platform = $generatorConfig->getConfiguredPlatform($conn, $name);
+        $datasource = is_string($name) && $name !== '' ? $name : 'default';
+        $conn = $manager->getAdapterConnection($datasource);
+        $platform = $generatorConfig->getConfiguredPlatform($conn, $datasource);
         return [$conn, $platform];
     }
 

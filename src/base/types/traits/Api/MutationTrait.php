@@ -86,7 +86,23 @@ trait MutationTrait
     protected function getModelNamespace()
     {
         $tableMap = $this->getModelTableMap();
-        return (null !== $tableMap) ? $tableMap::getOMClass(false) : null;
+        if (null === $tableMap) {
+            return null;
+        }
+        $map = $tableMap::getTableMap();
+        $className = $map?->getClassName();
+        if (is_string($className) && $className !== '') {
+            return $className;
+        }
+        if (method_exists($tableMap, 'getOMClass')) {
+            try {
+                $legacyClassName = $tableMap::getOMClass(false);
+                return is_string($legacyClassName) && $legacyClassName !== '' ? $legacyClassName : null;
+            } catch (\Throwable) {
+                // Keep null when table map cannot resolve OM class.
+            }
+        }
+        return null;
     }
 
     /**

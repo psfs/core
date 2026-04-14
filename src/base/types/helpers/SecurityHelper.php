@@ -77,7 +77,7 @@ class SecurityHelper
         $charsLength = strlen(self::RAND_SEP) - 1;
         $tsLength = strlen($timestamp);
         $i = 0;
-        $partCount = ceil($hashRest / 4);
+        $partCount = (int)ceil($hashRest / 4);
         $part = substr($hash, $tsLength + $partCount * $i, $partCount);
         while (false !== $part && strlen($part) > 0) {
             $mixedToken .= $part .

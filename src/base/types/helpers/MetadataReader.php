@@ -67,17 +67,12 @@ class MetadataReader
                 self::logLegacyFallback('annotation_var');
             }
         }
-        return self::readVarTypeFromDoc($doc ?: '');
+        $type = self::readVarTypeFromDoc($doc ?: '');
+        return is_string($type) && trim($type) !== '' ? $type : null;
     }
 
     /**
-     * @return array{
-     *     isInjectable:bool,
-     *     class:?string,
-     *     singleton:bool,
-     *     required:bool,
-     *     source:?string
-     * }
+     * @return array<string, mixed>
      */
     public static function resolveInjectableDefinition(?ReflectionProperty $property, ?string $doc = ''): array
     {
@@ -109,9 +104,10 @@ class MetadataReader
 
         if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
             $className = self::readVarTypeFromDoc($doc);
+            $className = is_string($className) ? $className : '';
             return [
-                'isInjectable' => $className !== null && trim($className) !== '',
-                'class' => $className,
+                'isInjectable' => trim($className) !== '',
+                'class' => trim($className) !== '' ? $className : null,
                 'singleton' => true,
                 'required' => true,
                 'source' => 'annotation',

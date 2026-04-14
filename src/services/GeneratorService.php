@@ -285,6 +285,9 @@ class GeneratorService extends SimpleService
 
         foreach ($reversedSchema->getDatabases() as $database) {
             $name = $database->getName();
+            if (!is_string($name) || $name === '') {
+                continue;
+            }
             if ($debugLogger) {
                 Logger::log(sprintf('Comparing database "%s"', $name));
             }

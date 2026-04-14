@@ -87,10 +87,10 @@ trait SystemTrait
                     }
                 }
 
-                if (self::getTs() > 10 && null !== Config::getParam('log.slack.hook')) {
+                if ($this->getTs() > 10 && null !== Config::getParam('log.slack.hook')) {
                     SlackHelper::getInstance()->trace('Slow service endpoint', '', '', [
-                        'time' => round(self::getTs(), 3) . ' secs',
-                        'memory' => round(self::getMem('MBytes'), 3) . ' Mb',
+                        'time' => round($this->getTs(), 3) . ' secs',
+                        'memory' => round($this->getMem('MBytes'), 3) . ' Mb',
                     ]);
                 }
                 return false;

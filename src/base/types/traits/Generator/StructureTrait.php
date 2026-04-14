@@ -29,8 +29,7 @@ trait StructureTrait
 
     /**
      * @param string $module
-     * @param boolean $modPath
-     * @return boolean
+     * @param string $modPath
      * @throws \PSFS\base\exception\GeneratorException
      */
     private function createModulePathTree($module, $modPath)

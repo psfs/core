@@ -47,6 +47,7 @@ class AuthHelper
      */
     public static function generateProfileHash(?string $role = AuthHelper::SESSION_TOKEN): string
     {
+        $role = is_string($role) && $role !== '' ? $role : self::SESSION_TOKEN;
         return substr($role, 0, 8);
     }
 
@@ -190,7 +191,8 @@ class AuthHelper
             return self::authTuple();
         }
         try {
-            $decoded = (array)JWT::decode($token, new Key($hash, Config::getParam('jwt.alg', 'HS256')));
+            $algorithm = (string)Config::getParam('jwt.alg', 'HS256');
+            $decoded = (array)JWT::decode($token, new Key($hash, $algorithm));
             if ($decoded !== $payload) {
                 self::logInvalidAuthInput('jwt_payload_mismatch');
                 return self::authTuple();

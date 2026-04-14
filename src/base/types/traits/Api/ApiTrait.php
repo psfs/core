@@ -40,7 +40,7 @@ trait ApiTrait
      */
     public function getApi()
     {
-        $model = explode("\\", $this->getModelNamespace());
+        $model = explode("\\", (string)($this->getModelNamespace() ?? ''));
 
         return $model[count($model) - 1];
     }

@@ -44,9 +44,9 @@ trait ServerTrait
      */
     public function getTs($formatted = false)
     {
-        return $formatted ? date('Y-m-d H:i:s', $this->getServer('REQUEST_TIME_FLOAT')) : $this->getServer(
-            'REQUEST_TIME_FLOAT'
-        );
+        $timestamp = $this->getServer('REQUEST_TIME_FLOAT');
+        $timestamp = is_numeric($timestamp) ? (int)$timestamp : null;
+        return $formatted ? date('Y-m-d H:i:s', $timestamp) : $timestamp;
     }
 
     /**
@@ -58,7 +58,8 @@ trait ServerTrait
         if (empty($serverName)) {
             $serverName = $this->getServer('HTTP_HOST');
         }
-        if (str_contains($serverName ?? '', ':')) {
+        $serverName = is_string($serverName) ? $serverName : '';
+        if (str_contains($serverName, ':')) {
             $pieces = explode(':', $serverName);
             $serverName = $pieces[0];
         }
@@ -91,7 +92,7 @@ trait ServerTrait
      */
     public function getMethod()
     {
-        return strtoupper($this->getServer('REQUEST_METHOD', 'GET'));
+        return strtoupper((string)$this->getServer('REQUEST_METHOD', 'GET'));
     }
 
     /**

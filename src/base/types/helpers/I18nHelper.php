@@ -52,6 +52,7 @@ class I18nHelper
     public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
     {
         $locale = $force ? $default : self::extractLocale($default);
+        $locale = is_string($locale) && $locale !== '' ? $locale : (string)($default ?: 'en_US');
         Inspector::stats('[i18NHelper] Set locale to project [' . $locale . ']', Inspector::SCOPE_DEBUG);
         // Load translations
         putenv("LC_ALL=" . $locale);
@@ -88,7 +89,7 @@ class I18nHelper
                 $field = self::utf8Encode($field);
             }
         } elseif (is_object($data)) {
-            $properties = get_class_vars($data);
+            $properties = get_class_vars(get_class($data));
             if (is_array($properties)) {
                 foreach (array_keys($properties) as $property) {
                     $data->$property = self::utf8Encode($data->$property);

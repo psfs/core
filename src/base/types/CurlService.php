@@ -114,8 +114,9 @@ abstract class CurlService extends SimpleService
         switch (strtoupper($this->type)) {
             case Request::VERB_GET:
                 if (!empty($this->params)) {
-                    $sep = !str_contains($this->getUrl(), '?') ? '?' : '';
-                    $this->setUrl($this->getUrl() . $sep . http_build_query($this->getParams()), false);
+                    $baseUrl = (string)($this->getUrl() ?? '');
+                    $sep = !str_contains($baseUrl, '?') ? '?' : '';
+                    $this->setUrl($baseUrl . $sep . http_build_query($this->getParams()), false);
                 }
                 break;
             case Request::VERB_POST:
@@ -141,7 +142,8 @@ abstract class CurlService extends SimpleService
         if ($this->isDebug()) {
             $verbose = $this->initVerboseMode();
         }
-        $this->setRawResult(curl_exec($this->getCon()));
+        $rawResult = curl_exec($this->getCon());
+        $this->setRawResult(is_string($rawResult) ? $rawResult : '');
         $this->setResult($this->isJson() ? json_decode($this->getRawResult(), true) : $this->getRawResult());
         if ($this->isDebug() && is_resource($verbose)) {
             $this->dumpVerboseLogs($verbose);

@@ -56,7 +56,9 @@ trait RouterExecutionTrait
     protected function executeCachedRoute($route, $action, $class, $params = null)
     {
         Inspector::stats('[Router] Executing route ' . $route, Inspector::SCOPE_DEBUG);
-        $action['params'] = array_merge($action['params'], $params, Request::getInstance()->getQueryParams());
+        $params = is_array($params) ? $params : [];
+        $actionParams = is_array($action['params'] ?? null) ? $action['params'] : [];
+        $action['params'] = array_merge($actionParams, $params, Request::getInstance()->getQueryParams());
         Security::getInstance()->setSessionKey(Cache::CACHE_SESSION_VAR, $action);
         $cache = Cache::needCache();
         $execute = true;

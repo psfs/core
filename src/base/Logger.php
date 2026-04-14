@@ -63,7 +63,7 @@ class Logger
         } else {
             throw new ConfigException(t('Error creating logger'));
         }
-        $this->logLevel = strtoupper(Config::getParam('log.level', 'NOTICE'));
+        $this->logLevel = strtoupper((string)Config::getParam('log.level', 'NOTICE'));
     }
 
     public function __destruct()
@@ -163,12 +163,12 @@ class Logger
         if (null === $context) {
             $context = [];
         }
-        if (Config::getParam('profiling.enable') && 'DEBUG' === Config::getParam('log.level', 'NOTICE')) {
+        if (Config::getParam('profiling.enable') && 'DEBUG' === (string)Config::getParam('log.level', 'NOTICE')) {
             Inspector::stats($msg, Inspector::SCOPE_DEBUG);
         }
         $level = LogHelper::calculateLogLevel($type);
         if (in_array($level, [\Monolog\Level::Critical, \Monolog\Level::Error, \Monolog\Level::Emergency], true) &&
-            strlen(Config::getParam('log.slack.hook', '')) > 0) {
+            strlen((string)Config::getParam('log.slack.hook', '')) > 0) {
             SlackHelper::getInstance()->trace($msg, '', '', $context);
         }
         self::getInstance()->addLog($msg, $level, $context, $force);

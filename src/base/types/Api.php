@@ -187,7 +187,7 @@ abstract class Api extends Singleton
             Logger::log($e->getMessage(), LOG_CRIT, $context);
         }
 
-        return $this->json(new JsonResponse($model, $saved, $saved, 0, $message), $status);
+        return $this->json(new JsonResponse($model, $saved, $saved ? 1 : 0, 0, $message), $status);
     }
 
     /**
@@ -241,7 +241,7 @@ abstract class Api extends Singleton
             $message = t('Referenced model for update was not found');
         }
 
-        return $this->json(new JsonResponse($model, $updated, $updated, 0, $message), $status);
+        return $this->json(new JsonResponse($model, $updated, $updated ? 1 : 0, 0, $message), $status);
     }
 
     /**
@@ -283,7 +283,7 @@ abstract class Api extends Singleton
             }
         }
 
-        return $this->json(new JsonResponse(null, $deleted, $deleted, 0, $message), ($deleted) ? 200 : 400);
+        return $this->json(new JsonResponse(null, $deleted, $deleted ? 1 : 0, 0, $message), ($deleted) ? 200 : 400);
     }
 
     /**
@@ -321,6 +321,9 @@ abstract class Api extends Singleton
     {
         $return = [];
         $modelPk = ApiHelper::extractPrimaryKeyColumnName($this->getTableMap());
+        if (!$modelPk instanceof \Propel\Runtime\Map\ColumnMap) {
+            return $return;
+        }
         foreach ($this->list->getData() as $data) {
             $return[] = ApiHelper::mapArrayObject($this->getModelNamespace(), $modelPk, $this->query, $data);
         }
