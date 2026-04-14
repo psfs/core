@@ -158,26 +158,16 @@ class MetadataReader
             return $default;
         }
         return match ($tag) {
-            'http' => self::readHttpMethodFromDoc($doc, $default),
-            'visible' => self::readVisibleFromDoc($doc),
-            'cache' => (bool)self::readFromDocValue('cache', $doc, $default ?? false),
-            default => self::readFromDocValue($tag, $doc, $default),
+            'http' => MetadataDocParser::readHttpMethod($doc, $default),
+            'visible' => MetadataDocParser::readVisibilityFlag($doc),
+            'cache' => (bool)MetadataDocParser::readTagValue('cache', $doc, $default ?? false),
+            default => MetadataDocParser::readTagValue($tag, $doc, $default),
         };
-    }
-
-    private static function readFromDocValue(string $needle, string $doc, mixed $default): mixed
-    {
-        preg_match('/@' . preg_quote($needle, '/') . '\ (.*)(\n|\r)/im', $doc, $matches);
-        return !empty($matches) ? $matches[1] : $default;
     }
 
     private static function readVarTypeFromDoc(string $doc): ?string
     {
-        $type = null;
-        if (preg_match(InjectorHelper::VAR_PATTERN, $doc, $matches) === 1) {
-            list(, $type) = $matches;
-        }
-        return $type;
+        return MetadataDocParser::readVarType($doc);
     }
 
     private static function extractPropertyType(?ReflectionType $type): ?string
@@ -201,16 +191,4 @@ class MetadataReader
         Logger::log('[LegacyMetadata] ' . $context, LOG_NOTICE);
     }
 
-    private static function readHttpMethodFromDoc(string $doc, mixed $default = null): string
-    {
-        preg_match('/@(GET|POST|PUT|DELETE|HEAD|PATCH)(\n|\r)/i', $doc, $routeMethod);
-        return !empty($routeMethod) ? strtoupper($routeMethod[1]) : ($default ?? 'ALL');
-    }
-
-    private static function readVisibleFromDoc(string $doc): bool
-    {
-        preg_match('/@visible\ (.*)(\n|\r)/im', $doc, $matches);
-        $value = !empty($matches) ? $matches[1] : '';
-        return !str_contains((string)$value, 'false');
-    }
 }

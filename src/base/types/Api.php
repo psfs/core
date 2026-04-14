@@ -14,6 +14,7 @@ use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Label;
 use PSFS\base\types\helpers\attributes\Route as RouteAttribute;
+use PSFS\base\types\traits\Api\ApiCrudResponseTrait;
 use PSFS\base\types\traits\Api\Crud\ApiListTrait;
 use PSFS\base\types\traits\Api\ManagerTrait;
 
@@ -22,7 +23,7 @@ use PSFS\base\types\traits\Api\ManagerTrait;
  */
 abstract class Api extends Singleton
 {
-    use ManagerTrait, ApiListTrait;
+    use ManagerTrait, ApiListTrait, ApiCrudResponseTrait;
 
     const API_LIST_NAME_FIELD = '__name__';
     const API_FIELDS_RESULT_FIELD = '__fields';
@@ -69,27 +70,15 @@ abstract class Api extends Singleton
 
     private function checkActions($method)
     {
-        switch ($method) {
-            default:
-            case 'modelList':
-                $this->action = self::API_ACTION_LIST;
-                break;
-            case 'get':
-                $this->action = self::API_ACTION_GET;
-                break;
-            case 'post':
-                $this->action = self::API_ACTION_POST;
-                break;
-            case 'put':
-                $this->action = self::API_ACTION_PUT;
-                break;
-            case 'delete':
-                $this->action = self::API_ACTION_DELETE;
-                break;
-            case 'bulk':
-                $this->action = self::API_ACTION_BULK;
-                break;
-        }
+        $actionMap = [
+            'modelList' => self::API_ACTION_LIST,
+            'get' => self::API_ACTION_GET,
+            'post' => self::API_ACTION_POST,
+            'put' => self::API_ACTION_PUT,
+            'delete' => self::API_ACTION_DELETE,
+            'bulk' => self::API_ACTION_BULK,
+        ];
+        $this->action = $actionMap[(string)$method] ?? self::API_ACTION_LIST;
     }
 
     /**
@@ -175,16 +164,12 @@ abstract class Api extends Singleton
                 $message = t('Selected model could not be saved');
             }
         } catch (\Exception $e) {
-            if (Config::getParam('debug')) {
-                $message = t('An error occurred while saving the item: ') . '<br>' . $e->getMessage();
-            } else {
-                $message = t('An error occurred while saving the item: ') . '<br>' . $e->getCode();
-            }
-            $context = [];
-            if (null !== $e->getPrevious()) {
-                $context[] = $e->getPrevious()->getMessage();
-            }
-            Logger::log($e->getMessage(), LOG_CRIT, $context);
+            $message = $this->buildMutationErrorMessage(
+                'An error occurred while saving the item: ',
+                $e,
+                (bool)Config::getParam('debug')
+            );
+            $this->logCriticalException($e);
         }
 
         return $this->json(new JsonResponse($model, $saved, $saved ? 1 : 0, 0, $message), $status);
@@ -224,18 +209,12 @@ abstract class Api extends Singleton
                     $message = t('An error occurred while updating the item, please check logs');
                 }
             } catch (\Exception $e) {
-                if (Config::getParam('debug')) {
-                    $message = t('An error occurred while updating the item: ') . '<br>' . $e->getMessage();
-                } else {
-                    $message = t(
-                            'An error occurred while updating the item, please check logs: '
-                        ) . '<br>' . $e->getCode();
-                }
-                $context = [];
-                if (null !== $e->getPrevious()) {
-                    $context[] = $e->getPrevious()->getMessage();
-                }
-                Logger::log($e->getMessage(), LOG_CRIT, $context);
+                $message = $this->buildMutationErrorMessage(
+                    'An error occurred while updating the item, please check logs: ',
+                    $e,
+                    (bool)Config::getParam('debug')
+                );
+                $this->logCriticalException($e);
             }
         } else {
             $message = t('Referenced model for update was not found');
@@ -275,11 +254,7 @@ abstract class Api extends Singleton
                     $deleted = true;
                 }
             } catch (\Exception $e) {
-                $context = [];
-                if (null !== $e->getPrevious()) {
-                    $context[] = $e->getPrevious()->getMessage();
-                }
-                Logger::log($e->getMessage(), LOG_CRIT, $context);
+                $this->logCriticalException($e);
             }
         }
 

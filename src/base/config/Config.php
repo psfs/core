@@ -7,6 +7,7 @@ use PSFS\base\Logger;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\traits\Config\ConfigPersistenceTrait;
 use PSFS\base\types\traits\SingletonTrait;
 use PSFS\base\types\traits\TestTrait;
 
@@ -17,6 +18,7 @@ class Config
 {
     use SingletonTrait;
     use TestTrait;
+    use ConfigPersistenceTrait;
 
     const DEFAULT_LANGUAGE = 'en';
     const DEFAULT_ENCODE = 'UTF-8';
@@ -150,42 +152,6 @@ class Config
         return !empty($this->config);
     }
 
-    /**
-     * @param array $data
-     * @param array $extra
-     * @return array
-     */
-    protected static function saveConfigParams(array $data, $extra = null)
-    {
-        Logger::log('Saving required config parameters');
-        // Store newly provided configuration parameters.
-        if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
-            foreach ($extra['label'] as $index => $field) {
-                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
-                    $data[$field] = $extra['value'][$index];
-                }
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * @param array $data
-     * @return array
-     */
-    protected static function saveExtraParams(array $data)
-    {
-        $finalData = array();
-        if (!empty($data)) {
-            Logger::log('Saving extra configuration parameters');
-            foreach (self::iterateConfigEntries($data) as [$key, $value]) {
-                if (null !== $value) {
-                    $finalData[$key] = $value;
-                }
-            }
-        }
-        return $finalData;
-    }
 
     /**
      * @return boolean
@@ -324,20 +290,6 @@ class Config
         return $done;
     }
 
-    private static function shouldPersistConfigEntry(mixed $value, string $key): bool
-    {
-        if (in_array($key, self::$required, true)) {
-            return true;
-        }
-
-        // Keep explicit false/0 flags (security toggles rely on them).
-        if (is_bool($value) || is_int($value) || is_float($value)) {
-            return true;
-        }
-
-        return $value !== null && $value !== '';
-    }
-
     protected function createRepository(): ConfigRepositoryInterface
     {
         $configPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::CONFIG_FILE;
@@ -352,14 +304,4 @@ class Config
         return $fileRepository;
     }
 
-    /**
-     * @param array $data
-     * @return \Generator
-     */
-    private static function iterateConfigEntries(array $data): \Generator
-    {
-        foreach ($data as $key => $value) {
-            yield [$key, $value];
-        }
-    }
 }

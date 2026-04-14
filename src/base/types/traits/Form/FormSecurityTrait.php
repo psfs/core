@@ -13,6 +13,7 @@ use PSFS\base\types\interfaces\FormType;
  */
 trait FormSecurityTrait
 {
+    use FormCsrfFlowTrait;
     /**
      * Contract: provided by FormType implementations.
      */
@@ -59,42 +60,27 @@ trait FormSecurityTrait
             return $this;
         }
 
-        $tokenField = $this->getName() . '_token';
-        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
+        [$tokenField, $tokenKeyField] = $this->resolveCsrfFieldNames();
         $formKey = $this->getCsrfFormKey();
         $storage = $this->purgeExpiredCsrfStorage($this->getCsrfStorage());
 
         $submittedToken = $this->extractSubmittedToken($tokenField);
         $submittedTokenKey = $this->extractSubmittedToken($tokenKeyField);
-        $storedToken = '';
-        $storedValid = false;
-        if ($this->isValidCsrfTokenKey($submittedTokenKey) && array_key_exists($submittedTokenKey, $storage)) {
-            $entry = $storage[$submittedTokenKey];
-            $storedToken = (string)($entry['token'] ?? '');
-            $expiresAt = (int)($entry['expires_at'] ?? 0);
-            $storedForm = (string)($entry['form'] ?? '');
-            $storedValid = (
-                $this->isValidCsrfTokenValue($storedToken)
-                && $expiresAt >= time()
-                && $storedForm === $formKey
-            );
-        }
-
-        if ($this->isValidCsrfTokenValue($submittedToken) && $storedValid && hash_equals(
-                $storedToken,
-                $submittedToken
-            )) {
+        $entry = ($this->isValidCsrfTokenKey($submittedTokenKey) && array_key_exists($submittedTokenKey, $storage))
+            ? $storage[$submittedTokenKey]
+            : null;
+        $storedToken = is_array($entry) ? (string)($entry['token'] ?? '') : '';
+        if ($this->isValidCsrfTokenValue($submittedToken)
+            && $this->isStoredTokenEntryValid($entry, $formKey)
+            && hash_equals($storedToken, $submittedToken)
+        ) {
             // Keep the same token during POST build to preserve legacy form flow: build() -> hydrate() -> isValid().
             $this->crfs = $storedToken;
             $tokenKey = $submittedTokenKey;
         } else {
             $this->crfs = $this->generateRandomToken();
             $tokenKey = $this->generateTokenKey();
-            $storage[$tokenKey] = [
-                'token' => $this->crfs,
-                'expires_at' => time() + $this->getCsrfExpiration(),
-                'form' => $formKey,
-            ];
+            $storage[$tokenKey] = $this->buildCsrfStorageEntry($this->crfs, $formKey);
             $this->setCsrfStorage($storage);
         }
 
@@ -116,8 +102,7 @@ trait FormSecurityTrait
     public function isValid()
     {
         $valid = true;
-        $tokenField = $this->getName() . '_token';
-        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
+        [$tokenField, $tokenKeyField] = $this->resolveCsrfFieldNames();
         // Check crfs token
         if (!$this->existsFormToken($tokenField)) {
             $this->setError($tokenField, t('Invalid form'));
@@ -144,7 +129,7 @@ trait FormSecurityTrait
         if ($this->method !== 'POST') {
             return true;
         }
-        $tokenKeyField = $this->getName() . $this->csrfTokenKeyFieldSuffix();
+        [, $tokenKeyField] = $this->resolveCsrfFieldNames();
         if (!$this->hasTokenFields($tokenField, $tokenKeyField)) {
             return false;
         }
@@ -171,16 +156,13 @@ trait FormSecurityTrait
             return false;
         }
 
-        $sessionToken = (string)($entry['token'] ?? '');
-        $expiresAt = (int)($entry['expires_at'] ?? 0);
-        $storedForm = (string)($entry['form'] ?? '');
-
-        if (!$this->isValidCsrfTokenValue($sessionToken) || $expiresAt < time() || $storedForm !== $formKey) {
+        if (!$this->isStoredTokenEntryValid($entry, $formKey)) {
             unset($storage[$submittedTokenKey]);
             $this->setCsrfStorage($storage);
             return false;
         }
 
+        $sessionToken = (string)($entry['token'] ?? '');
         $valid = hash_equals($sessionToken, $submittedToken);
         unset($storage[$submittedTokenKey]);
         $this->setCsrfStorage($storage);

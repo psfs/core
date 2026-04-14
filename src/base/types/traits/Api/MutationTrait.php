@@ -23,6 +23,7 @@ use PSFS\base\types\helpers\attributes\Label;
  */
 trait MutationTrait
 {
+    use MutationI18nTrait;
     /**
      * @var string
      * @header X-API-LANG
@@ -276,25 +277,14 @@ trait MutationTrait
     protected function checkI18n(ModelCriteria &$query)
     {
         $this->extractApiLang();
-        $model = $this->getModelNamespace();
-        $modelI18n = $model . 'I18n';
-        if (method_exists($query, 'useI18nQuery')) {
-            $query->useI18nQuery($this->lang);
-            $modelParts = explode('\\', $modelI18n);
-            $i18nMapClass = str_replace(end($modelParts), 'Map\\' . end($modelParts), $modelI18n) . 'TableMap';
-
-            $modelI18nTableMap = $i18nMapClass::getTableMap();
-            foreach ($modelI18nTableMap->getColumns() as $columnMap) {
-                if (!$columnMap->isPrimaryKey()) {
-                    $query->withColumn($columnMap->getFullyQualifiedName(), ApiHelper::getColumnMapName($columnMap));
-                } elseif (!$columnMap->isForeignKey()) {
-                    $query->withColumn(
-                        'IFNULL(' . $columnMap->getFullyQualifiedName() . ', "' . $this->lang . '")',
-                        ApiHelper::getColumnMapName($columnMap)
-                    );
-                }
-            }
+        if (!$this->hasI18nQuerySupport($query)) {
+            return;
         }
+        $query->useI18nQuery($this->lang);
+        $model = (string)$this->getModelNamespace();
+        $i18nMapClass = $this->resolveI18nMapClassName($model);
+        $modelI18nTableMap = $i18nMapClass::getTableMap();
+        $this->appendI18nColumnsToQuery($query, $modelI18nTableMap, (string)$this->lang);
     }
 
     protected function cleanData(array &$data)
@@ -319,21 +309,11 @@ trait MutationTrait
         $this->cleanData($data);
         $model->fromArray($data, ApiHelper::getFieldTypes());
         $tableMap = $this->getTableMap();
+        if (!$tableMap instanceof TableMap) {
+            return;
+        }
         try {
-            if ($tableMap->hasRelation($tableMap->getPhpName() . 'I18n')) {
-                $relateI18n = $tableMap->getRelation($tableMap->getPhpName() . 'I18n');
-                $i18NTableMap = $relateI18n->getLocalTable();
-                $model->setLocale($this->resolveLocaleFromInput($data));
-                foreach ($i18NTableMap->getColumns() as $columnMap) {
-                    $method = 'set' . $columnMap->getPhpName();
-                    $dtoColumnName = ApiHelper::getColumnMapName($columnMap);
-                    if (array_key_exists($dtoColumnName, $data)
-                        && method_exists($model, $method)
-                        && !($columnMap->isPrimaryKey() && $columnMap->isForeignKey())) {
-                        $model->$method($data[$dtoColumnName]);
-                    }
-                }
-            }
+            $this->applyI18nFieldsToModel($model, $tableMap, $data, $this->resolveLocaleFromInput($data));
         } catch (Exception $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
         }
