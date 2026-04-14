@@ -38,11 +38,8 @@ abstract class Controller extends Singleton implements ControllerInterface
      */
     public function render($template, array $vars = array(), $cookies = array(), $domain = null)
     {
-        $vars['__menu__'] = $this->getMenu();
-        if (Config::getParam('profiling.enable')) {
-            $vars['__profiling__'] = Inspector::getStats();
-        }
-        $domain = (null === $domain) ? $this->getDomain() : $domain;
+        $domain = $this->resolveRenderDomain($domain);
+        $vars = $this->buildTemplateVars($vars, true);
         return $this->tpl->render($domain . $template, $vars, $cookies);
     }
 
@@ -70,8 +67,8 @@ abstract class Controller extends Singleton implements ControllerInterface
      */
     public function dump($template, array $vars = array(), $domain = null)
     {
-        $vars['__menu__'] = $this->getMenu();
-        $domain = $domain ?: $this->getDomain();
+        $vars = $this->buildTemplateVars($vars, false);
+        $domain = $this->resolveRenderDomain($domain);
         return $this->tpl->dump($domain . $template, $vars);
     }
 
@@ -102,6 +99,21 @@ abstract class Controller extends Singleton implements ControllerInterface
     public function getDomain()
     {
         return "@{$this->domain}/";
+    }
+
+    private function resolveRenderDomain(?string $domain): string
+    {
+        return $domain ?? $this->getDomain();
+    }
+
+    private function buildTemplateVars(array $vars, bool $includeProfiling): array
+    {
+        $vars['__menu__'] = $this->getMenu();
+        if ($includeProfiling && Config::getParam('profiling.enable')) {
+            $vars['__profiling__'] = Inspector::getStats();
+        }
+
+        return $vars;
     }
 
 }

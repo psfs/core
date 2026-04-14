@@ -5,6 +5,7 @@ namespace PSFS\base\types;
 use PSFS\base\exception\AccessDeniedException;
 use PSFS\base\exception\UserAuthException;
 use PSFS\base\types\interfaces\AuthInterface;
+use PSFS\base\types\traits\LoggedGuardTrait;
 use PSFS\base\types\traits\SecureTrait;
 
 /**
@@ -13,6 +14,7 @@ use PSFS\base\types\traits\SecureTrait;
 abstract class AuthController extends Controller implements AuthInterface
 {
     use SecureTrait;
+    use LoggedGuardTrait;
 
     /**
      * @throws AccessDeniedException|UserAuthException
@@ -20,9 +22,11 @@ abstract class AuthController extends Controller implements AuthInterface
     public function init()
     {
         parent::init();
-        if (!$this->isLogged()) {
-            throw new UserAuthException(t("User not logged in"));
-        }
+        $this->assertUserLoggedIn();
     }
 
+    protected function assertUserLoggedIn(): void
+    {
+        $this->ensureLoggedOrThrow(new UserAuthException(t("User not logged in")));
+    }
 }

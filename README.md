@@ -1,4 +1,5 @@
-# PSFS Core
+# Php Simple Fast and Secure
+## PSFS Core
 
 [![Build Status](https://scrutinizer-ci.com/g/psfs/core/badges/build.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/build-status/master)
 [![Security Pipeline](https://github.com/psfs/core/actions/workflows/security-pipeline.yml/badge.svg)](https://github.com/psfs/core/actions/workflows/security-pipeline.yml)
