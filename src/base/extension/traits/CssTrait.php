@@ -94,18 +94,19 @@ trait CssTrait
     protected function loopCssLines($file)
     {
         $handle = @fopen($file, 'r');
-        if ($handle) {
-            while (!feof($handle)) {
-                $line = fgets($handle);
-                $urls = array();
-                if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
-                    foreach ($urls as $source) {
-                        $this->extractCssResources($source, $file);
-                    }
+        if (false === $handle) {
+            return;
+        }
+        while (!feof($handle)) {
+            $line = fgets($handle);
+            $urls = array();
+            if (preg_match_all('#url\((.*?)\)#', $line, $urls, PREG_SET_ORDER)) {
+                foreach ($urls as $source) {
+                    $this->extractCssResources($source, $file);
                 }
             }
-            fclose($handle);
         }
+        fclose($handle);
     }
 
     /**

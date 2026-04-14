@@ -51,7 +51,7 @@ class JsonResponse extends Dto
         parent::__construct(false);
         $this->data = $this->parseData($data);
         $this->success = $result;
-        $this->total = $total ?: (is_array($this->data) ? count($this->data) : ($total ?? 0));
+        $this->total = $total ?: (is_countable($this->data) ? count($this->data) : ($total ?? 0));
         $this->pages = $pages;
         if (null !== $message) {
             $this->message = $message;

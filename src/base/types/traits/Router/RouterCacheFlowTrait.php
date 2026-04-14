@@ -169,7 +169,7 @@ trait RouterCacheFlowTrait
     private function isRoutingMetaFresh(): bool
     {
         $meta = $this->loadRoutingMeta();
-        if (!is_array($meta) || empty($meta['fingerprint'])) {
+        if (empty($meta['fingerprint'])) {
             return false;
         }
         $currentFingerprint = $this->calculateRoutingFingerprint();

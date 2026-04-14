@@ -102,7 +102,7 @@ class SwooleRequestHydrator
             return;
         }
         $decoded = base64_decode(trim((string)$matches[1]), true);
-        if (!is_string($decoded) || !str_contains($decoded, ':')) {
+        if (false === $decoded || !str_contains($decoded, ':')) {
             unset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'], $_SERVER['AUTH_TYPE']);
             return;
         }

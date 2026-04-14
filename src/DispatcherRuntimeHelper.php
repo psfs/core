@@ -56,7 +56,7 @@ class DispatcherRuntimeHelper
         }
 
         $path = parse_url($uri, PHP_URL_PATH);
-        if (!is_string($path) || '' === $path) {
+        if (null === $path || '' === $path) {
             return false;
         }
 

@@ -194,8 +194,8 @@ trait ApiTrait
     protected function _get($primaryKey)
     {
         $this->hydrateModel($primaryKey);
-
-        return ($this->getModel() instanceof ActiveRecordInterface) ? $this->getModel() : null;
+        $model = $this->getModel();
+        return null !== $model ? $model : null;
     }
 
     /**

@@ -54,7 +54,7 @@ class ResponseCookieHelper
 
         if (str_contains($domain, '://')) {
             $parsed = parse_url($domain);
-            if (!is_array($parsed) || empty($parsed['host'])) {
+            if (false === $parsed || empty($parsed['host'])) {
                 return null;
             }
             $domain = (string)$parsed['host'];

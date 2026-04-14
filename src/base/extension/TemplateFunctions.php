@@ -243,12 +243,13 @@ class TemplateFunctions
     private static function processCssLines($filenamePath): void
     {
         $handle = @fopen($filenamePath, 'r');
-        if ($handle) {
-            while (!feof($handle)) {
-                AssetsParser::extractCssLineResource($handle, $filenamePath);
-            }
-            fclose($handle);
+        if (false === $handle) {
+            return;
         }
+        while (!feof($handle)) {
+            AssetsParser::extractCssLineResource($handle, $filenamePath);
+        }
+        fclose($handle);
     }
 
     /**

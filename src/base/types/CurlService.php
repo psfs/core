@@ -151,7 +151,7 @@ abstract class CurlService extends SimpleService
         Logger::log(
             $this->getUrl() . ' response: ',
             LOG_DEBUG,
-            is_array($this->getRawResult()) ? $this->getRawResult() : [$this->getRawResult()]
+            [$this->getRawResult()]
         );
         $this->info = array_merge($this->info, curl_getinfo($this->con));
     }

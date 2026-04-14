@@ -53,11 +53,9 @@ trait FieldModelHelperTrait
             $text = preg_replace('/\ /', '%', $text);
             $query->add($tableField, '%' . $text . '%', Criteria::LIKE);
         } else {
-            if (null !== $column->getValueSet()) {
-                $valueSet = $column->getValueSet();
-                if (in_array($value, $valueSet, true)) {
-                    $value = array_search($value, $valueSet);
-                }
+            $valueSet = $column->getValueSet();
+            if (in_array($value, $valueSet, true)) {
+                $value = array_search($value, $valueSet);
             }
             $query->add($tableField, $value);
         }

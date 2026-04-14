@@ -54,14 +54,15 @@ trait FieldMapperHelperTrait
         array $query,
         array|ActiveRecordInterface $data = []
     ) {
+        $rowData = is_array($data) ? $data : $data->toArray();
         $formatter = new ObjectFormatter();
         $formatter->setClass($namespace);
-        $data[$modelPk->getPhpName()] = $data[Api::API_MODEL_KEY_FIELD];
-        $dataFetcher = new ArrayDataFetcher($data);
+        $rowData[$modelPk->getPhpName()] = $rowData[Api::API_MODEL_KEY_FIELD] ?? null;
+        $dataFetcher = new ArrayDataFetcher($rowData);
         $formatter->setDataFetcher($dataFetcher);
 
         $objTableMap = get_class($formatter->getTableMap());
-        $objData = is_array($data) ? $data : $data->toArray();
+        $objData = $rowData;
         foreach ($objTableMap::getFieldNames() as $field) {
             if (!array_key_exists($field, $objData)) {
                 $objData[$field] = null;
@@ -69,7 +70,7 @@ trait FieldMapperHelperTrait
         }
 
         $obj = @$formatter->getAllObjectsFromRow($objData);
-        $result = self::mapResult($obj, $data);
+        $result = self::mapResult($obj, $rowData);
         if (!preg_match('/' . $modelPk->getPhpName() . '/i', $query[Api::API_FIELDS_RESULT_FIELD])) {
             unset($result[$modelPk->getPhpName()]);
         }

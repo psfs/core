@@ -40,7 +40,7 @@ trait RouterExecutionTrait
     private function hasToRunPreChecks($class)
     {
         $implemented = class_implements($class);
-        if (!is_array($implemented)) {
+        if (false === $implemented) {
             return false;
         }
         return in_array(PreConditionedRunInterface::class, $implemented, true);

@@ -165,7 +165,6 @@ class Security
         $users = $this->getAdmins();
         $logged = $this->getAdmin();
         if (is_array($logged)
-            && is_array($users)
             && array_key_exists('alias', $logged)
             && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];
@@ -183,7 +182,6 @@ class Security
         $users = $this->getAdmins();
         $logged = $this->getAdmin();
         if (is_array($logged)
-            && is_array($users)
             && array_key_exists('alias', $logged)
             && array_key_exists($logged['alias'], $users)) {
             $security = $users[$logged['alias']]['profile'];

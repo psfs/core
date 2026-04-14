@@ -53,7 +53,7 @@ class AuthHelper
 
     public static function checkBasicAuth(?string $user = null, ?string $pass = null, ?array $admins = []): array
     {
-        $admins = is_array($admins) ? $admins : [];
+        $admins = $admins ?? [];
         [$candidateUser, $candidatePass] = self::resolveBasicCredentials($user, $pass, $admins);
         if (null === $candidateUser || !array_key_exists((string)$candidateUser, $admins)) {
             return self::authTuple();

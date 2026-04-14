@@ -80,7 +80,7 @@ class RequestHelper
         }
 
         $parsed = parse_url(trim($origin));
-        if (!is_array($parsed) || empty($parsed['scheme']) || empty($parsed['host'])) {
+        if (false === $parsed || empty($parsed['scheme']) || empty($parsed['host'])) {
             return null;
         }
 

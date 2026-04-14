@@ -258,7 +258,7 @@ class Router
         if ('' === $slug) {
             return $baseUrl . '/';
         }
-        if (!is_array($this->slugs) || !array_key_exists($slug, $this->slugs)) {
+        if (!array_key_exists($slug, $this->slugs)) {
             throw new RouterException(t('Specified route does not exist'));
         }
         $url = $baseUrl . $this->slugs[$slug];
