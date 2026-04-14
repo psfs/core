@@ -3,9 +3,11 @@
 namespace PSFS\base\types\traits\Api;
 
 use Exception;
+use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\ColumnMap;
 use PSFS\base\Logger;
 use PSFS\base\Router;
+use PSFS\base\dto\Dto;
 use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\DocumentorHelper;
@@ -18,6 +20,11 @@ use ReflectionException;
  */
 trait DocumentorHelperTrait
 {
+    /**
+     * Contract: provided by SwaggerDtoComposerTrait.
+     */
+    abstract protected function checkDtoAttributes(array $dto, array $modelDto, string $dtoName): array;
+
     public static $nativeMethods = [
         'modelList', // Api list
         'get', // Api get
@@ -61,7 +68,7 @@ trait DocumentorHelperTrait
      */
     protected function checkDeprecated($comments = '')
     {
-        return false != preg_match('/@deprecated\n/i', $comments);
+        return preg_match('/@deprecated\n/i', $comments) === 1;
     }
 
     /**
@@ -115,7 +122,7 @@ trait DocumentorHelperTrait
     {
         $properties = [];
         $reflector = new ReflectionClass($class);
-        if ($reflector->isSubclassOf(self::DTO_INTERFACE)) {
+        if ($reflector->isSubclassOf(Dto::class)) {
             $properties = array_merge($properties, InjectorHelper::extractVariables($reflector));
         }
 
@@ -193,7 +200,7 @@ trait DocumentorHelperTrait
         try {
             $reflector = new ReflectionClass($namespace);
             // Checks if reflector is a subclass of propel ActiveRecords
-            if (null !== $reflector && $reflector->isSubclassOf(self::MODEL_INTERFACE)) {
+            if (null !== $reflector && $reflector->isSubclassOf(ActiveRecordInterface::class)) {
                 $tableMap = $namespace::TABLE_MAP;
                 $tableMap = $tableMap::getTableMap();
 
@@ -212,7 +219,7 @@ trait DocumentorHelperTrait
                     }
                     $payload[ApiHelper::getColumnMapName($field)] = $info;
                 }
-            } elseif (null !== $reflector && $reflector->isSubclassOf(self::DTO_INTERFACE)) {
+            } elseif (null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
                 $payload = $this->extractDtoProperties($namespace);
             }
         } catch (Exception $e) {

@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Helper;
 use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\I18nHelper;
 use PSFS\base\types\helpers\ServerHelper;
 
 trait I18nLocaleTrait
@@ -27,8 +28,8 @@ trait I18nLocaleTrait
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {
             $session = Security::getInstance();
-            $sessionLocale = $session->getSessionKey(self::PSFS_SESSION_LOCALE_KEY);
-            $sessionLanguage = $session->getSessionKey(self::PSFS_SESSION_LANGUAGE_KEY);
+            $sessionLocale = $session->getSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY);
+            $sessionLanguage = $session->getSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY);
             if (!empty($sessionLanguage) && (empty($sessionLocale) || stripos(
                         (string)$sessionLocale,
                         (string)$sessionLanguage . '_'
@@ -53,7 +54,7 @@ trait I18nLocaleTrait
         if (!in_array($locale, array_merge($defaultLocales, self::$langs), true)) {
             $locale = Config::getParam('default.language', $default);
         }
-        return $locale;
+        return is_string($locale) ? $locale : (string)Config::getParam('default.language', 'en_US');
     }
 
     private static function normalizeLocale(string $locale): string

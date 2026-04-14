@@ -23,9 +23,9 @@ class SwoolePidManager
             return false;
         }
         if (function_exists('posix_kill')) {
-            return @posix_kill($pid, 0);
+            return posix_kill($pid, 0);
         }
-        $result = @exec('kill -0 ' . (int)$pid . ' 2>/dev/null', $output, $code);
+        $result = exec('kill -0 ' . (int)$pid . ' 2>/dev/null', $output, $code);
         return $result !== false && $code === 0;
     }
 
@@ -36,7 +36,9 @@ class SwoolePidManager
             return null;
         }
         if (!self::isRunning($pid)) {
-            @unlink($pidFile);
+            if (is_file($pidFile) && unlink($pidFile) === false) {
+                // Keep stale pid file if unable to remove.
+            }
             return null;
         }
         return $pid;
@@ -45,16 +47,16 @@ class SwoolePidManager
     public static function writePid(string $pidFile, int $pid): void
     {
         $dir = dirname($pidFile);
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
+        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+            return;
         }
         file_put_contents($pidFile, (string)$pid);
     }
 
     public static function removePid(string $pidFile): void
     {
-        if (is_file($pidFile)) {
-            @unlink($pidFile);
+        if (is_file($pidFile) && unlink($pidFile) === false) {
+            // Ignore remove failures to keep shutdown flow non-fatal.
         }
     }
 }

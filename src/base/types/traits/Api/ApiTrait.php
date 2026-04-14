@@ -105,8 +105,9 @@ trait ApiTrait
     {
         $tablemap = $this->getTableMap();
         $this->bulkSavedCount = 0;
+        $databaseName = $this->resolveTableMapDatabaseName($tablemap);
         foreach ($this->list as &$model) {
-            $con = Propel::getWriteConnection($tablemap::DATABASE_NAME);
+            $con = Propel::getWriteConnection($databaseName);
             try {
                 $model->save($con);
                 $con->commit();
@@ -279,5 +280,13 @@ trait ApiTrait
             }
         }
         return $select;
+    }
+
+    protected function resolveTableMapDatabaseName(TableMap $tableMap): string
+    {
+        if (defined(get_class($tableMap) . '::DATABASE_NAME')) {
+            return constant(get_class($tableMap) . '::DATABASE_NAME');
+        }
+        return Config::getParam('database.name', 'default');
     }
 }

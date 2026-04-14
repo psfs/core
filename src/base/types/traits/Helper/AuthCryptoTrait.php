@@ -2,6 +2,8 @@
 
 namespace PSFS\base\types\traits\Helper;
 
+use PSFS\base\types\helpers\AuthHelper;
+
 trait AuthCryptoTrait
 {
     private static function isPasswordHash(string $hash): bool
@@ -12,7 +14,7 @@ trait AuthCryptoTrait
 
     private static function secureEncrypt(string $data, string $key): false|string
     {
-        $ivLen = openssl_cipher_iv_length(self::CRYPTO_CIPHER);
+        $ivLen = openssl_cipher_iv_length(AuthHelper::CRYPTO_CIPHER);
         if (false === $ivLen || $ivLen < 1) {
             return false;
         }
@@ -24,13 +26,13 @@ trait AuthCryptoTrait
         $tag = '';
         $encrypted = openssl_encrypt(
             $data,
-            self::CRYPTO_CIPHER,
+            AuthHelper::CRYPTO_CIPHER,
             hash('sha256', $key, true),
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
             '',
-            self::CRYPTO_TAG_LENGTH
+            AuthHelper::CRYPTO_TAG_LENGTH
         );
         if (false === $encrypted) {
             return false;
@@ -66,7 +68,7 @@ trait AuthCryptoTrait
 
         $decrypted = openssl_decrypt(
             $encrypted,
-            self::CRYPTO_CIPHER,
+            AuthHelper::CRYPTO_CIPHER,
             hash('sha256', $key, true),
             OPENSSL_RAW_DATA,
             $iv,

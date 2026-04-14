@@ -13,10 +13,18 @@ trait ApiListTrait
 {
     use MutationTrait;
 
-    const API_COMBO_FIELD = '__combo';
-    const API_ORDER_FIELD = '__order';
-    const API_PAGE_FIELD = '__page';
-    const API_LIMIT_FIELD = '__limit';
+    /**
+     * Contract: provided by ApiTrait.
+     */
+    abstract protected function prepareQuery();
+
+    /**
+     * Contract: provided by ApiTrait.
+     *
+     * @param ModelCriteria $query
+     * @return mixed
+     */
+    abstract protected function checkReturnFields(ModelCriteria &$query);
 
     /**
      * @var array
@@ -41,7 +49,7 @@ trait ApiListTrait
         if (count($this->query)) {
             Logger::log(static::class . ' gathering query string', LOG_DEBUG);
             foreach ($this->query as $key => $value) {
-                if ($key === self::API_ORDER_FIELD) {
+                if ($key === $this->apiOrderField()) {
                     $orders = json_decode($value, true);
                     foreach ($orders as $field => $direction) {
                         $this->order->addOrder($field, $direction);
@@ -57,8 +65,8 @@ trait ApiListTrait
     protected function extractPagination()
     {
         Logger::log(static::class . ' extract pagination start', LOG_DEBUG);
-        $page = array_key_exists(self::API_PAGE_FIELD, $this->query) ? $this->query[self::API_PAGE_FIELD] : 1;
-        $limit = array_key_exists(self::API_LIMIT_FIELD, $this->query) ? $this->query[self::API_LIMIT_FIELD] : 100;
+        $page = array_key_exists($this->apiPageField(), $this->query) ? $this->query[$this->apiPageField()] : 1;
+        $limit = array_key_exists($this->apiLimitField(), $this->query) ? $this->query[$this->apiLimitField()] : 100;
         Logger::log(static::class . ' extract pagination end', LOG_DEBUG);
         return array($page, (int)$limit);
     }
@@ -100,7 +108,7 @@ trait ApiListTrait
         if (!empty($this->query)) {
             $tableMap = $this->getTableMap();
             foreach ($this->query as $field => $value) {
-                if (self::API_COMBO_FIELD === $field) {
+                if ($this->apiComboField() === $field) {
                     ApiHelper::composerComboField($tableMap, $query, $this->extraColumns, $value);
                 } elseif (!preg_match('/^__/', $field)) {
                     ApiHelper::addModelField($tableMap, $query, $field, $value);
@@ -127,6 +135,26 @@ trait ApiListTrait
         } catch (\Exception $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
+    }
+
+    private function apiComboField(): string
+    {
+        return '__combo';
+    }
+
+    private function apiOrderField(): string
+    {
+        return '__order';
+    }
+
+    private function apiPageField(): string
+    {
+        return '__page';
+    }
+
+    private function apiLimitField(): string
+    {
+        return '__limit';
     }
 
 }

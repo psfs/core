@@ -2,6 +2,8 @@
 
 namespace PSFS\base\types\traits\Security;
 
+use PSFS\base\Security;
+
 /**
  * @package PSFS\base\types\traits\Security
  */
@@ -14,7 +16,7 @@ trait FlashesTrait
      */
     public function getFlashes()
     {
-        $flashes = $this->getSessionKey(self::FLASH_MESSAGE_TOKEN);
+        $flashes = $this->getSessionKey(Security::FLASH_MESSAGE_TOKEN);
 
         return (null !== $flashes) ? $flashes : array();
     }
@@ -24,7 +26,7 @@ trait FlashesTrait
      */
     public function clearFlashes()
     {
-        $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, null);
+        $this->setSessionKey(Security::FLASH_MESSAGE_TOKEN, null);
 
         return $this;
     }
@@ -41,7 +43,7 @@ trait FlashesTrait
             $flashes = [];
         }
         $flashes[$key] = $data;
-        $this->setSessionKey(self::FLASH_MESSAGE_TOKEN, $flashes);
+        $this->setSessionKey(Security::FLASH_MESSAGE_TOKEN, $flashes);
     }
 
     /**

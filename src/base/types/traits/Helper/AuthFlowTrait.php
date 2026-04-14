@@ -4,6 +4,7 @@ namespace PSFS\base\types\traits\Helper;
 
 use Firebase\JWT\JWT;
 use PSFS\base\Request;
+use PSFS\base\types\helpers\AuthHelper;
 use Throwable;
 
 trait AuthFlowTrait
@@ -73,13 +74,13 @@ trait AuthFlowTrait
 
     private static function extractCredentialsFromCookie(string $authCookie): array
     {
-        $secret = self::decrypt($authCookie, self::SESSION_TOKEN);
+        $secret = self::decrypt($authCookie, AuthHelper::SESSION_TOKEN);
         if (is_string($secret) && str_contains($secret, ':')) {
             [$user, $pass] = explode(':', $secret, 2);
             return self::authTuple($user, $pass);
         }
         // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
-        $legacySecret = self::decrypt($authCookie, self::ADMIN_ID_TOKEN);
+        $legacySecret = self::decrypt($authCookie, AuthHelper::ADMIN_ID_TOKEN);
         if (is_string($legacySecret) && str_contains($legacySecret, ':')) {
             self::logLegacyFallbackUsage('cookie_key_admin_token');
             [$user, $pass] = explode(':', $legacySecret, 2);

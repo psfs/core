@@ -13,6 +13,11 @@ use PSFS\base\types\helpers\RouterHelper;
 trait RouterCacheFlowTrait
 {
     /**
+     * Contract: provided by ModulesTrait.
+     */
+    abstract protected function calculateRoutingFingerprint(): string;
+
+    /**
      * @param array $action
      * @param array $params
      * @return bool
@@ -173,18 +178,23 @@ trait RouterCacheFlowTrait
 
     private function loadRoutingMeta(): array
     {
-        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::ROUTING_META_FILE;
+        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . $this->routingMetaFileName();
         $meta = $this->cache->getDataFromFile($metaPath, Cache::JSON, true);
         return is_array($meta) ? $meta : [];
     }
 
     private function storeRoutingMeta(): void
     {
-        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . self::ROUTING_META_FILE;
+        $metaPath = CONFIG_DIR . DIRECTORY_SEPARATOR . $this->routingMetaFileName();
         $payload = [
             'fingerprint' => $this->calculateRoutingFingerprint(),
             'updated_at' => date('c'),
         ];
         $this->cache->storeData($metaPath, $payload, Cache::JSON, true);
+    }
+
+    private function routingMetaFileName(): string
+    {
+        return 'routes.meta.json';
     }
 }
