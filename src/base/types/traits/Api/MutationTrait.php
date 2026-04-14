@@ -143,19 +143,29 @@ trait MutationTrait
      */
     protected function getPkDbName()
     {
-        $tableMap = $this->getTableMap();
+        $tableMap = $this->requireTableMapForPrimaryKeys();
         $tableName = $this->resolveTableName($tableMap);
         $pks = $tableMap->getPrimaryKeys();
-        if (count($pks) === 1) {
-            $pks = array_keys($pks);
-            return [
-                $tableName . '.' . $pks[0] => Api::API_MODEL_KEY_FIELD
-            ];
+        $pkCount = count($pks);
+        if ($pkCount === 1) {
+            return $this->buildSinglePkMap($tableName, $pks);
         }
-        if (count($pks) > 1) {
+        if ($pkCount > 1) {
             return $this->buildCompositePkMap($tableName, $pks);
         }
         throw new ApiException(t('The API model is not properly mapped, there is no Primary Key or it is composite'));
+    }
+
+    /**
+     * @throws ApiException
+     */
+    private function requireTableMapForPrimaryKeys(): TableMap
+    {
+        $tableMap = $this->getTableMap();
+        if (!$tableMap instanceof TableMap) {
+            throw new ApiException(t('The API model is not properly mapped, there is no Primary Key or it is composite'));
+        }
+        return $tableMap;
     }
 
     private function resolveTableName(TableMap $tableMap): string
@@ -177,19 +187,44 @@ trait MutationTrait
      * @param array<int, ColumnMap> $primaryKeys
      * @return array<string, string>
      */
+    private function buildSinglePkMap(string $tableName, array $primaryKeys): array
+    {
+        $pkKeys = array_keys($primaryKeys);
+        $pkName = (string)($pkKeys[0] ?? '');
+
+        return [
+            $tableName . '.' . $pkName => Api::API_MODEL_KEY_FIELD,
+        ];
+    }
+
+    /**
+     * @param array<int, ColumnMap> $primaryKeys
+     * @return array<string, string>
+     */
     private function buildCompositePkMap(string $tableName, array $primaryKeys): array
     {
         $apiPks = [];
-        $principal = '';
-        $sep = 'CONCAT(';
+        $segments = [];
         foreach ($primaryKeys as $pk) {
             $apiPks[$tableName . '.' . $pk->getName()] = $pk->getPhpName();
-            $principal .= $sep . $tableName . '.' . $pk->getName();
-            $sep = ', "' . Api::API_PK_SEPARATOR . '", ';
+            $segments[] = $tableName . '.' . $pk->getName();
         }
-        $principal .= ')';
+        $principal = $this->buildCompositePkExpression($segments);
         $apiPks[$principal] = Api::API_MODEL_KEY_FIELD;
         return $apiPks;
+    }
+
+    /**
+     * @param array<int, string> $segments
+     */
+    private function buildCompositePkExpression(array $segments): string
+    {
+        if (count($segments) === 0) {
+            return 'CONCAT()';
+        }
+
+        $glue = ', "' . Api::API_PK_SEPARATOR . '", ';
+        return 'CONCAT(' . implode($glue, $segments) . ')';
     }
 
     /**
@@ -207,13 +242,24 @@ trait MutationTrait
      */
     private function addClassListName(TableMap $tableMap)
     {
-        $pks = '';
-        $sep = '';
+        $segments = [];
         foreach ($tableMap->getPrimaryKeys() as $pk) {
-            $pks .= $sep . $pk->getFullyQualifiedName();
-            $sep = ', "|", ';
+            $segments[] = $pk->getFullyQualifiedName();
         }
-        $this->extraColumns['CONCAT("' . $tableMap->getPhpName() . ' #", ' . $pks . ')'] = Api::API_LIST_NAME_FIELD;
+
+        $this->extraColumns[$this->buildClassListNameExpression((string)$tableMap->getPhpName(), $segments)] = Api::API_LIST_NAME_FIELD;
+    }
+
+    /**
+     * @param array<int, string> $segments
+     */
+    private function buildClassListNameExpression(string $phpName, array $segments): string
+    {
+        if (count($segments) === 0) {
+            return 'CONCAT("' . $phpName . ' #")';
+        }
+
+        return 'CONCAT("' . $phpName . ' #", ' . implode(', "|", ', $segments) . ')';
     }
 
 
@@ -237,20 +283,36 @@ trait MutationTrait
      */
     private function addExtraColumns(ModelCriteria &$query, $action)
     {
-        if (Api::API_ACTION_LIST === $action) {
-            // Legacy tokens kept for compatibility (`__name__`, `__pk`).
-            // Planned future cleanup can remove them behind a versioned contract switch.
-            $this->addDefaultListField();
-            $this->addPkToList();
+        $this->prepareLegacyListExtraColumns((string)$action);
+        if (empty($this->extraColumns)) {
+            return;
         }
-        if (!empty($this->extraColumns)) {
-            $fields = $this->resolveRequestedExtraFields();
-            foreach ($this->extraColumns as $expression => $columnName) {
-                if (empty($fields) || in_array($columnName, $fields, true)) {
-                    $query->withColumn($expression, $columnName);
-                }
+
+        $fields = $this->resolveRequestedExtraFields();
+        foreach ($this->extraColumns as $expression => $columnName) {
+            if ($this->shouldIncludeExtraColumn($columnName, $fields)) {
+                $query->withColumn($expression, $columnName);
             }
         }
+    }
+
+    private function prepareLegacyListExtraColumns(string $action): void
+    {
+        if (Api::API_ACTION_LIST !== $action) {
+            return;
+        }
+        // Legacy tokens kept for compatibility (`__name__`, `__pk`).
+        // Planned future cleanup can remove them behind a versioned contract switch.
+        $this->addDefaultListField();
+        $this->addPkToList();
+    }
+
+    /**
+     * @param array<int, string> $fields
+     */
+    private function shouldIncludeExtraColumn(string $columnName, array $fields): bool
+    {
+        return empty($fields) || in_array($columnName, $fields, true);
     }
 
     /**
@@ -338,10 +400,21 @@ trait MutationTrait
         if (Config::getParam('api.extrafields.compat', true)) {
             return array_values($this->extraColumns);
         }
-        $returnFields = Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD);
-        $fields = explode(',', $returnFields ?: '');
+        return $this->normalizeRequestedExtraFields(
+            (string)(Request::getInstance()->getQuery(Api::API_FIELDS_RESULT_FIELD) ?? '')
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function normalizeRequestedExtraFields(string $returnFields): array
+    {
+        $fields = explode(',', $returnFields);
         $fields[] = self::API_MODEL_KEY_FIELD;
-        return $fields;
+        $fields = array_values(array_filter(array_map('trim', $fields), static fn(string $field): bool => $field !== ''));
+
+        return array_values(array_unique($fields));
     }
 
     protected function sanitizeString(string $value): string

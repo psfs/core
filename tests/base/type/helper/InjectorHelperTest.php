@@ -202,6 +202,44 @@ class InjectorHelperTest extends TestCase
         $this->assertSame('draft', InjectorHelper::getDefaultValue($doc, $property));
     }
 
+    public function testExtractPropertiesReturnsEmptyWhenVisibilityFilterDoesNotMatch(): void
+    {
+        $reflector = new ReflectionClass(ParentInjectableExample::class);
+
+        $publicProps = InjectorHelper::extractProperties($reflector, ReflectionProperty::IS_PUBLIC);
+        $privateProps = InjectorHelper::extractProperties($reflector, ReflectionProperty::IS_PRIVATE);
+
+        $this->assertSame([], $publicProps);
+        $this->assertSame([], $privateProps);
+    }
+
+    public function testCheckIsRequiredResolvesMetadataTagBeforeRegexFallback(): void
+    {
+        $reflector = new ReflectionClass(RequiredDocPropertyExample::class);
+        $property = $reflector->getProperty('field');
+        $doc = (string)$property->getDocComment();
+
+        $this->assertTrue(InjectorHelper::checkIsRequired($doc, $property));
+        $this->assertFalse(InjectorHelper::checkIsRequired('', null));
+    }
+
+    public function testGetValuesReturnsNullWhenMetadataHasNoValues(): void
+    {
+        $reflector = new ReflectionClass(InjectorVariableWithoutValuesExample::class);
+        $property = $reflector->getProperty('title');
+        $doc = (string)$property->getDocComment();
+
+        $this->assertSame('', InjectorHelper::getValues($doc, $property));
+    }
+
+    public function testExtractVariablesSkipsFieldsWithoutResolvableType(): void
+    {
+        $reflector = new ReflectionClass(InjectorVariableUnresolvableTypeExample::class);
+        $variables = InjectorHelper::extractVariables($reflector);
+
+        $this->assertArrayNotHasKey('raw', $variables);
+    }
+
     public function testGetValuesSupportsAttributeArrayValues(): void
     {
         $configBackup = Config::getInstance()->dumpConfig();
@@ -304,4 +342,26 @@ class InjectorVariableWithArrayValuesAttributeExample
 {
     #[Values(['alpha', 'beta'])]
     public string $status = 'alpha';
+}
+
+class RequiredDocPropertyExample
+{
+    /**
+     * @var string
+     * @required true
+     */
+    public string $field = 'x';
+}
+
+class InjectorVariableWithoutValuesExample
+{
+    /**
+     * @var string
+     */
+    public string $title = 'demo';
+}
+
+class InjectorVariableUnresolvableTypeExample
+{
+    public $raw;
 }

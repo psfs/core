@@ -69,9 +69,14 @@ class InjectorHelper
             return self::extractInjectableProperties($reflector, $type);
         }
 
+        return self::extractPatternMatchedProperties($reflector, (int)$type, (string)$pattern);
+    }
+
+    private static function extractPatternMatchedProperties(ReflectionClass $reflector, int $type, string $pattern): array
+    {
         $properties = [];
         foreach ($reflector->getProperties($type) as $property) {
-            $doc = $property->getDocComment() ?: '';
+            $doc = self::propertyDoc($property);
             if (preg_match($pattern, $doc) === 1) {
                 $instanceType = self::extractVarType($doc, $property);
                 if (null !== $instanceType) {
@@ -135,7 +140,7 @@ class InjectorHelper
      */
     public static function extractVarType($doc, ReflectionProperty $property = null)
     {
-        return MetadataReader::extractVarType($property, $doc ?: '');
+        return MetadataReader::extractVarType($property, self::docValue($doc));
     }
 
     /**
@@ -144,13 +149,14 @@ class InjectorHelper
      */
     public static function checkIsRequired($doc, ReflectionProperty $property = null)
     {
+        $doc = self::docValue($doc);
         if (null !== $property) {
-            $required = MetadataReader::getTagValue('required', $doc ?: '', null, $property);
+            $required = MetadataReader::getTagValue('required', $doc, null, $property);
             if (null !== $required) {
                 return (bool)$required;
             }
         }
-        return preg_match('/@required/', $doc ?: '', $matches) === 1 && (bool)count($matches);
+        return preg_match('/@required/', $doc, $matches) === 1 && (bool)count($matches);
     }
 
     /**
@@ -168,7 +174,7 @@ class InjectorHelper
      */
     public static function getLabel($doc, ReflectionProperty $property = null)
     {
-        return t(AnnotationHelper::extractReflectionLabel($doc ?: '', $property));
+        return t(AnnotationHelper::extractReflectionLabel(self::docValue($doc), $property));
     }
 
     /**
@@ -177,12 +183,12 @@ class InjectorHelper
      */
     public static function getValues($doc, ReflectionProperty $property = null)
     {
-        $values = AnnotationHelper::extractFromDoc('values', $doc ?: '', '', $property);
+        $values = AnnotationHelper::extractFromDoc('values', self::docValue($doc), '', $property);
         if (is_array($values)) {
             return $values;
         }
-        if (is_string($values) && false !== strpos($values, '|')) {
-            return explode('|', $values);
+        if (is_string($values)) {
+            return self::splitDelimitedValues($values);
         }
         return $values;
     }
@@ -193,7 +199,7 @@ class InjectorHelper
      */
     public static function getDefaultValue($doc, ReflectionProperty $property = null)
     {
-        return AnnotationHelper::extractFromDoc('default', $doc ?: '', null, $property);
+        return AnnotationHelper::extractFromDoc('default', self::docValue($doc), null, $property);
     }
 
     /**
@@ -268,6 +274,27 @@ class InjectorHelper
         }
         $properties = array_merge($properties, self::extractProperties($selfReflector));
         return $properties;
+    }
+
+    private static function propertyDoc(ReflectionProperty $property): string
+    {
+        return (string)($property->getDocComment() ?: '');
+    }
+
+    private static function docValue(mixed $doc): string
+    {
+        return is_string($doc) ? $doc : '';
+    }
+
+    /**
+     * @return string|array<int, string>
+     */
+    private static function splitDelimitedValues(string $values): string|array
+    {
+        if (str_contains($values, '|')) {
+            return explode('|', $values);
+        }
+        return $values;
     }
 
 }

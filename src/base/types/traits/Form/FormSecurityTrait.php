@@ -126,7 +126,7 @@ trait FormSecurityTrait
      */
     protected function existsFormToken($tokenField)
     {
-        if ($this->method !== 'POST') {
+        if (!$this->isPostMethod()) {
             return true;
         }
         [, $tokenKeyField] = $this->resolveCsrfFieldNames();
@@ -139,16 +139,31 @@ trait FormSecurityTrait
             return false;
         }
 
+        if (!$this->isSubmittedTokenPairValid($submittedToken, $submittedTokenKey)) {
+            return false;
+        }
+
+        $formKey = $this->getCsrfFormKey();
+        return $this->validateStoredTokenSubmission($submittedToken, $submittedTokenKey, $formKey);
+    }
+
+    private function isPostMethod(): bool
+    {
+        return $this->method === 'POST';
+    }
+
+    private function isSubmittedTokenPairValid(string $submittedToken, string $submittedTokenKey): bool
+    {
         if (!$this->isValidCsrfTokenValue($submittedToken)) {
             $this->purgeSubmittedTokenIfNeeded($submittedTokenKey);
             return false;
         }
 
-        if (!$this->isValidCsrfTokenKey($submittedTokenKey)) {
-            return false;
-        }
+        return $this->isValidCsrfTokenKey($submittedTokenKey);
+    }
 
-        $formKey = $this->getCsrfFormKey();
+    private function validateStoredTokenSubmission(string $submittedToken, string $submittedTokenKey, string $formKey): bool
+    {
         $storage = $this->purgeExpiredCsrfStorage($this->getCsrfStorage());
         $entry = $storage[$submittedTokenKey] ?? null;
         if (!is_array($entry)) {

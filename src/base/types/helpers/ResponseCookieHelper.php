@@ -6,16 +6,12 @@ class ResponseCookieHelper
 {
     public static function buildCookiePayload(array $cookie, bool $isSecureRequest, ?string $defaultDomain): ?array
     {
-        if (!array_key_exists('name', $cookie) || !array_key_exists('value', $cookie)) {
+        if (!self::hasRequiredCookieKeys($cookie)) {
             return null;
         }
 
-        $httpOnly = array_key_exists('httpOnly', $cookie)
-            ? (bool)$cookie['httpOnly']
-            : ((array_key_exists('http', $cookie)) ? (bool)$cookie['http'] : true);
-        $secure = array_key_exists('secure', $cookie)
-            ? (bool)$cookie['secure']
-            : $isSecureRequest;
+        $httpOnly = self::resolveHttpOnlyFlag($cookie);
+        $secure = self::resolveSecureFlag($cookie, $isSecureRequest);
         $sameSite = self::normalizeSameSite((string)($cookie['sameSite'] ?? $cookie['samesite'] ?? 'Lax'));
         $cookieDomain = self::normalizeCookieDomain((string)($cookie['domain'] ?? $defaultDomain));
 
@@ -39,6 +35,30 @@ class ResponseCookieHelper
             'value' => (string)$cookie['value'],
             'options' => $options,
         ];
+    }
+
+    private static function hasRequiredCookieKeys(array $cookie): bool
+    {
+        return array_key_exists('name', $cookie) && array_key_exists('value', $cookie);
+    }
+
+    private static function resolveHttpOnlyFlag(array $cookie): bool
+    {
+        if (array_key_exists('httpOnly', $cookie)) {
+            return (bool)$cookie['httpOnly'];
+        }
+        if (array_key_exists('http', $cookie)) {
+            return (bool)$cookie['http'];
+        }
+        return true;
+    }
+
+    private static function resolveSecureFlag(array $cookie, bool $isSecureRequest): bool
+    {
+        if (array_key_exists('secure', $cookie)) {
+            return (bool)$cookie['secure'];
+        }
+        return $isSecureRequest;
     }
 
     public static function normalizeCookieDomain(?string $domain): ?string

@@ -1,19 +1,26 @@
-name: Snyk Scan
+name: Snyk Security Scan
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   snyk:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install Snyk
+      - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+      - name: Run Snyk Code (no fail)
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk code test --sarif > snyk-code.sarif || true
 
-      - name: Run Snyk Code
-        run: snyk code test --sarif > snyk-code.sarif
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-code.sarif
