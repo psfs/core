@@ -4,7 +4,7 @@
  * PSFS Bootstrap (v2) - Multi-environment aware
  *
  * Responsibilities:
- *  - Detect framework mode: vendor / standalone / phar.
+ *  - Detect framework mode: vendor / standalone.
  *  - Define base directory constants accordingly.
  *  - Load Composer autoload (from project or from standalone mode).
  *  - Load global helper functions.

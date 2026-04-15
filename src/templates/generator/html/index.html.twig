@@ -6,7 +6,7 @@ defined('PSFS_START_MEM') or define('PSFS_START_MEM', memory_get_usage(true));
  *
  * Responsibilities:
  *  - Reject direct access to static files (when not served by web server).
- *  - Load the PSFS bootstrap (PHAR or vendor mode).
+ *  - Load the PSFS bootstrap (vendor mode).
  *  - Execute the Dispatcher to run the application.
  */
 
@@ -29,11 +29,10 @@ if (preg_match('/\.[a-zA-Z0-9]{2,10}$/', $requestUri)) {
 
 
 // -----------------------------------------------------------------------------
-// 2. Locate and load the PSFS bootstrap (PHAR or vendor mode)
+// 2. Locate and load the PSFS bootstrap
 // -----------------------------------------------------------------------------
 
 $projectRoot = realpath(__DIR__ . '/..');
-$pharPath    = $projectRoot . '/psfs.phar';
 $vendorAutoload = $projectRoot . '/vendor/autoload.php';
 
 if (file_exists($vendorAutoload)) {
@@ -43,7 +42,7 @@ if (file_exists($vendorAutoload)) {
 } else {
     // No framework found
     header('HTTP/1.0 500 Internal Server Error');
-    exit('PSFS framework not found. Run composer install or check your PHAR build.');
+    exit('PSFS framework not found. Run composer install.');
 }
 
 

@@ -58,9 +58,9 @@ act push --container-architecture linux/amd64
 
 ### Core contributor path
 
-1. Read [Core Contracts](./doc/CONTRACTS.md)
-2. Read [Async Jobs and Connectors Contracts](./doc/contracts/async-jobs-connectors-contracts.md)
-3. Read [Security Plan and Artifacts](./doc/security/PLAN.md)
+1. Read [Operations Playbook](./doc/OPERATIONS.md)
+2. Read [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+3. Run key tests and validate changes in Docker
 
 ## Propel models and migrations
 
@@ -68,22 +68,10 @@ For operational Propel flow (schema, model generation context, migration executi
 
 - [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
 
-## Documentation quality gate
-
-Use the docs checker before opening PRs that touch docs:
-
-<!-- validated -->
-```bash
-bash scripts/docs/validate_docs.sh
-```
-
 ## Documentation index
 
 - [Operations Playbook](./doc/OPERATIONS.md)
 - [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
-- [Core Contracts](./doc/CONTRACTS.md)
-- [Versioning](./doc/VERSIONING.md)
-- [Async Jobs and Connectors Contracts](./doc/contracts/async-jobs-connectors-contracts.md)
 
 ## Rules
 
