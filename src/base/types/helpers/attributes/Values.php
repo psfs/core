@@ -3,7 +3,7 @@
 namespace PSFS\base\types\helpers\attributes;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-class Values implements MetadataAttributeContract
+class Values implements MetadataAttributeContract, DtoConstraintAttributeContract
 {
     use MetadataAttributeValueResolverTrait;
     use MetadataStringNormalizerTrait;
@@ -23,5 +23,18 @@ class Values implements MetadataAttributeContract
     public static function tag(): string
     {
         return 'values';
+    }
+
+    public function validateValue(mixed $value): bool
+    {
+        if (!is_array($this->value)) {
+            return true;
+        }
+        return in_array($value, $this->value, true);
+    }
+
+    public function errorCode(): string
+    {
+        return 'invalid_enum';
     }
 }

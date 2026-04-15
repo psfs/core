@@ -7,11 +7,8 @@ use PSFS\base\types\helpers\MetadataReader;
 use PSFS\base\types\helpers\attributes\CsrfField;
 use PSFS\base\types\helpers\attributes\CsrfProtected;
 use PSFS\base\types\helpers\attributes\DefaultValue;
-use PSFS\base\types\helpers\attributes\Length;
-use PSFS\base\types\helpers\attributes\Max;
-use PSFS\base\types\helpers\attributes\Min;
+use PSFS\base\types\helpers\attributes\DtoConstraintAttributeContract;
 use PSFS\base\types\helpers\attributes\Nullable;
-use PSFS\base\types\helpers\attributes\Pattern;
 use PSFS\base\types\helpers\attributes\Values;
 use ReflectionClass;
 use ReflectionProperty;
@@ -30,9 +27,7 @@ trait ValidatableDtoTrait
 
         $this->applyDefaultValues($publicProperties);
         $this->validateUnknownFields($publicProperties, $context, $result);
-        foreach ($publicProperties as $property) {
-            $this->validateProperty($property, $context, $result);
-        }
+        $this->validateProperties($publicProperties, $context, $result);
         $this->validateCsrfIfRequired($reflector, $context, $result);
 
         $this->__validationResult = $result;
@@ -145,53 +140,31 @@ trait ValidatableDtoTrait
         $existsInPayload = array_key_exists($name, $context->payload);
 
         $required = (bool)MetadataReader::getTagValue('required', $doc, false, $property);
-        $nullable = $this->propertyAttribute($property, Nullable::class)?->value ?? false;
-        if ($required && !$existsInPayload && $value === null) {
-            $result->addError($name, 'required', str_replace('%s', "<strong>{$name}</strong>", t('Field %s is required')));
+        if ($this->isRequiredMissing($required, $existsInPayload, $value)) {
+            $result->addError($name, 'required', $this->requiredFieldMessage($name));
             return;
         }
         if ($value === null) {
-            if ($existsInPayload && !$nullable && $required) {
-                $result->addError($name, 'null_not_allowed', str_replace('%s', "<strong>{$name}</strong>", t('Field %s is required')));
+            if ($existsInPayload && !$this->allowsNull($property) && $required) {
+                $result->addError($name, 'null_not_allowed', $this->requiredFieldMessage($name));
             }
             return;
         }
 
         $varType = MetadataReader::extractVarType($property, $doc);
         if (is_string($varType) && !$this->matchesDeclaredType($value, $varType)) {
-            $result->addError($name, 'invalid_type', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
+            $result->addError($name, 'invalid_type', $this->invalidFormatMessage($name));
             return;
         }
 
-        $valuesAttr = $this->propertyAttribute($property, Values::class);
-        $values = $valuesAttr instanceof Values
-            ? (is_array($valuesAttr->value) ? $valuesAttr->value : [$valuesAttr->value])
-            : InjectorHelper::getValues($doc, $property);
-        if (is_array($values) && !in_array($value, $values, true)) {
-            $result->addError($name, 'invalid_enum', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
-        }
-
-        $pattern = $this->propertyAttribute($property, Pattern::class);
-        if ($pattern instanceof Pattern && is_string($value) && preg_match($pattern->value, $value) !== 1) {
-            $result->addError($name, 'pattern_mismatch', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
-        }
-
-        $length = $this->propertyAttribute($property, Length::class);
-        if ($length instanceof Length && is_string($value)) {
-            $strlen = mb_strlen($value);
-            if ($strlen < $length->min || ($length->max !== null && $strlen > $length->max)) {
-                $result->addError($name, 'invalid_length', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
+        if (!$this->hasConstraintAttribute($property, Values::class)) {
+            $values = InjectorHelper::getValues($doc, $property);
+            if (is_array($values) && !in_array($value, $values, true)) {
+                $result->addError($name, 'invalid_enum', $this->invalidFormatMessage($name));
             }
         }
 
-        $min = $this->propertyAttribute($property, Min::class);
-        if ($min instanceof Min && is_numeric($value) && (float)$value < $min->value) {
-            $result->addError($name, 'min_value', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
-        }
-        $max = $this->propertyAttribute($property, Max::class);
-        if ($max instanceof Max && is_numeric($value) && (float)$value > $max->value) {
-            $result->addError($name, 'max_value', str_replace('%s', "<strong>{$name}</strong>", t('Field %s has an invalid format')));
-        }
+        $this->validateConstraintAttributes($property, $name, $value, $result);
     }
 
     private function validateCsrfIfRequired(
@@ -271,5 +244,62 @@ trait ValidatableDtoTrait
             return null;
         }
         return $attrs[0]->newInstance();
+    }
+
+    /**
+     * @param array<int, ReflectionProperty> $publicProperties
+     */
+    private function validateProperties(array $publicProperties, ValidationContext $context, ValidationResult $result): void
+    {
+        foreach ($publicProperties as $property) {
+            $this->validateProperty($property, $context, $result);
+        }
+    }
+
+    private function isRequiredMissing(bool $required, bool $existsInPayload, mixed $value): bool
+    {
+        return $required && !$existsInPayload && $value === null;
+    }
+
+    private function allowsNull(ReflectionProperty $property): bool
+    {
+        $nullable = $this->propertyAttribute($property, Nullable::class);
+        if (!$nullable instanceof Nullable) {
+            return false;
+        }
+        return $nullable->allowsNull();
+    }
+
+    private function requiredFieldMessage(string $field): string
+    {
+        return str_replace('%s', "<strong>{$field}</strong>", t('Field %s is required'));
+    }
+
+    private function invalidFormatMessage(string $field): string
+    {
+        return str_replace('%s', "<strong>{$field}</strong>", t('Field %s has an invalid format'));
+    }
+
+    private function hasConstraintAttribute(ReflectionProperty $property, string $attributeClass): bool
+    {
+        return !empty($property->getAttributes($attributeClass));
+    }
+
+    private function validateConstraintAttributes(
+        ReflectionProperty $property,
+        string $field,
+        mixed $value,
+        ValidationResult $result
+    ): void {
+        foreach ($property->getAttributes() as $reflectionAttribute) {
+            $attribute = $reflectionAttribute->newInstance();
+            if (!$attribute instanceof DtoConstraintAttributeContract) {
+                continue;
+            }
+            if ($attribute->validateValue($value)) {
+                continue;
+            }
+            $result->addError($field, $attribute->errorCode(), $this->invalidFormatMessage($field));
+        }
     }
 }
