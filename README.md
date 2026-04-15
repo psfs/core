@@ -66,7 +66,7 @@ curl -fsSL https://raw.githubusercontent.com/psfs/core/master/install.sh | bash 
 
 - Detects `local` runtime (`php` + `composer`) and `docker` runtime (`docker compose`).
 - If both are available in interactive mode, prompts for runtime selection.
-- Generates PSFS base structure (`config`, `html`, `modules`, `cache`, `logs`, `locale`).
+- Generates PSFS base structure (`config`, `html`, `src`, `cache`, `logs`, `locale`).
 - Generates initial `composer.json`.
 - For Docker runtime, generates `docker-compose.yml`, `docker/php.ini`, and `.env.example`.
 - Does not auto-run dependency install or container startup.

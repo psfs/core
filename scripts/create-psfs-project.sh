@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TEMPLATE_DIR="${REPO_ROOT}/templates/project"
+REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/psfs/core/master}"
 
 PROJECT_NAME=""
 TARGET_PATH=""
@@ -49,6 +50,37 @@ trim() {
 require_template() {
   local file="$1"
   [[ -f "${TEMPLATE_DIR}/${file}" ]] || die "Template not found: ${TEMPLATE_DIR}/${file}"
+}
+
+download_file() {
+  local source="$1"
+  local destination="$2"
+  mkdir -p "$(dirname "${destination}")"
+
+  if command_exists curl; then
+    curl -fsSL "${source}" -o "${destination}"
+    return
+  fi
+  if command_exists wget; then
+    wget -qO "${destination}" "${source}"
+    return
+  fi
+
+  die "Unable to download templates: neither curl nor wget is available."
+}
+
+ensure_templates_available() {
+  if [[ -f "${TEMPLATE_DIR}/composer.json.tpl" ]]; then
+    return
+  fi
+
+  # Fallback for standalone execution (e.g., script piped/downloaded without repo layout).
+  local fallback_dir="${SCRIPT_DIR}/.psfs-templates/project"
+  download_file "${REPO_RAW_BASE}/templates/project/composer.json.tpl" "${fallback_dir}/composer.json.tpl"
+  download_file "${REPO_RAW_BASE}/templates/project/docker-compose.yml.tpl" "${fallback_dir}/docker-compose.yml.tpl"
+  download_file "${REPO_RAW_BASE}/templates/project/.env.example.tpl" "${fallback_dir}/.env.example.tpl"
+  download_file "${REPO_RAW_BASE}/templates/project/docker/php.ini.tpl" "${fallback_dir}/docker/php.ini.tpl"
+  TEMPLATE_DIR="${fallback_dir}"
 }
 
 escape_sed() {
@@ -239,7 +271,7 @@ validate_inputs() {
 }
 
 init_project_tree() {
-  mkdir -p "${TARGET_PATH}"/{config,html,modules,cache,logs,locale}
+  mkdir -p "${TARGET_PATH}"/{config,html,src,cache,logs,locale}
   if [[ "${RUNTIME}" == "docker" ]]; then
     mkdir -p "${TARGET_PATH}/docker"
   fi
@@ -340,6 +372,7 @@ main() {
   derive_defaults
   prompt_project_meta
   validate_inputs
+  ensure_templates_available
   init_project_tree
   render_composer_json
   render_docker_bundle
