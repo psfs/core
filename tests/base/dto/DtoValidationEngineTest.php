@@ -51,7 +51,7 @@ class DtoValidationEngineTest extends TestCase
             'unknown' => 'boom',
         ]);
 
-        $result = $dto->validate();
+        $result = $dto->checkValidations();
         $this->assertFalse($result->isValid());
         $codes = array_column($result->getErrors(), 'code');
         $this->assertContains('unknown_field', $codes);
@@ -69,7 +69,7 @@ class DtoValidationEngineTest extends TestCase
             'status' => 'active',
         ]);
 
-        $result = $dto->validate();
+        $result = $dto->checkValidations();
         $this->assertTrue($result->isValid());
         $this->assertSame('guest', $dto->role);
         $this->assertNull($dto->comment);
@@ -85,7 +85,7 @@ class DtoValidationEngineTest extends TestCase
             '_csrf' => $tokens['token'],
             '_csrf_key' => $tokens['key'],
         ]);
-        $first = $dto->validate();
+        $first = $dto->checkValidations();
         $this->assertTrue($first->isValid());
 
         $dtoReplay = new DemoCsrfDto(false);
@@ -94,7 +94,7 @@ class DtoValidationEngineTest extends TestCase
             '_csrf' => $tokens['token'],
             '_csrf_key' => $tokens['key'],
         ]);
-        $replay = $dtoReplay->validate();
+        $replay = $dtoReplay->checkValidations();
         $this->assertFalse($replay->isValid());
         $this->assertContains('invalid_csrf', array_column($replay->getErrors(), 'code'));
     }

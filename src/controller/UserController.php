@@ -250,7 +250,7 @@ class UserController extends Admin
         }
         $requestDto = new DeleteUserRequestDto(false);
         $requestDto->fromArray($payload);
-        $validation = $requestDto->validate(new ValidationContext(
+        $validation = $requestDto->checkValidations(new ValidationContext(
             $payload,
             [],
             true,

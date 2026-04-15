@@ -7,7 +7,7 @@ trait ValidatableDtoTrait
     private static ?\WeakMap $__validationInputMap = null;
     private ?ValidationResult $__validationResult = null;
 
-    public function validate(?ValidationContext $ctx = null): ValidationResult
+    public function checkValidations(?ValidationContext $ctx = null): ValidationResult
     {
         $context = $ctx ?? new ValidationContext($this->getValidationInputData());
         $result = DtoValidationEngine::validate(
@@ -21,7 +21,7 @@ trait ValidatableDtoTrait
 
     public function isValid(?ValidationContext $ctx = null): bool
     {
-        return $this->validate($ctx)->isValid();
+        return $this->checkValidations($ctx)->isValid();
     }
 
     /**
