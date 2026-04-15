@@ -13,6 +13,8 @@ use PSFS\base\types\helpers\InjectorHelper;
  */
 class Dto extends Singleton implements \JsonSerializable
 {
+    use ValidatableDtoTrait;
+
     /**
      * @var array
      */
@@ -117,6 +119,7 @@ class Dto extends Singleton implements \JsonSerializable
      */
     public function fromArray(array $object = [])
     {
+        $this->setValidationInputData($object);
         if (!empty($object)) {
             $reflector = new \ReflectionClass($this);
             $properties = InjectorHelper::extractProperties(

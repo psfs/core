@@ -12,6 +12,7 @@ use PSFS\base\config\Config;
 use PSFS\base\config\ConfigForm;
 use PSFS\base\config\ModuleForm;
 use PSFS\base\config\AdminForm;
+use PSFS\base\dto\CsrfValidator;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\Form;
@@ -136,7 +137,12 @@ class CoverageControllersTest extends TestCase
             'admin' => ['hash' => sha1('admin:admin'), 'profile' => AuthHelper::ADMIN_ID_TOKEN],
         ]);
 
-        $_REQUEST = ['user' => 'admin'];
+        $tokens = CsrfValidator::issueToken('admin_setup');
+        $_REQUEST = [
+            'user' => 'admin',
+            'admin_setup_token' => $tokens['token'],
+            'admin_setup_token_key' => $tokens['key'],
+        ];
         Request::dropInstance();
         Request::getInstance()->init();
 

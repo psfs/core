@@ -2,6 +2,8 @@
 
 namespace PSFS\controller;
 
+use PSFS\base\dto\DeleteUserRequestDto;
+use PSFS\base\dto\ValidationContext;
 use PSFS\base\config\AdminForm;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\ConfigException;
@@ -240,11 +242,24 @@ class UserController extends Admin
     public function deleteUsers()
     {
         self::assertSuperAdminUserWriteAccess();
-        $data = Request::getInstance()->getData();
-        $username = $data['user'] ?? null;
-        if (empty($username)) {
-            throw new ApiException(t('No user was provided to delete'), 400);
+        $request = Request::getInstance();
+        $payload = $request->getRawData();
+        if (empty($payload)) {
+            // Legacy fallback for clients sending form-urlencoded payloads.
+            $payload = $request->getData();
         }
+        $requestDto = new DeleteUserRequestDto(false);
+        $requestDto->fromArray($payload);
+        $validation = $requestDto->validate(new ValidationContext(
+            $payload,
+            [],
+            true,
+            true
+        ));
+        if (!$validation->isValid()) {
+            throw new ApiException($validation->firstMessage(t('Invalid request payload')), 400);
+        }
+        $username = (string)$requestDto->user;
         Security::getInstance()->deleteUser($username);
         return $this->json('OK');
     }

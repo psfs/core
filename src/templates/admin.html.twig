@@ -27,10 +27,26 @@
     <script type="text/javascript" src="{{ asset('@ROOT/js/api/api-srv.js') }}"></script>
     <script type="application/javascript">
         (function(){
+            function findCsrfValue(fieldId, fallbackName) {
+                var byId = document.getElementById(fieldId);
+                if (byId && byId.value) {
+                    return byId.value;
+                }
+                var byName = document.querySelector('input[name="' + fallbackName + '"]');
+                if (byName && byName.value) {
+                    return byName.value;
+                }
+                return '';
+            }
+
             $('.delete-user').bind('click', function(el) {
                 if (confirm('{{ "Do you want to remove this user access?"|trans }}')) {
+                    var csrfToken = findCsrfValue('admin_setup_admin_setup_token', 'admin_setup[admin_setup_token]');
+                    var csrfKey = findCsrfValue('admin_setup_admin_setup_token_key', 'admin_setup[admin_setup_token_key]');
                     $httpSrv.$put('/admin/setup', {
-                        'user': $(el.target).attr('data-user')
+                        'user': $(el.target).attr('data-user'),
+                        'admin_setup_token': csrfToken,
+                        'admin_setup_token_key': csrfKey
                     }).then(function() { document.location.reload(); });
                 }
             });

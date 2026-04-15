@@ -53,14 +53,16 @@ act push --container-architecture linux/amd64
 ### Onboarding path
 
 1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Execute the "First day" flow
-3. Use troubleshooting matrix when blocked
+2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
+3. Execute the "First day" flow
+4. Use troubleshooting matrix when blocked
 
 ### Core contributor path
 
 1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Read [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
-3. Run key tests and validate changes in Docker
+2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
+3. Read [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+4. Run key tests and validate changes in Docker
 
 ## Propel models and migrations
 
@@ -71,6 +73,7 @@ For operational Propel flow (schema, model generation context, migration executi
 ## Documentation index
 
 - [Operations Playbook](./doc/OPERATIONS.md)
+- [DTO Validation Engine](./doc/DTO_VALIDATION.md)
 - [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
 
 ## Rules
