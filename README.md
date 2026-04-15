@@ -11,72 +11,74 @@
 
 PSFS is a lightweight PHP framework for MVC/API applications (Twig + Propel + Symfony components).
 
-## 5-minute setup
+## Quick Install (Copy/Paste)
 
-Prerequisites:
+Requirements:
+- `bash`
+- `docker compose` or `php + composer`
 
-- Docker + Docker Compose
-- Git
+Using `curl`:
 
-<!-- validated -->
 ```bash
-docker compose up -d
-docker compose ps
-docker exec core-php-1 php -v
-docker exec core-php-1 composer install --no-interaction --prefer-dist
+curl -fsSL https://raw.githubusercontent.com/psfs/core/master/install.sh | bash
 ```
 
-If your PHP container name is not `core-php-1`:
+Using `wget`:
 
-<!-- validated -->
 ```bash
-docker compose ps
-docker ps --format '{{.Names}}'
+wget -qO- https://raw.githubusercontent.com/psfs/core/master/install.sh | bash
 ```
 
-## Daily command map
+The installer downloads and runs the official PSFS project generator.
 
-<!-- example-only -->
+## Create a Project
+
+Interactive:
+
 ```bash
-# Run key tests
-docker exec core-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
-
-# List PSFS CLI commands
-docker exec core-php-1 php src/bin/psfs list
-
-# Security local pre-check (act)
-act push --container-architecture linux/amd64
+./scripts/create-psfs-project.sh
 ```
 
-## Choose your path
+Non-interactive:
 
-### Onboarding path
+```bash
+./scripts/create-psfs-project.sh \
+  --non-interactive \
+  --name my-psfs-app \
+  --path /tmp/my-psfs-app \
+  --runtime docker \
+  --package acme/my-psfs-app \
+  --description "My PSFS app" \
+  --author "Your Name"
+```
 
-1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
-3. Execute the "First day" flow
-4. Use troubleshooting matrix when blocked
+Remote install with flags:
 
-### Core contributor path
+```bash
+curl -fsSL https://raw.githubusercontent.com/psfs/core/master/install.sh | bash -s -- \
+  --non-interactive \
+  --name my-psfs-app \
+  --runtime docker \
+  --package acme/my-psfs-app
+```
 
-1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
-3. Read [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
-4. Run key tests and validate changes in Docker
+## What the Generator Does
 
-## Propel models and migrations
+- Detects `local` runtime (`php` + `composer`) and `docker` runtime (`docker compose`).
+- If both are available in interactive mode, prompts for runtime selection.
+- Generates PSFS base structure (`config`, `html`, `modules`, `cache`, `logs`, `locale`).
+- Generates initial `composer.json`.
+- For Docker runtime, generates `docker-compose.yml`, `docker/php.ini`, and `.env.example`.
+- Does not auto-run dependency install or container startup.
 
-For operational Propel flow (schema, model generation context, migration execution, rollback, failure modes), see:
-
-- [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
-
-## Documentation index
+## Documentation
 
 - [Operations Playbook](./doc/OPERATIONS.md)
 - [DTO Validation Engine](./doc/DTO_VALIDATION.md)
 - [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+- [Core Contracts](./doc/CONTRACTS.md)
 
-## Rules
+## Notes
 
-- Run project commands inside Docker containers.
-- Keep command blocks explicitly tagged as `validated` or `example-only`.
+- Runtime baseline for this repository is Docker Compose with PHP 8.3.
+- For project internals and contributor workflows, use the docs listed above.
