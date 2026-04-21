@@ -113,6 +113,30 @@ class RequestTest extends TestCase
         $this->assertSame('https://secure.example.org', $request->getRootUrl());
     }
 
+    public function testGetServerNamePrioritizesForwardedHeaders(): void
+    {
+        $request = Request::getInstance();
+        $request->setServer([
+            'SERVER_NAME' => 'internal.local',
+            'HTTP_HOST' => 'internal.local:8080',
+            'HTTP_X_FORWARDED_HOST' => 'public.example.com:443, edge.local',
+        ]);
+
+        $this->assertSame('public.example.com', $request->getServerName());
+    }
+
+    public function testGetServerNameParsesForwardedHeader(): void
+    {
+        $request = Request::getInstance();
+        $request->setServer([
+            'SERVER_NAME' => 'internal.local',
+            'HTTP_HOST' => 'internal.local',
+            'HTTP_FORWARDED' => 'for=203.0.113.60;proto=https;host="api.example.com:8443"',
+        ]);
+
+        $this->assertSame('api.example.com', $request->getServerName());
+    }
+
     public function testFileDetectionAndLanguageHeaderAndTimestamp(): void
     {
         $request = Request::getInstance();
