@@ -20,10 +20,6 @@ abstract class Controller extends Singleton implements ControllerInterface
     use JsonTrait;
     use RouteTrait;
 
-    /**
-     * @Injectable
-     * @var \PSFS\base\Template
-     */
     #[Injectable(class: Template::class)]
     protected $tpl;
     protected $domain = 'ROOT';

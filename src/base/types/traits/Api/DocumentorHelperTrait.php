@@ -12,8 +12,11 @@ use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\DocumentorHelper;
 use PSFS\base\types\helpers\InjectorHelper;
+use PSFS\base\types\helpers\MetadataDocParser;
+use PSFS\base\types\helpers\MetadataReader;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
 
 /**
  * @package PSFS\base\types\traits\Api
@@ -74,9 +77,9 @@ trait DocumentorHelperTrait
      *
      * @return boolean
      */
-    protected function checkDeprecated($comments = '')
+    protected function checkDeprecated(ReflectionMethod $method, string $comments = ''): bool
     {
-        return preg_match('/@deprecated\n/i', $comments) === 1;
+        return MetadataReader::hasDeprecated($method, $comments);
     }
 
     /**
@@ -87,14 +90,7 @@ trait DocumentorHelperTrait
      */
     public static function extractVarType($comments = '')
     {
-        $type = 'string';
-        preg_match('/@var\ (.*) (.*)\n/i', $comments, $varType);
-        if (count($varType)) {
-            $aux = trim($varType[1]);
-            $type = str_replace(' ', '', strlen($aux) > 0 ? $varType[1] : $varType[2]);
-        }
-
-        return $type;
+        return MetadataDocParser::readVarType((string)$comments) ?: 'string';
     }
 
     /**
@@ -103,13 +99,13 @@ trait DocumentorHelperTrait
      * @return array
      * @throws ReflectionException
      */
-    protected function extractPayload($model, $comments = '')
+    protected function extractPayload(string $model, ReflectionMethod $method, string $comments = ''): array
     {
         $payload = [];
-        preg_match('/@payload\ (.*)\n/i', $comments, $doc);
         $isArray = false;
-        if (count($doc)) {
-            $namespace = str_replace('{__API__}', $model, $doc[1]);
+        $payloadSpec = MetadataReader::extractPayload($model, $method, $comments);
+        $namespace = str_replace('{__API__}', $model, $payloadSpec);
+        if ($namespace !== $model) {
             list($isArray, $payload) = $this->processPayload($namespace, $isArray);
             $reflector = new ReflectionClass($namespace);
             $shortName = $reflector->getShortName();
@@ -143,11 +139,11 @@ trait DocumentorHelperTrait
      * @return array
      * @throws ReflectionException
      */
-    protected function extractReturn($model, $comments = '')
+    protected function extractReturn(string $model, ReflectionMethod $method, string $comments = ''): array
     {
         $modelDto = [];
-        preg_match('/\@return\ (.*)\((.*)\)\n/i', $comments, $returnTypes);
-        if (count($returnTypes)) {
+        $returnSpec = MetadataReader::extractReturnSpec($method, $comments);
+        if (is_string($returnSpec) && preg_match('/^(.*)\((.*)\)$/i', $returnSpec, $returnTypes) === 1) {
             // Extract principal DTO information
             if (array_key_exists(1, $returnTypes)) {
                 $modelDto = $this->extractDtoProperties($returnTypes[1]);

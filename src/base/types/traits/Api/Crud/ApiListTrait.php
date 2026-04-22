@@ -32,10 +32,6 @@ trait ApiListTrait
      */
     protected $filters = array();
 
-    /**
-     * @Injectable
-     * @var \PSFS\base\dto\Order
-     */
     #[Injectable(class: Order::class)]
     protected Order $order;
 

@@ -15,6 +15,7 @@ use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Icon;
 use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\ApiReturn;
 use PSFS\base\types\helpers\attributes\Route as RouteAttribute;
 use PSFS\base\types\helpers\attributes\Visible;
 use PSFS\base\types\traits\RouteTrait;
@@ -36,10 +37,6 @@ trait ManagerTrait
     }
 
     /**
-     * @label {__API__} Manager
-     * @GET
-     * @icon fa-database
-     * @route /admin/{__DOMAIN__}/{__API__}
      * @return string
      * @throws ApiException
      */
@@ -53,11 +50,6 @@ trait ManagerTrait
     }
 
     /**
-     * @label {__API__} Manager item
-     * @GET
-     * @icon fa-database
-     * @visible false
-     * @route /admin/{__DOMAIN__}/{__API__}/{id}
      * @param string $id
      * @return string
      * @throws ApiException
@@ -73,12 +65,7 @@ trait ManagerTrait
     }
 
     /**
-     * @label Returns form data for any entity
-     * @POST
-     * @visible false
-     * @cache 3600
-     * @route /admin/api/form/{__DOMAIN__}/{__API__}
-     * @return JsonResponse(data=\PSFS\base\dto\Form)
+     * @return JsonResponse
      * @throws GeneratorException
      * @throws \ReflectionException
      */
@@ -87,6 +74,7 @@ trait ManagerTrait
     #[Visible(false)]
     #[Cacheable(true)]
     #[RouteAttribute('/admin/api/form/{__DOMAIN__}/{__API__}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data=\PSFS\base\dto\Form)')]
     public function getForm()
     {
         $map = $this->getModelTableMap();

@@ -17,23 +17,12 @@ trait MutationTrait
     use MutationTableMapTrait;
     use MutationExtraColumnsTrait;
     use MutationRequestHydrationTrait;
-    /**
-     * @var string
-     * @header X-API-LANG
-     * @label Locale for the API request
-     * @default es
-     */
+
     #[Header(Api::HEADER_API_LANG)]
     #[Label('Locale for the API request')]
     #[DefaultValue('es')]
     protected $lang;
 
-    /**
-     * @var string
-     * @header X-FIELD-TYPE
-     * @label Field type for API Dto
-     * @default phpName
-     */
     #[Header(Api::HEADER_API_FIELDTYPE)]
     #[Label('Field type for API Dto')]
     #[DefaultValue('phpName')]

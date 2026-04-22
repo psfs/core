@@ -19,13 +19,6 @@ use PSFS\controller\base\Admin;
  */
 class RouteController extends Admin
 {
-    /**
-     * Method that renders all system routes
-     * @GET
-     * @label System routes viewer
-     * @icon fa-folder-tree
-     * @route /admin/routes
-     */
     #[HttpMethod('GET')]
     #[Label('System routes viewer')]
     #[Icon('fa-folder-tree')]
@@ -37,14 +30,6 @@ class RouteController extends Admin
         ));
     }
 
-    /**
-     * Service that returns available parameters
-     * @GET
-     * @route /admin/routes/show
-     * @label System routes service
-     * @visible false
-     * @return mixed
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/routes/show')]
     #[Label('System routes service')]
@@ -55,14 +40,6 @@ class RouteController extends Admin
         return $this->json($response);
     }
 
-    /**
-     * Service to regenerate routes
-     * @GET
-     * @route /admin/routes/gen
-     * @label Regenerate routes
-     * @visible false
-     * @return string HTML
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/routes/gen')]
     #[Label('Regenerate routes')]

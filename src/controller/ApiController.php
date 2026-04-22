@@ -23,20 +23,9 @@ class ApiController extends AuthAdminController
     const OPENAPI_DOC = 'openapi';
     const HTML_DOC = 'html';
 
-    /**
-     * @Injectable
-     * @var \PSFS\services\DocumentorService $srv
-     */
     #[Injectable(class: DocumentorService::class)]
     protected DocumentorService $srv;
 
-    /**
-     * @GET
-     * @route /admin/api/docs
-     * @icon fa-books
-     * @label API documentation
-     * @return string HTML
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/api/docs')]
     #[Icon('fa-books')]

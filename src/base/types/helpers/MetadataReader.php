@@ -3,9 +3,13 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\config\Config;
+use PSFS\base\exception\MetadataContractException;
 use PSFS\base\Logger;
+use PSFS\base\types\helpers\attributes\ApiDeprecated;
+use PSFS\base\types\helpers\attributes\ApiReturn;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\attributes\MetadataAttributeContract;
+use PSFS\base\types\helpers\attributes\Payload;
 use PSFS\base\types\helpers\attributes\VarType;
 use ReflectionClass;
 use ReflectionMethod;
@@ -29,16 +33,94 @@ class MetadataReader
         mixed $default = null,
         ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
     ): mixed {
+        $doc = $doc ?? '';
         if (self::attributesEnabled()) {
             $value = self::readFromAttributes($tag, $reflector);
             if (null !== $value) {
                 return $value;
             }
-            if (!empty($doc)) {
-                self::logLegacyFallback('annotation_' . $tag);
+            if ($doc !== '' && self::hasLegacyTag($tag, $doc)) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException($tag, $reflector);
+                }
+                self::logLegacyFallback('annotation_' . strtolower($tag));
             }
         }
         return self::readFromDoc($tag, $doc, $default);
+    }
+
+    public static function hasDeprecated(
+        ?ReflectionMethod $method = null,
+        ?string $doc = ''
+    ): bool {
+        $doc = $doc ?? '';
+        if (self::attributesEnabled() && null !== $method) {
+            $attrs = $method->getAttributes(ApiDeprecated::class);
+            if (!empty($attrs)) {
+                return (bool)$attrs[0]->newInstance()->resolve();
+            }
+            if ($doc !== '' && MetadataDocParser::hasDeprecatedTag($doc)) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException('deprecated', $method);
+                }
+                self::logLegacyFallback('annotation_deprecated');
+            }
+        }
+        return MetadataDocParser::hasDeprecatedTag($doc);
+    }
+
+    public static function extractPayload(
+        string $defaultNamespace,
+        ?ReflectionMethod $method = null,
+        ?string $doc = ''
+    ): string {
+        $doc = $doc ?? '';
+        $value = null;
+        if (self::attributesEnabled() && null !== $method) {
+            $attrs = $method->getAttributes(Payload::class);
+            if (!empty($attrs)) {
+                $value = $attrs[0]->newInstance()->value;
+            } elseif ($doc !== '' && MetadataDocParser::hasTag('payload', $doc)) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException('payload', $method);
+                }
+                self::logLegacyFallback('annotation_payload');
+            }
+        }
+        if ($value === null && self::annotationsFallbackEnabled()) {
+            $value = MetadataDocParser::readTagValue('payload', $doc, null);
+        }
+        $value = is_string($value) ? trim($value) : '';
+        if ($value === '') {
+            return $defaultNamespace;
+        }
+        return $value;
+    }
+
+    public static function extractReturnSpec(
+        ?ReflectionMethod $method = null,
+        ?string $doc = ''
+    ): ?string {
+        $doc = $doc ?? '';
+        if (self::attributesEnabled() && null !== $method) {
+            $attrs = $method->getAttributes(ApiReturn::class);
+            if (!empty($attrs)) {
+                return $attrs[0]->newInstance()->value;
+            }
+            $docReturn = MetadataDocParser::readReturnSpec($doc);
+            $docHasLegacyReturnDsl = is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1;
+            if ($docHasLegacyReturnDsl) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException('return', $method);
+                }
+                self::logLegacyFallback('annotation_return');
+            }
+        }
+        if (!self::annotationsFallbackEnabled()) {
+            return null;
+        }
+        $docReturn = MetadataDocParser::readReturnSpec($doc);
+        return is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1 ? $docReturn : null;
     }
 
     public static function hasInjectable(?ReflectionProperty $property, ?string $doc = ''): bool
@@ -49,8 +131,9 @@ class MetadataReader
 
     public static function extractVarType(?ReflectionProperty $property, ?string $doc = ''): ?string
     {
+        $doc = $doc ?? '';
         if (self::attributesEnabled() && null !== $property) {
-            $injectable = self::resolveInjectableDefinition($property, $doc ?: '');
+            $injectable = self::resolveInjectableDefinition($property, $doc);
             if ($injectable['source'] === 'attribute' && is_string($injectable['class'])) {
                 return $injectable['class'];
             }
@@ -63,11 +146,17 @@ class MetadataReader
             if (null !== $propertyType) {
                 return $propertyType;
             }
-            if (!empty($doc)) {
+            if ($doc !== '' && MetadataDocParser::hasTag('var', $doc)) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException('var', $property);
+                }
                 self::logLegacyFallback('annotation_var');
             }
         }
-        $type = self::readVarTypeFromDoc($doc ?: '');
+        if (!self::annotationsFallbackEnabled()) {
+            return null;
+        }
+        $type = self::readVarTypeFromDoc($doc);
         return is_string($type) && trim($type) !== '' ? $type : null;
     }
 
@@ -98,11 +187,14 @@ class MetadataReader
                 ];
             }
             if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
+                if (!self::annotationsFallbackEnabled()) {
+                    throw self::legacyFallbackDisabledException('injectable', $property);
+                }
                 self::logLegacyFallback('annotation_injectable');
             }
         }
 
-        if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
+        if (self::annotationsFallbackEnabled() && $doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
             $className = self::readVarTypeFromDoc($doc);
             $className = is_string($className) ? $className : '';
             return [
@@ -129,7 +221,12 @@ class MetadataReader
 
     private static function attributesEnabled(): bool
     {
-        return (bool)Config::getParam('metadata.attributes.enabled', false);
+        return (bool)Config::getParam('metadata.attributes.enabled', true);
+    }
+
+    private static function annotationsFallbackEnabled(): bool
+    {
+        return (bool)Config::getParam('metadata.annotations.fallback.enabled', true);
     }
 
     private static function readFromAttributes(
@@ -189,6 +286,34 @@ class MetadataReader
         }
         self::$legacyFallbackLogs[$context] = true;
         Logger::log('[LegacyMetadata] ' . $context, LOG_NOTICE);
+    }
+
+    private static function hasLegacyTag(string $tag, string $doc): bool
+    {
+        $normalizedTag = strtolower($tag);
+        return match ($normalizedTag) {
+            'http' => MetadataDocParser::hasHttpMethodTag($doc),
+            default => MetadataDocParser::hasTag($normalizedTag, $doc),
+        };
+    }
+
+    private static function legacyFallbackDisabledException(
+        string $tag,
+        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
+    ): MetadataContractException {
+        $where = 'unknown';
+        if ($reflector instanceof ReflectionMethod) {
+            $where = $reflector->getDeclaringClass()->getName() . '::' . $reflector->getName();
+        } elseif ($reflector instanceof ReflectionProperty) {
+            $where = $reflector->getDeclaringClass()->getName() . '::$' . $reflector->getName();
+        } elseif ($reflector instanceof ReflectionClass) {
+            $where = $reflector->getName();
+        }
+        return new MetadataContractException(sprintf(
+            '[MetadataContract] Annotation fallback disabled for `%s` at %s',
+            $tag,
+            $where
+        ));
     }
 
 }

@@ -20,23 +20,13 @@ use PSFS\services\GeneratorService;
 /**
  * Class GeneratorController
  * @package PSFS\controller
- * @domain ROOT
  */
 class GeneratorController extends Admin
 {
-    /**
-     * @Injectable
-     * @var \PSFS\services\GeneratorService Service that generates directory structures
-     */
     #[Injectable(class: GeneratorService::class)]
     protected GeneratorService $gen;
 
     /**
-     * @label Generate new module
-     * @GET
-     * @route /admin/module
-     * @icon fa-layer-plus
-     * @return string
      * @throws FormException
      */
     #[Label('Generate new module')]
@@ -54,12 +44,6 @@ class GeneratorController extends Admin
         ));
     }
 
-    /**
-     * @POST
-     * @route /admin/module
-     * @label Module generator
-     * @return string
-     */
     #[HttpMethod('POST')]
     #[Route('/admin/module')]
     #[Label('Module generator')]

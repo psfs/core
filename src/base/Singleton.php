@@ -118,7 +118,8 @@ class Singleton
             $configService = Config::getInstance();
             $repository = $this->createReflectionRepository(get_class($this));
             $properties = $repository->read();
-            if (!$properties || true === $configService->getDebugMode()) {
+            $forceMetadataRefresh = (bool)$configService->getParam('metadata.attributes.enabled', true);
+            if ($forceMetadataRefresh || !$properties || true === $configService->getDebugMode()) {
                 $properties = InjectorHelper::getClassProperties(get_class($this));
                 $repository->save($properties);
             }
@@ -153,6 +154,8 @@ class Singleton
         if (Cache::canUseRedis()) {
             $ttl = (int)Config::getParam('cache.reflections.ttl', 300);
             $version = (string)Config::getParam('cache.var', 'v1');
+            // Invalidate legacy reflection metadata snapshots after the attribute migration.
+            $version .= '|metadata-attr-v2';
             return new RedisReadThroughReflectionCacheRepository($fileRepository, $ttl, $version);
         }
         return $fileRepository;

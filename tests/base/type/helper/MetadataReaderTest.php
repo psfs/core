@@ -9,9 +9,12 @@ use PSFS\base\types\traits\Api\Crud\ApiListTrait;
 use PSFS\base\types\traits\Router\ModulesTrait;
 use PSFS\base\types\traits\TemplateTrait;
 use PSFS\base\config\Config;
+use PSFS\base\exception\MetadataContractException;
 use PSFS\base\types\helpers\MetadataReader;
 use PSFS\base\types\helpers\attributes\Action;
+use PSFS\base\types\helpers\attributes\ApiDeprecated;
 use PSFS\base\types\helpers\attributes\Api;
+use PSFS\base\types\helpers\attributes\ApiReturn;
 use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\DefaultValue;
 use PSFS\base\types\helpers\attributes\HttpMethod;
@@ -20,6 +23,7 @@ use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\attributes\Label;
 use PSFS\base\types\helpers\attributes\Required;
 use PSFS\base\types\helpers\attributes\Route;
+use PSFS\base\types\helpers\attributes\Payload;
 use PSFS\base\types\helpers\attributes\VarType;
 use PSFS\base\types\helpers\attributes\Values;
 use PSFS\base\types\helpers\attributes\Visible;
@@ -66,6 +70,7 @@ class MetadataReaderTest extends TestCase
     public function testGetTagValueFallsBackToDocWhenAttributeMissing(): void
     {
         $this->setAttributesEnabled(true);
+        $this->setAnnotationsFallbackEnabled(true);
         $method = new \ReflectionMethod(MetadataReaderDocExample::class, 'routeFromDoc');
         $doc = (string)$method->getDocComment();
 
@@ -77,6 +82,7 @@ class MetadataReaderTest extends TestCase
     public function testLegacyFallbackLogIsRegisteredOncePerContext(): void
     {
         $this->setAttributesEnabled(true);
+        $this->setAnnotationsFallbackEnabled(true);
         $method = new \ReflectionMethod(MetadataReaderDocExample::class, 'routeFromDoc');
         $doc = (string)$method->getDocComment();
 
@@ -168,6 +174,7 @@ class MetadataReaderTest extends TestCase
     public function testMethodTagParityUsesAnnotationsWhenAttributesDisabled(): void
     {
         $this->setAttributesEnabled(false);
+        $this->setAnnotationsFallbackEnabled(true);
         $method = new \ReflectionMethod(MetadataReaderParityExample::class, 'mixedMethodTags');
         $doc = (string)$method->getDocComment();
 
@@ -183,6 +190,7 @@ class MetadataReaderTest extends TestCase
     public function testClassAndPropertyTagParityWithAttributesAndAnnotationFallback(): void
     {
         $this->setAttributesEnabled(true);
+        $this->setAnnotationsFallbackEnabled(true);
         $class = new \ReflectionClass(MetadataReaderParityExample::class);
         $classDoc = (string)$class->getDocComment();
         $property = new \ReflectionProperty(MetadataReaderParityExample::class, 'mixedPropertyTags');
@@ -198,6 +206,27 @@ class MetadataReaderTest extends TestCase
         $this->assertSame('false', MetadataReader::getTagValue('required', $fallbackDoc, true, $fallbackProperty));
         $this->assertSame('doc_only_values', MetadataReader::getTagValue('values', $fallbackDoc, null, $fallbackProperty));
         $this->assertSame('doc_only_default', MetadataReader::getTagValue('default', $fallbackDoc, null, $fallbackProperty));
+    }
+
+    public function testThrowsWhenFallbackDisabledAndLegacyTagPresent(): void
+    {
+        $this->setAttributesEnabled(true);
+        $this->setAnnotationsFallbackEnabled(false);
+        $method = new \ReflectionMethod(MetadataReaderDocExample::class, 'routeFromDoc');
+
+        $this->expectException(MetadataContractException::class);
+        MetadataReader::getTagValue('route', (string)$method->getDocComment(), null, $method);
+    }
+
+    public function testPayloadDeprecatedAndReturnPreferAttributes(): void
+    {
+        $this->setAttributesEnabled(true);
+        $this->setAnnotationsFallbackEnabled(false);
+        $method = new \ReflectionMethod(MetadataReaderAttributePayloadExample::class, 'create');
+
+        $this->assertSame('{__API__}', MetadataReader::extractPayload('DefaultModel', $method, (string)$method->getDocComment()));
+        $this->assertSame('\PSFS\base\dto\JsonResponse(data={__API__})', MetadataReader::extractReturnSpec($method, (string)$method->getDocComment()));
+        $this->assertTrue(MetadataReader::hasDeprecated($method, (string)$method->getDocComment()));
     }
 
     public function testInjectableParityForCoreMigratedProperties(): void
@@ -225,6 +254,14 @@ class MetadataReaderTest extends TestCase
     {
         $config = $this->configBackup;
         $config['metadata.attributes.enabled'] = $enabled;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+    }
+
+    private function setAnnotationsFallbackEnabled(bool $enabled): void
+    {
+        $config = Config::getInstance()->dumpConfig();
+        $config['metadata.annotations.fallback.enabled'] = $enabled;
         Config::save($config, []);
         Config::getInstance()->loadConfigData(true);
     }
@@ -337,4 +374,14 @@ class ModulesTraitHostExample
 abstract class ApiListTraitHostExample
 {
     use ApiListTrait;
+}
+
+class MetadataReaderAttributePayloadExample
+{
+    #[Payload('{__API__}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data={__API__})')]
+    #[ApiDeprecated(true)]
+    public function create(): void
+    {
+    }
 }

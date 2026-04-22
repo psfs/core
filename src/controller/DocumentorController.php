@@ -26,20 +26,11 @@ class DocumentorController extends Controller
      */
     private static array $docsCache = [];
 
-    /**
-     * @Injectable
-     * @var \PSFS\services\DocumentorService $srv
-     */
     #[Injectable(class: DocumentorService::class)]
     protected DocumentorService $srv;
 
     /**
-     * @GET
-     * @CACHE 600
-     * @label API documentation generator
-     * @route /{domain}/api/doc
      * @param string $domain
-     * @return mixed|string
      * @throws \ReflectionException
      */
     #[HttpMethod('GET')]
@@ -105,8 +96,6 @@ class DocumentorController extends Controller
     }
 
     /**
-     * @GET
-     * @route /admin/{domain}/swagger-ui
      * @param string $domain
      * @return string HTML
      */

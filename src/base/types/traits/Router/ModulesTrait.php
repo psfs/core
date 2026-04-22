@@ -25,10 +25,6 @@ trait ModulesTrait
 {
     use SluggerTrait;
 
-    /**
-     * @Injectable
-     * @var Finder
-     */
     #[Injectable(class: Finder::class)]
     protected $finder;
     /**

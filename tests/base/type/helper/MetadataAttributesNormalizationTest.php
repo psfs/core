@@ -5,7 +5,9 @@ namespace PSFS\tests\base\type\helper;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\types\helpers\attributes\Action;
+use PSFS\base\types\helpers\attributes\ApiDeprecated;
 use PSFS\base\types\helpers\attributes\Api;
+use PSFS\base\types\helpers\attributes\ApiReturn;
 use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\DefaultValue;
 use PSFS\base\types\helpers\attributes\Header;
@@ -14,6 +16,7 @@ use PSFS\base\types\helpers\attributes\Icon;
 use PSFS\base\types\helpers\attributes\Label;
 use PSFS\base\types\helpers\attributes\Required;
 use PSFS\base\types\helpers\attributes\Route;
+use PSFS\base\types\helpers\attributes\Payload;
 use PSFS\base\types\helpers\attributes\Values;
 use PSFS\base\types\helpers\attributes\VarType;
 use PSFS\base\types\helpers\attributes\Visible;
@@ -28,6 +31,8 @@ class MetadataAttributesNormalizationTest extends TestCase
         $this->assertSame('fa-cogs', (new Icon('  fa-cogs  '))->resolve());
         $this->assertSame('My Label', (new Label('  My Label  '))->resolve());
         $this->assertSame('/admin/config', (new Route('  /admin/config  '))->resolve());
+        $this->assertSame('{__API__}', (new Payload('  {__API__}  '))->resolve());
+        $this->assertSame('\\PSFS\\base\\dto\\JsonResponse(data={__API__})', (new ApiReturn('  \\PSFS\\base\\dto\\JsonResponse(data={__API__})  '))->resolve());
         $this->assertSame('\\PSFS\\base\\Security', (new VarType('  \\PSFS\\base\\Security  '))->resolve());
     }
 
@@ -66,5 +71,6 @@ class MetadataAttributesNormalizationTest extends TestCase
         $this->assertTrue((new Required(true))->resolve());
         $this->assertFalse((new Visible(false))->resolve());
         $this->assertTrue((new Cacheable(true))->resolve());
+        $this->assertTrue((new ApiDeprecated(true))->resolve());
     }
 }

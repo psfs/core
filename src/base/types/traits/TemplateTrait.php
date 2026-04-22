@@ -12,10 +12,6 @@ use PSFS\base\types\helpers\attributes\Injectable;
  */
 trait TemplateTrait
 {
-    /**
-     * @Injectable
-     * @var \PSFS\base\Template
-     */
     #[Injectable(class: Template::class)]
     protected Template $tpl;
 

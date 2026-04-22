@@ -11,11 +11,6 @@ use PSFS\base\types\helpers\attributes\Injectable;
  */
 class ModuleForm extends Form
 {
-
-    /**
-     * @Injectable
-     * @var \PSFS\base\Router
-     */
     #[Injectable(class: Router::class)]
     protected Router $router;
 

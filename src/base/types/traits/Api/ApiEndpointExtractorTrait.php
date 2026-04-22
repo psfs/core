@@ -8,7 +8,6 @@ use PSFS\base\Request;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\MetadataReader;
-use PSFS\base\types\helpers\attributes\Header;
 use PSFS\base\types\helpers\RouterHelper;
 use ReflectionClass;
 use ReflectionMethod;
@@ -27,17 +26,17 @@ trait ApiEndpointExtractorTrait
     /**
      * Contract: implemented by composing trait/class (DocumentorHelperTrait).
      */
-    abstract protected function checkDeprecated($comments = '');
+    abstract protected function checkDeprecated(ReflectionMethod $method, string $comments = ''): bool;
 
     /**
      * Contract: implemented by composing trait/class (DocumentorHelperTrait).
      */
-    abstract protected function extractReturn($model, $comments = '');
+    abstract protected function extractReturn(string $model, ReflectionMethod $method, string $comments = ''): array;
 
     /**
      * Contract: implemented by composing trait/class (DocumentorHelperTrait).
      */
-    abstract protected function extractPayload($model, $comments = '');
+    abstract protected function extractPayload(string $model, ReflectionMethod $method, string $comments = ''): array;
 
     /**
      * Contract: implemented by composing trait/class (SwaggerDtoComposerTrait).
@@ -68,7 +67,7 @@ trait ApiEndpointExtractorTrait
         }
         $api = $this->extractApi($reflection->getDocComment() ?: '', $reflection);
         list($route, $info) = RouterHelper::extractRouteInfo($method, $api, $module);
-        if (!$this->canExposeRoute($info, $docComments)) {
+        if (!$this->canExposeRoute($info)) {
             return null;
         }
         $modelNamespace = str_replace('Api', 'Models', $namespace);
@@ -83,9 +82,9 @@ trait ApiEndpointExtractorTrait
         );
     }
 
-    private function canExposeRoute(array $routeInfo, string $docComments): bool
+    private function canExposeRoute(array $routeInfo): bool
     {
-        return ($routeInfo['visible'] ?? false) && !$this->checkDeprecated($docComments);
+        return (bool)($routeInfo['visible'] ?? false);
     }
 
     private function buildMethodInfo(
@@ -99,7 +98,7 @@ trait ApiEndpointExtractorTrait
     ): ?array {
         $methodInfo = null;
         try {
-            $return = $this->extractReturn($modelNamespace, $docComments);
+            $return = $this->extractReturn($modelNamespace, $method, $docComments);
             $url = $this->extractEndpointUrl($route, $module);
             $methodInfo = [
                 'url' => $url,
@@ -110,6 +109,9 @@ trait ApiEndpointExtractorTrait
                 'class' => $reflection->getShortName(),
             ];
             unset($methodInfo['return']['objects']);
+            if ($this->checkDeprecated($method, $docComments)) {
+                return null;
+            }
             $this->setRequestParams($method, $methodInfo, $modelNamespace, $docComments);
             $this->setQueryParams($method, $methodInfo);
             $this->setRequestHeaders($reflection, $methodInfo);
@@ -193,18 +195,7 @@ trait ApiEndpointExtractorTrait
     private function extractHeaderDefinition(ReflectionProperty $property): ?array
     {
         $doc = (string)$property->getDocComment();
-        $headerAttr = $property->getAttributes(Header::class);
-        $headerName = null;
-        if (!empty($headerAttr)) {
-            $headerName = $headerAttr[0]->newInstance()->value;
-        }
-        $headers = [];
-        if (null === $headerName) {
-            preg_match('/@header\ (.*)\n/i', $doc, $headers);
-            if (count($headers)) {
-                $headerName = $headers[1];
-            }
-        }
+        $headerName = MetadataReader::getTagValue('header', $doc, null, $property);
         if (empty($headerName)) {
             return null;
         }
@@ -227,20 +218,26 @@ trait ApiEndpointExtractorTrait
      */
     protected function setRequestParams(ReflectionMethod $method, &$methodInfo, $modelNamespace, $docComments)
     {
-        $this->setRequestPayload($methodInfo, $modelNamespace, $docComments);
+        $this->setRequestPayload($method, $methodInfo, $modelNamespace, $docComments);
         $parameters = $this->extractParameterTypes($method, $docComments);
         if (!empty($parameters)) {
             $methodInfo['parameters'] = $parameters;
         }
     }
 
-    private function setRequestPayload(array &$methodInfo, string $modelNamespace, string $docComments): void
+    private function setRequestPayload(
+        ReflectionMethod $method,
+        array &$methodInfo,
+        string $modelNamespace,
+        string $docComments
+    ): void
     {
         if (!in_array($methodInfo['method'], ['POST', 'PUT'], true)) {
             return;
         }
         list($payloadNamespace, $payloadNamespaceShortName, $payloadDto, $isArray) = $this->extractPayload(
             $modelNamespace,
+            $method,
             $docComments
         );
         if (!count($payloadDto)) {

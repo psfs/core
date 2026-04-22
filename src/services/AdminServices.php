@@ -17,22 +17,12 @@ class AdminServices extends Service
 {
     use TestTrait;
 
-    /**
-     * @Injectable
-     * @var \PSFS\base\config\Config
-     */
     #[Injectable(class: Config::class)]
     protected Config $config;
-    /**
-     * @Injectable
-     * @var \PSFS\base\Security
-     */
+
     #[Injectable(class: Security::class)]
     protected Security $security;
-    /**
-     * @Injectable
-     * @var \PSFS\base\Template
-     */
+
     #[Injectable(class: Template::class)]
     protected Template $tpl;
 

@@ -33,14 +33,6 @@ class ConfigController extends Admin
         }
     }
 
-    /**
-     * Service that returns available configuration parameters
-     * @GET
-     * @route /admin/config/params
-     * @label PSFS configuration parameters
-     * @visible false
-     * @return \PSFS\base\dto\JsonResponse(data=array)
-     */
     #[HttpMethod('GET')]
     #[RouteAttribute('/admin/config/params')]
     #[Label('PSFS configuration parameters')]
@@ -57,15 +49,6 @@ class ConfigController extends Admin
         return $this->json($response);
     }
 
-    /**
-     * Handles platform configuration
-     * @GET
-     * @Route /admin/config
-     * @label General configuration
-     * @icon fa-cogs
-     * @return string HTML
-     * @throws FormException
-     */
     #[HttpMethod('GET')]
     #[RouteAttribute('/admin/config')]
     #[Label('General configuration')]
@@ -90,14 +73,6 @@ class ConfigController extends Admin
         ));
     }
 
-    /**
-     * Service that stores platform configuration
-     * @POST
-     * @route /admin/config
-     * @visible false
-     * @return string
-     * @throws FormException|ConfigException
-     */
     #[HttpMethod('POST')]
     #[RouteAttribute('/admin/config')]
     #[Visible(false)]

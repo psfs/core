@@ -13,6 +13,8 @@ use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Label;
+use PSFS\base\types\helpers\attributes\ApiReturn;
+use PSFS\base\types\helpers\attributes\Payload;
 use PSFS\base\types\helpers\attributes\Route as RouteAttribute;
 use PSFS\base\types\traits\Api\ApiCrudResponseTrait;
 use PSFS\base\types\traits\Api\Crud\ApiListTrait;
@@ -85,18 +87,11 @@ abstract class Api extends Singleton
         $this->action = $actionMap[(string)$method] ?? self::API_ACTION_LIST;
     }
 
-    /**
-     * @label Get list of {__API__} elements filtered
-     * @GET
-     * @CACHE 600
-     * @ROUTE /{__DOMAIN__}/api/{__API__}
-     *
-     * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
-     */
     #[Label('Get list of {__API__} elements filtered')]
     #[HttpMethod('GET')]
     #[Cacheable(true)]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data=[{__API__}])')]
     public function modelList()
     {
         $this->action = self::API_ACTION_LIST;
@@ -110,21 +105,11 @@ abstract class Api extends Singleton
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
     }
 
-    /**
-     * @label Get unique element for {__API__}
-     *
-     * @GET
-     * @CACHE 600
-     * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
-     *
-     * @param int $pk
-     *
-     * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
     #[Label('Get unique element for {__API__}')]
     #[HttpMethod('GET')]
     #[Cacheable(true)]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}/{pk}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data={__API__})')]
     public function get($pk)
     {
         $this->action = self::API_ACTION_GET;
@@ -139,18 +124,11 @@ abstract class Api extends Singleton
         return $this->json(new JsonResponse($return, $code === 200, $total, $pages, $message), $code);
     }
 
-    /**
-     * @label Create a new {__API__}
-     *
-     * @POST
-     * @PAYLOAD {__API__}
-     * @ROUTE /{__DOMAIN__}/api/{__API__}
-     *
-     * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
     #[Label('Create a new {__API__}')]
     #[HttpMethod('POST')]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}')]
+    #[Payload('{__API__}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data={__API__})')]
     public function post()
     {
         $this->action = self::API_ACTION_POST;
@@ -179,21 +157,11 @@ abstract class Api extends Singleton
         return $this->json(new JsonResponse($model, $saved, $saved ? 1 : 0, 0, $message), $status);
     }
 
-    /**
-     * @label Modify {__API__} model
-     *
-     * @PUT
-     * @PAYLOAD {__API__}
-     * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
-     *
-     * @param string $pk
-     *
-     * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     *
-     */
     #[Label('Modify {__API__} model')]
     #[HttpMethod('PUT')]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}/{pk}')]
+    #[Payload('{__API__}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data={__API__})')]
     public function put($pk)
     {
         $this->action = self::API_ACTION_PUT;
@@ -227,19 +195,10 @@ abstract class Api extends Singleton
         return $this->json(new JsonResponse($model, $updated, $updated ? 1 : 0, 0, $message), $status);
     }
 
-    /**
-     * @label Delete {__API__} model
-     *
-     * @DELETE
-     * @ROUTE /{__DOMAIN__}/api/{__API__}/{pk}
-     *
-     * @param string $pk
-     *
-     * @return \PSFS\base\dto\JsonResponse(data={__API__})
-     */
     #[Label('Delete {__API__} model')]
     #[HttpMethod('DELETE')]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}/{pk}')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data={__API__})')]
     public function delete($pk = null)
     {
         $this->action = self::API_ACTION_DELETE;
@@ -265,17 +224,11 @@ abstract class Api extends Singleton
         return $this->json(new JsonResponse(null, $deleted, $deleted ? 1 : 0, 0, $message), ($deleted) ? 200 : 400);
     }
 
-    /**
-     * @label Bulk insert for {__API__} model
-     * @POST
-     * @route /{__DOMAIN__}/api/{__API__}s
-     *
-     * @payload [{__API__}]
-     * @return \PSFS\base\dto\JsonResponse(data=[{__API__}])
-     */
     #[Label('Bulk insert for {__API__} model')]
     #[HttpMethod('POST')]
     #[RouteAttribute('/{__DOMAIN__}/api/{__API__}s')]
+    #[Payload('[{__API__}]')]
+    #[ApiReturn('\PSFS\base\dto\JsonResponse(data=[{__API__}])')]
     public function bulk()
     {
         $this->action = self::API_ACTION_BULK;

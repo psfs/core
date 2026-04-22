@@ -12,17 +12,9 @@ use PSFS\base\types\helpers\attributes\Injectable;
  */
 abstract class SimpleService extends Singleton
 {
-
-    /**
-     * @Injectable
-     * @var \PSFS\base\Logger
-     */
     #[Injectable(class: Logger::class)]
     protected Logger $log;
-    /**
-     * @Injectable
-     * @var \PSFS\base\Cache
-     */
+
     #[Injectable(class: Cache::class)]
     protected Cache $cache;
 

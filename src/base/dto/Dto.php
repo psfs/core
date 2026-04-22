@@ -58,7 +58,7 @@ class Dto extends Singleton implements \JsonSerializable
                         }
                         $dto[$property->getName()] = $value;
                     } else {
-                        $type = InjectorHelper::extractVarType($property->getDocComment());
+                        $type = InjectorHelper::extractVarType((string)$property->getDocComment(), $property);
                         $dto[$property->getName()] = $this->checkCastedValue(
                             $property->getValue($this),
                             $type ?: 'string'
@@ -122,11 +122,7 @@ class Dto extends Singleton implements \JsonSerializable
         $this->setValidationInputData($object);
         if (!empty($object)) {
             $reflector = new \ReflectionClass($this);
-            $properties = InjectorHelper::extractProperties(
-                $reflector,
-                \ReflectionProperty::IS_PUBLIC,
-                InjectorHelper::VAR_PATTERN
-            );
+            $properties = $this->extractPublicPropertyTypes($reflector);
             unset($reflector);
             foreach ($object as $key => $value) {
                 if (property_exists($this, $key) && null !== $value) {
@@ -134,6 +130,21 @@ class Dto extends Singleton implements \JsonSerializable
                 }
             }
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function extractPublicPropertyTypes(\ReflectionClass $reflector): array
+    {
+        $types = [];
+        foreach ($reflector->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $type = InjectorHelper::extractVarType((string)$property->getDocComment(), $property);
+            if (is_string($type) && trim($type) !== '') {
+                $types[$property->getName()] = $type;
+            }
+        }
+        return $types;
     }
 
     /**

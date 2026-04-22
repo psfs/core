@@ -40,6 +40,7 @@ class Config
         'api.query_token.compat' => false,
         'api.token.cookie' => 'X-API-SEC-TOKEN',
         'metadata.attributes.enabled' => true,
+        'metadata.annotations.fallback.enabled' => true,
         'migrations.engine' => 'phinx',
         'migrations.legacy_fallback_enabled' => true,
     ];
@@ -124,6 +125,7 @@ class Config
         'redis.timeout', // Redis timeout for read-through caches
         'job.queue.redis.prefix', // Redis key prefix for PSFS async queue subsystem
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
+        'metadata.annotations.fallback.enabled', // Enable framework annotation metadata fallback
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
         'migrations.engine', // Default migration engine (phinx|propel)
         'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine

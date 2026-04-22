@@ -107,14 +107,6 @@ class UserController extends Admin
         ));
     }
 
-    /**
-     * Method that manages platform administrators
-     * @GET
-     * @route /admin/setup
-     * @icon fa-users
-     * @label PSFS user manager
-     * @return string|null
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/setup')]
     #[Icon('fa-users')]
@@ -151,13 +143,6 @@ class UserController extends Admin
         ));
     }
 
-    /**
-     * Service that stores administrator users
-     * @POST
-     * @route /admin/setup
-     * @visible false
-     * @return string|void
-     */
     #[HttpMethod('POST')]
     #[Route('/admin/setup')]
     #[Visible(false)]
@@ -166,13 +151,6 @@ class UserController extends Admin
         return self::updateAdminUsers();
     }
 
-    /**
-     * Action that renders a generic login form for the restricted area
-     * @GET
-     * @route /admin/login
-     * @visible false
-     * @return string HTML
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/login')]
     #[Visible(false)]
@@ -185,12 +163,6 @@ class UserController extends Admin
         }
     }
 
-    /**
-     * Force session reset and Basic re-authentication challenge.
-     * @GET
-     * @route /admin/switch-user
-     * @visible false
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/switch-user')]
     #[Visible(false)]
@@ -199,12 +171,6 @@ class UserController extends Admin
         return $this->srv->switchUser();
     }
 
-    /**
-     * Force admin locale for the current session and redirect back.
-     * @GET
-     * @route /admin/locale/{locale}
-     * @visible false
-     */
     #[HttpMethod('GET')]
     #[Route('/admin/locale/{locale}')]
     #[Visible(false)]
@@ -232,11 +198,6 @@ class UserController extends Admin
         return '';
     }
 
-    /**
-     * Delete PSFS admin users
-     * @PUT
-     * @route /admin/setup
-     */
     #[HttpMethod('PUT')]
     #[Route('/admin/setup')]
     public function deleteUsers()

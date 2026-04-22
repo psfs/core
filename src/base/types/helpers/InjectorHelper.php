@@ -150,13 +150,7 @@ class InjectorHelper
     public static function checkIsRequired($doc, ReflectionProperty $property = null)
     {
         $doc = self::docValue($doc);
-        if (null !== $property) {
-            $required = MetadataReader::getTagValue('required', $doc, null, $property);
-            if (null !== $required) {
-                return (bool)$required;
-            }
-        }
-        return preg_match('/@required/', $doc, $matches) === 1 && (bool)count($matches);
+        return (bool)MetadataReader::getTagValue('required', $doc, false, $property);
     }
 
     /**

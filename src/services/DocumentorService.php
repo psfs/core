@@ -8,8 +8,8 @@ use PSFS\base\dto\Dto;
 use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\AnnotationHelper;
 use PSFS\base\types\helpers\I18nHelper;
-use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Api\DocumentorHelperTrait;
 use PSFS\base\types\traits\Api\SwaggerFormaterTrait;
@@ -31,7 +31,6 @@ class DocumentorService extends SimpleService
     const MODEL_INTERFACE = ActiveRecordInterface::class;
 
     /**
-     * @Injectable
      * @var \PSFS\base\Router
      */
     #[Injectable(class: Router::class)]
@@ -88,7 +87,7 @@ class DocumentorService extends SimpleService
         $info = [];
         if (Router::exists($namespace) && !I18nHelper::checkI18Class($namespace)) {
             $reflection = new ReflectionClass($namespace);
-            $visible = InjectorHelper::checkIsVisible($reflection->getDocComment());
+            $visible = AnnotationHelper::extractReflectionVisibility((string)$reflection->getDocComment(), $reflection);
             if ($visible && $reflection->isInstantiable()) {
                 foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                     try {

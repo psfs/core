@@ -15,22 +15,14 @@ use PSFS\services\AdminServices;
 /**
  * Class Admin
  * @package PSFS\controller
- * @domain ROOT
  */
 abstract class Admin extends AuthAdminController
 {
     const DOMAIN = 'ROOT';
 
-    /**
-     * @Injectable
-     * @var \PSFS\base\config\Config Configuration service
-     */
     #[Injectable(class: Config::class)]
     protected Config $config;
-    /**
-     * @Injectable
-     * @var \PSFS\services\AdminServices Admin service
-     */
+
     #[Injectable(class: AdminServices::class)]
     protected AdminServices $srv;
 
@@ -52,13 +44,6 @@ abstract class Admin extends AuthAdminController
         }
     }
 
-    /**
-     * Method that manages the administration menu
-     * @GET
-     * @route /admin
-     * @visible false
-     * @return string|null
-     */
     #[HttpMethod('GET')]
     #[Route('/admin')]
     #[Visible(false)]

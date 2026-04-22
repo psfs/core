@@ -28,16 +28,9 @@ class GeneratorService extends SimpleService
     use PropelHelperTrait;
     use StructureTrait;
 
-    /**
-     * @Injectable
-     * @var \PSFS\base\config\Config
-     */
     #[Injectable(class: Config::class)]
     protected Config $config;
-    /**
-     * @Injectable
-     * @var \PSFS\base\Security
-     */
+
     #[Injectable(class: Security::class)]
     protected Security $security;
 

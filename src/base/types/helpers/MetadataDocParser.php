@@ -30,5 +30,37 @@ class MetadataDocParser
         }
         return is_string($type) ? $type : null;
     }
-}
 
+    public static function hasTag(string $tag, string $doc): bool
+    {
+        if ($doc === '') {
+            return false;
+        }
+        return preg_match('/@' . preg_quote($tag, '/') . '\b/im', $doc) === 1;
+    }
+
+    public static function hasHttpMethodTag(string $doc): bool
+    {
+        if ($doc === '') {
+            return false;
+        }
+        return preg_match('/@(GET|POST|PUT|DELETE|HEAD|PATCH)\b/i', $doc) === 1;
+    }
+
+    public static function hasDeprecatedTag(string $doc): bool
+    {
+        if ($doc === '') {
+            return false;
+        }
+        return preg_match('/@deprecated\b/i', $doc) === 1;
+    }
+
+    public static function readReturnSpec(string $doc): ?string
+    {
+        if (preg_match('/@return\s+([^\n\r]*)/im', $doc, $matches) !== 1) {
+            return null;
+        }
+        $value = trim((string)($matches[1] ?? ''));
+        return $value === '' ? null : $value;
+    }
+}
