@@ -7,11 +7,9 @@ use PSFS\base\exception\MetadataContractException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\CacheModeHelper;
 use PSFS\base\types\helpers\MetadataDocParser;
-use PSFS\base\types\helpers\attributes\MetadataAttributeContract;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
-use ReflectionType;
 
 class MetadataEngine implements MetadataEngineInterface
 {
@@ -51,6 +49,7 @@ class MetadataEngine implements MetadataEngineInterface
     private ?\Redis $redis = null;
     private bool $redisReady = false;
     private bool $shutdownRegistered = false;
+    private ?MetadataAttributeBundleBuilder $attributeBundleBuilder = null;
     private static bool $debugOpcacheWarningLogged = false;
 
     public function getTagValue(
@@ -109,7 +108,7 @@ class MetadataEngine implements MetadataEngineInterface
         return $this->definitionResolver()->extractVarType(
             $property,
             $doc,
-            $property === null ? null : $this->extractPropertyType($property->getType()),
+            $property === null ? null : $this->attributeBundleBuilder()->propertyType($property->getType()),
             $property === null ? null : $this->resolveInjectableDefinition($property, $doc)
         );
     }
@@ -288,40 +287,7 @@ class MetadataEngine implements MetadataEngineInterface
      */
     protected function buildClassBundle(ReflectionClass $reflection): array
     {
-        $classTags = $this->extractAttributeTags($reflection);
-        $methodTags = [];
-        foreach ($reflection->getMethods() as $method) {
-            $methodTags[$method->getName()] = $this->extractAttributeTags($method);
-        }
-        $propertyNodes = [];
-        foreach ($reflection->getProperties() as $property) {
-            $propertyNodes[$property->getName()] = [
-                'tags' => $this->extractAttributeTags($property),
-                'type' => $this->extractPropertyType($property->getType()),
-            ];
-        }
-        return [
-            'class_tags' => $classTags,
-            'method_tags' => $methodTags,
-            'property_nodes' => $propertyNodes,
-            'signature' => $this->sourceSignature($reflection),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function extractAttributeTags(ReflectionClass|ReflectionMethod|ReflectionProperty $reflector): array
-    {
-        $tags = [];
-        foreach ($reflector->getAttributes() as $attribute) {
-            $instance = $attribute->newInstance();
-            if (!$instance instanceof MetadataAttributeContract) {
-                continue;
-            }
-            $tags[strtolower($instance::tag())] = $instance->resolve();
-        }
-        return $tags;
+        return $this->attributeBundleBuilder()->build($reflection, $this->sourceSignature($reflection));
     }
 
     private function readFromAttributesBundle(
@@ -772,18 +738,6 @@ class MetadataEngine implements MetadataEngineInterface
         return implode(':', [$mtime, $size]);
     }
 
-    private function extractPropertyType(?ReflectionType $type): ?string
-    {
-        if (null === $type || (method_exists($type, 'isBuiltin') && $type->isBuiltin())) {
-            return null;
-        }
-        $name = method_exists($type, 'getName') ? $type->getName() : null;
-        if (!is_string($name) || $name === '') {
-            return null;
-        }
-        return str_starts_with($name, '\\') ? $name : '\\' . $name;
-    }
-
     private function debugEnabled(): bool
     {
         return (bool)Config::getParam('debug', false);
@@ -950,5 +904,13 @@ class MetadataEngine implements MetadataEngineInterface
             CacheModeHelper::MODE_OPCACHE, CacheModeHelper::MODE_REDIS => false,
             default => true,
         };
+    }
+
+    private function attributeBundleBuilder(): MetadataAttributeBundleBuilder
+    {
+        if (!$this->attributeBundleBuilder instanceof MetadataAttributeBundleBuilder) {
+            $this->attributeBundleBuilder = new MetadataAttributeBundleBuilder();
+        }
+        return $this->attributeBundleBuilder;
     }
 }

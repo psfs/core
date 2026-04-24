@@ -2,7 +2,6 @@
 
 namespace PSFS\base\types\helpers\metadata;
 
-use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\MetadataDocParser;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -85,15 +84,7 @@ final class MetadataDefinitionResolver
      */
     public function resolveInjectableDefinition(?ReflectionProperty $property, string $doc): array
     {
-        if ($this->attributesEnabled && $property !== null) {
-            $injectable = ($this->attributeValue)('injectable', $property);
-            if (is_array($injectable) && isset($injectable['class'])) {
-                return $this->attributeInjectableDefinition($injectable);
-            }
-            $this->handleLegacyInjectable($property, $doc);
-        }
-
-        return $this->legacyInjectableDefinition($doc) ?? $this->emptyInjectableDefinition();
+        return $this->injectableResolver()->resolve($property, $doc);
     }
 
     private function attributeOrLegacyTag(string $tag, ReflectionMethod|ReflectionProperty $reflector, string $doc): mixed
@@ -138,68 +129,14 @@ final class MetadataDefinitionResolver
         return is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1 ? $docReturn : null;
     }
 
-    private function handleLegacyInjectable(ReflectionProperty $property, string $doc): void
+    private function injectableResolver(): MetadataInjectableResolver
     {
-        if ($doc === '' || preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) !== 1) {
-            return;
-        }
-        if (!$this->annotationsFallbackEnabled) {
-            ($this->rejectLegacy)('injectable', $property);
-            return;
-        }
-        ($this->rememberLegacy)('annotation_injectable');
-    }
-
-    /**
-     * @param array<string, mixed> $injectable
-     * @return array{isInjectable:bool,class:?string,singleton:bool,required:bool,source:string}
-     */
-    private function attributeInjectableDefinition(array $injectable): array
-    {
-        return [
-            'isInjectable' => true,
-            'class' => is_string($injectable['class']) ? $injectable['class'] : null,
-            'singleton' => (bool)($injectable['singleton'] ?? true),
-            'required' => (bool)($injectable['required'] ?? true),
-            'source' => 'attribute',
-        ];
-    }
-
-    /**
-     * @return array{isInjectable:bool,class:?string,singleton:bool,required:bool,source:string}|null
-     */
-    private function legacyInjectableDefinition(string $doc): ?array
-    {
-        if (
-            !$this->annotationsFallbackEnabled
-            || $doc === ''
-            || preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) !== 1
-        ) {
-            return null;
-        }
-        $className = MetadataDocParser::readVarType($doc);
-        $className = is_string($className) ? trim($className) : '';
-
-        return [
-            'isInjectable' => $className !== '',
-            'class' => $className !== '' ? $className : null,
-            'singleton' => true,
-            'required' => true,
-            'source' => 'annotation',
-        ];
-    }
-
-    /**
-     * @return array{isInjectable:bool,class:null,singleton:bool,required:bool,source:null}
-     */
-    private function emptyInjectableDefinition(): array
-    {
-        return [
-            'isInjectable' => false,
-            'class' => null,
-            'singleton' => true,
-            'required' => true,
-            'source' => null,
-        ];
+        return new MetadataInjectableResolver(
+            $this->attributesEnabled,
+            $this->annotationsFallbackEnabled,
+            $this->attributeValue,
+            $this->rejectLegacy,
+            $this->rememberLegacy
+        );
     }
 }

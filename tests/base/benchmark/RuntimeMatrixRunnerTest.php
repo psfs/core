@@ -4,6 +4,8 @@ namespace PSFS\tests\base\benchmark;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\benchmark\HttpLoadRunner;
+use PSFS\base\benchmark\RuntimeMatrixEnvironment;
+use PSFS\base\benchmark\RuntimeMatrixReportWriter;
 use PSFS\base\benchmark\RuntimeMatrixRunner;
 use RuntimeException;
 
@@ -488,6 +490,92 @@ class RuntimeMatrixRunnerTest extends TestCase
         } catch (RuntimeException) {
             $this->addToAssertionCount(1);
         }
+    }
+
+    public function testExtractedEnvironmentHandlesConfigHealthAndCommands(): void
+    {
+        unlink($this->configFile);
+        $environment = new RuntimeMatrixEnvironment(
+            $this->tmpRoot,
+            $this->composeFile,
+            $this->configFile,
+            ['php-s' => ['service' => 'php', 'base_url' => 'http://127.0.0.1:8008']]
+        );
+
+        $environment->assertReady();
+        $this->assertSame('{}' . PHP_EOL, $environment->readConfigRaw());
+
+        $environment->applyConfigScenario([
+            'runtime' => 'php-s',
+            'debug' => false,
+            'opcache' => true,
+            'redis' => false,
+        ]);
+        $config = json_decode($environment->readConfigRaw(), true);
+        $this->assertSame('OPCACHE', $config['psfs.cache.mode']);
+        $this->assertSame('ok', trim($environment->runCommand('printf ok')));
+        $environment->waitForHealth('data://text/plain,{"ok":true}', 1);
+
+        $this->expectException(RuntimeException::class);
+        $environment->runCommand('php -r "exit(7);"');
+    }
+
+    public function testExtractedEnvironmentUsesCommandRunnerForDockerOperations(): void
+    {
+        $commands = [];
+        $environment = new RuntimeMatrixEnvironment(
+            $this->tmpRoot,
+            $this->composeFile,
+            $this->configFile,
+            [
+                'php-s' => ['service' => 'php', 'base_url' => 'http://127.0.0.1:8008'],
+                'swoole' => ['service' => 'php-swoole', 'base_url' => 'http://127.0.0.1:8011'],
+            ],
+            static function (string $command, array $env) use (&$commands): string {
+                $commands[] = [$command, $env];
+                if (str_contains($command, 'ps -q')) {
+                    return "container-id\n";
+                }
+                if (str_contains($command, 'docker stats')) {
+                    return "2.50%|64MiB / 1GiB\n";
+                }
+                return "ok\n";
+            }
+        );
+
+        $environment->recreateRuntimeService('php', true);
+        $environment->restoreRuntimeDefaults('');
+        $environment->prepareBenchmarkRoutes();
+        $stats = $environment->collectContainerStats('php');
+        $composeOutput = $environment->runDockerComposeCommand('ps');
+
+        $this->assertSame(['cpu' => '2.50%', 'mem' => '64MiB / 1GiB'], $stats);
+        $this->assertSame("ok\n", $composeOutput);
+        $this->assertCount(7, $commands);
+        $this->assertSame('1', $commands[0][1]['PHP_OPCACHE']);
+        $this->assertSame('0', $commands[1][1]['PHP_OPCACHE']);
+    }
+
+    public function testExtractedReportWriterBuildsAndStoresReports(): void
+    {
+        $writer = new RuntimeMatrixReportWriter($this->outputDir);
+        $writer->ensureOutputDirectory();
+        $summary = $writer->buildSummary([
+            [
+                'scenario' => ['runtime' => 'php-s', 'debug' => false, 'opcache' => true, 'redis' => false],
+                'profiles' => [
+                    ['profile' => 'L1', 'rps' => 1200.5, 'p95_ms' => 2.2, 'p99_ms' => 3.3, 'error_rate' => 0.0],
+                ],
+            ],
+        ]);
+
+        $report = ['summary' => $summary];
+        $writer->writeReports($report);
+
+        $this->assertSame(1, $summary['row_count']);
+        $this->assertStringContainsString('| php-s | 0 | 1 | 0 | L1 |', $writer->buildMarkdownSummary($report));
+        $this->assertFileExists($this->outputDir . DIRECTORY_SEPARATOR . 'latest.json');
+        $this->assertFileExists($this->outputDir . DIRECTORY_SEPARATOR . 'latest.md');
     }
 
     private function newFakeRunner(bool $failOnProfile = false): RuntimeMatrixRunner

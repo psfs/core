@@ -23,6 +23,8 @@ class RuntimeMatrixRunner
     private int $warmupRequests;
     private int $healthTimeout;
     private int $requestTimeout;
+    private ?RuntimeMatrixEnvironment $environment = null;
+    private ?RuntimeMatrixReportWriter $reportWriter = null;
 
     public function __construct(
         string $projectRoot,
@@ -148,29 +150,7 @@ class RuntimeMatrixRunner
      */
     protected function buildSummary(array $scenarioResults): array
     {
-        $rows = [];
-        foreach ($scenarioResults as $scenarioResult) {
-            $scenario = $scenarioResult['scenario'];
-            foreach ($scenarioResult['profiles'] as $profile) {
-                $rows[] = [
-                    'runtime' => $scenario['runtime'],
-                    'debug' => $scenario['debug'] ? 1 : 0,
-                    'opcache' => $scenario['opcache'] ? 1 : 0,
-                    'redis' => $scenario['redis'] ? 1 : 0,
-                    'profile' => $profile['profile'],
-                    'rps' => $profile['rps'],
-                    'p95_ms' => $profile['p95_ms'],
-                    'p99_ms' => $profile['p99_ms'],
-                    'error_rate' => $profile['error_rate'],
-                ];
-            }
-        }
-
-        return [
-            'scenario_count' => count($scenarioResults),
-            'row_count' => count($rows),
-            'rows' => $rows,
-        ];
+        return $this->reportWriter()->buildSummary($scenarioResults);
     }
 
     protected function warmup(string $url, int $concurrency, int $requests): void
@@ -212,18 +192,7 @@ class RuntimeMatrixRunner
 
     protected function waitForHealth(string $url, int $timeoutSeconds): void
     {
-        $deadline = microtime(true) + max(1, $timeoutSeconds);
-        while (microtime(true) < $deadline) {
-            $response = @file_get_contents($url);
-            if (is_string($response) && $response !== '') {
-                $decoded = json_decode($response, true);
-                if (is_array($decoded) && ($decoded['ok'] ?? false) === true) {
-                    return;
-                }
-            }
-            usleep(250000);
-        }
-        throw new RuntimeException('Health check failed for ' . $url);
+        $this->environment()->waitForHealth($url, $timeoutSeconds);
     }
 
     /**
@@ -250,29 +219,14 @@ class RuntimeMatrixRunner
      */
     protected function applyConfigScenario(array $scenario): void
     {
-        $current = json_decode($this->readConfigRaw(), true);
-        if (!is_array($current)) {
-            $current = [];
-        }
-        $current['debug'] = (bool)$scenario['debug'];
-        $current['psfs.redis'] = (bool)$scenario['redis'];
-        $current['redis.host'] = 'redis';
-        $current['redis.port'] = 6379;
-        $current['redis.timeout'] = 0.2;
-        $current['metadata.engine.redis.enabled'] = (bool)$scenario['redis'];
-        $current['metadata.engine.opcache.enabled'] = (bool)$scenario['opcache'];
-        $current['psfs.cache.mode'] = $this->resolveCacheMode((bool)$scenario['opcache'], (bool)$scenario['redis']);
-        $this->writeConfigRaw((string)json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+        $this->environment()->applyConfigScenario($scenario);
     }
 
     protected function recreateRuntimeService(string $service, bool $opcache): void
     {
         $this->runDockerComposeCommand(
             'up -d --force-recreate --no-deps ' . escapeshellarg($service),
-            [
-                'PHP_OPCACHE' => $opcache ? '1' : '0',
-                'PSFS_BENCHMARK_ENABLED' => '1',
-            ]
+            ['PHP_OPCACHE' => $opcache ? '1' : '0', 'PSFS_BENCHMARK_ENABLED' => '1']
         );
     }
 
@@ -302,43 +256,17 @@ class RuntimeMatrixRunner
 
     protected function runCommand(string $command, array $env = []): string
     {
-        $descriptor = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-        $process = proc_open($command, $descriptor, $pipes, $this->projectRoot, array_merge($_ENV, $env));
-        if (!is_resource($process)) {
-            throw new RuntimeException('Unable to execute command: ' . $command);
-        }
-
-        fclose($pipes[0]);
-        $stdout = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-
-        $code = proc_close($process);
-        if ($code !== 0) {
-            throw new RuntimeException(trim('Command failed: ' . $command . PHP_EOL . $stderr));
-        }
-        return (string)$stdout;
+        return $this->environment()->runCommand($command, $env);
     }
 
     protected function readConfigRaw(): string
     {
-        $raw = @file_get_contents($this->configFile);
-        if (!is_string($raw)) {
-            throw new RuntimeException('Unable to read config file: ' . $this->configFile);
-        }
-        return $raw;
+        return $this->environment()->readConfigRaw();
     }
 
     protected function writeConfigRaw(string $content): void
     {
-        if (@file_put_contents($this->configFile, $content) === false) {
-            throw new RuntimeException('Unable to write config file: ' . $this->configFile);
-        }
+        $this->environment()->writeConfigRaw($content);
     }
 
     /**
@@ -375,17 +303,7 @@ class RuntimeMatrixRunner
      */
     protected function writeReports(array $report): void
     {
-        $timestamp = gmdate('Ymd_His');
-        $json = json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if (!is_string($json)) {
-            throw new RuntimeException('Unable to serialize benchmark report');
-        }
-        $md = $this->buildMarkdownSummary($report);
-
-        file_put_contents($this->outputDir . DIRECTORY_SEPARATOR . 'runtime-matrix-' . $timestamp . '.json', $json . PHP_EOL);
-        file_put_contents($this->outputDir . DIRECTORY_SEPARATOR . 'runtime-matrix-' . $timestamp . '.md', $md);
-        file_put_contents($this->outputDir . DIRECTORY_SEPARATOR . 'latest.json', $json . PHP_EOL);
-        file_put_contents($this->outputDir . DIRECTORY_SEPARATOR . 'latest.md', $md);
+        $this->reportWriter()->writeReports($report);
     }
 
     /**
@@ -393,56 +311,22 @@ class RuntimeMatrixRunner
      */
     protected function buildMarkdownSummary(array $report): string
     {
-        $lines = [
-            '# Runtime Matrix Benchmark',
-            '',
-            '| runtime | debug | opcache | redis | profile | rps | p95_ms | p99_ms | error_rate |',
-            '|---|---:|---:|---:|---|---:|---:|---:|---:|',
-        ];
-        foreach ($report['summary']['rows'] as $row) {
-            $lines[] = sprintf(
-                '| %s | %d | %d | %d | %s | %.2f | %.3f | %.3f | %.6f |',
-                $row['runtime'],
-                $row['debug'],
-                $row['opcache'],
-                $row['redis'],
-                $row['profile'],
-                $row['rps'],
-                $row['p95_ms'],
-                $row['p99_ms'],
-                $row['error_rate']
-            );
-        }
-        $lines[] = '';
-        return implode(PHP_EOL, $lines);
+        return $this->reportWriter()->buildMarkdownSummary($report);
     }
 
     protected function ensureOutputDirectory(): void
     {
-        if (!is_dir($this->outputDir) && !mkdir($this->outputDir, 0775, true) && !is_dir($this->outputDir)) {
-            throw new RuntimeException('Unable to create output directory: ' . $this->outputDir);
-        }
+        $this->reportWriter()->ensureOutputDirectory();
     }
 
     protected function assertEnvironment(): void
     {
-        if (!file_exists($this->composeFile)) {
-            throw new RuntimeException('docker-compose.yml not found: ' . $this->composeFile);
-        }
-        if (!file_exists($this->configFile)) {
-            $this->initializeConfigFile();
-        }
+        $this->environment()->assertReady();
     }
 
     protected function initializeConfigFile(): void
     {
-        $configDir = dirname($this->configFile);
-        if (!is_dir($configDir) && !mkdir($configDir, 0775, true) && !is_dir($configDir)) {
-            throw new RuntimeException('Unable to create config directory: ' . $configDir);
-        }
-        if (@file_put_contents($this->configFile, '{}' . PHP_EOL) === false) {
-            throw new RuntimeException('Unable to initialize config file: ' . $this->configFile);
-        }
+        $this->environment()->assertReady();
     }
 
     /**
@@ -458,18 +342,25 @@ class RuntimeMatrixRunner
         ]);
     }
 
-    private function resolveCacheMode(bool $opcache, bool $redis): string
+    private function environment(): RuntimeMatrixEnvironment
     {
-        if ($opcache && !$redis) {
-            return 'OPCACHE';
+        if (!$this->environment instanceof RuntimeMatrixEnvironment) {
+            $this->environment = new RuntimeMatrixEnvironment(
+                $this->projectRoot,
+                $this->composeFile,
+                $this->configFile,
+                $this->runtimeMap
+            );
         }
-        if (!$opcache && $redis) {
-            return 'REDIS';
+        return $this->environment;
+    }
+
+    private function reportWriter(): RuntimeMatrixReportWriter
+    {
+        if (!$this->reportWriter instanceof RuntimeMatrixReportWriter) {
+            $this->reportWriter = new RuntimeMatrixReportWriter($this->outputDir);
         }
-        if (!$opcache && !$redis) {
-            return 'MEMORY';
-        }
-        return 'NONE';
+        return $this->reportWriter;
     }
 
     /**

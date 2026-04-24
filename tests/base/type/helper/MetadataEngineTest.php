@@ -6,7 +6,13 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\config\Config;
 use PSFS\base\exception\MetadataContractException;
 use PSFS\base\types\helpers\MetadataReader;
+use PSFS\base\types\helpers\attributes\Api;
+use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\attributes\Route;
+use PSFS\base\types\helpers\attributes\VarType;
+use PSFS\base\types\helpers\metadata\MetadataAttributeBundleBuilder;
 use PSFS\base\types\helpers\metadata\MetadataEngine;
+use PSFS\base\types\helpers\metadata\MetadataInjectableResolver;
 use PSFS\controller\ConfigController;
 use ReflectionClass;
 use ReflectionMethod;
@@ -527,6 +533,80 @@ class MetadataEngineTest extends TestCase
         $this->assertFalse((bool)$redisMethod->invoke($probe));
         // In CI/local this may be false if extension is unavailable; assert type contract instead.
         $this->assertIsBool((bool)$opcacheMethod->invoke($probe));
+    }
+
+    public function testAttributeBundleBuilderExtractsClassMethodAndPropertyTags(): void
+    {
+        $builder = new MetadataAttributeBundleBuilder();
+        $reflection = new ReflectionClass(MetadataEngineAttributeBundleExample::class);
+        $bundle = $builder->build($reflection, 'signature');
+
+        $this->assertSame('ExampleApi', $bundle['class_tags']['api']);
+        $this->assertSame('/attribute/example', $bundle['method_tags']['routeAction']['route']);
+        $this->assertSame('\\PSFS\\base\\Cache', $bundle['property_nodes']['cache']['tags']['var']);
+        $this->assertSame('\\PSFS\\base\\Cache', $builder->propertyType($reflection->getProperty('typedCache')->getType()));
+        $this->assertNull($builder->propertyType($reflection->getProperty('plain')->getType()));
+        $this->assertSame('signature', $bundle['signature']);
+    }
+
+    public function testInjectableResolverHandlesAttributeLegacyAndEmptyDefinitions(): void
+    {
+        $reflection = new ReflectionClass(MetadataEngineAttributeBundleExample::class);
+        $attributeReader = static function (string $tag, ReflectionProperty $property): mixed {
+            foreach ($property->getAttributes(Injectable::class) as $attribute) {
+                return $tag === 'injectable' ? $attribute->newInstance()->resolve() : null;
+            }
+            return null;
+        };
+        $rejectLegacy = static function (string $tag, ReflectionProperty $property): void {
+            throw new MetadataContractException($tag . ':' . $property->getName());
+        };
+        $legacyHits = [];
+        $rememberLegacy = static function (string $fallback) use (&$legacyHits): void {
+            $legacyHits[] = $fallback;
+        };
+
+        $resolver = new MetadataInjectableResolver(true, true, $attributeReader, $rejectLegacy, $rememberLegacy);
+        $attributeDefinition = $resolver->resolve($reflection->getProperty('injectableCache'), '');
+        $legacyDefinition = $resolver->resolve(
+            $reflection->getProperty('legacyCache'),
+            "/**\n * @Injectable\n * @var \\PSFS\\base\\Cache\n */"
+        );
+        $emptyDefinition = $resolver->resolve($reflection->getProperty('plain'), '');
+
+        $this->assertSame('\\PSFS\\base\\Cache', $attributeDefinition['class']);
+        $this->assertFalse($attributeDefinition['singleton']);
+        $this->assertSame('annotation_injectable', $legacyHits[0]);
+        $this->assertSame('\\PSFS\\base\\Cache', $legacyDefinition['class']);
+        $this->assertFalse($emptyDefinition['isInjectable']);
+
+        $strictResolver = new MetadataInjectableResolver(true, false, $attributeReader, $rejectLegacy, $rememberLegacy);
+        $this->expectException(MetadataContractException::class);
+        $strictResolver->resolve(
+            $reflection->getProperty('legacyCache'),
+            "/**\n * @Injectable\n * @var \\PSFS\\base\\Cache\n */"
+        );
+    }
+}
+
+#[Api('ExampleApi')]
+class MetadataEngineAttributeBundleExample
+{
+    #[VarType('\\PSFS\\base\\Cache')]
+    public $cache;
+
+    public \PSFS\base\Cache $typedCache;
+
+    #[Injectable(class: \PSFS\base\Cache::class, singleton: false)]
+    public $injectableCache;
+
+    public $legacyCache;
+
+    public $plain;
+
+    #[Route('/attribute/example')]
+    public function routeAction(): void
+    {
     }
 }
 
