@@ -196,113 +196,7 @@ class RuntimeMatrixRunner
         string $profileName,
         string $scenarioId
     ): array {
-        $concurrency = max(1, $concurrency);
-        $requests = max(1, $requests);
-
-        $multi = curl_multi_init();
-        $active = [];
-        $samples = [];
-        $errors = 0;
-        $timeouts = 0;
-        $bytes = 0;
-        $sent = 0;
-        $done = 0;
-        $startedAt = microtime(true);
-
-        $enqueue = function () use (&$sent, $requests, $url, $profileName, $scenarioId, &$active, $multi): void {
-            if ($sent >= $requests) {
-                return;
-            }
-            $requestUrl = $url . '?scenario=' . rawurlencode($scenarioId) . '&profile=' . rawurlencode($profileName) . '&n=' . $sent;
-            $ch = curl_init($requestUrl);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HEADER => false,
-                CURLOPT_CONNECTTIMEOUT => 3,
-                CURLOPT_TIMEOUT => $this->requestTimeout,
-                CURLOPT_FOLLOWLOCATION => false,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            ]);
-            curl_multi_add_handle($multi, $ch);
-            $active[(int)$ch] = [
-                'handle' => $ch,
-                'start' => microtime(true),
-            ];
-            $sent++;
-        };
-
-        for ($i = 0; $i < $concurrency; $i++) {
-            $enqueue();
-        }
-
-        do {
-            do {
-                $status = curl_multi_exec($multi, $running);
-            } while ($status === CURLM_CALL_MULTI_PERFORM);
-
-            while ($info = curl_multi_info_read($multi)) {
-                $ch = $info['handle'];
-                $id = (int)$ch;
-                $meta = $active[$id] ?? null;
-                if ($meta === null) {
-                    curl_multi_remove_handle($multi, $ch);
-                    curl_close($ch);
-                    continue;
-                }
-
-                $elapsedMs = (microtime(true) - (float)$meta['start']) * 1000;
-                $samples[] = $elapsedMs;
-                $body = (string)curl_multi_getcontent($ch);
-                $bytes += strlen($body);
-                $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                $curlError = curl_errno($ch);
-                if ($curlError !== 0) {
-                    $errors++;
-                    if ($curlError === CURLE_OPERATION_TIMEDOUT) {
-                        $timeouts++;
-                    }
-                } elseif ($code !== 200) {
-                    $errors++;
-                }
-
-                $done++;
-                unset($active[$id]);
-                curl_multi_remove_handle($multi, $ch);
-                curl_close($ch);
-                $enqueue();
-            }
-
-            if ($running > 0) {
-                curl_multi_select($multi, 0.5);
-            }
-        } while ($running > 0 || !empty($active));
-
-        curl_multi_close($multi);
-        $elapsed = max(0.001, microtime(true) - $startedAt);
-
-        sort($samples, SORT_NUMERIC);
-        $p50 = $this->percentile($samples, 50);
-        $p95 = $this->percentile($samples, 95);
-        $p99 = $this->percentile($samples, 99);
-        $errorRate = $done > 0 ? $errors / $done : 1.0;
-        $timeoutRate = $done > 0 ? $timeouts / $done : 1.0;
-
-        return [
-            'profile' => $profileName,
-            'requests' => $requests,
-            'completed' => $done,
-            'concurrency' => $concurrency,
-            'rps' => round($done / $elapsed, 2),
-            'p50_ms' => round($p50, 3),
-            'p95_ms' => round($p95, 3),
-            'p99_ms' => round($p99, 3),
-            'error_count' => $errors,
-            'error_rate' => round($errorRate, 6),
-            'timeout_count' => $timeouts,
-            'timeout_rate' => round($timeoutRate, 6),
-            'bytes' => $bytes,
-            'duration_s' => round($elapsed, 3),
-        ];
+        return (new HttpLoadRunner($this->requestTimeout))->run($url, $concurrency, $requests, $profileName, $scenarioId);
     }
 
     /**
@@ -313,9 +207,7 @@ class RuntimeMatrixRunner
         if ($samples === []) {
             return 0.0;
         }
-        $percent = max(0, min(100, $percent));
-        $index = (int)floor((count($samples) - 1) * ($percent / 100));
-        return (float)$samples[$index];
+        return (new HttpLoadRunner($this->requestTimeout))->percentile($samples, $percent);
     }
 
     protected function waitForHealth(string $url, int $timeoutSeconds): void
@@ -538,7 +430,18 @@ class RuntimeMatrixRunner
             throw new RuntimeException('docker-compose.yml not found: ' . $this->composeFile);
         }
         if (!file_exists($this->configFile)) {
-            throw new RuntimeException('config.json not found: ' . $this->configFile);
+            $this->initializeConfigFile();
+        }
+    }
+
+    protected function initializeConfigFile(): void
+    {
+        $configDir = dirname($this->configFile);
+        if (!is_dir($configDir) && !mkdir($configDir, 0775, true) && !is_dir($configDir)) {
+            throw new RuntimeException('Unable to create config directory: ' . $configDir);
+        }
+        if (@file_put_contents($this->configFile, '{}' . PHP_EOL) === false) {
+            throw new RuntimeException('Unable to initialize config file: ' . $this->configFile);
         }
     }
 

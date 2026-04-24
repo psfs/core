@@ -39,60 +39,113 @@ class DocumentorController extends Controller
     #[Route('/{domain}/api/doc')]
     public function createApiDocs($domain)
     {
-        ini_set('memory_limit', -1);
-        ini_set('max_execution_time', -1);
-
-        $type = strtolower((string)($this->getRequest()->get('type') ?: ApiController::PSFS_DOC));
-        $download = $this->getRequest()->get('download') ?: false;
-        $cacheVersion = (string)Config::getParam('cache.var', 'v1');
-        $cacheTtl = (int)Config::getParam('api.doc.cache.ttl', 300);
-        $cacheKey = implode(':', [$domain, $type, $cacheVersion]);
-
-        if ($cacheTtl > 0 && !$download && isset(self::$docsCache[$cacheKey])) {
-            $entry = self::$docsCache[$cacheKey];
-            if ($entry['expires'] >= time()) {
-                return $this->json($entry['doc'], 200);
-            }
-            unset(self::$docsCache[$cacheKey]);
+        $this->prepareDocumentationRuntime();
+        $request = $this->documentationRequest((string)$domain);
+        $cached = $this->cachedApiDoc($request);
+        if (null !== $cached) {
+            return $this->json($cached, 200);
         }
 
         $module = $this->srv->getModules((string)$domain);
         if (empty($module)) {
             return ResponseHelper::httpNotFound(null, true);
         }
-        $doc = $this->srv->buildEndpointSpec($module);
-        switch ($type) {
-            case ApiController::SWAGGER_DOC:
-                $doc = $this->srv->swaggerFormatter($module, $doc);
-                break;
-            case ApiController::POSTMAN_DOC:
-                $doc = $this->srv->postmanFormatter($module, $doc);
-                break;
-            case ApiController::OPENAPI_DOC:
-                $doc = $this->srv->openApiFormatter($module, $doc);
-                break;
-        }
+        $doc = $this->formatApiDoc($module, $this->srv->buildEndpointSpec($module), $request['type']);
 
-        if ($download && in_array($type, [ApiController::SWAGGER_DOC, ApiController::POSTMAN_DOC, ApiController::OPENAPI_DOC], true)) {
-            if ($type === ApiController::POSTMAN_DOC) {
-                $filename = 'postman.collection.json';
-            } elseif ($type === ApiController::OPENAPI_DOC) {
-                $filename = 'openapi.json';
-            } else {
-                $filename = 'swagger.json';
-            }
-            return $this->download(json_encode($doc), 'application/json', $filename);
+        if ($this->isDownloadableDoc($request['type']) && $request['download']) {
+            return $this->download(
+                json_encode($doc),
+                'application/json',
+                $this->downloadFilename($request['type'])
+            );
         }
-        if ($type === ApiController::HTML_DOC) {
+        if ($request['type'] === ApiController::HTML_DOC) {
             return $this->render('documentation.html.twig', ["data" => json_encode($doc)]);
         }
-        if ($cacheTtl > 0 && !in_array($type, [ApiController::PSFS_DOC, ApiController::HTML_DOC], true)) {
-            self::$docsCache[$cacheKey] = [
-                'doc' => $doc,
-                'expires' => time() + $cacheTtl,
-            ];
-        }
+        $this->storeApiDoc($request, $doc);
         return $this->json($doc, 200);
+    }
+
+    private function prepareDocumentationRuntime(): void
+    {
+        ini_set('memory_limit', -1);
+        ini_set('max_execution_time', -1);
+    }
+
+    /**
+     * @return array{domain:string,type:string,download:mixed,cache_ttl:int,cache_key:string}
+     */
+    private function documentationRequest(string $domain): array
+    {
+        $type = strtolower((string)($this->getRequest()->get('type') ?: ApiController::PSFS_DOC));
+        $cacheVersion = (string)Config::getParam('cache.var', 'v1');
+
+        return [
+            'domain' => $domain,
+            'type' => $type,
+            'download' => $this->getRequest()->get('download') ?: false,
+            'cache_ttl' => (int)Config::getParam('api.doc.cache.ttl', 300),
+            'cache_key' => implode(':', [$domain, $type, $cacheVersion]),
+        ];
+    }
+
+    /**
+     * @param array{download:mixed,cache_ttl:int,cache_key:string} $request
+     */
+    private function cachedApiDoc(array $request): ?array
+    {
+        if ($request['cache_ttl'] <= 0 || $request['download'] || !isset(self::$docsCache[$request['cache_key']])) {
+            return null;
+        }
+
+        $entry = self::$docsCache[$request['cache_key']];
+        if ($entry['expires'] >= time()) {
+            return $entry['doc'];
+        }
+
+        unset(self::$docsCache[$request['cache_key']]);
+        return null;
+    }
+
+    private function formatApiDoc(array $module, array $doc, string $type): array
+    {
+        return match ($type) {
+            ApiController::SWAGGER_DOC => $this->srv->swaggerFormatter($module, $doc),
+            ApiController::POSTMAN_DOC => $this->srv->postmanFormatter($module, $doc),
+            ApiController::OPENAPI_DOC => $this->srv->openApiFormatter($module, $doc),
+            default => $doc,
+        };
+    }
+
+    private function isDownloadableDoc(string $type): bool
+    {
+        return in_array($type, [ApiController::SWAGGER_DOC, ApiController::POSTMAN_DOC, ApiController::OPENAPI_DOC], true);
+    }
+
+    private function downloadFilename(string $type): string
+    {
+        return match ($type) {
+            ApiController::POSTMAN_DOC => 'postman.collection.json',
+            ApiController::OPENAPI_DOC => 'openapi.json',
+            default => 'swagger.json',
+        };
+    }
+
+    /**
+     * @param array{type:string,cache_ttl:int,cache_key:string} $request
+     */
+    private function storeApiDoc(array $request, array $doc): void
+    {
+        if (
+            $request['cache_ttl'] <= 0
+            || in_array($request['type'], [ApiController::PSFS_DOC, ApiController::HTML_DOC], true)
+        ) {
+            return;
+        }
+        self::$docsCache[$request['cache_key']] = [
+            'doc' => $doc,
+            'expires' => time() + $request['cache_ttl'],
+        ];
     }
 
     /**

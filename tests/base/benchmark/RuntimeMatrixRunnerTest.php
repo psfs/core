@@ -3,6 +3,7 @@
 namespace PSFS\tests\base\benchmark;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\benchmark\HttpLoadRunner;
 use PSFS\base\benchmark\RuntimeMatrixRunner;
 use RuntimeException;
 
@@ -71,6 +72,18 @@ class RuntimeMatrixRunnerTest extends TestCase
         $this->assertTrue($restored['debug']);
     }
 
+    public function testRunInitializesMissingConfigFileForCleanCheckout(): void
+    {
+        unlink($this->configFile);
+
+        $runner = $this->newFakeRunner();
+        $report = $runner->run();
+
+        $this->assertSame(16, $report['summary']['scenario_count']);
+        $this->assertFileExists($this->configFile);
+        $this->assertSame([], json_decode((string)file_get_contents($this->configFile), true));
+    }
+
     public function testRunRestoresConfigWhenProfileFails(): void
     {
         $runner = $this->newFakeRunner(true);
@@ -89,6 +102,12 @@ class RuntimeMatrixRunnerTest extends TestCase
 
     public function testHttpLoadAndPercentilesAreCalculated(): void
     {
+        $loadRunner = new HttpLoadRunner(2);
+        $direct = $loadRunner->run('data://text/plain,{"ok":true}', 2, 8, 'L1', 'scenario');
+        $this->assertSame(8, $direct['completed']);
+        $this->assertGreaterThan(0.0, $direct['error_rate']);
+        $this->assertGreaterThanOrEqual(0.0, $loadRunner->percentile([1.0, 2.0, 3.0], 95));
+
         $runner = new class(
             $this->tmpRoot,
             $this->composeFile,

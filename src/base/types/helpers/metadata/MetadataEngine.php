@@ -6,7 +6,6 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\MetadataContractException;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\CacheModeHelper;
-use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\MetadataDocParser;
 use PSFS\base\types\helpers\attributes\MetadataAttributeContract;
 use ReflectionClass;
@@ -96,118 +95,28 @@ class MetadataEngine implements MetadataEngineInterface
 
     public function extractPayload(string $defaultNamespace, ?ReflectionMethod $method = null, ?string $doc = ''): string
     {
-        $doc = $doc ?? '';
-        $value = null;
-        if ($this->attributesEnabled() && null !== $method) {
-            $value = $this->readFromAttributesBundle('payload', $method);
-            if (null === $value && $doc !== '' && MetadataDocParser::hasTag('payload', $doc) && !$this->annotationsFallbackEnabled()) {
-                throw $this->legacyFallbackDisabledException('payload', $method);
-            }
-            if (null === $value && $doc !== '' && MetadataDocParser::hasTag('payload', $doc) && $this->annotationsFallbackEnabled()) {
-                $this->rememberLegacyFallback('annotation_payload');
-            }
-        }
-        if ($value === null && $this->annotationsFallbackEnabled()) {
-            $value = MetadataDocParser::readTagValue('payload', $doc, null);
-        }
-        $value = is_string($value) ? trim($value) : '';
-        return $value === '' ? $defaultNamespace : $value;
+        return $this->definitionResolver()->extractPayload($defaultNamespace, $method, $doc ?? '');
     }
 
     public function extractReturnSpec(?ReflectionMethod $method = null, ?string $doc = ''): ?string
     {
-        $doc = $doc ?? '';
-        if ($this->attributesEnabled() && null !== $method) {
-            $value = $this->readFromAttributesBundle('return', $method);
-            if (is_string($value) && $value !== '') {
-                return $value;
-            }
-            $docReturn = MetadataDocParser::readReturnSpec($doc);
-            $docHasLegacyReturnDsl = is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1;
-            if ($docHasLegacyReturnDsl && !$this->annotationsFallbackEnabled()) {
-                throw $this->legacyFallbackDisabledException('return', $method);
-            }
-            if ($docHasLegacyReturnDsl && $this->annotationsFallbackEnabled()) {
-                $this->rememberLegacyFallback('annotation_return');
-            }
-        }
-        if (!$this->annotationsFallbackEnabled()) {
-            return null;
-        }
-        $docReturn = MetadataDocParser::readReturnSpec($doc);
-        return is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1 ? $docReturn : null;
+        return $this->definitionResolver()->extractReturnSpec($method, $doc ?? '');
     }
 
     public function extractVarType(?ReflectionProperty $property, ?string $doc = ''): ?string
     {
         $doc = $doc ?? '';
-        if ($this->attributesEnabled() && null !== $property) {
-            $injectable = $this->resolveInjectableDefinition($property, $doc);
-            if (($injectable['source'] ?? null) === 'attribute' && is_string($injectable['class'])) {
-                return $injectable['class'];
-            }
-            $value = $this->readFromAttributesBundle('var', $property);
-            if (is_string($value) && $value !== '') {
-                return $value;
-            }
-            $propertyType = $this->extractPropertyType($property->getType());
-            if (null !== $propertyType) {
-                return $propertyType;
-            }
-            if ($doc !== '' && MetadataDocParser::hasTag('var', $doc) && !$this->annotationsFallbackEnabled()) {
-                throw $this->legacyFallbackDisabledException('var', $property);
-            }
-            if ($doc !== '' && MetadataDocParser::hasTag('var', $doc) && $this->annotationsFallbackEnabled()) {
-                $this->rememberLegacyFallback('annotation_var');
-            }
-        }
-        if (!$this->annotationsFallbackEnabled()) {
-            return null;
-        }
-        $type = MetadataDocParser::readVarType($doc);
-        return is_string($type) && trim($type) !== '' ? $type : null;
+        return $this->definitionResolver()->extractVarType(
+            $property,
+            $doc,
+            $property === null ? null : $this->extractPropertyType($property->getType()),
+            $property === null ? null : $this->resolveInjectableDefinition($property, $doc)
+        );
     }
 
     public function resolveInjectableDefinition(?ReflectionProperty $property, ?string $doc = ''): array
     {
-        $doc = $doc ?? '';
-        $definition = [
-            'isInjectable' => false,
-            'class' => null,
-            'singleton' => true,
-            'required' => true,
-            'source' => null,
-        ];
-        if (null !== $property && $this->attributesEnabled()) {
-            $injectable = $this->readFromAttributesBundle('injectable', $property);
-            if (is_array($injectable) && isset($injectable['class'])) {
-                return [
-                    'isInjectable' => true,
-                    'class' => is_string($injectable['class']) ? $injectable['class'] : null,
-                    'singleton' => (bool)($injectable['singleton'] ?? true),
-                    'required' => (bool)($injectable['required'] ?? true),
-                    'source' => 'attribute',
-                ];
-            }
-            if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1 && !$this->annotationsFallbackEnabled()) {
-                throw $this->legacyFallbackDisabledException('injectable', $property);
-            }
-            if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1 && $this->annotationsFallbackEnabled()) {
-                $this->rememberLegacyFallback('annotation_injectable');
-            }
-        }
-        if ($this->annotationsFallbackEnabled() && $doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
-            $className = MetadataDocParser::readVarType($doc);
-            $className = is_string($className) ? $className : '';
-            return [
-                'isInjectable' => trim($className) !== '',
-                'class' => trim($className) !== '' ? $className : null,
-                'singleton' => true,
-                'required' => true,
-                'source' => 'annotation',
-            ];
-        }
-        return $definition;
+        return $this->definitionResolver()->resolveInjectableDefinition($property, $doc ?? '');
     }
 
     public function getClassMetadata(string $fqcn): ClassMetadata
@@ -269,15 +178,13 @@ class MetadataEngine implements MetadataEngineInterface
         $cacheKey = sha1('class_bundle:' . $className . ':' . $cacheVersion);
         $now = time();
 
-        if ($this->engineEnabled() && $this->localCacheEnabled() && !$this->debugEnabled()) {
-            $fast = $this->readLocalWithoutSignature($cacheKey, $className, $now);
-            if (is_array($fast['payload'] ?? null)) {
-                return $fast['payload'];
-            }
+        $fastPayload = $this->fastClassBundlePayload($cacheKey, $className, $now);
+        if (is_array($fastPayload)) {
+            return $fastPayload;
         }
 
         if (!class_exists($className)) {
-            return ['class_tags' => [], 'method_tags' => [], 'property_nodes' => [], 'signature' => ''];
+            return $this->emptyClassBundle();
         }
         $reflection = new ReflectionClass($className);
         if (!$this->engineEnabled()) {
@@ -285,24 +192,67 @@ class MetadataEngine implements MetadataEngineInterface
         }
         $signature = $this->sourceSignature($reflection);
         $entry = $this->readEntry($cacheKey, $signature, $now);
-
-        if (is_array($entry['payload'] ?? null)) {
-            if ($this->debugEnabled()) {
-                return $entry['payload'];
-            }
-            $softExpiresAt = (int)($entry['soft_expires_at'] ?? 0);
-            $hardExpiresAt = (int)($entry['hard_expires_at'] ?? 0);
-            if ($now <= $softExpiresAt) {
-                return $entry['payload'];
-            }
-            if ($now <= $hardExpiresAt) {
-                if ($this->swrEnabled()) {
-                    $this->queueBackgroundRegeneration($cacheKey, $className);
-                }
-                return $entry['payload'];
-            }
+        $cachedPayload = $this->classBundlePayload($entry, $cacheKey, $className, $now);
+        if (is_array($cachedPayload)) {
+            return $cachedPayload;
         }
 
+        return $this->regenerateClassBundle($reflection, $entry, $cacheKey, $signature, $now);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function fastClassBundlePayload(string $cacheKey, string $className, int $now): ?array
+    {
+        if (!$this->engineEnabled() || !$this->localCacheEnabled() || $this->debugEnabled()) {
+            return null;
+        }
+
+        $fast = $this->readLocalWithoutSignature($cacheKey, $className, $now);
+        return is_array($fast['payload'] ?? null) ? $fast['payload'] : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function emptyClassBundle(): array
+    {
+        return ['class_tags' => [], 'method_tags' => [], 'property_nodes' => [], 'signature' => ''];
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     * @return array<string, mixed>|null
+     */
+    private function classBundlePayload(array $entry, string $cacheKey, string $className, int $now): ?array
+    {
+        if (!is_array($entry['payload'] ?? null)) {
+            return null;
+        }
+        if ($this->debugEnabled() || $now <= (int)($entry['soft_expires_at'] ?? 0)) {
+            return $entry['payload'];
+        }
+        if ($now > (int)($entry['hard_expires_at'] ?? 0)) {
+            return null;
+        }
+        if ($this->swrEnabled()) {
+            $this->queueBackgroundRegeneration($cacheKey, $className);
+        }
+        return $entry['payload'];
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     * @return array<string, mixed>
+     */
+    private function regenerateClassBundle(
+        ReflectionClass $reflection,
+        array $entry,
+        string $cacheKey,
+        string $signature,
+        int $now
+    ): array {
         $lockAcquired = $this->acquireLock($cacheKey);
         if (!$lockAcquired && is_array($entry['payload'] ?? null) && !$this->debugEnabled()) {
             self::$stats['metadata.lock_contention']++;
@@ -310,20 +260,27 @@ class MetadataEngine implements MetadataEngineInterface
         }
 
         try {
-            $start = hrtime(true);
-            $payload = $this->buildClassBundle($reflection);
-            $elapsed = (hrtime(true) - $start) / 1000000;
-            self::$stats['metadata.parse_ms'] += $elapsed;
-            self::$stats['metadata.regen']++;
-            self::$stats['metadata.payload_bytes'] += strlen((string)json_encode($payload));
-            $fresh = $this->buildEntryEnvelope($payload, $signature, $now);
-            $this->writeEntry($cacheKey, $fresh);
-            return $payload;
+            return $this->freshClassBundle($reflection, $cacheKey, $signature, $now);
         } finally {
             if ($lockAcquired) {
                 $this->releaseLock($cacheKey);
             }
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function freshClassBundle(ReflectionClass $reflection, string $cacheKey, string $signature, int $now): array
+    {
+        $start = hrtime(true);
+        $payload = $this->buildClassBundle($reflection);
+        self::$stats['metadata.parse_ms'] += (hrtime(true) - $start) / 1000000;
+        self::$stats['metadata.regen']++;
+        self::$stats['metadata.payload_bytes'] += strlen((string)json_encode($payload));
+        $this->writeEntry($cacheKey, $this->buildEntryEnvelope($payload, $signature, $now));
+
+        return $payload;
     }
 
     /**
@@ -438,39 +395,32 @@ class MetadataEngine implements MetadataEngineInterface
         ));
     }
 
+    private function definitionResolver(): MetadataDefinitionResolver
+    {
+        return new MetadataDefinitionResolver(
+            $this->attributesEnabled(),
+            $this->annotationsFallbackEnabled(),
+            fn (string $tag, ReflectionMethod|ReflectionProperty $reflector): mixed => $this->readFromAttributesBundle(
+                $tag,
+                $reflector
+            ),
+            function (string $tag, ReflectionMethod|ReflectionProperty $reflector): void {
+                throw $this->legacyFallbackDisabledException($tag, $reflector);
+            },
+            function (string $fallback): void {
+                $this->rememberLegacyFallback($fallback);
+            }
+        );
+    }
+
     /**
      * @return array<string, mixed>
      */
     private function readEntry(string $cacheKey, string $signature, int $now): array
     {
-        $local = self::$localCache[$cacheKey] ?? null;
-        if ($this->localCacheEnabled() && is_array($local) && ($local['signature'] ?? null) === $signature) {
-            self::$stats['metadata.hit_l0']++;
-            return $local;
-        }
-        if ($this->localCacheEnabled() && is_array($local) && ($local['signature'] ?? null) !== $signature) {
-            unset(self::$localCache[$cacheKey]);
-        }
-
-        $opcacheEntry = $this->readFromOpcacheArtifact($cacheKey);
-        if (is_array($opcacheEntry) && ($opcacheEntry['signature'] ?? null) === $signature) {
-            self::$stats['metadata.hit_l1']++;
-            $this->storeLocal($cacheKey, $opcacheEntry);
-            return $opcacheEntry;
-        }
-        if (is_array($opcacheEntry) && ($opcacheEntry['signature'] ?? null) !== $signature) {
-            $this->dropOpcacheArtifact($cacheKey);
-        }
-
-        $redisEntry = $this->readFromRedis($cacheKey);
-        if (is_array($redisEntry) && ($redisEntry['signature'] ?? null) === $signature) {
-            self::$stats['metadata.hit_l2']++;
-            $this->storeLocal($cacheKey, $redisEntry);
-            $this->writeOpcacheArtifact($cacheKey, $redisEntry);
-            return $redisEntry;
-        }
-        if (is_array($redisEntry) && ($redisEntry['signature'] ?? null) !== $signature) {
-            $this->dropRedisEntry($cacheKey);
+        $entry = $this->entryReader()->read($cacheKey, $signature);
+        if (is_array($entry)) {
+            return $entry;
         }
 
         self::$stats['metadata.miss']++;
@@ -481,6 +431,69 @@ class MetadataEngine implements MetadataEngineInterface
             'hard_expires_at' => $now,
             'created_at' => $now,
         ];
+    }
+
+    private function entryReader(): MetadataEntryReader
+    {
+        return new MetadataEntryReader(
+            fn (string $cacheKey, string $signature): ?array => $this->localEntry($cacheKey, $signature),
+            fn (string $cacheKey, string $signature): ?array => $this->opcacheEntry($cacheKey, $signature),
+            fn (string $cacheKey, string $signature): ?array => $this->redisEntry($cacheKey, $signature)
+        );
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function localEntry(string $cacheKey, string $signature): ?array
+    {
+        $local = self::$localCache[$cacheKey] ?? null;
+        if (!$this->localCacheEnabled() || !is_array($local)) {
+            return null;
+        }
+        if (($local['signature'] ?? null) === $signature) {
+            self::$stats['metadata.hit_l0']++;
+            return $local;
+        }
+        unset(self::$localCache[$cacheKey]);
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function opcacheEntry(string $cacheKey, string $signature): ?array
+    {
+        $entry = $this->readFromOpcacheArtifact($cacheKey);
+        if (!is_array($entry)) {
+            return null;
+        }
+        if (($entry['signature'] ?? null) !== $signature) {
+            $this->dropOpcacheArtifact($cacheKey);
+            return null;
+        }
+        self::$stats['metadata.hit_l1']++;
+        $this->storeLocal($cacheKey, $entry);
+        return $entry;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function redisEntry(string $cacheKey, string $signature): ?array
+    {
+        $entry = $this->readFromRedis($cacheKey);
+        if (!is_array($entry)) {
+            return null;
+        }
+        if (($entry['signature'] ?? null) !== $signature) {
+            $this->dropRedisEntry($cacheKey);
+            return null;
+        }
+        self::$stats['metadata.hit_l2']++;
+        $this->storeLocal($cacheKey, $entry);
+        $this->writeOpcacheArtifact($cacheKey, $entry);
+        return $entry;
     }
 
     /**
