@@ -44,7 +44,7 @@ class FileJobQueue implements JobQueueInterface
     public function dequeue(string $queue): ?array
     {
         $queueFile = $this->queueFile($queue);
-        if (!file_exists($queueFile)) {
+        if (!is_file($queueFile) || !is_readable($queueFile)) {
             return null;
         }
         $lockPath = $queueFile . '.lock';
@@ -94,7 +94,7 @@ class FileJobQueue implements JobQueueInterface
     public function size(string $queue): int
     {
         $queueFile = $this->queueFile($queue);
-        if (!file_exists($queueFile)) {
+        if (!is_file($queueFile) || !is_readable($queueFile)) {
             return 0;
         }
         $handle = fopen($queueFile, 'rb');
@@ -114,7 +114,7 @@ class FileJobQueue implements JobQueueInterface
         return $count;
     }
 
-    private function queueFile(string $queue): string
+    protected function queueFile(string $queue): string
     {
         $slug = trim((string)preg_replace('/[^a-z0-9\-_]+/i', '-', strtolower($queue)), '-');
         if ('' === $slug) {
@@ -123,7 +123,7 @@ class FileJobQueue implements JobQueueInterface
         return $this->basePath . DIRECTORY_SEPARATOR . $slug . '-' . sha1($queue) . '.queue';
     }
 
-    private function dequeueUsingFullRead(string $queueFile): ?array
+    protected function dequeueUsingFullRead(string $queueFile): ?array
     {
         $lines = file($queueFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if (false === $lines || [] === $lines) {
@@ -141,7 +141,7 @@ class FileJobQueue implements JobQueueInterface
         return is_array($decoded) ? $decoded : null;
     }
 
-    private function createTempQueuePath(string $queueFile): string
+    protected function createTempQueuePath(string $queueFile): string
     {
         $random = uniqid('tmp_', true);
         return $queueFile . '.' . $random;
@@ -152,7 +152,7 @@ class FileJobQueue implements JobQueueInterface
      * @param resource $output
      * @return array{first:?string,has_remaining:bool}|null
      */
-    private function dequeueIntoTemp($input, $output): ?array
+    protected function dequeueIntoTemp($input, $output): ?array
     {
         $first = null;
         $hasRemaining = false;
@@ -185,7 +185,7 @@ class FileJobQueue implements JobQueueInterface
         ];
     }
 
-    private function commitDequeuedState(string $queueFile, string $tmpPath, bool $hasRemaining): bool
+    protected function commitDequeuedState(string $queueFile, string $tmpPath, bool $hasRemaining): bool
     {
         if (!$hasRemaining) {
             FileHelper::deleteFile($queueFile);

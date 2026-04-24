@@ -55,6 +55,8 @@ class Dispatcher extends Singleton
         '/admin/config',
         '/admin/config/params',
         '/admin/routes/show',
+        '/_bench/ping',
+        '/_bench/metadata',
     ];
 
     /**

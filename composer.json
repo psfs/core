@@ -76,7 +76,10 @@
       "@clearCache",
       "@clearViewCache"
     ],
-    "coverage:top10": "php tests/coverage/check-top10-coverage.php cache/coverage.xml 85",
+    "benchmark:metadata": "@php scripts/benchmark/metadata_engine_v3.php",
+    "benchmark:runtime-matrix": "@php scripts/benchmark/runtime_matrix.php",
+    "benchmark:runtime-loop": "bash scripts/benchmark/runtime_matrix_loop.sh --env-file .env",
+    "coverage:assert90": "@php scripts/coverage/assert_min_coverage.php cache/coverage/coverage.xml 90",
     "clearCache": "[ -d ./cache/reflections ] && mv ./cache/reflections ./cache/.reflections_$(date +%Y%m%d%H%M%S) || echo 'Reflections folder does not exists.'",
     "clearViewCache": "[ -d ./cache/twig ] && rm -rf ./cache/twig || echo 'Twig cache folder does not exists.'"
   }

@@ -1,0 +1,58 @@
+name: Runtime Benchmark and Coverage
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  runtime-matrix-and-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3 for benchmark harness
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: curl, json
+          tools: composer:v2
+
+      - name: Start Docker services (php + swoole + redis)
+        run: docker compose --profile swoole up -d
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run runtime matrix benchmark
+        env:
+          PSFS_BENCHMARK_ENABLED: '1'
+        run: php scripts/benchmark/runtime_matrix.php
+
+      - name: Run PHPUnit with coverage
+        run: docker exec core-php-1 sh -lc 'XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover cache/coverage/coverage.xml'
+
+      - name: Assert minimum line coverage >= 90%
+        run: docker exec core-php-1 php scripts/coverage/assert_min_coverage.php cache/coverage/coverage.xml 90
+
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-benchmark-matrix
+          path: cache/benchmark/runtime-matrix/*
+          if-no-files-found: ignore
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-coverage
+          path: cache/coverage/coverage.xml
+          if-no-files-found: ignore

@@ -61,6 +61,20 @@ docker exec core-php-1 php scripts/security/hardening_gate.php
 docker exec core-php-1 php scripts/security/quality_gate.php
 ```
 
+### 2.4 Runtime matrix benchmark loop
+
+<!-- validated -->
+```bash
+bash scripts/benchmark/runtime_matrix_loop.sh --env-file .env --quick
+```
+
+Notes:
+
+- Iterates runtime (`php -S`/`swoole`) x `debug` x `opcache` x `redis`.
+- Uses `docker compose up -> docker exec -> down` per scenario.
+- Enables benchmark endpoints only during each scenario (`PSFS_BENCHMARK_ENABLED=1`).
+- Writes JSON outputs into `cache/benchmark/runtime-matrix-loop/`.
+
 <!-- example-only -->
 ```bash
 # CI workflow emulation

@@ -39,8 +39,17 @@ class Config
         'version' => 'v1',
         'api.query_token.compat' => false,
         'api.token.cookie' => 'X-API-SEC-TOKEN',
+        'psfs.cache.mode' => 'NONE',
         'metadata.attributes.enabled' => true,
         'metadata.annotations.fallback.enabled' => true,
+        'metadata.engine.enabled' => true,
+        'metadata.engine.version' => 'v3',
+        'metadata.engine.soft_ttl' => 300,
+        'metadata.engine.hard_ttl' => 900,
+        'metadata.engine.swr.enabled' => true,
+        'metadata.engine.redis.enabled' => true,
+        'metadata.engine.opcache.enabled' => true,
+        'metadata.engine.regen.lock_ttl' => 15,
         'migrations.engine' => 'phinx',
         'migrations.legacy_fallback_enabled' => true,
     ];
@@ -112,6 +121,7 @@ class Config
         'auth.expiration', // Set the expiration time for the auth token
         'api.query_token.compat', // Allow legacy API_TOKEN query string fallback (deprecated)
         'api.token.cookie', // Cookie name for API token fallback
+        'psfs.cache.mode', // Cache mode selector: NONE|MEMORY|OPCACHE|REDIS
         'enable.jwt', // Enable JWT auth flow fallback/compat in security checks
         'jwt.alg', // JWT signing/verification algorithm
         'jwt.expiration_seconds', // JWT token expiration in seconds
@@ -126,6 +136,14 @@ class Config
         'job.queue.redis.prefix', // Redis key prefix for PSFS async queue subsystem
         'metadata.attributes.enabled', // Enable php attributes metadata extraction
         'metadata.annotations.fallback.enabled', // Enable framework annotation metadata fallback
+        'metadata.engine.enabled', // Enable MetadataEngine v3
+        'metadata.engine.version', // Versioned namespace for metadata cache keys/artifacts
+        'metadata.engine.soft_ttl', // Metadata soft TTL for SWR
+        'metadata.engine.hard_ttl', // Metadata hard TTL for blocking regeneration
+        'metadata.engine.swr.enabled', // Serve stale and regenerate in shutdown
+        'metadata.engine.redis.enabled', // Enable redis layer in metadata engine
+        'metadata.engine.opcache.enabled', // Enable opcache artifact layer in metadata engine
+        'metadata.engine.regen.lock_ttl', // Lock TTL for distributed regeneration
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
         'migrations.engine', // Default migration engine (phinx|propel)
         'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine

@@ -2,71 +2,30 @@
 
 namespace PSFS\base\types\helpers;
 
-use PSFS\base\config\Config;
-use PSFS\base\exception\MetadataContractException;
-use PSFS\base\Logger;
-use PSFS\base\types\helpers\attributes\ApiDeprecated;
-use PSFS\base\types\helpers\attributes\ApiReturn;
-use PSFS\base\types\helpers\attributes\Injectable;
-use PSFS\base\types\helpers\attributes\MetadataAttributeContract;
-use PSFS\base\types\helpers\attributes\Payload;
-use PSFS\base\types\helpers\attributes\VarType;
+use PSFS\base\types\helpers\metadata\MetadataEngine;
+use PSFS\base\types\helpers\metadata\MetadataEngineInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
-use ReflectionType;
 
 class MetadataReader
 {
-    private static array $legacyFallbackLogs = [];
+    private static ?MetadataEngineInterface $engine = null;
 
-    /**
-     * @param string $tag
-     * @param string|null $doc
-     * @param mixed $default
-     * @param ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
-     * @return mixed
-     */
     public static function getTagValue(
         string $tag,
         ?string $doc = '',
         mixed $default = null,
         ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
     ): mixed {
-        $doc = $doc ?? '';
-        if (self::attributesEnabled()) {
-            $value = self::readFromAttributes($tag, $reflector);
-            if (null !== $value) {
-                return $value;
-            }
-            if ($doc !== '' && self::hasLegacyTag($tag, $doc)) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException($tag, $reflector);
-                }
-                self::logLegacyFallback('annotation_' . strtolower($tag));
-            }
-        }
-        return self::readFromDoc($tag, $doc, $default);
+        return self::engine()->getTagValue($tag, $doc, $default, $reflector);
     }
 
     public static function hasDeprecated(
         ?ReflectionMethod $method = null,
         ?string $doc = ''
     ): bool {
-        $doc = $doc ?? '';
-        if (self::attributesEnabled() && null !== $method) {
-            $attrs = $method->getAttributes(ApiDeprecated::class);
-            if (!empty($attrs)) {
-                return (bool)$attrs[0]->newInstance()->resolve();
-            }
-            if ($doc !== '' && MetadataDocParser::hasDeprecatedTag($doc)) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException('deprecated', $method);
-                }
-                self::logLegacyFallback('annotation_deprecated');
-            }
-        }
-        return MetadataDocParser::hasDeprecatedTag($doc);
+        return self::engine()->hasDeprecated($method, $doc);
     }
 
     public static function extractPayload(
@@ -74,90 +33,25 @@ class MetadataReader
         ?ReflectionMethod $method = null,
         ?string $doc = ''
     ): string {
-        $doc = $doc ?? '';
-        $value = null;
-        if (self::attributesEnabled() && null !== $method) {
-            $attrs = $method->getAttributes(Payload::class);
-            if (!empty($attrs)) {
-                $value = $attrs[0]->newInstance()->value;
-            } elseif ($doc !== '' && MetadataDocParser::hasTag('payload', $doc)) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException('payload', $method);
-                }
-                self::logLegacyFallback('annotation_payload');
-            }
-        }
-        if ($value === null && self::annotationsFallbackEnabled()) {
-            $value = MetadataDocParser::readTagValue('payload', $doc, null);
-        }
-        $value = is_string($value) ? trim($value) : '';
-        if ($value === '') {
-            return $defaultNamespace;
-        }
-        return $value;
+        return self::engine()->extractPayload($defaultNamespace, $method, $doc);
     }
 
     public static function extractReturnSpec(
         ?ReflectionMethod $method = null,
         ?string $doc = ''
     ): ?string {
-        $doc = $doc ?? '';
-        if (self::attributesEnabled() && null !== $method) {
-            $attrs = $method->getAttributes(ApiReturn::class);
-            if (!empty($attrs)) {
-                return $attrs[0]->newInstance()->value;
-            }
-            $docReturn = MetadataDocParser::readReturnSpec($doc);
-            $docHasLegacyReturnDsl = is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1;
-            if ($docHasLegacyReturnDsl) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException('return', $method);
-                }
-                self::logLegacyFallback('annotation_return');
-            }
-        }
-        if (!self::annotationsFallbackEnabled()) {
-            return null;
-        }
-        $docReturn = MetadataDocParser::readReturnSpec($doc);
-        return is_string($docReturn) && preg_match('/^.*\(.*\)$/', $docReturn) === 1 ? $docReturn : null;
+        return self::engine()->extractReturnSpec($method, $doc);
     }
 
     public static function hasInjectable(?ReflectionProperty $property, ?string $doc = ''): bool
     {
         $injectable = self::resolveInjectableDefinition($property, $doc);
-        return $injectable['isInjectable'];
+        return (bool)($injectable['isInjectable'] ?? false);
     }
 
     public static function extractVarType(?ReflectionProperty $property, ?string $doc = ''): ?string
     {
-        $doc = $doc ?? '';
-        if (self::attributesEnabled() && null !== $property) {
-            $injectable = self::resolveInjectableDefinition($property, $doc);
-            if ($injectable['source'] === 'attribute' && is_string($injectable['class'])) {
-                return $injectable['class'];
-            }
-            $attr = $property->getAttributes(VarType::class);
-            if (!empty($attr)) {
-                $instance = $attr[0]->newInstance();
-                return $instance->value;
-            }
-            $propertyType = self::extractPropertyType($property->getType());
-            if (null !== $propertyType) {
-                return $propertyType;
-            }
-            if ($doc !== '' && MetadataDocParser::hasTag('var', $doc)) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException('var', $property);
-                }
-                self::logLegacyFallback('annotation_var');
-            }
-        }
-        if (!self::annotationsFallbackEnabled()) {
-            return null;
-        }
-        $type = self::readVarTypeFromDoc($doc);
-        return is_string($type) && trim($type) !== '' ? $type : null;
+        return self::engine()->extractVarType($property, $doc);
     }
 
     /**
@@ -165,155 +59,47 @@ class MetadataReader
      */
     public static function resolveInjectableDefinition(?ReflectionProperty $property, ?string $doc = ''): array
     {
-        $definition = [
-            'isInjectable' => false,
-            'class' => null,
-            'singleton' => true,
-            'required' => true,
-            'source' => null,
-        ];
-        $doc = $doc ?: '';
-
-        if (null !== $property && self::attributesEnabled()) {
-            $attrs = $property->getAttributes(Injectable::class);
-            if (!empty($attrs)) {
-                $attribute = $attrs[0]->newInstance();
-                return [
-                    'isInjectable' => true,
-                    'class' => $attribute->class,
-                    'singleton' => $attribute->singleton,
-                    'required' => $attribute->required,
-                    'source' => 'attribute',
-                ];
-            }
-            if ($doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
-                if (!self::annotationsFallbackEnabled()) {
-                    throw self::legacyFallbackDisabledException('injectable', $property);
-                }
-                self::logLegacyFallback('annotation_injectable');
-            }
-        }
-
-        if (self::annotationsFallbackEnabled() && $doc !== '' && preg_match(InjectorHelper::INJECTABLE_PATTERN, $doc) === 1) {
-            $className = self::readVarTypeFromDoc($doc);
-            $className = is_string($className) ? $className : '';
-            return [
-                'isInjectable' => trim($className) !== '',
-                'class' => trim($className) !== '' ? $className : null,
-                'singleton' => true,
-                'required' => true,
-                'source' => 'annotation',
-            ];
-        }
-
-        return $definition;
+        return self::engine()->resolveInjectableDefinition($property, $doc);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public static function getLegacyFallbackLogs(): array
     {
-        return array_keys(self::$legacyFallbackLogs);
+        $engine = self::engine();
+        if ($engine instanceof MetadataEngine) {
+            return $engine->getLegacyFallbackLogs();
+        }
+        return [];
     }
 
     public static function clearLegacyFallbackLogs(): void
     {
-        self::$legacyFallbackLogs = [];
-    }
-
-    private static function attributesEnabled(): bool
-    {
-        return (bool)Config::getParam('metadata.attributes.enabled', true);
-    }
-
-    private static function annotationsFallbackEnabled(): bool
-    {
-        return (bool)Config::getParam('metadata.annotations.fallback.enabled', true);
-    }
-
-    private static function readFromAttributes(
-        string $tag,
-        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
-    ): mixed {
-        if (null === $reflector) {
-            return null;
+        $engine = self::engine();
+        if ($engine instanceof MetadataEngine) {
+            $engine->clearLegacyFallbackLogs();
         }
-        $normalizedTag = strtolower($tag);
-        foreach ($reflector->getAttributes() as $attribute) {
-            $instance = $attribute->newInstance();
-            if (!$instance instanceof MetadataAttributeContract) {
-                continue;
-            }
-            if (strtolower($instance::tag()) === $normalizedTag) {
-                return $instance->resolve();
-            }
-        }
-        return null;
     }
 
-    private static function readFromDoc(string $tag, ?string $doc, mixed $default = null): mixed
+    /**
+     * @return array<string, int|float>
+     */
+    public static function getEngineStats(): array
     {
-        if (null === $doc || '' === $doc) {
-            return $default;
-        }
-        return match ($tag) {
-            'http' => MetadataDocParser::readHttpMethod($doc, $default),
-            'visible' => MetadataDocParser::readVisibilityFlag($doc),
-            'cache' => (bool)MetadataDocParser::readTagValue('cache', $doc, $default ?? false),
-            default => MetadataDocParser::readTagValue($tag, $doc, $default),
-        };
+        return self::engine()->getStats();
     }
 
-    private static function readVarTypeFromDoc(string $doc): ?string
+    public static function resetEngineCaches(): void
     {
-        return MetadataDocParser::readVarType($doc);
+        self::engine()->clearLocalCache();
     }
 
-    private static function extractPropertyType(?ReflectionType $type): ?string
+    private static function engine(): MetadataEngineInterface
     {
-        if (null === $type || method_exists($type, 'isBuiltin') && $type->isBuiltin()) {
-            return null;
+        if (!(self::$engine instanceof MetadataEngineInterface)) {
+            self::$engine = new MetadataEngine();
         }
-        $name = method_exists($type, 'getName') ? $type->getName() : null;
-        if (null === $name || '' === $name) {
-            return null;
-        }
-        return str_starts_with($name, '\\') ? $name : '\\' . $name;
+        return self::$engine;
     }
-
-    private static function logLegacyFallback(string $context): void
-    {
-        if (array_key_exists($context, self::$legacyFallbackLogs)) {
-            return;
-        }
-        self::$legacyFallbackLogs[$context] = true;
-        Logger::log('[LegacyMetadata] ' . $context, LOG_NOTICE);
-    }
-
-    private static function hasLegacyTag(string $tag, string $doc): bool
-    {
-        $normalizedTag = strtolower($tag);
-        return match ($normalizedTag) {
-            'http' => MetadataDocParser::hasHttpMethodTag($doc),
-            default => MetadataDocParser::hasTag($normalizedTag, $doc),
-        };
-    }
-
-    private static function legacyFallbackDisabledException(
-        string $tag,
-        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
-    ): MetadataContractException {
-        $where = 'unknown';
-        if ($reflector instanceof ReflectionMethod) {
-            $where = $reflector->getDeclaringClass()->getName() . '::' . $reflector->getName();
-        } elseif ($reflector instanceof ReflectionProperty) {
-            $where = $reflector->getDeclaringClass()->getName() . '::$' . $reflector->getName();
-        } elseif ($reflector instanceof ReflectionClass) {
-            $where = $reflector->getName();
-        }
-        return new MetadataContractException(sprintf(
-            '[MetadataContract] Annotation fallback disabled for `%s` at %s',
-            $tag,
-            $where
-        ));
-    }
-
 }

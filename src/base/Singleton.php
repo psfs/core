@@ -118,8 +118,8 @@ class Singleton
             $configService = Config::getInstance();
             $repository = $this->createReflectionRepository(get_class($this));
             $properties = $repository->read();
-            $forceMetadataRefresh = (bool)$configService->getParam('metadata.attributes.enabled', true);
-            if ($forceMetadataRefresh || !$properties || true === $configService->getDebugMode()) {
+            $forceMetadataRefresh = (bool)$configService->getDebugMode();
+            if ($forceMetadataRefresh || !$properties) {
                 $properties = InjectorHelper::getClassProperties(get_class($this));
                 $repository->save($properties);
             }
