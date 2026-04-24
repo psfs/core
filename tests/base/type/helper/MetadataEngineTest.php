@@ -12,7 +12,9 @@ use PSFS\base\types\helpers\attributes\Route;
 use PSFS\base\types\helpers\attributes\VarType;
 use PSFS\base\types\helpers\metadata\MetadataAttributeBundleBuilder;
 use PSFS\base\types\helpers\metadata\MetadataEngine;
+use PSFS\base\types\helpers\metadata\MetadataEngineConfig;
 use PSFS\base\types\helpers\metadata\MetadataInjectableResolver;
+use PSFS\base\types\helpers\metadata\MetadataTagValueResolver;
 use PSFS\controller\ConfigController;
 use ReflectionClass;
 use ReflectionMethod;
@@ -549,6 +551,44 @@ class MetadataEngineTest extends TestCase
         $this->assertSame('signature', $bundle['signature']);
     }
 
+    public function testExtractedMetadataEngineConfigResolvesModesAndTtls(): void
+    {
+        $config = $this->configBackup;
+        $config['debug'] = false;
+        $config['metadata.engine.enabled'] = false;
+        $config['metadata.engine.redis.enabled'] = true;
+        $config['metadata.engine.opcache.enabled'] = true;
+        $config['metadata.engine.version'] = '';
+        $config['metadata.engine.soft_ttl'] = 5;
+        $config['metadata.engine.hard_ttl'] = 3;
+        $config['metadata.engine.regen.lock_ttl'] = 0;
+        $config['metadata.engine.swr.enabled'] = true;
+        $config['psfs.redis'] = true;
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $engineConfig = new MetadataEngineConfig();
+        $this->assertSame('v3', $engineConfig->engineVersion());
+        $this->assertSame(5, $engineConfig->effectiveSoftTtl());
+        $this->assertSame(5, $engineConfig->effectiveHardTtl());
+        $this->assertSame(1, $engineConfig->regenLockTtl());
+        $this->assertTrue($engineConfig->swrEnabled());
+        $this->assertFalse($engineConfig->engineEnabled());
+
+        $config['psfs.cache.mode'] = 'REDIS';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        $this->assertTrue($engineConfig->redisEnabled());
+        $this->assertFalse($engineConfig->localCacheEnabled());
+        $this->assertFalse($engineConfig->opcacheEnabled());
+
+        $config['psfs.cache.mode'] = 'MEMORY';
+        Config::save($config, []);
+        Config::getInstance()->loadConfigData(true);
+        $this->assertTrue($engineConfig->engineEnabled());
+        $this->assertTrue($engineConfig->localCacheEnabled());
+    }
+
     public function testInjectableResolverHandlesAttributeLegacyAndEmptyDefinitions(): void
     {
         $reflection = new ReflectionClass(MetadataEngineAttributeBundleExample::class);
@@ -586,6 +626,36 @@ class MetadataEngineTest extends TestCase
             $reflection->getProperty('legacyCache'),
             "/**\n * @Injectable\n * @var \\PSFS\\base\\Cache\n */"
         );
+    }
+
+    public function testTagValueResolverHandlesAttributesLegacyAndDeprecatedPolicy(): void
+    {
+        $reflection = new ReflectionClass(MetadataEngineAttributeBundleExample::class);
+        $method = $reflection->getMethod('routeAction');
+        $attributeReader = static function (string $tag, ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector): mixed {
+            if ($reflector instanceof ReflectionMethod && $tag === 'route') {
+                return '/attribute/example';
+            }
+            return null;
+        };
+        $rejectLegacy = static function (string $tag): void {
+            throw new MetadataContractException($tag);
+        };
+        $legacyHits = [];
+        $rememberLegacy = static function (string $fallback) use (&$legacyHits): void {
+            $legacyHits[] = $fallback;
+        };
+
+        $resolver = new MetadataTagValueResolver(true, true, $attributeReader, $rejectLegacy, $rememberLegacy);
+        $this->assertSame('/attribute/example', $resolver->getTagValue('route', '', null, $method));
+        $this->assertSame('GET', $resolver->getTagValue('http', "/**\n * @GET\n */", 'ALL', $method));
+        $this->assertTrue($resolver->getTagValue('cache', "/**\n * @cache true\n */", false, $method));
+        $this->assertTrue($resolver->hasDeprecated($method, "/**\n * @deprecated\n */"));
+        $this->assertSame('annotation_deprecated', end($legacyHits));
+
+        $strictResolver = new MetadataTagValueResolver(true, false, $attributeReader, $rejectLegacy, $rememberLegacy);
+        $this->expectException(MetadataContractException::class);
+        $strictResolver->getTagValue('payload', "/**\n * @payload Legacy\\Payload\n */", null, $method);
     }
 }
 

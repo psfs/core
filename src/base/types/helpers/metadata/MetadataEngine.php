@@ -5,8 +5,6 @@ namespace PSFS\base\types\helpers\metadata;
 use PSFS\base\config\Config;
 use PSFS\base\exception\MetadataContractException;
 use PSFS\base\Logger;
-use PSFS\base\types\helpers\CacheModeHelper;
-use PSFS\base\types\helpers\MetadataDocParser;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -50,7 +48,7 @@ class MetadataEngine implements MetadataEngineInterface
     private bool $redisReady = false;
     private bool $shutdownRegistered = false;
     private ?MetadataAttributeBundleBuilder $attributeBundleBuilder = null;
-    private static bool $debugOpcacheWarningLogged = false;
+    private ?MetadataEngineConfig $engineConfig = null;
 
     public function getTagValue(
         string $tag,
@@ -58,38 +56,12 @@ class MetadataEngine implements MetadataEngineInterface
         mixed $default = null,
         ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
     ): mixed {
-        $doc = $doc ?? '';
-        if ($this->attributesEnabled()) {
-            $value = $this->readFromAttributesBundle($tag, $reflector);
-            if (null !== $value) {
-                return $value;
-            }
-            if ($doc !== '' && $this->hasLegacyTag($tag, $doc)) {
-                if (!$this->annotationsFallbackEnabled()) {
-                    throw $this->legacyFallbackDisabledException($tag, $reflector);
-                }
-                $this->rememberLegacyFallback('annotation_' . strtolower($tag));
-            }
-        }
-        return $this->readFromDoc($tag, $doc, $default);
+        return $this->tagValueResolver()->getTagValue($tag, $doc ?? '', $default, $reflector);
     }
 
     public function hasDeprecated(?ReflectionMethod $method = null, ?string $doc = ''): bool
     {
-        $doc = $doc ?? '';
-        if ($this->attributesEnabled() && null !== $method) {
-            $attr = $this->readFromAttributesBundle('deprecated', $method);
-            if (null !== $attr) {
-                return (bool)$attr;
-            }
-            if ($doc !== '' && MetadataDocParser::hasDeprecatedTag($doc) && !$this->annotationsFallbackEnabled()) {
-                throw $this->legacyFallbackDisabledException('deprecated', $method);
-            }
-            if ($doc !== '' && MetadataDocParser::hasDeprecatedTag($doc) && $this->annotationsFallbackEnabled()) {
-                $this->rememberLegacyFallback('annotation_deprecated');
-            }
-        }
-        return $this->annotationsFallbackEnabled() && MetadataDocParser::hasDeprecatedTag($doc);
+        return $this->tagValueResolver()->hasDeprecated($method, $doc ?? '');
     }
 
     public function extractPayload(string $defaultNamespace, ?ReflectionMethod $method = null, ?string $doc = ''): string
@@ -320,28 +292,6 @@ class MetadataEngine implements MetadataEngineInterface
         return $tags[$normalizedTag] ?? null;
     }
 
-    private function readFromDoc(string $tag, ?string $doc, mixed $default = null): mixed
-    {
-        if ($doc === null || $doc === '') {
-            return $default;
-        }
-        return match ($tag) {
-            'http' => MetadataDocParser::readHttpMethod($doc, $default),
-            'visible' => MetadataDocParser::readVisibilityFlag($doc),
-            'cache' => (bool)MetadataDocParser::readTagValue('cache', $doc, $default ?? false),
-            default => MetadataDocParser::readTagValue($tag, $doc, $default),
-        };
-    }
-
-    private function hasLegacyTag(string $tag, string $doc): bool
-    {
-        $normalizedTag = strtolower($tag);
-        return match ($normalizedTag) {
-            'http' => MetadataDocParser::hasHttpMethodTag($doc),
-            default => MetadataDocParser::hasTag($normalizedTag, $doc),
-        };
-    }
-
     private function legacyFallbackDisabledException(
         string $tag,
         ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector = null
@@ -371,6 +321,27 @@ class MetadataEngine implements MetadataEngineInterface
                 $reflector
             ),
             function (string $tag, ReflectionMethod|ReflectionProperty $reflector): void {
+                throw $this->legacyFallbackDisabledException($tag, $reflector);
+            },
+            function (string $fallback): void {
+                $this->rememberLegacyFallback($fallback);
+            }
+        );
+    }
+
+    private function tagValueResolver(): MetadataTagValueResolver
+    {
+        return new MetadataTagValueResolver(
+            $this->attributesEnabled(),
+            $this->annotationsFallbackEnabled(),
+            fn (
+                string $tag,
+                ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
+            ): mixed => $this->readFromAttributesBundle($tag, $reflector),
+            function (
+                string $tag,
+                ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
+            ): void {
                 throw $this->legacyFallbackDisabledException($tag, $reflector);
             },
             function (string $fallback): void {
@@ -740,120 +711,57 @@ class MetadataEngine implements MetadataEngineInterface
 
     private function debugEnabled(): bool
     {
-        return (bool)Config::getParam('debug', false);
+        return $this->engineConfig()->debugEnabled();
     }
 
     private function attributesEnabled(): bool
     {
-        return (bool)Config::getParam('metadata.attributes.enabled', true);
+        return $this->engineConfig()->attributesEnabled();
     }
 
     private function annotationsFallbackEnabled(): bool
     {
-        return (bool)Config::getParam('metadata.annotations.fallback.enabled', true);
+        return $this->engineConfig()->annotationsFallbackEnabled();
     }
 
     private function engineVersion(): string
     {
-        $version = (string)Config::getParam('metadata.engine.version', 'v3');
-        return $version !== '' ? $version : 'v3';
-    }
-
-    private function softTtl(): int
-    {
-        return max(1, (int)Config::getParam('metadata.engine.soft_ttl', 300));
-    }
-
-    private function hardTtl(): int
-    {
-        $hard = max(1, (int)Config::getParam('metadata.engine.hard_ttl', 900));
-        return max($hard, $this->softTtl());
+        return $this->engineConfig()->engineVersion();
     }
 
     private function effectiveSoftTtl(): int
     {
-        if ($this->debugEnabled()) {
-            return 0;
-        }
-        return $this->softTtl();
+        return $this->engineConfig()->effectiveSoftTtl();
     }
 
     private function effectiveHardTtl(): int
     {
-        if ($this->debugEnabled()) {
-            return 0;
-        }
-        return $this->hardTtl();
+        return $this->engineConfig()->effectiveHardTtl();
     }
 
     private function swrEnabled(): bool
     {
-        return !$this->debugEnabled() && (bool)Config::getParam('metadata.engine.swr.enabled', true);
+        return $this->engineConfig()->swrEnabled();
     }
 
     private function redisEnabled(): bool
     {
-        $mode = $this->cacheMode();
-        if ($mode === CacheModeHelper::MODE_MEMORY || $mode === CacheModeHelper::MODE_OPCACHE) {
-            return false;
-        }
-        if ($mode === CacheModeHelper::MODE_REDIS) {
-            return true;
-        }
-        if (!(bool)Config::getParam('metadata.engine.redis.enabled', true)) {
-            return false;
-        }
-        return (bool)Config::getParam('psfs.redis', false);
+        return $this->engineConfig()->redisEnabled();
     }
 
     private function opcacheEnabled(): bool
     {
-        $mode = $this->cacheMode();
-        if ($mode === CacheModeHelper::MODE_MEMORY || $mode === CacheModeHelper::MODE_REDIS) {
-            return false;
-        }
-        if ($mode !== CacheModeHelper::MODE_OPCACHE && !(bool)Config::getParam('metadata.engine.opcache.enabled', true)) {
-            return false;
-        }
-        if (!extension_loaded('Zend OPcache')) {
-            return false;
-        }
-        if (!$this->debugEnabled()) {
-            return true;
-        }
-        $validateTimestamps = filter_var(ini_get('opcache.validate_timestamps'), FILTER_VALIDATE_BOOLEAN);
-        $revalidateFreq = (int)ini_get('opcache.revalidate_freq');
-        if ($validateTimestamps && $revalidateFreq === 0) {
-            return true;
-        }
-        if (!self::$debugOpcacheWarningLogged) {
-            self::$debugOpcacheWarningLogged = true;
-            Logger::log(
-                '[MetadataEngine] Disabled opcache layer in debug mode: require opcache.validate_timestamps=1 and opcache.revalidate_freq=0',
-                LOG_WARNING
-            );
-        }
-        return false;
+        return $this->engineConfig()->opcacheEnabled();
     }
 
     private function regenLockTtl(): int
     {
-        return max(1, (int)Config::getParam('metadata.engine.regen.lock_ttl', 15));
+        return $this->engineConfig()->regenLockTtl();
     }
 
     private function engineEnabled(): bool
     {
-        $mode = $this->cacheMode();
-        if ($mode === CacheModeHelper::MODE_MEMORY) {
-            return true;
-        }
-        if ($mode === CacheModeHelper::MODE_OPCACHE) {
-            return true;
-        }
-        if ($mode === CacheModeHelper::MODE_REDIS) {
-            return true;
-        }
-        return (bool)Config::getParam('metadata.engine.enabled', true);
+        return $this->engineConfig()->engineEnabled();
     }
 
     private function rememberLegacyFallback(string $context): void
@@ -894,16 +802,12 @@ class MetadataEngine implements MetadataEngineInterface
 
     private function cacheMode(): string
     {
-        return CacheModeHelper::normalize(Config::getParam('psfs.cache.mode', CacheModeHelper::MODE_NONE));
+        return $this->engineConfig()->cacheMode();
     }
 
     private function localCacheEnabled(): bool
     {
-        return match ($this->cacheMode()) {
-            CacheModeHelper::MODE_MEMORY => true,
-            CacheModeHelper::MODE_OPCACHE, CacheModeHelper::MODE_REDIS => false,
-            default => true,
-        };
+        return $this->engineConfig()->localCacheEnabled();
     }
 
     private function attributeBundleBuilder(): MetadataAttributeBundleBuilder
@@ -912,5 +816,13 @@ class MetadataEngine implements MetadataEngineInterface
             $this->attributeBundleBuilder = new MetadataAttributeBundleBuilder();
         }
         return $this->attributeBundleBuilder;
+    }
+
+    private function engineConfig(): MetadataEngineConfig
+    {
+        if (!$this->engineConfig instanceof MetadataEngineConfig) {
+            $this->engineConfig = new MetadataEngineConfig();
+        }
+        return $this->engineConfig;
     }
 }

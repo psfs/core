@@ -25,6 +25,7 @@ class RuntimeMatrixRunner
     private int $requestTimeout;
     private ?RuntimeMatrixEnvironment $environment = null;
     private ?RuntimeMatrixReportWriter $reportWriter = null;
+    private ?RuntimeScenarioMatrix $scenarioMatrix = null;
 
     public function __construct(
         string $projectRoot,
@@ -67,41 +68,7 @@ class RuntimeMatrixRunner
             if (count($scenarios) !== 16) {
                 throw new RuntimeException('Invalid scenario matrix size: expected 16');
             }
-
-            $scenarioResults = [];
-            foreach ($scenarios as $scenario) {
-                $runtime = (string)$scenario['runtime'];
-                $service = $this->runtimeMap[$runtime]['service'];
-                $baseUrl = $this->runtimeMap[$runtime]['base_url'];
-                $scenarioId = $this->scenarioId($scenario);
-
-                $this->applyConfigScenario($scenario);
-                $this->recreateRuntimeService($service, (bool)$scenario['opcache']);
-                $this->waitForHealth($baseUrl . '/_bench/ping', $this->healthTimeout);
-                $this->warmup($baseUrl . '/_bench/metadata', min(20, $this->profiles[1]['concurrency'] ?? 20), $this->warmupRequests);
-
-                $profileResults = [];
-                foreach ($this->profiles as $profile) {
-                    $profileResults[] = $this->runLoadProfile(
-                        $baseUrl . '/_bench/metadata',
-                        (string)$profile['name'],
-                        $scenarioId,
-                        (int)$profile['concurrency'],
-                        (int)$profile['requests']
-                    );
-                }
-
-                $stats = [
-                    'runtime' => $this->collectContainerStats($service),
-                    'redis' => $this->collectContainerStats('redis'),
-                ];
-
-                $scenarioResults[] = [
-                    'scenario' => $scenario,
-                    'profiles' => $profileResults,
-                    'container_stats' => $stats,
-                ];
-            }
+            $scenarioResults = $this->scenarioExecutor()->execute($scenarios);
 
             $this->assertScenarioCompleteness($scenarioResults);
             $this->assertNoHttpErrors($scenarioResults);
@@ -126,22 +93,7 @@ class RuntimeMatrixRunner
      */
     public function buildScenarios(): array
     {
-        $scenarios = [];
-        foreach (array_keys($this->runtimeMap) as $runtime) {
-            foreach ([false, true] as $debug) {
-                foreach ([false, true] as $opcache) {
-                    foreach ([false, true] as $redis) {
-                        $scenarios[] = [
-                            'runtime' => $runtime,
-                            'debug' => $debug,
-                            'opcache' => $opcache,
-                            'redis' => $redis,
-                        ];
-                    }
-                }
-            }
-        }
-        return $scenarios;
+        return $this->scenarioMatrix()->build($this->runtimeMap);
     }
 
     /**
@@ -361,6 +313,45 @@ class RuntimeMatrixRunner
             $this->reportWriter = new RuntimeMatrixReportWriter($this->outputDir);
         }
         return $this->reportWriter;
+    }
+
+    private function scenarioMatrix(): RuntimeScenarioMatrix
+    {
+        if (!$this->scenarioMatrix instanceof RuntimeScenarioMatrix) {
+            $this->scenarioMatrix = new RuntimeScenarioMatrix();
+        }
+        return $this->scenarioMatrix;
+    }
+
+    private function scenarioExecutor(): RuntimeScenarioExecutor
+    {
+        return new RuntimeScenarioExecutor(
+            $this->runtimeMap,
+            $this->profiles,
+            $this->warmupRequests,
+            $this->healthTimeout,
+            function (array $scenario): void {
+                $this->applyConfigScenario($scenario);
+            },
+            function (string $service, bool $opcache): void {
+                $this->recreateRuntimeService($service, $opcache);
+            },
+            function (string $url, int $timeout): void {
+                $this->waitForHealth($url, $timeout);
+            },
+            function (string $url, int $concurrency, int $requests): void {
+                $this->warmup($url, $concurrency, $requests);
+            },
+            fn (
+                string $url,
+                string $profile,
+                string $scenarioId,
+                int $concurrency,
+                int $requests
+            ): array => $this->runLoadProfile($url, $profile, $scenarioId, $concurrency, $requests),
+            fn (string $service): array => $this->collectContainerStats($service),
+            fn (array $scenario): string => $this->scenarioId($scenario)
+        );
     }
 
     /**

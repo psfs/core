@@ -7,6 +7,8 @@ use PSFS\base\benchmark\HttpLoadRunner;
 use PSFS\base\benchmark\RuntimeMatrixEnvironment;
 use PSFS\base\benchmark\RuntimeMatrixReportWriter;
 use PSFS\base\benchmark\RuntimeMatrixRunner;
+use PSFS\base\benchmark\RuntimeScenarioExecutor;
+use PSFS\base\benchmark\RuntimeScenarioMatrix;
 use RuntimeException;
 
 class RuntimeMatrixRunnerTest extends TestCase
@@ -44,6 +46,49 @@ class RuntimeMatrixRunnerTest extends TestCase
             $scenarios
         );
         $this->assertCount(16, array_unique($ids));
+    }
+
+    public function testExtractedScenarioMatrixAndExecutorOrchestrateProfiles(): void
+    {
+        $runtimeMap = ['php-s' => ['service' => 'php', 'base_url' => 'http://runtime']];
+        $matrix = new RuntimeScenarioMatrix();
+        $scenarios = $matrix->build($runtimeMap);
+        $calls = [];
+
+        $executor = new RuntimeScenarioExecutor(
+            $runtimeMap,
+            [
+                ['name' => 'L1', 'concurrency' => 2, 'requests' => 3],
+                ['name' => 'L2', 'concurrency' => 4, 'requests' => 5],
+            ],
+            7,
+            11,
+            static function (array $scenario) use (&$calls): void {
+                $calls[] = ['apply', $scenario['runtime']];
+            },
+            static function (string $service, bool $opcache) use (&$calls): void {
+                $calls[] = ['recreate', $service, $opcache];
+            },
+            static function (string $url, int $timeout) use (&$calls): void {
+                $calls[] = ['health', $url, $timeout];
+            },
+            static function (string $url, int $concurrency, int $requests) use (&$calls): void {
+                $calls[] = ['warmup', $url, $concurrency, $requests];
+            },
+            static function (string $url, string $profile, string $scenarioId, int $concurrency, int $requests): array {
+                return compact('url', 'profile', 'scenarioId', 'concurrency', 'requests') + ['error_rate' => 0.0];
+            },
+            static fn (string $service): array => ['service' => $service],
+            static fn (array $scenario): string => implode('-', [$scenario['runtime'], (int)$scenario['debug']])
+        );
+
+        $results = $executor->execute([$scenarios[0]]);
+
+        $this->assertCount(8, $scenarios);
+        $this->assertSame('http://runtime/_bench/ping', $calls[2][1]);
+        $this->assertSame(['warmup', 'http://runtime/_bench/metadata', 4, 7], $calls[3]);
+        $this->assertSame('L2', $results[0]['profiles'][1]['profile']);
+        $this->assertSame(['service' => 'redis'], $results[0]['container_stats']['redis']);
     }
 
     public function testRuntimeMapUsesProjectEnvPorts(): void
