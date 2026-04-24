@@ -4,11 +4,8 @@ namespace PSFS\base\dto;
 
 use PSFS\base\types\helpers\InjectorHelper;
 use PSFS\base\types\helpers\MetadataReader;
-use PSFS\base\types\helpers\attributes\CsrfField;
 use PSFS\base\types\helpers\attributes\CsrfProtected;
-use PSFS\base\types\helpers\attributes\DefaultValue;
 use PSFS\base\types\helpers\attributes\DtoConstraintAttributeContract;
-use PSFS\base\types\helpers\attributes\Nullable;
 use PSFS\base\types\helpers\attributes\Values;
 use ReflectionClass;
 use ReflectionProperty;
@@ -54,20 +51,15 @@ final class DtoValidationEngine
     private function applyDefaultValues(array $publicProperties): void
     {
         foreach ($publicProperties as $property) {
-            if ($property->getValue($this->dto) !== null) {
+            $defaultValue = DtoValidationHelper::defaultValueFor($property);
+            if ($defaultValue === null || $property->getValue($this->dto) !== null) {
                 continue;
             }
 
-            $defaultAttr = $this->propertyAttribute($property, DefaultValue::class);
-            $doc = (string)($property->getDocComment() ?: '');
-            $defaultValue = $defaultAttr instanceof DefaultValue
-                ? $defaultAttr->value
-                : MetadataReader::getTagValue('default', $doc, null, $property);
-            if ($defaultValue === null) {
-                continue;
-            }
-
-            $varType = MetadataReader::extractVarType($property, $doc) ?: 'string';
+            $varType = MetadataReader::extractVarType(
+                $property,
+                DtoValidationHelper::propertyDoc($property)
+            ) ?: 'string';
             $property->setValue($this->dto, ($this->castValue)($defaultValue, $varType));
         }
     }
@@ -75,30 +67,35 @@ final class DtoValidationEngine
     /**
      * @param array<int, ReflectionProperty> $publicProperties
      */
-    private function validateUnknownFields(array $publicProperties, ReflectionClass $reflector, ValidationResult $result): void
-    {
+    private function validateUnknownFields(
+        array $publicProperties,
+        ReflectionClass $reflector,
+        ValidationResult $result
+    ): void {
         if (!$this->context->strictUnknownFields) {
             return;
         }
 
-        $allowed = [];
-        foreach ($publicProperties as $property) {
-            $allowed[$property->getName()] = true;
-        }
-
-        $csrfProtected = $this->classAttribute($reflector, CsrfProtected::class);
-        if ($csrfProtected instanceof CsrfProtected && $this->context->enforceCsrf !== false) {
-            $csrfField = $this->classAttribute($reflector, CsrfField::class);
-            $allowed[$csrfField?->tokenField ?? '_csrf'] = true;
-            $allowed[$csrfField?->tokenKeyField ?? '_csrf_key'] = true;
-        }
-
+        $allowed = DtoValidationHelper::allowedPayloadFields(
+            $publicProperties,
+            $reflector,
+            $this->context->enforceCsrf
+        );
         foreach ($this->context->payload as $field => $value) {
-            if (!is_string($field) || array_key_exists($field, $allowed)) {
-                continue;
-            }
-            $result->addError($field, 'unknown_field', $this->messageNotAllowed($field));
+            $this->validatePayloadField($field, $allowed, $result);
         }
+    }
+
+    /**
+     * @param array<string, bool> $allowed
+     */
+    private function validatePayloadField(mixed $field, array $allowed, ValidationResult $result): void
+    {
+        if (!is_string($field) || array_key_exists($field, $allowed)) {
+            return;
+        }
+
+        $result->addError($field, 'unknown_field', $this->messageNotAllowed($field));
     }
 
     /**
@@ -114,37 +111,91 @@ final class DtoValidationEngine
     private function validateProperty(ReflectionProperty $property, ValidationResult $result): void
     {
         $name = $property->getName();
-        $doc = (string)($property->getDocComment() ?: '');
+        $doc = DtoValidationHelper::propertyDoc($property);
         $value = $property->getValue($this->dto);
         $existsInPayload = array_key_exists($name, $this->context->payload);
         $required = (bool)MetadataReader::getTagValue('required', $doc, false, $property);
 
-        if ($required && !$existsInPayload && $value === null) {
-            $result->addError($name, 'required', $this->messageRequired($name));
+        if (!$this->validateRequiredProperty($name, $value, $existsInPayload, $required, $result)) {
             return;
         }
 
-        if ($value === null) {
-            if ($existsInPayload && !$this->allowsNull($property) && $required) {
-                $result->addError($name, 'null_not_allowed', $this->messageRequired($name));
-            }
+        if (!$this->validateNullableProperty($property, $name, $value, $existsInPayload, $required, $result)) {
             return;
         }
 
         $varType = MetadataReader::extractVarType($property, $doc);
-        if (is_string($varType) && !$this->matchesDeclaredType($value, $varType)) {
-            $result->addError($name, 'invalid_type', $this->messageInvalidFormat($name));
+        if (!$this->validatePropertyType($name, $value, $varType, $result)) {
             return;
         }
 
-        if (!$this->hasAttribute($property, Values::class)) {
-            $values = InjectorHelper::getValues($doc, $property);
-            if (is_array($values) && !in_array($value, $values, true)) {
-                $result->addError($name, 'invalid_enum', $this->messageInvalidFormat($name));
-            }
+        $this->validateLegacyEnum($property, $name, $value, $doc, $result);
+        $this->validateConstraintAttributes($property, $name, $value, $result);
+    }
+
+    private function validateRequiredProperty(
+        string $field,
+        mixed $value,
+        bool $existsInPayload,
+        bool $required,
+        ValidationResult $result
+    ): bool {
+        if (!$required || $existsInPayload || $value !== null) {
+            return true;
         }
 
-        $this->validateConstraintAttributes($property, $name, $value, $result);
+        $result->addError($field, 'required', $this->messageRequired($field));
+        return false;
+    }
+
+    private function validateNullableProperty(
+        ReflectionProperty $property,
+        string $field,
+        mixed $value,
+        bool $existsInPayload,
+        bool $required,
+        ValidationResult $result
+    ): bool {
+        if ($value !== null) {
+            return true;
+        }
+
+        if ($existsInPayload && $required && !DtoValidationHelper::allowsNull($property)) {
+            $result->addError($field, 'null_not_allowed', $this->messageRequired($field));
+        }
+
+        return false;
+    }
+
+    private function validatePropertyType(
+        string $field,
+        mixed $value,
+        ?string $varType,
+        ValidationResult $result
+    ): bool {
+        if (!is_string($varType) || DtoValidationHelper::matchesDeclaredType($value, $varType)) {
+            return true;
+        }
+
+        $result->addError($field, 'invalid_type', $this->messageInvalidFormat($field));
+        return false;
+    }
+
+    private function validateLegacyEnum(
+        ReflectionProperty $property,
+        string $field,
+        mixed $value,
+        string $doc,
+        ValidationResult $result
+    ): void {
+        if (DtoValidationHelper::hasAttribute($property, Values::class)) {
+            return;
+        }
+
+        $values = InjectorHelper::getValues($doc, $property);
+        if (is_array($values) && !in_array($value, $values, true)) {
+            $result->addError($field, 'invalid_enum', $this->messageInvalidFormat($field));
+        }
     }
 
     private function validateConstraintAttributes(
@@ -167,81 +218,20 @@ final class DtoValidationEngine
 
     private function validateCsrfIfRequired(ReflectionClass $reflector, ValidationResult $result): void
     {
-        $csrfProtected = $this->classAttribute($reflector, CsrfProtected::class);
-        if (!$csrfProtected instanceof CsrfProtected || $this->context->enforceCsrf === false) {
+        if (!DtoValidationHelper::requiresCsrfValidation($reflector, $this->context->enforceCsrf)) {
             return;
         }
 
-        $csrfField = $this->classAttribute($reflector, CsrfField::class);
-        $tokenField = $csrfField?->tokenField ?? '_csrf';
-        $tokenKeyField = $csrfField?->tokenKeyField ?? '_csrf_key';
-        $formKey = $csrfProtected->formKey !== '' ? $csrfProtected->formKey : $reflector->getShortName();
-
-        $token = $this->payloadScalar($tokenField);
-        $tokenKey = $this->payloadScalar($tokenKeyField);
-        if ($token === '') {
-            $token = (string)($this->context->header($csrfProtected->headerName) ?? '');
-        }
-        if ($tokenKey === '' && $csrfProtected->headerKeyName !== '') {
-            $tokenKey = (string)($this->context->header($csrfProtected->headerKeyName) ?? '');
-        }
+        $csrfProtected = DtoValidationHelper::csrfProtection($reflector);
+        assert($csrfProtected instanceof CsrfProtected);
+        $csrfField = DtoValidationHelper::csrfField($reflector);
+        [$tokenField] = DtoValidationHelper::csrfFieldNames($csrfField);
+        $formKey = DtoValidationHelper::csrfFormKey($csrfProtected, $reflector);
+        [$token, $tokenKey] = DtoValidationHelper::csrfTokensFromRequest($this->context, $csrfProtected, $csrfField);
 
         if (!CsrfValidator::validateSubmission($token, $tokenKey, $formKey)) {
             $result->addError($tokenField, 'invalid_csrf', t('Invalid form'));
         }
-    }
-
-    private function payloadScalar(string $field): string
-    {
-        if (!array_key_exists($field, $this->context->payload) || !is_scalar($this->context->payload[$field])) {
-            return '';
-        }
-        return (string)$this->context->payload[$field];
-    }
-
-    private function allowsNull(ReflectionProperty $property): bool
-    {
-        $nullable = $this->propertyAttribute($property, Nullable::class);
-        return $nullable instanceof Nullable && $nullable->allowsNull();
-    }
-
-    private function hasAttribute(ReflectionProperty $property, string $attributeClass): bool
-    {
-        return !empty($property->getAttributes($attributeClass));
-    }
-
-    private function matchesDeclaredType(mixed $value, string $type): bool
-    {
-        $normalized = strtolower(trim($type));
-        if (str_contains($normalized, '|')) {
-            foreach (array_map('trim', explode('|', $normalized)) as $candidate) {
-                if ($this->matchesDeclaredType($value, $candidate)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        return match ($normalized) {
-            'string' => is_string($value),
-            'int', 'integer' => is_int($value),
-            'bool', 'boolean' => is_bool($value),
-            'float', 'double', 'number' => is_float($value) || is_int($value),
-            'array' => is_array($value),
-            default => true,
-        };
-    }
-
-    private function propertyAttribute(ReflectionProperty $property, string $attributeClass): mixed
-    {
-        $attrs = $property->getAttributes($attributeClass);
-        return empty($attrs) ? null : $attrs[0]->newInstance();
-    }
-
-    private function classAttribute(ReflectionClass $reflector, string $attributeClass): mixed
-    {
-        $attrs = $reflector->getAttributes($attributeClass);
-        return empty($attrs) ? null : $attrs[0]->newInstance();
     }
 
     private function messageRequired(string $field): string
@@ -259,4 +249,3 @@ final class DtoValidationEngine
         return str_replace('%s', "<strong>{$field}</strong>", t('Field %s is not allowed'));
     }
 }
-
