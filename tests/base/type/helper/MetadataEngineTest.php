@@ -428,32 +428,18 @@ class MetadataEngineTest extends TestCase
         Config::save($override, []);
         Config::getInstance()->loadConfigData(true);
 
-        $probe = new class extends MetadataEngine {
+        $redisStub = $this->createMock(\Redis::class);
+        $redisStub->method('get')->willThrowException(new \RedisException('boom-get'));
+        $redisStub->method('setex')->willThrowException(new \RedisException('boom-setex'));
+        $redisStub->method('del')->willThrowException(new \RedisException('boom-del'));
+        $redisStub->method('set')->willThrowException(new \RedisException('boom-set'));
+
+        $probe = new class($redisStub) extends MetadataEngine {
             private \Redis $redisStub;
 
-            public function __construct()
+            public function __construct(\Redis $redisStub)
             {
-                $this->redisStub = new class extends \Redis {
-                    public function get(string $key): mixed
-                    {
-                        throw new \RedisException('boom-get');
-                    }
-
-                    public function setex(string $key, int $expire, mixed $value): void
-                    {
-                        throw new \RedisException('boom-setex');
-                    }
-
-                    public function del(array|string $key, string ...$other_keys): \Redis|int|false
-                    {
-                        throw new \RedisException('boom-del');
-                    }
-
-                    public function set(string $key, mixed $value, mixed $options = null): \Redis|string|bool
-                    {
-                        throw new \RedisException('boom-set');
-                    }
-                };
+                $this->redisStub = $redisStub;
             }
 
             protected function redisClient(): ?\Redis

@@ -9,10 +9,7 @@ class RuntimeMatrixRunner
     /**
      * @var array<string, array{service:string,base_url:string}>
      */
-    private array $runtimeMap = [
-        'php-s' => ['service' => 'php', 'base_url' => 'http://127.0.0.1:8008'],
-        'swoole' => ['service' => 'php-swoole', 'base_url' => 'http://127.0.0.1:8011'],
-    ];
+    private array $runtimeMap;
 
     /**
      * @var array<int, array{name:string,concurrency:int,requests:int}>
@@ -41,6 +38,7 @@ class RuntimeMatrixRunner
         $this->composeFile = $composeFile ?: $this->projectRoot . DIRECTORY_SEPARATOR . 'docker-compose.yml';
         $this->configFile = $configFile ?: $this->projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.json';
         $this->outputDir = $outputDir ?: $this->projectRoot . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'benchmark' . DIRECTORY_SEPARATOR . 'runtime-matrix';
+        $this->runtimeMap = $this->buildRuntimeMap();
         $this->profiles = $profiles ?: [
             ['name' => 'L1', 'concurrency' => 1, 'requests' => 2000],
             ['name' => 'L2', 'concurrency' => 20, 'requests' => 4000],
@@ -569,5 +567,39 @@ class RuntimeMatrixRunner
             return 'MEMORY';
         }
         return 'NONE';
+    }
+
+    /**
+     * @return array<string, array{service:string,base_url:string}>
+     */
+    private function buildRuntimeMap(): array
+    {
+        return [
+            'php-s' => [
+                'service' => 'php',
+                'base_url' => 'http://127.0.0.1:' . $this->envValue('HOST_PORT', '8001'),
+            ],
+            'swoole' => [
+                'service' => 'php-swoole',
+                'base_url' => 'http://127.0.0.1:' . $this->envValue('HOST_PORT_SWOOLE', '8011'),
+            ],
+        ];
+    }
+
+    private function envValue(string $name, string $default): string
+    {
+        $value = getenv($name);
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        $envFile = $this->projectRoot . DIRECTORY_SEPARATOR . '.env';
+        if (!is_file($envFile)) {
+            return $default;
+        }
+
+        $values = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+        $fileValue = is_array($values) ? ($values[$name] ?? null) : null;
+        return is_string($fileValue) && $fileValue !== '' ? $fileValue : $default;
     }
 }

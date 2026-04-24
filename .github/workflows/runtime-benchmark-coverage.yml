@@ -11,6 +11,9 @@ jobs:
   runtime-matrix-and-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    env:
+      HOST_PORT: '8008'
+      HOST_PORT_SWOOLE: '8011'
 
     steps:
       - name: Checkout

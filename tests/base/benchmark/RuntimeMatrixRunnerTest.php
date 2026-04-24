@@ -43,6 +43,21 @@ class RuntimeMatrixRunnerTest extends TestCase
         $this->assertCount(16, array_unique($ids));
     }
 
+    public function testRuntimeMapUsesProjectEnvPorts(): void
+    {
+        file_put_contents(
+            $this->tmpRoot . DIRECTORY_SEPARATOR . '.env',
+            "HOST_PORT=19008\nHOST_PORT_SWOOLE=19011\n"
+        );
+
+        $runner = $this->newFakeRunner();
+        $property = new \ReflectionProperty(RuntimeMatrixRunner::class, 'runtimeMap');
+        $runtimeMap = $property->getValue($runner);
+
+        $this->assertSame('http://127.0.0.1:19008', $runtimeMap['php-s']['base_url']);
+        $this->assertSame('http://127.0.0.1:19011', $runtimeMap['swoole']['base_url']);
+    }
+
     public function testRunWritesReportsAndRestoresConfig(): void
     {
         $runner = $this->newFakeRunner();
