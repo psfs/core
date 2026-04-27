@@ -65,6 +65,67 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  php-swoole-aot:
+    image: c15k02k18/php:8.3-alpine${DEBUG:-}
+    pull_policy: always
+    restart: always
+    tty: true
+    profiles:
+      - aot
+    volumes:
+      - .:/var/www
+      - ./docker/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - psfs-network
+    working_dir: "/var/www"
+    ports:
+      - "${HOST_PORT_SWOOLE_AOT:-8012}:8080"
+    command: >
+      sh -lc '
+      if [ -z "$${PSFS_AOT_PHP_BIN:-}" ]; then
+        echo "PSFS AOT runtime error: PSFS_AOT_PHP_BIN is required";
+        exit 64;
+      fi;
+      if [ -z "$${PSFS_AOT_RUNTIME_SCRIPT:-}" ]; then
+        echo "PSFS AOT runtime error: PSFS_AOT_RUNTIME_SCRIPT is required";
+        exit 65;
+      fi;
+      if [ -z "$${PSFS_AOT_LOADER_SO:-}" ]; then
+        echo "PSFS AOT runtime error: PSFS_AOT_LOADER_SO is required";
+        exit 66;
+      fi;
+      if [ ! -f "$${PSFS_AOT_LOADER_SO}" ]; then
+        echo "PSFS AOT runtime error: loader path not found: $${PSFS_AOT_LOADER_SO}";
+        exit 67;
+      fi;
+      printf "zend_extension=%s\n" "$${PSFS_AOT_LOADER_SO}" > /tmp/psfs-aot-loader.ini;
+      export PHP_INI_SCAN_DIR="/tmp:/usr/local/etc/php/conf.d";
+      exec "$${PSFS_AOT_PHP_BIN}" "$${PSFS_AOT_RUNTIME_SCRIPT}" psfs:swoole:start
+      --host=0.0.0.0
+      --port=8080
+      --workers=${PSFS_SWOOLE_WORKERS:-2}
+      --max-request=${PSFS_SWOOLE_MAX_REQUEST:-1000}
+      --pid-file=/tmp/psfs-swoole-aot.pid
+      --log-file=/tmp/psfs-swoole-aot.log
+      '
+    environment:
+      XDEBUG_CONFIG: "remote_host=localhost"
+      PHP_IDE_CONFIG: "serverName=PSFSCore"
+      PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
+      PHP_OPCACHE: "${PHP_OPCACHE:-0}"
+      PSFS_RUNTIME: "swoole-aot"
+      PSFS_BENCHMARK_ENABLED: "${PSFS_BENCHMARK_ENABLED:-0}"
+      PSFS_AOT_PHP_BIN: "${PSFS_AOT_PHP_BIN:-}"
+      PSFS_AOT_LOADER_SO: "${PSFS_AOT_LOADER_SO:-}"
+      PSFS_AOT_RUNTIME_SCRIPT: "${PSFS_AOT_RUNTIME_SCRIPT:-}"
+    depends_on:
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   redis:
     restart: always
     image: valkey/valkey:latest

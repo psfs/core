@@ -216,10 +216,11 @@ class RouterHelper
             $default = str_replace('{__DOMAIN__}', $module, $default);
             $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments ?: '', $method);
             $icon = AnnotationHelper::extractDocIcon($docComments ?: '', $method);
-            $label = AnnotationHelper::extractReflectionLabel(
-                str_replace('{__API__}', $api, $docComments ?: ''),
-                $method
-            );
+            $label = (string)AnnotationHelper::extractReflectionLabel($docComments ?: '', $method);
+            if ($label !== '') {
+                $label = str_replace('{__API__}', $api, $label);
+                $label = str_replace('{__DOMAIN__}', $module, $label);
+            }
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
