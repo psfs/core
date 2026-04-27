@@ -74,8 +74,14 @@ class GeneratorHelper
      */
     public static function getTemplatePath(): string
     {
-        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
-        return realpath($path);
+        $path = __DIR__
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . '..'
+            . DIRECTORY_SEPARATOR . 'templates';
+        $resolvedPath = realpath($path);
+        $finalPath = is_string($resolvedPath) && $resolvedPath !== '' ? $resolvedPath : $path;
+        return rtrim($finalPath, '/\\') . DIRECTORY_SEPARATOR;
     }
 
     /**

@@ -51,4 +51,21 @@ final class AdminHelperTest extends TestCase
         $this->assertSame('admin-switch-user', $routes['PSFS']['hidden'][0]['slug']);
         $this->assertArrayNotHasKey('hidden', $routes['DEMO']);
     }
+
+    public function testGetAdminRoutesResolvesApiPlaceholderFromDefaultRoute(): void
+    {
+        $routes = AdminHelper::getAdminRoutes([
+            [
+                'http' => 'GET',
+                'default' => '/admin/core/books',
+                'slug' => 'admin-core-books',
+                'label' => '{__API__} Manager',
+                'icon' => 'fa-database',
+                'module' => 'CORE',
+                'visible' => true,
+            ],
+        ]);
+
+        $this->assertSame('books Manager', $routes['CORE']['visible'][0]['label']);
+    }
 }

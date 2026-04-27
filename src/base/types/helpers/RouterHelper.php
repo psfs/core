@@ -201,6 +201,7 @@ class RouterHelper
     {
         $route = $info = null;
         $docComments = $method->getDocComment();
+        $resolvedApi = self::resolveApiToken($method, $api);
         $regexpRoute = AnnotationHelper::extractRoute($docComments ?: '', $method);
         if (null !== $regexpRoute) {
             list($regex, $default, $params, $requirements) = RouterHelper::extractReflectionParams(
@@ -208,19 +209,15 @@ class RouterHelper
                 $method
             );
             $originalRegex = $regex;
-            if ('' !== $api && str_contains($regex, '__API__')) {
-                $regex = str_replace('{__API__}', $api, $regex);
-                $default = str_replace('{__API__}', $api, $default);
-            }
-            $regex = str_replace('{__DOMAIN__}', $module, $regex);
-            $default = str_replace('{__DOMAIN__}', $module, $default);
+            $regex = self::replaceRuntimeTokens($regex, $resolvedApi, $module);
+            $default = self::replaceRuntimeTokens($default, $resolvedApi, $module);
             $httpMethod = AnnotationHelper::extractReflectionHttpMethod($docComments ?: '', $method);
             $icon = AnnotationHelper::extractDocIcon($docComments ?: '', $method);
-            $label = (string)AnnotationHelper::extractReflectionLabel($docComments ?: '', $method);
-            if ($label !== '') {
-                $label = str_replace('{__API__}', $api, $label);
-                $label = str_replace('{__DOMAIN__}', $module, $label);
-            }
+            $label = self::replaceRuntimeTokens(
+                (string)AnnotationHelper::extractReflectionLabel($docComments ?: '', $method),
+                $resolvedApi,
+                $module
+            );
             $route = $httpMethod . "#|#" . $regex;
             $route = preg_replace('/(\\r|\\f|\\t|\\n)/', '', $route);
             $info = [
@@ -230,7 +227,7 @@ class RouterHelper
                 'pattern' => $originalRegex,
                 'label' => $label,
                 'icon' => strlen($icon) > 0 ? $icon : '',
-                'module' => preg_replace('/(\\\|\\/)/', '', $module),
+                'module' => self::normalizeRouteModule($module),
                 'visible' => AnnotationHelper::extractReflectionVisibility($docComments ?: '', $method),
                 'http' => $httpMethod,
                 'cache' => AnnotationHelper::extractReflectionCacheability($docComments ?: '', $method),
@@ -238,6 +235,31 @@ class RouterHelper
             ];
         }
         return [$route, $info];
+    }
+
+    private static function resolveApiToken(ReflectionMethod $method, string $api): string
+    {
+        $candidate = trim($api);
+        if ($candidate !== '') {
+            return $candidate;
+        }
+
+        return $method->getDeclaringClass()->getShortName();
+    }
+
+    private static function replaceRuntimeTokens(string $value, string $api, string $module): string
+    {
+        if ($value === '') {
+            return $value;
+        }
+
+        $value = str_replace('{__API__}', $api, $value);
+        return str_replace('{__DOMAIN__}', $module, $value);
+    }
+
+    private static function normalizeRouteModule(string $module): string
+    {
+        return preg_replace('/(\\\|\\/)/', '', $module);
     }
 
     /**
