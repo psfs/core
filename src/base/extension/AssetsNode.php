@@ -28,7 +28,7 @@ class AssetsNode extends Node
         $this->type = $type;
     }
 
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $scripts = $this->getNode("scripts");
 
