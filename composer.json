@@ -16,19 +16,19 @@
     "ext-curl": "*",
     "ext-gmp": "*",
     "psfs/propel": "dev-master",
-    "symfony/console": "^7.4",
-    "symfony/finder": "^7.4",
-    "symfony/translation": "^7.4",
-    "twig/twig": "^3.24",
-    "monolog/monolog": "^3.10",
-    "matthiasmullie/minify": "^1.3",
-    "firebase/php-jwt": "^7.0",
-    "robmorgan/phinx": "^0.16"
+    "symfony/console": "7.4.14",
+    "symfony/finder": "7.4.14",
+    "symfony/translation": "7.4.14",
+    "twig/twig": "3.28.0",
+    "monolog/monolog": "3.10.0",
+    "matthiasmullie/minify": "1.3.75",
+    "firebase/php-jwt": "7.1.0",
+    "robmorgan/phinx": "0.16.12"
   },
   "require-dev": {
-    "phpunit/phpunit": "^11.5",
+    "phpunit/phpunit": "11.5.56",
     "roave/security-advisories": "dev-master",
-    "symfony/process": "^7.4"
+    "symfony/process": "7.4.13"
   },
   "config": {
     "optimize-autoloader": true,
