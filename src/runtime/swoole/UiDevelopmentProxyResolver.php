@@ -27,6 +27,17 @@ final class UiDevelopmentProxyResolver
         return $this->matches(explode('?', $requestUri, 2)[0] ?: '/', $mount);
     }
 
+    public function canonicalMountRoot(string $requestUri, string $mount): ?string
+    {
+        $parts = parse_url($requestUri);
+        $path = (string)($parts['path'] ?? '/');
+        if ($path !== $mount) {
+            return null;
+        }
+
+        return $mount . '/' . (isset($parts['query']) && $parts['query'] !== '' ? '?' . $parts['query'] : '');
+    }
+
     private function normalizeMount(mixed $value): ?string
     {
         if (!is_string($value) || $value === '' || $value[0] !== '/') {

@@ -60,6 +60,7 @@ services:
       PSFS_RUNTIME: "swoole"
       PSFS_BENCHMARK_ENABLED: "${PSFS_BENCHMARK_ENABLED:-0}"
       UI_DEV_UPSTREAM: "${UI_DEV_UPSTREAM-http://ui:4200}"
+      ADMIN_UI_DEV_UPSTREAM: "${ADMIN_UI_DEV_UPSTREAM-http://ui:4200}"
     depends_on:
       - redis
     logging:
@@ -74,6 +75,8 @@ services:
     user: "0:0"
     environment:
       UI_MODE: "${UI_MODE:-watch}"
+      # Admin 2.0 is the development default. The original /ui POC remains opt-in with UI_APP=ui.
+      UI_APP: "${UI_APP:-admin}"
     volumes:
       - .:/workspace
       - ui-node-modules:/workspace/ui/node_modules

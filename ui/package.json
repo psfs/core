@@ -3,17 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "watch": "ng serve --host 0.0.0.0 --port 4200 --serve-path /ui/ --hmr",
-    "build": "ng build",
+    "watch": "npm run watch:ui",
+    "watch:ui": "ng serve --host 0.0.0.0 --port 4200 --serve-path /ui/ --hmr",
+    "watch:admin": "ng serve psfs-admin --host 0.0.0.0 --port 4200 --serve-path /admin-v2/ --hmr",
+    "build": "npm run build:ui",
+    "build:ui": "ng build",
+    "build:admin": "ng build psfs-admin",
     "test": "node scripts/verify-build.mjs",
+    "test:admin": "ng test psfs-admin --watch=false",
     "test:e2e": "playwright test e2e/ui-development.spec.mjs",
+    "test:e2e:admin": "playwright test e2e/admin-v2*.spec.mjs",
     "test:e2e:static": "sh scripts/run-static-e2e.sh"
   },
   "dependencies": {
     "@angular/common": "22.0.6",
     "@angular/compiler": "22.0.6",
     "@angular/core": "22.0.6",
+    "@angular/forms": "^22.0.6",
     "@angular/platform-browser": "22.0.6",
+    "@angular/router": "22.0.6",
     "rxjs": "7.8.2",
     "tslib": "2.8.1",
     "zone.js": "0.16.0"
@@ -23,6 +31,8 @@
     "@angular/cli": "22.0.6",
     "@angular/compiler-cli": "22.0.6",
     "@playwright/test": "1.61.1",
-    "typescript": "6.0.3"
+    "jsdom": "28.1.0",
+    "typescript": "6.0.3",
+    "vitest": "4.0.8"
   }
 }

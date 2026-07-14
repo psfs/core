@@ -4,7 +4,7 @@
 
 - Código fuente Angular 22: `ui/`.
 - Imagen de desarrollo: Node `24.15.0-alpine` en el servicio `ui`.
-- `UI_MODE=watch` expone Angular en `http://localhost:4200/ui/` con HMR.
+- `UI_MODE=watch` expone Admin 2.0 en `http://localhost:4200/admin-v2/` con HMR. La POC `/ui/` requiere `UI_APP=ui`.
 - El runtime Swoole usa `WebSocket\\Server` (compatible con HTTP) y reenvía
   los frames HMR en ambos sentidos. La autorización PSFS se comprueba antes
   de abrir el WebSocket hacia Node; las cookies y Basic Auth no se reenvían.

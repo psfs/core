@@ -41,7 +41,6 @@ class SwooleRuntimeStateManager
                 // Ignore invalid session id reset attempts.
             }
         }
-
         $_SESSION = [];
         ResponseHelper::$headers_sent = [];
         EventHelper::clear(EventHelper::EVENT_END_REQUEST);

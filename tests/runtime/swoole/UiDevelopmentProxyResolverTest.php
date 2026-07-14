@@ -27,6 +27,14 @@ class UiDevelopmentProxyResolverTest extends TestCase
         self::assertNull((new UiDevelopmentProxyResolver())->resolve('/uix', '/ui', 'http://ui:4200'));
     }
 
+    public function testCanonicalizesTheExactMountWithTrailingSlashAndKeepsQuery(): void
+    {
+        $resolver = new UiDevelopmentProxyResolver();
+
+        self::assertSame('/admin-v2/?tab=general', $resolver->canonicalMountRoot('/admin-v2?tab=general', '/admin-v2'));
+        self::assertNull($resolver->canonicalMountRoot('/admin-v2/config', '/admin-v2'));
+    }
+
     #[DataProvider('invalidConfigurationProvider')]
     public function testDoesNotResolveInvalidConfiguration(mixed $mount, mixed $upstream): void
     {

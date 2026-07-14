@@ -66,6 +66,76 @@
           "defaultConfiguration": "development"
         }
       }
+    },
+    "psfs-admin": {
+      "projectType": "application",
+      "root": "projects/admin",
+      "sourceRoot": "projects/admin/src",
+      "prefix": "psfs-admin",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/admin/src/main.ts",
+            "tsConfig": "projects/admin/tsconfig.app.json",
+            "baseHref": "/admin-v2/",
+            "index": {
+              "input": "projects/admin/src/index.html",
+              "output": "index.html"
+            },
+            "outputPath": {
+              "base": "../src/public/admin-v2",
+              "browser": ""
+            },
+            "styles": [
+              "projects/admin/src/styles.css"
+            ]
+          },
+          "configurations": {
+            "development": {
+              "optimization": false,
+              "outputHashing": "none",
+              "sourceMap": true
+            },
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                }
+              ],
+              "outputHashing": "all"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "ui"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "psfs-admin:build:production"
+            },
+            "development": {
+              "buildTarget": "psfs-admin:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "psfs-admin:build:development",
+            "tsConfig": "projects/admin/tsconfig.spec.json",
+            "runner": "vitest"
+          }
+        }
+      }
     }
   }
 }

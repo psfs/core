@@ -30,15 +30,25 @@ class SwooleRequestHandler
 
         $requestUri = $this->getRequestUriWithQuery();
         $resolver = $this->getUiDevelopmentProxyResolver();
-        $mount = $resolver->resolveMount(Config::getParam('ui.path'));
-        if ($mount !== null && $resolver->matchesMount($requestUri, $mount)) {
+        foreach ($this->getFrontendMounts() as [$configuredMount, $upstream]) {
+            $mount = $resolver->resolveMount($configuredMount);
+            if ($mount === null || !$resolver->matchesMount($requestUri, $mount)) {
+                continue;
+            }
             if (!Security::getInstance()->checkAdmin()) {
                 $this->emitUiUnauthorized($response);
                 $this->getStateManager()->cleanupAfterRequest($contextId);
                 return;
             }
 
-            $target = $resolver->resolve($requestUri, $mount, getenv('UI_DEV_UPSTREAM') ?: null);
+            $canonicalLocation = $resolver->canonicalMountRoot($requestUri, $mount);
+            if ($canonicalLocation !== null && in_array(strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET', 'HEAD'], true)) {
+                $this->getResponseEmitter()->emit($response, 302, ['location' => $canonicalLocation], '');
+                $this->getStateManager()->cleanupAfterRequest($contextId);
+                return;
+            }
+
+            $target = $resolver->resolve($requestUri, $mount, $upstream);
             if ($target !== null) {
                 $this->proxyUiDevelopmentRequest($response, $target, false);
                 $this->getStateManager()->cleanupAfterRequest($contextId);
@@ -102,6 +112,17 @@ class SwooleRequestHandler
     private function getUiDevelopmentHttpProxy(): UiDevelopmentHttpProxy
     {
         return $this->uiDevelopmentHttpProxy ?? new UiDevelopmentHttpProxy();
+    }
+
+    /**
+     * @return array<int, array{0:mixed,1:mixed}>
+     */
+    private function getFrontendMounts(): array
+    {
+        return [
+            [Config::getParam('ui.path'), getenv('UI_DEV_UPSTREAM') ?: null],
+            [Config::getParam('admin.front.path', '/admin-v2'), getenv('ADMIN_UI_DEV_UPSTREAM') ?: null],
+        ];
     }
 
     private function getRequestUriWithQuery(): string
