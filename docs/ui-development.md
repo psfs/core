@@ -4,8 +4,10 @@
 
 - Código fuente Angular 22: `ui/`.
 - Imagen de desarrollo: Node `24.15.0-alpine` en el servicio `ui`.
-- `UI_MODE=watch` expone Angular en `http://localhost:4200/ui/` y recompila
-  cambios; HMR y live reload están desactivados de forma explícita.
+- `UI_MODE=watch` expone Angular en `http://localhost:4200/ui/` con HMR.
+- El runtime Swoole usa `WebSocket\\Server` (compatible con HTTP) y reenvía
+  los frames HMR en ambos sentidos. La autorización PSFS se comprueba antes
+  de abrir el WebSocket hacia Node; las cookies y Basic Auth no se reenvían.
 - `UI_MODE=build` deja el paquete estático en `src/public/ui/`.
 - `ui.path` es una clave opcional de configuración PSFS. Con `/ui`, el runtime
   Swoole intercepta solo `/ui` y sus hijos antes de los assets y del Dispatcher.
@@ -30,15 +32,12 @@ Con `ui.path=/ui` ya configurado, abrir
 
 ## Pendiente de cierre
 
-1. Proxy WebSocket bidireccional para HMR en el mismo origen PSFS. Se retiró
-   porque no actualizaba el navegador de forma fiable y obligaba a cambiar el
-   servidor HTTP de Swoole.
-2. Suite Playwright reproducible dentro de Docker: carga mismo origen, `401`,
+1. Suite Playwright reproducible dentro de Docker: carga mismo origen, `401`,
    `502`, conservación de query/cuerpo y prueba HMR cuando exista el puente
    WebSocket válido.
-3. Fallback SPA y publicación estática para producción en el document root
+2. Fallback SPA y publicación estática para producción en el document root
    final (`html/ui` o equivalente del proyecto consumidor).
-4. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
+3. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
    Angular fija en `/ui/`.
-5. Migrar una pantalla administrativa real manteniendo permisos, APIs y
+4. Migrar una pantalla administrativa real manteniendo permisos, APIs y
    pruebas de paridad frente a AngularJS.

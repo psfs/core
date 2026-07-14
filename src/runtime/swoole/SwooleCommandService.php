@@ -47,7 +47,7 @@ class NativeSwooleRuntimeInspector implements SwooleRuntimeInspectorInterface
 {
     public function hasSwooleSupport(): bool
     {
-        return extension_loaded('swoole') && class_exists('Swoole\\Http\\Server');
+        return extension_loaded('swoole') && class_exists('Swoole\\WebSocket\\Server');
     }
 
     public function getRuntimeMode(): string
@@ -121,7 +121,7 @@ class NativeSwooleHttpServerFactory implements SwooleHttpServerFactoryInterface
 {
     public function create(string $host, int $port): SwooleHttpServerInterface
     {
-        $serverClass = 'Swoole\\Http\\Server';
+        $serverClass = 'Swoole\\WebSocket\\Server';
         if (!class_exists($serverClass)) {
             throw new LogicException('Swoole Http Server class is not available');
         }
@@ -135,14 +135,19 @@ class SwooleCommandService
     /** @var callable */
     private $handlerFactory;
 
+    /** @var callable */
+    private $webSocketBridgeFactory;
+
     public function __construct(
         private SwooleRuntimeInspectorInterface $runtimeInspector = new NativeSwooleRuntimeInspector(),
         private SwoolePidStoreInterface $pidStore = new NativeSwoolePidStore(),
         private SwooleSignalSenderInterface $signalSender = new NativeSwooleSignalSender(),
         private SwooleHttpServerFactoryInterface $serverFactory = new NativeSwooleHttpServerFactory(),
-        ?callable $handlerFactory = null
+        ?callable $handlerFactory = null,
+        ?callable $webSocketBridgeFactory = null
     ) {
         $this->handlerFactory = $handlerFactory ?? static fn() => new SwooleRequestHandler();
+        $this->webSocketBridgeFactory = $webSocketBridgeFactory ?? static fn() => new UiDevelopmentWebSocketBridge();
     }
 
     public function start(array $options, OutputInterface $output): int
@@ -174,9 +179,11 @@ class SwooleCommandService
             'daemonize' => $daemonize,
             'log_file' => $logFile,
             'enable_coroutine' => true,
+            'websocket_subprotocol' => 'vite-hmr',
         ]);
 
         $handler = ($this->handlerFactory)();
+        $webSocketBridge = ($this->webSocketBridgeFactory)();
 
         $server->on('Start', function ($serverInstance) use ($pidFile, $output, $host, $port): void {
             $masterPid = isset($serverInstance->master_pid) ? (int)$serverInstance->master_pid : 0;
@@ -194,6 +201,15 @@ class SwooleCommandService
 
         $server->on('request', function ($request, $response) use ($handler): void {
             $handler->handle($request, $response);
+        });
+        $server->on('open', function ($serverInstance, $request) use ($webSocketBridge): void {
+            $webSocketBridge->open($serverInstance, $request);
+        });
+        $server->on('message', function ($serverInstance, $frame) use ($webSocketBridge): void {
+            $webSocketBridge->message($serverInstance, $frame);
+        });
+        $server->on('close', function ($serverInstance, int $fd) use ($webSocketBridge): void {
+            $webSocketBridge->close($serverInstance, $fd);
         });
         $output->writeln(
             sprintf(

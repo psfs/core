@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "watch": "ng serve --host 0.0.0.0 --port 4200 --serve-path /ui/ --hmr=false --live-reload=false",
+    "watch": "ng serve --host 0.0.0.0 --port 4200 --serve-path /ui/ --hmr",
     "build": "ng build",
     "test": "node scripts/verify-build.mjs"
   },

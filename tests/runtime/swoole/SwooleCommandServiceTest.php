@@ -78,6 +78,7 @@ class SwooleCommandServiceTest extends TestCase
             'daemonize' => true,
             'log_file' => '/tmp/swoole-test.log',
             'enable_coroutine' => true,
+            'websocket_subprotocol' => 'vite-hmr',
         ], $factory->server->settings);
         $this->assertSame('/tmp/swoole-test.pid', $pidStore->lastWrittenPidFile);
         $this->assertSame(9876, $pidStore->lastWrittenPid);
@@ -103,6 +104,25 @@ class SwooleCommandServiceTest extends TestCase
         $this->assertNotNull($factory->server);
         $factory->server->fireRequest(new \stdClass(), new \stdClass());
         $this->assertSame(1, $handler->handledRequests);
+    }
+
+    public function testStartRegistersWebSocketLifecycleCallbacks(): void
+    {
+        $service = new SwooleCommandService(
+            new RuntimeInspectorDouble(true, 'default'),
+            new PidStoreDouble(),
+            new SignalSenderDouble(),
+            $factory = new ServerFactoryDouble(),
+            static fn() => new HandlerDouble()
+        );
+
+        $service->start([], new BufferedOutput());
+
+        $this->assertNotNull($factory->server);
+        $this->assertFalse($factory->server->hasEvent('handshake'));
+        $this->assertTrue($factory->server->hasEvent('open'));
+        $this->assertTrue($factory->server->hasEvent('message'));
+        $this->assertTrue($factory->server->hasEvent('close'));
     }
 
     public function testStopHandlesAllBranches(): void
@@ -314,6 +334,11 @@ class ServerDouble implements SwooleHttpServerInterface
         if (isset($this->events['Shutdown'])) {
             ($this->events['Shutdown'])();
         }
+    }
+
+    public function hasEvent(string $event): bool
+    {
+        return isset($this->events[$event]);
     }
 }
 
