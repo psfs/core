@@ -77,6 +77,7 @@ class SwooleCommandServiceTest extends TestCase
             'max_request' => 250,
             'daemonize' => true,
             'log_file' => '/tmp/swoole-test.log',
+            'enable_coroutine' => true,
         ], $factory->server->settings);
         $this->assertSame('/tmp/swoole-test.pid', $pidStore->lastWrittenPidFile);
         $this->assertSame(9876, $pidStore->lastWrittenPid);

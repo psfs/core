@@ -11,6 +11,11 @@ composer.lock
 .phpunit.result.cache
 phpunit.phar
 
+# UI workspace generated dependencies and distributable output
+/ui/node_modules/
+/ui/.angular/
+/src/public/ui/
+
 # Local environment and secrets
 .env
 .env.*

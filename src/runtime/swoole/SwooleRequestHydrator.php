@@ -23,7 +23,10 @@ class SwooleRequestHydrator
 
         $rawBody = $this->extractRawBody($request);
         $requestUri = (string)($server['request_uri'] ?? '/');
-        $queryString = (string)($server['query_string'] ?? http_build_query($get));
+        $queryString = (string)($server['query_string'] ?? '');
+        if ($queryString === '' && $get !== []) {
+            $queryString = http_build_query($get);
+        }
         $method = strtoupper((string)($server['request_method'] ?? 'GET'));
         $host = (string)($headers['host'] ?? ($server['server_name'] ?? 'localhost'));
         $serverName = (string)explode(':', $host)[0];

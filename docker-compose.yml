@@ -1,3 +1,5 @@
+name: psfs
+
 services:
   php:
     image: c15k02k18/php:8.3-alpine${DEBUG:-}
@@ -57,6 +59,7 @@ services:
       PHP_OPCACHE: "${PHP_OPCACHE:-0}"
       PSFS_RUNTIME: "swoole"
       PSFS_BENCHMARK_ENABLED: "${PSFS_BENCHMARK_ENABLED:-0}"
+      UI_DEV_UPSTREAM: "${UI_DEV_UPSTREAM:-http://ui:4200}"
     depends_on:
       - redis
     logging:
@@ -126,6 +129,21 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  ui:
+    image: node:24.15.0-alpine
+    working_dir: /workspace/ui
+    user: "0:0"
+    environment:
+      UI_MODE: "${UI_MODE:-watch}"
+    volumes:
+      - .:/workspace
+      - ui-node-modules:/workspace/ui/node_modules
+    networks:
+      - psfs-network
+    ports:
+      - "${UI_PORT:-4200}:4200"
+    command: ["sh", "./docker-entrypoint.sh"]
+
   redis:
     restart: always
     image: valkey/valkey:latest
@@ -175,3 +193,4 @@ networks:
 
 volumes:
   psfs-db-data:
+  ui-node-modules:

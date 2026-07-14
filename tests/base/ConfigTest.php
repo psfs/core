@@ -18,7 +18,15 @@ use PSFS\base\types\helpers\GeneratorHelper;
 class ConfigTest extends TestCase
 {
 
-    const CONFIG_BACKUP_PATH = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json.bak';
+    const CONFIG_BACKUP_PATH = CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json.phpunit.bak';
+
+    public function testUsesDedicatedPhpUnitBackupPath(): void
+    {
+        $this->assertSame(
+            CONFIG_DIR . DIRECTORY_SEPARATOR . 'config.json.phpunit.bak',
+            self::CONFIG_BACKUP_PATH
+        );
+    }
 
     /**
      * Creates an instance of Config

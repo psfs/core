@@ -105,6 +105,28 @@ class SwooleRequestHydratorTest extends TestCase
         $this->assertArrayNotHasKey('AUTH_TYPE', $_SERVER);
     }
 
+    public function testHydrateBuildsQueryStringFromGetWhenSwooleProvidesAnEmptyValue(): void
+    {
+        $hydrator = new SwooleRequestHydrator();
+        $request = new class {
+            public array $server = [
+                'request_uri' => '/ui/orders',
+                'query_string' => '',
+                'request_method' => 'GET',
+            ];
+            public array $header = [];
+            public array $get = ['state' => 'open'];
+            public array $post = [];
+            public array $cookie = [];
+            public array $files = [];
+        };
+
+        $hydrator->hydrate($request);
+
+        $this->assertSame('/ui/orders', $_SERVER['REQUEST_URI'] ?? null);
+        $this->assertSame('state=open', $_SERVER['QUERY_STRING'] ?? null);
+    }
+
     public function testHydrateSessionCookieSyncBranches(): void
     {
         $hydrator = new SwooleRequestHydrator();

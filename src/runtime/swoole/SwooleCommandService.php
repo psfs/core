@@ -173,6 +173,7 @@ class SwooleCommandService
             'max_request' => $maxRequest,
             'daemonize' => $daemonize,
             'log_file' => $logFile,
+            'enable_coroutine' => true,
         ]);
 
         $handler = ($this->handlerFactory)();
@@ -194,7 +195,6 @@ class SwooleCommandService
         $server->on('request', function ($request, $response) use ($handler): void {
             $handler->handle($request, $response);
         });
-
         $output->writeln(
             sprintf(
                 'Starting PSFS Swoole runtime with workers=%d max_request=%d daemonize=%s',
