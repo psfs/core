@@ -5,13 +5,13 @@ test('carga la configuración segura, conserva el secreto vacío y bloquea un re
   await page.goto('/admin-v2/config');
   await config;
 
-  await expect(page.getByRole('heading', { name: 'Configuración general' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^(Configuración general|General configuration)$/ })).toBeVisible();
   await expect(page.locator('iframe')).toHaveCount(0);
   await expect(page.locator('input[type="password"]')).toHaveCount(1);
   await expect(page.locator('input[type="password"]')).toHaveValue('');
-  await page.getByRole('button', { name: 'Añadir parámetro' }).click();
+  await page.getByRole('button', { name: /^(Añadir parámetro|Add parameter)$/ }).click();
   const extraKey = page.locator('input[list="config-suggestions"]');
-  const extraValue = page.getByLabel('Valor del parámetro');
+  const extraValue = page.getByLabel(/^(Valor del parámetro|Parameter value)$/);
   await expect(extraKey).toBeVisible();
   await extraKey.fill('custom.runtime.flag');
   await expect(extraKey).toHaveValue('custom.runtime.flag');
@@ -20,6 +20,6 @@ test('carga la configuración segura, conserva el secreto vacío y bloquea un re
   await expect(extraValue).toBeFocused();
 
   await page.locator('input#db\\.host').fill('');
-  await page.getByRole('button', { name: 'Guardar configuración' }).click();
+  await page.locator('form.dynamic-form .button--primary').click();
   await expect(page.locator('input#db\\.host')).toHaveClass(/ng-invalid/);
 });

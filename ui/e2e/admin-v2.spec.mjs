@@ -57,7 +57,7 @@ test('regenera rutas desde Admin 2.0 sin responder con error de servidor', async
   const response = await regenerated;
 
   expect(response.status()).toBe(200);
-  await expect(page.locator('.notice--success')).toContainText('Rutas regeneradas.');
+  await expect(page.locator('.notice--success')).toContainText(/^(Rutas regeneradas\.|Routes generated successfully)$/);
 });
 
 test('mantiene una configuración usable y estilizada en móvil', async ({ page }) => {
@@ -66,13 +66,13 @@ test('mantiene una configuración usable y estilizada en móvil', async ({ page 
   await page.goto('/admin-v2/config');
   await config;
 
-  const navigationToggle = page.getByRole('button', { name: 'Abrir navegación' });
+  const navigationToggle = page.getByRole('button', { name: /^(Abrir navegación|Open navigation)$/ });
   await expect(navigationToggle).toBeVisible();
   await navigationToggle.click();
-  await expect(page.getByRole('button', { name: 'Cerrar navegación' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('button', { name: /^(Cerrar navegación|Close navigation)$/ })).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.admin-sidebar')).toHaveClass(/admin-sidebar--open/);
-  await page.getByRole('button', { name: 'Cerrar navegación' }).click();
-  await expect(page.getByRole('button', { name: 'Abrir navegación' })).toHaveAttribute('aria-expanded', 'false');
+  await page.getByRole('button', { name: /^(Cerrar navegación|Close navigation)$/ }).click();
+  await expect(page.getByRole('button', { name: /^(Abrir navegación|Open navigation)$/ })).toHaveAttribute('aria-expanded', 'false');
 
   await expect(page.locator('.page')).toBeVisible();
   await expect(page.locator('.page-header')).toBeVisible();

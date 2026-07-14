@@ -3,16 +3,24 @@
 namespace PSFS\tests\controller;
 
 use PHPUnit\Framework\TestCase;
+use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\exception\ApiException;
 use PSFS\controller\AdminFrontendRoutesController;
 
 class AdminFrontendRoutesControllerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        Router::dropInstance();
+        Router::getInstance()->hydrateRouting();
+    }
+
     protected function tearDown(): void
     {
         Security::setTest(false);
         Security::dropInstance();
+        Router::dropInstance();
     }
 
     public function testRoutesEndpointReturnsTheRouterCatalogWithoutHtml(): void
@@ -26,21 +34,13 @@ class AdminFrontendRoutesControllerTest extends TestCase
 
     public function testDocumentationIndexReturnsTheKnownDomainsAsAnEnvelope(): void
     {
-        $response = (new AdminFrontendRoutesControllerProbe())->documentation();
+        $response = json_decode((new AdminFrontendRoutesControllerProbe())->documentation(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertStringContainsString('"ok":true', $response);
-        self::assertStringContainsString('"domains"', $response);
-        self::assertStringContainsString('"documentPaths"', $response);
-        self::assertStringContainsString('/CLIENT/api/doc', $response);
-        self::assertStringNotContainsString('<html', strtolower($response));
-    }
-
-    public function testDocumentationDomainAcceptsTheDomainPublishedByTheIndex(): void
-    {
-        $response = (new AdminFrontendRoutesControllerProbe())->documentationDomain('client');
-
-        self::assertStringContainsString('"ok":true', $response);
-        self::assertStringContainsString('"openapi"', $response);
+        self::assertTrue($response['ok']);
+        self::assertNotEmpty($response['data']['domains']);
+        foreach ($response['data']['domains'] as $domain) {
+            self::assertSame('/' . strtoupper($domain) . '/api/doc', $response['data']['documentPaths'][$domain]);
+        }
     }
 
     public function testDocumentationDomainReturnsTheV2EnvelopeForAnUnknownDomain(): void

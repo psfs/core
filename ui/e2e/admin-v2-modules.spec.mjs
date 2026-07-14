@@ -24,5 +24,5 @@ test('carga el generador nativo y rechaza una generación inválida sin escribir
   });
   await page.locator('a[href="/admin-v2/config"]').click();
   await config;
-  await expect(page.getByRole('heading', { name: 'Configuración general' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^(Configuración general|General configuration)$/ })).toBeVisible();
 });

@@ -11,8 +11,10 @@
     "build:admin": "ng build psfs-admin",
     "test": "node scripts/verify-build.mjs",
     "test:admin": "ng test psfs-admin --watch=false",
+    "test:admin:coverage": "ng test psfs-admin --watch=false --coverage",
     "test:e2e": "playwright test e2e/ui-development.spec.mjs",
-    "test:e2e:admin": "playwright test e2e/admin-v2*.spec.mjs",
+    "test:e2e:admin": "playwright test e2e/admin-v2.spec.mjs e2e/admin-v2-config.spec.mjs e2e/admin-v2-docs.spec.mjs e2e/admin-v2-locale.spec.mjs e2e/admin-v2-modules.spec.mjs e2e/admin-v2-static.spec.mjs e2e/admin-v2-users.spec.mjs",
+    "test:e2e:admin:hmr": "playwright test e2e/admin-v2-hmr.spec.mjs",
     "test:e2e:static": "sh scripts/run-static-e2e.sh"
   },
   "dependencies": {
@@ -31,6 +33,7 @@
     "@angular/cli": "22.0.6",
     "@angular/compiler-cli": "22.0.6",
     "@playwright/test": "1.61.1",
+    "@vitest/coverage-v8": "4.0.8",
     "jsdom": "28.1.0",
     "typescript": "6.0.3",
     "vitest": "4.0.8"

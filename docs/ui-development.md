@@ -40,6 +40,32 @@ docker compose --profile swoole --profile e2e run --rm --no-deps ui-e2e-static
 docker compose --profile swoole up -d --force-recreate php-swoole ui
 ```
 
+Para Admin 2.0 la matriz se ejecuta sin modificar `config/config.json`:
+
+```sh
+# Unitarios y cobertura de Angular (reporte V8).
+docker exec psfs-ui-1 npm run test:admin:coverage
+
+# Contratos PHP nuevos, incluida la resolución del WebSocket HMR.
+docker exec -e XDEBUG_MODE=coverage psfs-php-1 php vendor/bin/phpunit \
+  --testsuite default --filter 'AdminFrontend|UiDevelopmentProxyResolver|UiDevelopmentWebSocketBridge'
+
+# PHP-FPM + paquete estático: todos los flujos administrativos reales.
+docker compose --profile swoole --profile e2e run --rm --no-deps \
+  -e PSFS_E2E_BASE_URL=http://php:8080 ui-e2e \
+  sh -lc 'npm ci && npm run test:e2e:admin -- --reporter=line'
+
+# Swoole/watch: HMR del Admin a través del mismo origen PSFS.
+docker compose --profile swoole --profile e2e run --rm --no-deps ui-e2e \
+  sh -lc 'npm ci && npm run test:e2e:admin:hmr -- --reporter=line'
+
+# Swoole/build: deep-link SPA y assets con Node desconectado.
+ADMIN_UI_DEV_UPSTREAM= UI_DEV_UPSTREAM= docker compose --profile swoole up -d --force-recreate php-swoole
+docker compose --profile swoole --profile e2e run --rm --no-deps ui-e2e \
+  sh -lc 'npm ci && npx playwright test e2e/admin-v2-static.spec.mjs --reporter=line'
+docker compose --profile swoole up -d --force-recreate php-swoole
+```
+
 Con `ui.path=/ui` ya configurado, abrir
 `http://admin:admin@localhost:8011/ui/`. La URL debe conservar el puerto
 `8011` y renderizar `PSFS UI POC · HMR verificado`.
