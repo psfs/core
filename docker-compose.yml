@@ -83,6 +83,25 @@ services:
       - "${UI_PORT:-4200}:4200"
     command: ["sh", "./docker-entrypoint.sh"]
 
+  ui-e2e:
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    profiles:
+      - e2e
+    working_dir: /workspace/ui
+    environment:
+      PSFS_E2E_BASE_URL: "http://php-swoole:8080"
+      PSFS_E2E_ADMIN_USER: "${PSFS_E2E_ADMIN_USER:-admin}"
+      PSFS_E2E_ADMIN_PASSWORD: "${PSFS_E2E_ADMIN_PASSWORD:-admin}"
+    volumes:
+      - .:/workspace
+      - ui-e2e-node-modules:/workspace/ui/node_modules
+    networks:
+      - psfs-network
+    depends_on:
+      - php-swoole
+      - ui
+    command: ["sh", "-lc", "npm ci && npm run test:e2e"]
+
   redis:
     restart: always
     image: valkey/valkey:latest
@@ -133,3 +152,4 @@ networks:
 volumes:
   psfs-db-data:
   ui-node-modules:
+  ui-e2e-node-modules:

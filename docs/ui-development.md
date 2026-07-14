@@ -24,20 +24,21 @@
 docker compose --profile swoole up -d php-swoole ui
 docker exec psfs-ui-1 npm run build
 docker exec psfs-php-swoole-1 php vendor/bin/phpunit tests/runtime/swoole
+docker compose --profile swoole --profile e2e run --rm ui-e2e
 ```
 
 Con `ui.path=/ui` ya configurado, abrir
 `http://admin:admin@localhost:8011/ui/`. La URL debe conservar el puerto
-`8011` y renderizar `PSFS UI POC · proxy HTTP activo`.
+`8011` y renderizar `PSFS UI POC · HMR verificado`.
+
+La suite `ui-e2e` usa la imagen oficial de Playwright y cubre carga autenticada,
+rechazo con credenciales inválidas y HMR sin recarga completa.
 
 ## Pendiente de cierre
 
-1. Suite Playwright reproducible dentro de Docker: carga mismo origen, `401`,
-   `502`, conservación de query/cuerpo y prueba HMR cuando exista el puente
-   WebSocket válido.
-2. Fallback SPA y publicación estática para producción en el document root
+1. Fallback SPA y publicación estática para producción en el document root
    final (`html/ui` o equivalente del proyecto consumidor).
-3. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
+2. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
    Angular fija en `/ui/`.
-4. Migrar una pantalla administrativa real manteniendo permisos, APIs y
+3. Migrar una pantalla administrativa real manteniendo permisos, APIs y
    pruebas de paridad frente a AngularJS.
