@@ -6,7 +6,7 @@ final class UiDevelopmentProxyResolver
 {
     public function resolve(string $requestUri, mixed $configuredPath, mixed $developmentUpstream): ?UiDevelopmentProxyTarget
     {
-        $mount = $this->normalizeMount($configuredPath);
+        $mount = $this->resolveMount($configuredPath);
         $upstream = $this->normalizeUpstream($developmentUpstream);
         $path = explode('?', $requestUri, 2)[0] ?: '/';
 
@@ -15,6 +15,16 @@ final class UiDevelopmentProxyResolver
         }
 
         return new UiDevelopmentProxyTarget($mount, $upstream);
+    }
+
+    public function resolveMount(mixed $configuredPath): ?string
+    {
+        return $this->normalizeMount($configuredPath);
+    }
+
+    public function matchesMount(string $requestUri, string $mount): bool
+    {
+        return $this->matches(explode('?', $requestUri, 2)[0] ?: '/', $mount);
     }
 
     private function normalizeMount(mixed $value): ?string

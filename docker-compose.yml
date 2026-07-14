@@ -59,7 +59,7 @@ services:
       PHP_OPCACHE: "${PHP_OPCACHE:-0}"
       PSFS_RUNTIME: "swoole"
       PSFS_BENCHMARK_ENABLED: "${PSFS_BENCHMARK_ENABLED:-0}"
-      UI_DEV_UPSTREAM: "${UI_DEV_UPSTREAM:-http://ui:4200}"
+      UI_DEV_UPSTREAM: "${UI_DEV_UPSTREAM-http://ui:4200}"
     depends_on:
       - redis
     logging:
@@ -101,6 +101,24 @@ services:
       - php-swoole
       - ui
     command: ["sh", "-lc", "npm ci && npm run test:e2e"]
+
+  ui-e2e-static:
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    profiles:
+      - e2e
+    working_dir: /workspace/ui
+    environment:
+      PSFS_E2E_BASE_URL: "http://php-swoole:8080"
+      PSFS_E2E_ADMIN_USER: "${PSFS_E2E_ADMIN_USER:-admin}"
+      PSFS_E2E_ADMIN_PASSWORD: "${PSFS_E2E_ADMIN_PASSWORD:-admin}"
+    volumes:
+      - .:/workspace
+      - ui-e2e-node-modules:/workspace/ui/node_modules
+    networks:
+      - psfs-network
+    depends_on:
+      - php-swoole
+    command: ["sh", "-lc", "npm ci && npm run test:e2e:static"]
 
   redis:
     restart: always

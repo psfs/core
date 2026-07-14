@@ -28,15 +28,27 @@ class SwooleRequestHandler
         $contextId = $this->getHydrator()->hydrate($request);
         $this->getStateManager()->resetBeforeRequest();
 
-        $target = $this->getUiDevelopmentProxyResolver()->resolve(
-            $this->getRequestUriWithQuery(),
-            Config::getParam('ui.path'),
-            getenv('UI_DEV_UPSTREAM') ?: null
-        );
-        if ($target !== null) {
-            $this->proxyUiDevelopmentRequest($response, $target);
-            $this->getStateManager()->cleanupAfterRequest($contextId);
-            return;
+        $requestUri = $this->getRequestUriWithQuery();
+        $resolver = $this->getUiDevelopmentProxyResolver();
+        $mount = $resolver->resolveMount(Config::getParam('ui.path'));
+        if ($mount !== null && $resolver->matchesMount($requestUri, $mount)) {
+            if (!Security::getInstance()->checkAdmin()) {
+                $this->emitUiUnauthorized($response);
+                $this->getStateManager()->cleanupAfterRequest($contextId);
+                return;
+            }
+
+            $target = $resolver->resolve($requestUri, $mount, getenv('UI_DEV_UPSTREAM') ?: null);
+            if ($target !== null) {
+                $this->proxyUiDevelopmentRequest($response, $target, false);
+                $this->getStateManager()->cleanupAfterRequest($contextId);
+                return;
+            }
+            if ($this->getStaticAssetServer()->tryServe($response, $mount)
+                || $this->getStaticAssetServer()->tryServeSpaFallback($response, $mount)) {
+                $this->getStateManager()->cleanupAfterRequest($contextId);
+                return;
+            }
         }
 
         if ($this->getStaticAssetServer()->tryServe($response)) {
@@ -112,13 +124,10 @@ class SwooleRequestHandler
         $emitter->emit($response, $resolvedStatusCode, $headers, $body);
     }
 
-    private function proxyUiDevelopmentRequest(object $response, UiDevelopmentProxyTarget $target): void
+    private function proxyUiDevelopmentRequest(object $response, UiDevelopmentProxyTarget $target, bool $authorize = true): void
     {
-        if (!Security::getInstance()->checkAdmin()) {
-            $realm = trim((string)Config::getParam('platform.name', 'PSFS'));
-            $this->getResponseEmitter()->emit($response, 401, [
-                'www-authenticate' => 'Basic Realm="' . ($realm === '' ? 'PSFS' : $realm) . '"',
-            ], t('Restricted area'));
+        if ($authorize && !Security::getInstance()->checkAdmin()) {
+            $this->emitUiUnauthorized($response);
             return;
         }
 
@@ -134,6 +143,14 @@ class SwooleRequestHandler
         $headers = array_merge($headers, $proxied['headers']);
         $this->getResponseEmitter()->ensureSessionCookieHeader($headers);
         $this->getResponseEmitter()->emit($response, (int)$proxied['status'], $headers, (string)$proxied['body']);
+    }
+
+    private function emitUiUnauthorized(object $response): void
+    {
+        $realm = trim((string)Config::getParam('platform.name', 'PSFS'));
+        $this->getResponseEmitter()->emit($response, 401, [
+            'www-authenticate' => 'Basic Realm="' . ($realm === '' ? 'PSFS' : $realm) . '"',
+        ], t('Restricted area'));
     }
 
 }

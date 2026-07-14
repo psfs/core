@@ -23,7 +23,7 @@ class SwooleStaticAssetServer
         'html' => 'text/html; charset=utf-8',
     ];
 
-    public function tryServe(object $response): bool
+    public function tryServe(object $response, ?string $symlinkMount = null): bool
     {
         $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
         if (!$this->isSupportedMethod($method)) {
@@ -35,7 +35,7 @@ class SwooleStaticAssetServer
             return false;
         }
 
-        $candidate = $this->resolveCandidateAssetPath($relativePath);
+        $candidate = $this->resolveCandidateAssetPath($relativePath, $symlinkMount);
         if ($candidate === null) {
             return false;
         }
@@ -55,6 +55,38 @@ class SwooleStaticAssetServer
             return true;
         }
 
+        $this->endResponse($response, $payload);
+        return true;
+    }
+
+    public function tryServeSpaFallback(object $response, string $mount): bool
+    {
+        $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (!$this->isSupportedMethod($method)) {
+            return false;
+        }
+        $uriPath = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+        if ($uriPath === $mount || !str_starts_with($uriPath, rtrim($mount, '/') . '/')) {
+            return false;
+        }
+
+        $index = $this->resolveCandidateAssetPath(trim($mount, '/') . '/index.html', $mount);
+        if ($index === null) {
+            return false;
+        }
+
+        $this->setResponseStatus($response, 200);
+        $this->setResponseHeader($response, 'Content-Type', 'text/html; charset=utf-8');
+        if ($method === 'HEAD') {
+            $this->endResponse($response, '');
+            return true;
+        }
+        $payload = file_get_contents($index);
+        if ($payload === false) {
+            $this->setResponseStatus($response, 500);
+            $this->endResponse($response, 'Internal server error');
+            return true;
+        }
         $this->endResponse($response, $payload);
         return true;
     }
@@ -79,7 +111,7 @@ class SwooleStaticAssetServer
         return $relativePath;
     }
 
-    private function resolveCandidateAssetPath(string $relativePath): ?string
+    private function resolveCandidateAssetPath(string $relativePath, ?string $symlinkMount = null): ?string
     {
         $publicRoot = realpath(WEB_DIR);
         if ($publicRoot === false) {
@@ -91,11 +123,42 @@ class SwooleStaticAssetServer
             return null;
         }
 
-        if (!str_starts_with($candidate, $publicRoot . DIRECTORY_SEPARATOR) && $candidate !== $publicRoot) {
+        if (!$this->isWithinAllowedStaticRoot($candidate, $publicRoot, $relativePath, $symlinkMount)) {
             return null;
         }
 
         return $candidate;
+    }
+
+    private function isWithinAllowedStaticRoot(
+        string $candidate,
+        string $publicRoot,
+        string $relativePath,
+        ?string $symlinkMount
+    ): bool
+    {
+        if ($this->isWithinRoot($candidate, $publicRoot)) {
+            return true;
+        }
+
+        $firstSegment = explode(DIRECTORY_SEPARATOR, $relativePath, 2)[0] ?? '';
+        if ($firstSegment === '' || str_contains($firstSegment, '..')) {
+            return false;
+        }
+        if (trim((string)$symlinkMount, '/') !== $firstSegment) {
+            return false;
+        }
+        $mountPath = $publicRoot . DIRECTORY_SEPARATOR . $firstSegment;
+        if (!is_link($mountPath)) {
+            return false;
+        }
+        $linkedRoot = realpath($mountPath);
+        return $linkedRoot !== false && is_dir($linkedRoot) && $this->isWithinRoot($candidate, $linkedRoot);
+    }
+
+    private function isWithinRoot(string $candidate, string $root): bool
+    {
+        return $candidate === $root || str_starts_with($candidate, $root . DIRECTORY_SEPARATOR);
     }
 
     private function setResponseStatus(object $response, int $status): void

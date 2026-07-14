@@ -18,6 +18,13 @@
   responde `401`; si Node no está disponible, responde `502`.
 - Ninguno de estos flujos escribe ni regenera `config/config.json`.
 
+## Publicación estática
+
+El build genera `src/public/ui/`. Para producción, copia su contenido a
+`html/ui/` o crea el enlace `html/ui -> ../src/public/ui`. Sin
+`UI_DEV_UPSTREAM`, PSFS sirve esos assets y entrega `html/ui/index.html` como
+fallback SPA para rutas cliente bajo `ui.path`.
+
 ## Verificación ejecutable
 
 ```sh
@@ -25,6 +32,12 @@ docker compose --profile swoole up -d php-swoole ui
 docker exec psfs-ui-1 npm run build
 docker exec psfs-php-swoole-1 php vendor/bin/phpunit tests/runtime/swoole
 docker compose --profile swoole --profile e2e run --rm ui-e2e
+
+# Prueba la entrega estática sin el upstream Node.
+UI_DEV_UPSTREAM= docker compose --profile swoole up -d --force-recreate php-swoole
+docker compose --profile swoole --profile e2e run --rm --no-deps ui-e2e-static
+# Recupera el modo de desarrollo.
+docker compose --profile swoole up -d --force-recreate php-swoole ui
 ```
 
 Con `ui.path=/ui` ya configurado, abrir
@@ -36,9 +49,7 @@ rechazo con credenciales inválidas y HMR sin recarga completa.
 
 ## Pendiente de cierre
 
-1. Fallback SPA y publicación estática para producción en el document root
-   final (`html/ui` o equivalente del proyecto consumidor).
-2. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
+1. Generalizar el contrato de mount/build para Vue y React. Ahora es una POC
    Angular fija en `/ui/`.
-3. Migrar una pantalla administrativa real manteniendo permisos, APIs y
+2. Migrar una pantalla administrativa real manteniendo permisos, APIs y
    pruebas de paridad frente a AngularJS.
