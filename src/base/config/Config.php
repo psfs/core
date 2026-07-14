@@ -104,6 +104,8 @@ class Config
         'default.locale', // Default locale used for generated module structure
         'resources.cdn.url', // CDN URL base path
         'ui.path', // Development UI mount path
+        'admin.front.version', // Admin frontend selector: legacy|v2
+        'admin.front.path', // Admin v2 SPA mount path
         'api.field.case', // Field type for API dtos (phpName|camelName|camelName|fieldName) @see Propel TableMap class
         'route.404', // Set route for 404 pages
         'project.timezone', // Set the timezone for the timestamps in PSFS(Europe/madrid by default)

@@ -16,6 +16,6 @@ class DeleteUserRequestDto extends Dto
     #[Required]
     #[VarType('string')]
     #[Length(min: 1, max: 120)]
-    #[Pattern('/^[A-Za-z0-9._@\-]+$/')]
+    #[Pattern('/^[A-Za-z0-9._@_\-]+$/')]
     public ?string $user = null;
 }

@@ -131,8 +131,34 @@ class Router
     {
         Inspector::stats('[Router] Searching action to execute: ' . $route, Inspector::SCOPE_DEBUG);
         [$path, $httpRequest] = $this->stageLoadContext((string)$route);
+        $redirect = $this->resolveAdminFrontendRedirect((string)$route, $httpRequest);
+        if ($redirect !== null) {
+            ResponseHelper::setHeader('HTTP/1.1 ' . $redirect->statusCode . ' Found');
+            ResponseHelper::setHeader('Location: ' . $redirect->location);
+            return '';
+        }
         [$pattern, $action] = $this->stageMatchRoute($path, $httpRequest);
         return $this->stageExecuteRoute((string)$route, $pattern, $action);
+    }
+
+    protected function resolveAdminFrontendRedirect(string $route, string $method): ?AdminFrontendVersionRedirect
+    {
+        $query = (string)($_SERVER['QUERY_STRING'] ?? '');
+        if ($query !== '' && !str_contains($route, '?')) {
+            $route .= '?' . $query;
+        }
+
+        return (new AdminFrontendVersionResolver())->resolve(
+            $method,
+            $route,
+            $this->getAdminFrontendConfiguredVersion(),
+            Config::getParam('admin.front.path', '/admin-v2')
+        );
+    }
+
+    protected function getAdminFrontendConfiguredVersion(): mixed
+    {
+        return Config::getParam('admin.front.version', 'legacy');
     }
 
     /**
