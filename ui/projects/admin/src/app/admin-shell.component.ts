@@ -90,7 +90,7 @@ const FALLBACK_MENU: AdminMenuGroup[] = [
         </aside>
         <main id="main-content" class="admin-main">
         <p class="load-error" *ngIf="loadError()">{{ loadError() }}</p>
-        <router-outlet />
+        <router-outlet *ngIf="bootstrap()" />
         </main>
       </div>
     </div>

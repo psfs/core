@@ -29,11 +29,7 @@ final class UiDevelopmentWebSocketBridge
         $contextId = $this->getHydrator()->hydrate($request);
         $this->getStateManager()->resetBeforeRequest();
         try {
-            $target = $this->getResolver()->resolve(
-                $this->requestUri(),
-                Config::getParam('ui.path'),
-                getenv('UI_DEV_UPSTREAM') ?: null
-            );
+            $target = $this->resolveTarget();
             if ($target === null || !Security::getInstance()->checkAdmin()) {
                 $this->disconnect($server, $fd);
                 return;
@@ -124,6 +120,21 @@ final class UiDevelopmentWebSocketBridge
         }
         $query = (string)($_SERVER['QUERY_STRING'] ?? '');
         return $query === '' ? $uri : $uri . '?' . $query;
+    }
+
+    private function resolveTarget(): ?UiDevelopmentProxyTarget
+    {
+        foreach ([
+            [Config::getParam('ui.path'), getenv('UI_DEV_UPSTREAM') ?: null],
+            [Config::getParam('admin.front.path', '/admin-v2'), getenv('ADMIN_UI_DEV_UPSTREAM') ?: null],
+        ] as [$mount, $upstream]) {
+            $target = $this->getResolver()->resolve($this->requestUri(), $mount, $upstream);
+            if ($target !== null) {
+                return $target;
+            }
+        }
+
+        return null;
     }
 
     private function discard(int $fd): void
