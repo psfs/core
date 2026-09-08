@@ -50,7 +50,13 @@ build:
     # 🧪 Test with services
     services-tests:
       services:
-        mysql: "8.4"
+        mysql:
+          image: docker.io/library/mysql:8.4
+          env:
+            MYSQL_ROOT_PASSWORD: "scrutinizer"
+            MYSQL_DATABASE: "scrutinizer"
+          ports:
+            - 3306
         redis: "6"
 
       environment:
@@ -61,14 +67,14 @@ build:
           API_DB_PORT: "3306"
           API_DB_NAME: "scrutinizer"
           API_DB_USER: "root"
-          API_DB_PASSWORD: ""
+          API_DB_PASSWORD: "scrutinizer"
           API_DB_TIMEOUT: "90"
 
           DB_HOST: "127.0.0.1"
           DB_PORT: "3306"
           DB_NAME: "scrutinizer"
           DB_USER: "root"
-          DB_PASSWORD: ""
+          DB_PASSWORD: "scrutinizer"
 
           PSFS_REDIS_HOST: "127.0.0.1"
           PSFS_REDIS_PORT: "6379"
