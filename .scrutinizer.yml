@@ -30,9 +30,12 @@ build:
       ini:
         memory_limit: "-1"
 
-        # PHPUnit runs tests in separate processes; Xdebug keeps coverage
-        # available across those process boundaries.
-        xdebug.mode: "coverage"
+        # PCOV keeps the full suite below Scrutinizer's command timeout.
+        # The few process-isolated tests may not contribute coverage, but the
+        # suite remains executable and the coverage report stays valid.
+        pcov.enabled: "1"
+        pcov.directory: "src"
+        xdebug.mode: "off"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
@@ -72,6 +75,8 @@ build:
 
       dependencies:
         override:
+          - pecl install pcov
+
           # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
@@ -100,13 +105,13 @@ build:
         stop_on_failure: true
         override:
           - command: >
-              XDEBUG_MODE=coverage
+              php -d pcov.enabled=1
+              -d pcov.directory=src
               vendor/bin/phpunit
               --configuration phpunit.xml.dist
               --colors=never
               --stop-on-error
               --stop-on-failure
-              --debug
               --coverage-clover cache/coverage/coverage.xml
             idle_timeout: 1200
             coverage:
