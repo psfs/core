@@ -57,6 +57,8 @@ build:
             MYSQL_DATABASE: "scrutinizer"
           ports:
             - 3306
+          ramdisks:
+            - /var/lib/mysql
         redis: "6"
 
       environment:
@@ -68,7 +70,7 @@ build:
           API_DB_NAME: "scrutinizer"
           API_DB_USER: "root"
           API_DB_PASSWORD: "scrutinizer"
-          API_DB_TIMEOUT: "90"
+          API_DB_TIMEOUT: "300"
 
           DB_HOST: "127.0.0.1"
           DB_PORT: "3306"
@@ -88,7 +90,8 @@ build:
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
           # 🧠 Warmup DB (skip timing problems)
-          - php tests/bootstrap/prepare_api_mysql.php
+          - command: php tests/bootstrap/prepare_api_mysql.php
+            idle_timeout: 600
 
           # ⚙️ Dynamic config
           - php -r '
