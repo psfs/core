@@ -30,12 +30,9 @@ build:
       ini:
         memory_limit: "-1"
 
-        # 🚀 PCOV instead of Xdebug (key)
-        pcov.enabled: "1"
-        pcov.directory: "src"
-
-        # 🔒 Desactivate all possible noise
-        xdebug.mode: "off"
+        # PHPUnit runs tests in separate processes; Xdebug keeps coverage
+        # available across those process boundaries.
+        xdebug.mode: "coverage"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
@@ -75,9 +72,6 @@ build:
 
       dependencies:
         override:
-          # Installing PCOV
-          - pecl install pcov
-
           # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
@@ -106,8 +100,7 @@ build:
         stop_on_failure: true
         override:
           - command: >
-              php -d pcov.enabled=1
-              -d pcov.directory=src
+              XDEBUG_MODE=coverage
               vendor/bin/phpunit
               --configuration phpunit.xml.dist
               --colors=never
