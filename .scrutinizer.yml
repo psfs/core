@@ -62,6 +62,7 @@ build:
           API_DB_NAME: "scrutinizer"
           API_DB_USER: "root"
           API_DB_PASSWORD: ""
+          API_DB_TIMEOUT: "90"
 
           DB_HOST: "127.0.0.1"
           DB_PORT: "3306"
