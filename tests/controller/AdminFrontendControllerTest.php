@@ -37,8 +37,18 @@ final class AdminFrontendControllerTest extends TestCase
         Config::getInstance()->loadConfigData(true);
 
         $controller = new AdminFrontendController();
-        $response = json_decode($controller->bootstrap(), true, 512, JSON_THROW_ON_ERROR);
-        restore_error_handler();
+        $sentinel = static fn(): bool => false;
+        set_error_handler($sentinel);
+        try {
+            $response = json_decode($controller->bootstrap(), true, 512, JSON_THROW_ON_ERROR);
+        } finally {
+            $previousHandler = set_error_handler($sentinel);
+            restore_error_handler();
+            if ($previousHandler !== $sentinel) {
+                restore_error_handler();
+            }
+            restore_error_handler();
+        }
 
         self::assertSame('HTTP/1.0 200 OK', $controller->getStatusCode());
         self::assertSame('', $response['identity']['username']);

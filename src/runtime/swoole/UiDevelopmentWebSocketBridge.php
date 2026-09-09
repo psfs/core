@@ -46,6 +46,12 @@ final class UiDevelopmentWebSocketBridge
             $this->getStateManager()->cleanupAfterRequest($contextId);
         }
 
+        if (!class_exists(\Swoole\Coroutine::class)) {
+            $this->discard($fd);
+            $this->disconnect($server, $fd);
+            return;
+        }
+
         \Swoole\Coroutine::create(function () use ($server, $fd, $client): void {
             while (true) {
                 $frame = $client->recv(60);
