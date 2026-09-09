@@ -90,7 +90,11 @@ build:
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
           # 🧠 Warmup DB (skip timing problems)
-          - command: php tests/bootstrap/prepare_api_mysql.php
+          - command: >
+              env
+              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
+              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
+              php tests/bootstrap/prepare_api_mysql.php
             idle_timeout: 600
 
           # ⚙️ Dynamic config
@@ -115,6 +119,9 @@ build:
         stop_on_failure: true
         override:
           - command: >
+              env
+              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
+              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
               php -d pcov.enabled=1
               -d pcov.directory=src
               vendor/bin/phpunit
