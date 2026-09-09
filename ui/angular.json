@@ -89,6 +89,13 @@
             },
             "styles": [
               "projects/admin/src/styles.css"
+            ],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "node_modules/swagger-ui-dist",
+                "output": "assets/swagger-ui"
+              }
             ]
           },
           "configurations": {

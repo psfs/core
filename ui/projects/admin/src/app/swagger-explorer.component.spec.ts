@@ -63,4 +63,11 @@ describe('SwaggerExplorerComponent', () => {
     expect(component.loading()).toBe(false);
     expect(loader).not.toHaveBeenCalled();
   });
+
+  it('resolves Swagger assets from the delivered admin bundle, not a CDN', () => {
+    const component = create();
+
+    expect((component as any).swaggerAsset('swagger-ui.css')).toContain('/assets/swagger-ui/swagger-ui.css');
+    expect((component as any).swaggerAsset('swagger-ui-bundle.js')).not.toContain('cdn.jsdelivr.net');
+  });
 });

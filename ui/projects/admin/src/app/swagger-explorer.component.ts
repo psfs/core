@@ -76,9 +76,13 @@ export class SwaggerExplorerComponent implements OnInit {
   }
 
   private async loadSwaggerAssets(): Promise<void> {
-    this.ensureStyle('https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css');
-    await this.ensureScript('https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js');
-    await this.ensureScript('https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js');
+    this.ensureStyle(this.swaggerAsset('swagger-ui.css'));
+    await this.ensureScript(this.swaggerAsset('swagger-ui-bundle.js'));
+    await this.ensureScript(this.swaggerAsset('swagger-ui-standalone-preset.js'));
+  }
+
+  private swaggerAsset(filename: string): string {
+    return new URL(`assets/swagger-ui/${filename}`, document.baseURI).toString();
   }
 
   private ensureStyle(source: string): void {
