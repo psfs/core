@@ -1,23 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { NgFor, NgIf, JsonPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-
-interface ManagerMetadata {
-  domain: string;
-  api: string;
-  endpoints: { list: string; item: string };
-  mutation: { supported: boolean };
-  query: { page: string; limit: string; order: string; combo: string };
-}
-
-interface LegacyResponse<T> {
-  data: T;
-  success: boolean;
-  total?: number;
-  pages?: number;
-  message?: string | null;
-}
+import { ManagerApiService, ManagerMetadata } from './manager-api.service';
 
 @Component({
   selector: 'psfs-manager-page',
@@ -61,7 +45,7 @@ interface LegacyResponse<T> {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ManagerPageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(ManagerApiService);
   private readonly route = inject(ActivatedRoute);
   readonly metadata = signal<ManagerMetadata | null>(null);
   readonly rows = signal<Record<string, unknown>[]>([]);
@@ -82,7 +66,7 @@ export class ManagerPageComponent implements OnInit {
     const domain = this.route.snapshot.paramMap.get('domain');
     const api = this.route.snapshot.paramMap.get('api');
     if (!domain || !api) { this.error.set('Faltan los identificadores del manager.'); this.loading.set(false); return; }
-    this.http.get<{ ok: boolean; data: ManagerMetadata; message: string | null; errors: Record<string, string[]> }>(`/admin/api/v2/managers/${encodeURIComponent(domain)}/${encodeURIComponent(api)}`).subscribe({
+    this.api.metadata(domain, api).subscribe({
       next: (response) => {
         if (!response.ok) { this.error.set(response.message ?? 'No se pudo abrir el manager.'); this.loading.set(false); return; }
         this.metadata.set(response.data);
@@ -101,7 +85,7 @@ export class ManagerPageComponent implements OnInit {
     const metadata = this.metadata();
     const primaryKey = this.primaryKey(row);
     if (!metadata || primaryKey === null) { this.detail.set(row); return; }
-    this.http.get<LegacyResponse<Record<string, unknown>>>(metadata.endpoints.item.replace('{pk}', encodeURIComponent(String(primaryKey)))).subscribe({
+    this.api.detail(metadata, primaryKey).subscribe({
       next: (response) => this.detail.set(response.data ?? row),
       error: () => this.detail.set(row)
     });
@@ -110,9 +94,7 @@ export class ManagerPageComponent implements OnInit {
   private loadList(): void {
     const metadata = this.metadata(); if (!metadata) return;
     this.loading.set(true); this.error.set('');
-    let params = new HttpParams().set(metadata.query.page, this.page()).set(metadata.query.limit, 25);
-    if (this.filter().trim()) params = params.set(metadata.query.combo, this.filter().trim());
-    this.http.get<LegacyResponse<Record<string, unknown>[]>>(metadata.endpoints.list, { params }).subscribe({
+    this.api.list(metadata, this.page(), this.filter()).subscribe({
       next: (response) => { this.rows.set(Array.isArray(response.data) ? response.data : []); this.total.set(response.total ?? this.rows().length); this.pages.set(response.pages ?? 1); this.loading.set(false); if (!response.success && response.message) this.error.set(response.message); },
       error: (failure) => { this.rows.set([]); this.loading.set(false); this.error.set(failure?.error?.message ?? 'La API del manager no está disponible.'); }
     });

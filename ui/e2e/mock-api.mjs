@@ -70,6 +70,15 @@ export function createMockApiServer() {
     const locale = request.headers['x-api-lang'] === 'es_ES' ? 'es_ES' : 'en_US';
     const mutating = ['POST', 'PUT', 'DELETE'].includes(method);
 
+    if (method === 'GET' && path === '/CLIENT/api/Related') {
+      response(reply, 200, { success: true, data: [{ IdRelated: 1, Title: 'Related fixture' }], total: 1, pages: 1, message: null });
+      return;
+    }
+    if (method === 'GET' && path === '/CLIENT/api/Related/1') {
+      response(reply, 200, { success: true, data: { IdRelated: 1, Title: 'Related fixture' }, total: null, pages: 1, message: null });
+      return;
+    }
+
     if (!path.startsWith('/admin/api/v2/')) {
       response(reply, 404, error('Unknown UI mock route.'));
       return;
@@ -81,6 +90,16 @@ export function createMockApiServer() {
 
     if (method === 'GET' && path === '/admin/api/v2/bootstrap') {
       response(reply, 200, { identity: { username: 'admin', role: 'Administrator' }, locale, locales: ['en_US', 'es_ES'], menu, csrfToken });
+      return;
+    }
+    if (method === 'GET' && path === '/admin/api/v2/managers/CLIENT/Related') {
+      response(reply, 200, envelope({
+        domain: 'CLIENT',
+        api: 'Related',
+        endpoints: { list: '/CLIENT/api/Related', item: '/CLIENT/api/Related/{pk}' },
+        mutation: { supported: false },
+        query: { page: '__page', limit: '__limit', order: '__order', combo: '__combo' }
+      }));
       return;
     }
     if (method === 'PUT' && /^\/admin\/api\/v2\/locale\/[a-z]{2}_[A-Z]{2}$/.test(path)) {
