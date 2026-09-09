@@ -62,7 +62,7 @@ async function bodyOf(request) {
 }
 
 export function createMockApiServer() {
-  const state = { users: [{ username: 'admin', role: 'Administrator', class: 'admin' }] };
+  const state = { users: [{ username: 'admin', role: 'Administrator', class: 'admin', profile: 'admin' }] };
   const server = createServer(async (request, reply) => {
     const url = new URL(request.url ?? '/', 'http://ui-e2e.local');
     const path = url.pathname;
@@ -131,8 +131,24 @@ export function createMockApiServer() {
       if (!username || !payload.values?.password) {
         response(reply, 422, error('Invalid user.', { username: !username ? ['Required'] : [], password: !payload.values?.password ? ['Required'] : [] }));
       } else {
-        state.users.push({ username, role: 'Administrator', class: 'admin' });
+        state.users.push({ username, role: 'Administrator', class: 'admin', profile: payload.values.profile ?? 'admin' });
         response(reply, 200, envelope({}, 'Usuario creado correctamente.'));
+      }
+      return;
+    }
+    if (method === 'PUT' && /^\/admin\/api\/v2\/users\/[^/]+$/.test(path)) {
+      const username = decodeURIComponent(path.split('/').at(-1));
+      const payload = await bodyOf(request);
+      const user = state.users.find((candidate) => candidate.username === username);
+      if (!user) {
+        response(reply, 404, error('User not found.', { username: ['User not found.'] }));
+      } else if (payload.values?.username && payload.values.username !== username) {
+        response(reply, 422, error('Invalid user payload.', { username: ['Username cannot be changed.'] }));
+      } else if (!payload.values?.password) {
+        response(reply, 422, error('Invalid user.', { password: ['Required'] }));
+      } else {
+        user.profile = payload.values.profile ?? user.profile;
+        response(reply, 200, envelope({}, 'Usuario actualizado correctamente.'));
       }
       return;
     }

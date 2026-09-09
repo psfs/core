@@ -68,6 +68,56 @@ class AdminFrontendUsersController extends Admin
         return $this->json(AdminApiResponse::success([], t('User created successfully')));
     }
 
+    #[HttpMethod('PUT')]
+    #[Route('/admin/api/v2/users/{username}')]
+    #[Visible(false)]
+    public function update(string $username): string
+    {
+        AdminFrontendCsrf::assertValid();
+        $this->assertSuperAdminWriteAccess();
+        if (!$this->isValidUsername($username) || !array_key_exists($username, $this->admins())) {
+            return $this->json(AdminApiResponse::failure(
+                t('User not found'),
+                ['username' => [t('User not found')]]
+            ), 404);
+        }
+
+        $payload = $this->requestPayload();
+        $values = $payload['values'] ?? null;
+        if (!$this->isRecord($values) || $values === []) {
+            return $this->json(AdminApiResponse::failure(t('Invalid user payload'), [
+                'payload' => [t('Expected a values object')],
+            ]), 422);
+        }
+
+        $submittedUsername = $values['username'] ?? $username;
+        if (!is_string($submittedUsername) || $submittedUsername !== $username) {
+            return $this->json(AdminApiResponse::failure(t('Invalid user payload'), [
+                'username' => [t('Username cannot be changed')],
+            ]), 422);
+        }
+        $values['username'] = $username;
+
+        $form = $this->adminForm();
+        $form->setMethod('POST')->build();
+        $form->setData($values);
+        $errors = $this->requiredFieldErrors($values);
+        if ($errors !== [] || !$form->isValid()) {
+            return $this->json(AdminApiResponse::failure(
+                t('Invalid user'),
+                $errors + $this->fieldErrors($form)
+            ), 422);
+        }
+
+        if (!$this->saveUser($form->getData())) {
+            return $this->json(AdminApiResponse::failure(
+                t('Error while saving administrators, please verify filesystem permissions')
+            ), 500);
+        }
+
+        return $this->json(AdminApiResponse::success([], t('User updated successfully')));
+    }
+
     #[HttpMethod('DELETE')]
     #[Route('/admin/api/v2/users')]
     #[Visible(false)]
@@ -144,7 +194,7 @@ class AdminFrontendUsersController extends Admin
     /**
      * @param array<string,array<string,mixed>> $admins
      * @param array<string,string> $profiles
-     * @return array<int,array{username:string,role:string,class:string}>
+     * @return array<int,array{username:string,role:string,class:string,profile:string}>
      */
     private function sanitizeUsers(array $admins, array $profiles): array
     {
@@ -154,6 +204,7 @@ class AdminFrontendUsersController extends Admin
                 'username' => (string) $username,
                 'role' => (string) ($profiles[(string) ($admin['profile'] ?? '')] ?? t('User')),
                 'class' => (string) ($admin['class'] ?? ''),
+                'profile' => (string) ($admin['profile'] ?? ''),
             ];
         }
 

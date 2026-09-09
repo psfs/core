@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { AdminApiService } from './admin-api.service';
 import { UsersPageComponent } from './users-page.component';
 
@@ -34,10 +34,27 @@ describe('UsersPageComponent', () => {
 
     const fixture = TestBed.createComponent(UsersPageComponent);
     fixture.detectChanges();
-    fixture.componentInstance.create({ values: { username: '', password: '', profile: 'manager' }, extra: {} });
+    fixture.componentInstance.save({ values: { username: '', password: '', profile: 'manager' }, extra: {} });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('El alias es obligatorio');
     expect(fixture.componentInstance.fieldErrors()['username']).toEqual(['El alias es obligatorio']);
+  });
+
+  it('updates an existing alias through the v2 update contract without allowing a rename', () => {
+    const put = vi.fn(() => of({ ok: true, message: 'Usuario actualizado', data: {}, errors: {} }));
+    const api = {
+      get: () => of({ ok: true, message: null, data: { users: [{ username: 'alice', role: 'Manager', class: 'warning', profile: 'manager' }], form, profiles: { manager: 'Manager' } }, errors: {} }),
+      post: () => of({ ok: true, message: null, data: {}, errors: {} }),
+      put
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: AdminApiService, useValue: api }] });
+
+    const fixture = TestBed.createComponent(UsersPageComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.edit({ username: 'alice', role: 'Manager', class: 'warning', profile: 'manager' });
+    fixture.componentInstance.save({ values: { username: 'alice', password: 'new-password', profile: 'manager' }, extra: {} });
+
+    expect(put).toHaveBeenCalledWith('users/alice', { values: { username: 'alice', password: 'new-password', profile: 'manager' }, extra: {} });
   });
 });

@@ -9,6 +9,7 @@ interface AdminUser {
   username: string;
   role: string;
   class: string;
+  profile: string;
 }
 
 interface UsersContract {
@@ -48,7 +49,7 @@ interface UsersContract {
                 <tr *ngFor="let user of visibleUsers()">
                   <td><strong>{{ user.username }}</strong></td>
                   <td><span class="role-badge" [class]="'role-badge role-badge--' + user.class">{{ user.role }}</span></td>
-                  <td class="table-actions"><button type="button" class="button button--danger button--small" [disabled]="saving()" (click)="remove(user.username)">Eliminar</button></td>
+                  <td class="table-actions"><button type="button" class="button button--secondary button--small" [disabled]="saving()" (click)="edit(user)">Editar</button><button type="button" class="button button--danger button--small" [disabled]="saving()" (click)="remove(user.username)">Eliminar</button></td>
                 </tr>
               </tbody>
             </table>
@@ -61,9 +62,9 @@ interface UsersContract {
           <ng-template #emptyUsers><p class="empty-state">No hay usuarios configurados todavía.</p></ng-template>
         </div>
 
-        <section class="panel users-create" *ngIf="schema() as form">
-          <div class="panel-heading"><div><h2>Nuevo usuario</h2><p>Define alias, contraseña y rol.</p></div></div>
-          <psfs-dynamic-form [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" submitLabel="Crear usuario" (submitted)="create($event)" />
+        <section class="panel users-create" *ngIf="activeSchema() as form">
+          <div class="panel-heading"><div><h2>{{ editing() ? 'Editar usuario' : 'Nuevo usuario' }}</h2><p>{{ editing() ? 'La contraseña se sustituirá al guardar.' : 'Define alias, contraseña y rol.' }}</p></div><button *ngIf="editing()" class="button button--secondary" type="button" (click)="cancelEdit()">Cancelar</button></div>
+          <psfs-dynamic-form [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" [submitLabel]="editing() ? 'Actualizar usuario' : 'Crear usuario'" (submitted)="save($event)" />
         </section>
       </section>
     </article>
@@ -81,6 +82,21 @@ export class UsersPageComponent {
   readonly failure = signal<AdminEnvelope<null> | null>(null);
   readonly fieldErrors = signal<Record<string, string[]>>({});
   readonly pendingDelete = signal('');
+  readonly editing = signal<AdminUser | null>(null);
+  readonly activeSchema = computed<AdminFormSchema | null>(() => {
+    const form = this.schema();
+    const user = this.editing();
+    if (!form || !user) return form;
+    return {
+      ...form,
+      fields: {
+        ...form.fields,
+        username: { ...form.fields['username'], value: user.username },
+        password: { ...form.fields['password'], value: '' },
+        profile: { ...form.fields['profile'], value: user.profile },
+      }
+    };
+  });
   readonly filter = signal('');
   readonly page = signal(0);
   readonly filteredUsers = computed(() => {
@@ -98,13 +114,18 @@ export class UsersPageComponent {
     this.load();
   }
 
-  create(submission: DynamicFormSubmission): void {
+  save(submission: DynamicFormSubmission): void {
     this.saving.set(true);
     this.resetFeedback();
-    this.api.post<Record<string, never>>('users', submission).subscribe({
+    const current = this.editing();
+    const request = current
+      ? this.api.put<Record<string, never>>(`users/${encodeURIComponent(current.username)}`, submission)
+      : this.api.post<Record<string, never>>('users', submission);
+    request.subscribe({
       next: (response) => {
         this.saving.set(false);
-        this.message.set(response.message ?? 'Usuario creado correctamente.');
+        this.message.set(response.message ?? (current ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.'));
+        this.editing.set(null);
         this.load();
       },
       error: (failure: unknown) => {
@@ -116,6 +137,16 @@ export class UsersPageComponent {
 
   remove(username: string): void {
     this.pendingDelete.set(username);
+  }
+
+  edit(user: AdminUser): void {
+    this.editing.set(user);
+    this.resetFeedback();
+  }
+
+  cancelEdit(): void {
+    this.editing.set(null);
+    this.resetFeedback();
   }
 
   setFilter(value: string): void {

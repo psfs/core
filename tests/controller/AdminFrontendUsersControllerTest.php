@@ -27,7 +27,7 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertTrue($response['ok'], json_encode($response));
         self::assertSame('alice', $response['data']['users'][0]['username']);
         self::assertArrayNotHasKey('password', $response['data']['users'][0]);
-        self::assertArrayNotHasKey('profile', $response['data']['users'][0]);
+        self::assertSame('889a3a791b3875cfae413574b53da4bb8a90d53e', $response['data']['users'][0]['profile']);
         self::assertSame('Administrator', $response['data']['users'][0]['role']);
         self::assertArrayHasKey('username', $response['data']['form']['fields']);
         self::assertSame(['889a3a791b3875cfae413574b53da4bb8a90d53e' => 'Administrator'], $response['data']['profiles']);
@@ -62,6 +62,39 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertTrue($response['ok'], json_encode($response));
         self::assertTrue($controller->deleted, json_encode($response));
     }
+
+    public function testUpdateRejectsAnAliasMismatchBeforeSaving(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'username' => 'other-admin',
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ]);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testUpdateReusesTheExistingUserPersistenceForTheRouteAlias(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ]);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok'], json_encode($response));
+        self::assertTrue($controller->saved);
+        self::assertSame('alice', $controller->savedValues['username']);
+    }
 }
 
 class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
@@ -69,6 +102,8 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     public int $statusCode = 200;
     public bool $saved = false;
     public bool $deleted = false;
+    /** @var array<string,mixed> */
+    public array $savedValues = [];
 
     /** @param array<string,mixed> $payload */
     public function __construct(private readonly array $payload = [])
@@ -107,6 +142,7 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     protected function saveUser(array $data): bool
     {
         $this->saved = true;
+        $this->savedValues = $data;
         return true;
     }
 

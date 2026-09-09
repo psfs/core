@@ -55,3 +55,21 @@ test('crea y elimina una cuenta temporal mediante el diálogo de confirmación',
   await expect((await deleted).status()).toBe(200);
   await expect(page.locator('table tbody tr')).toHaveCount(0);
 });
+
+test('actualiza una cuenta existente sin permitir que el formulario cambie su alias', async ({ page }) => {
+  await page.goto('/admin-v2/setup');
+  await page.getByRole('button', { name: 'Editar' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Editar usuario' })).toBeVisible();
+  await expect(page.locator('input#username')).toHaveValue('admin');
+  await page.locator('input#password').fill('Replacement-e2e-password-2026');
+  const updated = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.pathname === '/admin/api/v2/users/admin' && response.request().method() === 'PUT';
+  });
+  await page.getByRole('button', { name: 'Actualizar usuario' }).click();
+
+  const updateResponse = await updated;
+  await expect(updateResponse.status(), await updateResponse.text()).toBe(200);
+  await expect(page.locator('.notice--success')).toContainText('Usuario actualizado correctamente.');
+});
