@@ -106,6 +106,13 @@
                 }
               ],
               "outputHashing": "all"
+            },
+            "e2e-static": {
+              "outputPath": {
+                "base": "dist",
+                "browser": "admin-v2"
+              },
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
