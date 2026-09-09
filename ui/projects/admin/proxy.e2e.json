@@ -1,0 +1,7 @@
+{
+  "/admin/api/v2": {
+    "target": "http://127.0.0.1:4310",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

@@ -123,6 +123,10 @@
             },
             "development": {
               "buildTarget": "psfs-admin:build:development"
+            },
+            "e2e": {
+              "buildTarget": "psfs-admin:build:development",
+              "proxyConfig": "projects/admin/proxy.e2e.json"
             }
           },
           "defaultConfiguration": "development"

@@ -6,6 +6,7 @@
     "watch": "npm run watch:ui",
     "watch:ui": "ng serve --host 0.0.0.0 --port 4200 --serve-path /ui/ --hmr",
     "watch:admin": "ng serve psfs-admin --host 0.0.0.0 --port 4200 --serve-path /admin-v2/ --hmr",
+    "watch:admin:e2e": "ng serve psfs-admin --configuration e2e --host 127.0.0.1 --port 4200 --serve-path /admin-v2/",
     "build": "npm run build:ui",
     "build:ui": "ng build",
     "build:admin": "ng build psfs-admin",
@@ -14,6 +15,7 @@
     "test:admin:coverage": "ng test psfs-admin --watch=false --coverage",
     "test:e2e": "playwright test e2e/ui-development.spec.mjs",
     "test:e2e:admin": "playwright test e2e/admin-v2.spec.mjs e2e/admin-v2-config.spec.mjs e2e/admin-v2-docs.spec.mjs e2e/admin-v2-locale.spec.mjs e2e/admin-v2-modules.spec.mjs e2e/admin-v2-static.spec.mjs e2e/admin-v2-users.spec.mjs",
+    "test:e2e:admin:ui": "node --test e2e/mock-api.spec.mjs && playwright test --config playwright.ui.config.mjs e2e/admin-v2.spec.mjs e2e/admin-v2-config.spec.mjs e2e/admin-v2-docs.spec.mjs e2e/admin-v2-locale.spec.mjs e2e/admin-v2-modules.spec.mjs e2e/admin-v2-users.spec.mjs",
     "test:e2e:admin:hmr": "playwright test e2e/admin-v2-hmr.spec.mjs",
     "test:e2e:static": "sh scripts/run-static-e2e.sh"
   },

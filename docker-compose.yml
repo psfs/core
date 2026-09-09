@@ -123,6 +123,24 @@ services:
       - php-swoole
     command: ["sh", "-lc", "npm ci && npm run test:e2e:static"]
 
+  ui-e2e-ui:
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    profiles:
+      - ui-e2e
+    working_dir: /workspace/ui
+    volumes:
+      - .:/workspace:ro
+    command:
+      - sh
+      - -lc
+      - |
+        workspace=$$(mktemp -d)
+        trap 'rm -rf "$$workspace"' EXIT
+        tar --exclude=node_modules -C /workspace/ui -cf - . | tar -C "$$workspace" -xf -
+        cd "$$workspace"
+        npm ci --silent
+        npm run test:e2e:admin:ui
+
   redis:
     restart: always
     image: valkey/valkey:latest
