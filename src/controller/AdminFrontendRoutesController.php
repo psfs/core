@@ -7,6 +7,7 @@ use PSFS\base\Logger;
 use PSFS\base\Router;
 use PSFS\base\Security;
 use PSFS\base\admin\AdminApiResponse;
+use PSFS\base\admin\AdminFrontendCsrf;
 use PSFS\base\exception\ApiException;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Route;
@@ -34,6 +35,7 @@ class AdminFrontendRoutesController extends Admin
     #[Visible(false)]
     public function regenerate(): string
     {
+        AdminFrontendCsrf::assertValid();
         ini_set('memory_limit', '-1');
         $this->assertAdminAuthorization();
         $router = Router::getInstance();

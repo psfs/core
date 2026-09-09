@@ -14,6 +14,8 @@ use PSFS\base\Request;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Route;
 use PSFS\base\types\helpers\attributes\Visible;
+use PSFS\base\types\helpers\DeployHelper;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\controller\base\Admin;
 
 /** JSON configuration contract consumed by the native Admin 2.0 screen. */
@@ -65,11 +67,14 @@ class AdminFrontendConfigController extends Admin
             ), 422);
         }
 
+        $debug = $this->debugMode();
         if (!$this->save($form->getData(), $this->normalizeExtra($extra))) {
             return $this->json(AdminApiResponse::failure(
                 t('Error while saving configuration, please verify filesystem permissions')
             ), 500);
         }
+
+        $this->applyPostSaveEffects($debug);
 
         return $this->json(AdminApiResponse::success([
             'changed' => array_values(array_unique(array_merge(array_keys($values), array_keys($extra)))),
@@ -96,6 +101,37 @@ class AdminFrontendConfigController extends Admin
     protected function save(array $values, array $extra): bool
     {
         return Config::save($values, $extra);
+    }
+
+    protected function debugMode(): bool
+    {
+        return (bool)Config::getInstance()->getDebugMode();
+    }
+
+    protected function runtimeDebugMode(): bool
+    {
+        return (bool)Config::getParam('debug', false);
+    }
+
+    protected function applyPostSaveEffects(bool $previousDebug): void
+    {
+        $runtimeDebug = $this->runtimeDebugMode();
+        if (!$runtimeDebug) {
+            $this->refreshCacheState();
+        }
+        if ($previousDebug !== $runtimeDebug) {
+            $this->clearDocumentRoot();
+        }
+    }
+
+    protected function refreshCacheState(): void
+    {
+        DeployHelper::refreshCacheState();
+    }
+
+    protected function clearDocumentRoot(): void
+    {
+        GeneratorHelper::clearDocumentRoot();
     }
 
     protected function assertSuperAdminConfigWriteAccess(): void

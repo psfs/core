@@ -99,19 +99,77 @@ class AdminFrontendConfigControllerTest extends TestCase
 
         self::assertFalse($form->isValid());
     }
+
+    public function testSuccessfulSaveAppliesLegacyPostSaveEffectsForEveryDebugTransition(): void
+    {
+        foreach ([
+            [true, false, 1, 1],
+            [true, true, 0, 0],
+            [false, true, 0, 1],
+            [false, false, 1, 0],
+        ] as [$debugBefore, $debugAfter, $expectedCacheRefreshes, $expectedDocumentRootClears]) {
+            $controller = new AdminFrontendConfigControllerProbe(
+                ['values' => ['app.name' => 'PSFS v2'], 'extra' => []],
+                $debugBefore,
+                $debugAfter
+            );
+
+            $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertTrue($response['ok']);
+            self::assertSame($expectedCacheRefreshes, $controller->cacheRefreshes);
+            self::assertSame($expectedDocumentRootClears, $controller->documentRootClears);
+        }
+    }
+
+    public function testFailedSaveDoesNotRunPostSaveEffects(): void
+    {
+        $controller = new AdminFrontendConfigControllerProbe(
+            ['values' => ['app.name' => 'PSFS v2'], 'extra' => []],
+            true,
+            false,
+            false
+        );
+
+        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertFalse($response['ok']);
+        self::assertSame(500, $controller->statusCode);
+        self::assertSame(0, $controller->cacheRefreshes);
+        self::assertSame(0, $controller->documentRootClears);
+    }
+
+    public function testSuccessfulSaveDelegatesPostSaveBehaviorThroughTheProtectedSeam(): void
+    {
+        $controller = new AdminFrontendConfigControllerDelegationProbe(
+            ['values' => ['app.name' => 'PSFS v2'], 'extra' => []]
+        );
+
+        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok']);
+        self::assertSame(1, $controller->postSaveEffectsCalls);
+    }
 }
 
 class AdminFrontendConfigControllerProbe extends AdminFrontendConfigController
 {
     public int $statusCode = 200;
     public bool $saved = false;
+    public int $cacheRefreshes = 0;
+    public int $documentRootClears = 0;
     /** @var array<string,mixed> */
     public array $savedValues = [];
     /** @var array<string,mixed> */
     public array $savedExtra = [];
 
     /** @param array<string,mixed> $payload */
-    public function __construct(private readonly array $payload = [])
+    public function __construct(
+        private readonly array $payload = [],
+        private readonly bool $debugBefore = true,
+        private readonly bool $debugAfter = true,
+        private readonly bool $saveSucceeds = true
+    )
     {
     }
 
@@ -140,6 +198,36 @@ class AdminFrontendConfigControllerProbe extends AdminFrontendConfigController
         $this->saved = true;
         $this->savedValues = $values;
         $this->savedExtra = $extra;
-        return true;
+        return $this->saveSucceeds;
+    }
+
+    protected function debugMode(): bool
+    {
+        return $this->debugBefore;
+    }
+
+    protected function runtimeDebugMode(): bool
+    {
+        return $this->debugAfter;
+    }
+
+    protected function refreshCacheState(): void
+    {
+        ++$this->cacheRefreshes;
+    }
+
+    protected function clearDocumentRoot(): void
+    {
+        ++$this->documentRootClears;
+    }
+}
+
+class AdminFrontendConfigControllerDelegationProbe extends AdminFrontendConfigControllerProbe
+{
+    public int $postSaveEffectsCalls = 0;
+
+    protected function applyPostSaveEffects(bool $previousDebug): void
+    {
+        ++$this->postSaveEffectsCalls;
     }
 }
