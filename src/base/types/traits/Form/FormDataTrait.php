@@ -137,7 +137,7 @@ trait FormDataTrait
     }
 
     /**
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function hydrate()
     {

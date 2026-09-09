@@ -4,6 +4,7 @@ namespace PSFS\services\migration;
 
 use Propel\Generator\Manager\MigrationManager;
 use Closure;
+use PSFS\base\Logger;
 
 class PhinxMigrationEngine implements MigrationEngineInterface
 {
@@ -171,7 +172,9 @@ PHP;
         );
 
         $result = $this->runner->run($command);
-        @unlink($runtimeConfig);
+        if (!@unlink($runtimeConfig)) {
+            Logger::log('[PhinxMigrationEngine] Unable to remove runtime config: ' . $runtimeConfig, LOG_WARNING);
+        }
 
         if (0 === $result['exit_code']) {
             return MigrationExecutionResult::success($this->getName(), $result['output'], $command);

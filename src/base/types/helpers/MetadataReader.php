@@ -97,9 +97,11 @@ class MetadataReader
 
     private static function engine(): MetadataEngineInterface
     {
-        if (!(self::$engine instanceof MetadataEngineInterface)) {
-            self::$engine = new MetadataEngine();
+        $engine = self::$engine;
+        if (!$engine instanceof MetadataEngineInterface) {
+            $engine = new MetadataEngine();
+            self::$engine = $engine;
         }
-        return self::$engine;
+        return $engine;
     }
 }

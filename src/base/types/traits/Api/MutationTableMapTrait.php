@@ -12,7 +12,7 @@ trait MutationTableMapTrait
     /**
      * @return mixed
      */
-    protected function getModelNamespace()
+    protected function getModelNamespace(): ?string
     {
         $tableMap = $this->getModelTableMap();
         if (null === $tableMap) {
@@ -44,7 +44,7 @@ trait MutationTableMapTrait
     /**
      * @return TableMap|null
      */
-    private function getTableMap()
+    protected function getTableMap(): ?TableMap
     {
         $tableMapClass = $this->getModelTableMap();
         if (null === $tableMapClass) {

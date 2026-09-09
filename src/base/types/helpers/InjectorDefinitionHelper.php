@@ -77,7 +77,7 @@ class InjectorDefinitionHelper
     }
 
     /**
-     * @return array{string,bool}
+     * @return array{0:string,1:bool}
      */
     private static function normalizeInstanceType(string $instanceType): array
     {

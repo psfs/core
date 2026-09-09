@@ -38,7 +38,7 @@ abstract class AuthApi extends Api
      */
     private function checkAuth()
     {
-        $namespace = explode('\\', $this->getModelTableMap());
+        $namespace = explode('\\', (string)$this->getModelTableMap());
         $module = strtolower($namespace[0]);
         $secret = Config::getInstance()->get($module . '.api.secret');
         if (null === $secret) {

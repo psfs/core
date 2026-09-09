@@ -12,6 +12,9 @@ use PSFS\base\types\Api;
 
 trait MutationExtraColumnsTrait
 {
+    /** @var array<string, string> */
+    protected array $extraColumns = [];
+
     /**
      * @throws ApiException
      */
@@ -51,6 +54,9 @@ trait MutationExtraColumnsTrait
     {
         if (!in_array(Api::API_LIST_NAME_FIELD, array_values($this->extraColumns), true)) {
             $tableMap = $this->getTableMap();
+            if (!$tableMap instanceof TableMap) {
+                return;
+            }
             $column = $this->resolveDefaultListColumn($tableMap);
             if (null !== $column) {
                 $this->extraColumns[$column->getFullyQualifiedName()] = Api::API_LIST_NAME_FIELD;

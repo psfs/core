@@ -49,7 +49,7 @@ trait DocumentorHelperTrait
      * @param true $isArray
      * @return array
      */
-    public function processPayload(array|string $namespace, bool $isArray): array
+    public function processPayload(string $namespace, bool $isArray): array
     {
         if (false !== strpos($namespace, '[') && false !== strpos($namespace, ']')) {
             $namespace = str_replace(']', '', str_replace('[', '', $namespace));

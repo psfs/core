@@ -3,6 +3,7 @@
 namespace PSFS\base\types\helpers;
 
 use PSFS\base\exception\ConfigException;
+use PSFS\base\Logger;
 
 class FilesystemTreeHelper
 {
@@ -12,7 +13,9 @@ class FilesystemTreeHelper
             return;
         }
         if (is_link($dir)) {
-            @unlink($dir);
+            if (!@unlink($dir)) {
+                Logger::log('[FilesystemTreeHelper] Unable to remove symlink: ' . $dir, LOG_WARNING);
+            }
             return;
         }
         $objects = scandir($dir) ?: [];

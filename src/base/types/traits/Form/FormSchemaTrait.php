@@ -26,7 +26,7 @@ trait FormSchemaTrait
 
     /**
      * @param string $enctype
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function setEncType($enctype)
     {
@@ -36,7 +36,7 @@ trait FormSchemaTrait
 
     /**
      * @param $action
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function setAction($action)
     {
@@ -46,7 +46,7 @@ trait FormSchemaTrait
 
     /**
      * @param $method
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function setMethod($method)
     {
@@ -56,7 +56,7 @@ trait FormSchemaTrait
 
     /**
      * @param array $attrs
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function setAttrs(array $attrs)
     {

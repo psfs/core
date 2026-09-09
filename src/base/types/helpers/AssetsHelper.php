@@ -14,10 +14,10 @@ class AssetsHelper
 {
 
     /**
-     * @param string $source
+     * @param array{1:string} $source
      * @return string
      */
-    public static function extractSourceFilename($source): string
+    public static function extractSourceFilename(array $source): string
     {
         $sourceFile = preg_replace("/'/", "", $source[1]);
         if (preg_match('/\#/', $sourceFile)) {

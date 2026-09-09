@@ -81,8 +81,8 @@ class SecurityHelper
         $part = substr($hash, $tsLength + $partCount * $i, $partCount);
         while (false !== $part && strlen($part) > 0) {
             $mixedToken .= $part .
-                substr(self::RAND_SEP, round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1) .
-                substr(self::RAND_SEP, round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1);
+                substr(self::RAND_SEP, (int)round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1) .
+                substr(self::RAND_SEP, (int)round(rand(0, $charsLength), 0, PHP_ROUND_HALF_DOWN), 1);
             $part = substr($hash, $tsLength + $partCount * $i, $partCount);
             $i++;
         }

@@ -121,7 +121,9 @@ class SwooleRequestHydrator
             return;
         }
         if (session_status() === PHP_SESSION_ACTIVE) {
-            @session_write_close();
+            if (!@session_write_close()) {
+                return;
+            }
         }
         $sessionName = session_name();
         if ($sessionName === '') {
@@ -129,9 +131,13 @@ class SwooleRequestHydrator
         }
         $incomingSessionId = $cookies[$sessionName] ?? null;
         if (!is_string($incomingSessionId) || trim($incomingSessionId) === '') {
-            @session_id('');
+            if (false === @session_id('')) {
+                return;
+            }
             return;
         }
-        @session_id($incomingSessionId);
+        if (false === @session_id($incomingSessionId)) {
+            return;
+        }
     }
 }

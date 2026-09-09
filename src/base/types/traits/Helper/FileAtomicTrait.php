@@ -24,7 +24,9 @@ trait FileAtomicTrait
     private static function cleanupTempPath(string|false $tmpPath): void
     {
         if (is_string($tmpPath) && file_exists($tmpPath)) {
-            @unlink($tmpPath);
+            if (!@unlink($tmpPath)) {
+                return;
+            }
         }
     }
 

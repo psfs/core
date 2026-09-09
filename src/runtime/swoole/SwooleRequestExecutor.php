@@ -34,7 +34,11 @@ class SwooleRequestExecutor
             }
         } finally {
             if (ob_get_level() > 0) {
-                @ob_end_clean();
+                $buffer = ob_get_contents();
+                $closed = @ob_end_clean();
+                if (!$closed && $body === '' && is_string($buffer)) {
+                    $body = $buffer;
+                }
             }
         }
 

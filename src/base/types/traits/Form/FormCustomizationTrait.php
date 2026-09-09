@@ -37,7 +37,7 @@ trait FormCustomizationTrait
      * @param string $value
      * @param string $type
      * @param array|null $attrs
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function addButton($buttonId, $value = 'Save', $type = 'submit', $attrs = array())
     {
@@ -57,7 +57,7 @@ trait FormCustomizationTrait
     /**
      * @param string $buttonId
      *
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function dropButton($buttonId)
     {

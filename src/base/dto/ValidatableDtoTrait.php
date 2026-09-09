@@ -4,6 +4,8 @@ namespace PSFS\base\dto;
 
 trait ValidatableDtoTrait
 {
+    abstract protected function checkCastedValue(mixed $rawValue, string $type);
+
     private static ?\WeakMap $__validationInputMap = null;
     private ?ValidationResult $__validationResult = null;
 
@@ -60,4 +62,3 @@ trait ValidatableDtoTrait
         return is_array($data) ? $data : [];
     }
 }
-

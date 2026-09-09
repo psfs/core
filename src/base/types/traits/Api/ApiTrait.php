@@ -16,6 +16,8 @@ use PSFS\base\types\traits\JsonTrait;
 
 /**
  * @package PSFS\base\types\traits
+ * @property iterable|null $list Populated by ApiListTrait.
+ * @property array<string, string> $extraColumns Populated by MutationExtraColumnsTrait.
  */
 trait ApiTrait
 {
@@ -311,6 +313,6 @@ trait ApiTrait
         if (defined(get_class($tableMap) . '::DATABASE_NAME')) {
             return (string)constant(get_class($tableMap) . '::DATABASE_NAME');
         }
-        return Config::getParam('database.name', 'default');
+        return (string)Config::getParam('database.name', 'default');
     }
 }

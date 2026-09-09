@@ -107,8 +107,11 @@ trait SessionTrait
             if (@session_regenerate_id(true) === false) {
                 Logger::log('[SessionTrait::closeSession] Unable to regenerate session id');
             }
-        } elseif (($canStartSession) && @session_start() === false) {
-            Logger::log('[SessionTrait::closeSession] Unable to start session');
+        } elseif ($canStartSession) {
+            $started = @session_start();
+            if (!$started) {
+                Logger::log('[SessionTrait::closeSession] Unable to start session');
+            }
         }
 
         $_SESSION = [];

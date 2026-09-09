@@ -173,7 +173,7 @@ class InjectorHelper
 
     /**
      * @param $doc
-     * @return null|array
+     * @return array|string|null
      */
     public static function getValues($doc, ReflectionProperty $property = null)
     {

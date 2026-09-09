@@ -12,9 +12,48 @@ use PSFS\base\Request;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\attributes\DefaultValue;
+use PSFS\base\types\helpers\attributes\Header;
+use PSFS\base\types\helpers\attributes\Label;
 
 trait MutationRequestHydrationTrait
 {
+    #[Header(Api::HEADER_API_LANG)]
+    #[Label('Locale for the API request')]
+    #[DefaultValue('es')]
+    protected $lang;
+
+    #[Header(Api::HEADER_API_FIELDTYPE)]
+    #[Label('Field type for API Dto')]
+    #[DefaultValue('phpName')]
+    protected $fieldType = TableMap::TYPE_PHPNAME;
+
+    /** @var array<string, mixed> */
+    protected array $query = [];
+
+    /** @var array<string, mixed> */
+    protected array $data = [];
+
+    /** @var int */
+    protected int $bulkSavedCount = 0;
+
+    abstract protected function hasI18nQuerySupport(ModelCriteria $query): bool;
+
+    abstract protected function getModelNamespace(): ?string;
+
+    abstract protected function resolveI18nMapClassName(string $modelNamespace): string;
+
+    abstract protected function appendI18nColumnsToQuery(ModelCriteria $query, TableMap $i18nTableMap, string $lang): void;
+
+    abstract protected function applyI18nFieldsToModel(
+        ActiveRecordInterface $model,
+        TableMap $baseTableMap,
+        array $data,
+        string $lang
+    ): void;
+
+    abstract protected function getTableMap(): ?TableMap;
+
     protected function hydrateRequestData()
     {
         $request = Request::getInstance();

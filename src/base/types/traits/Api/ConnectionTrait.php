@@ -7,7 +7,6 @@ use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Propel;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
-use PSFS\base\types\traits\DebugTrait;
 
 /**
  * @package PSFS\base\types\traits\Api

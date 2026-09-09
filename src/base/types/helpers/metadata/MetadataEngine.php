@@ -541,10 +541,14 @@ class MetadataEngine implements MetadataEngineInterface
             return;
         }
         if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($path, true);
+            if (!@opcache_invalidate($path, true)) {
+                Logger::log('[MetadataEngine] Unable to invalidate opcache artifact: ' . $path, LOG_DEBUG);
+            }
         }
         if (function_exists('opcache_compile_file')) {
-            @opcache_compile_file($path);
+            if (!@opcache_compile_file($path)) {
+                Logger::log('[MetadataEngine] Unable to compile opcache artifact: ' . $path, LOG_DEBUG);
+            }
         }
     }
 
@@ -552,10 +556,14 @@ class MetadataEngine implements MetadataEngineInterface
     {
         $path = $this->artifactPath($cacheKey);
         if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($path, true);
+            if (!@opcache_invalidate($path, true)) {
+                Logger::log('[MetadataEngine] Unable to invalidate opcache artifact: ' . $path, LOG_DEBUG);
+            }
         }
         if (file_exists($path)) {
-            @unlink($path);
+            if (!@unlink($path)) {
+                Logger::log('[MetadataEngine] Unable to remove opcache artifact: ' . $path, LOG_WARNING);
+            }
         }
     }
 
@@ -812,17 +820,21 @@ class MetadataEngine implements MetadataEngineInterface
 
     private function attributeBundleBuilder(): MetadataAttributeBundleBuilder
     {
-        if (!$this->attributeBundleBuilder instanceof MetadataAttributeBundleBuilder) {
-            $this->attributeBundleBuilder = new MetadataAttributeBundleBuilder();
+        $builder = $this->attributeBundleBuilder;
+        if (!$builder instanceof MetadataAttributeBundleBuilder) {
+            $builder = new MetadataAttributeBundleBuilder();
+            $this->attributeBundleBuilder = $builder;
         }
-        return $this->attributeBundleBuilder;
+        return $builder;
     }
 
     private function engineConfig(): MetadataEngineConfig
     {
-        if (!$this->engineConfig instanceof MetadataEngineConfig) {
-            $this->engineConfig = new MetadataEngineConfig();
+        $config = $this->engineConfig;
+        if (!$config instanceof MetadataEngineConfig) {
+            $config = new MetadataEngineConfig();
+            $this->engineConfig = $config;
         }
-        return $this->engineConfig;
+        return $config;
     }
 }

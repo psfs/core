@@ -18,7 +18,7 @@ trait FormValidatorTrait
      * @param string $field
      * @param string $error
      *
-     * @return FormSchemaTrait
+     * @return $this
      */
     public function setError($field, $error = 'Validation error')
     {

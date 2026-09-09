@@ -77,10 +77,9 @@ class FileHelper
     }
 
     /**
-     * @template T
      * @param string $lockPath
-     * @param callable():T $callback
-     * @return T|null
+     * @param callable $callback
+     * @return mixed
      */
     public static function withExclusiveLock(string $lockPath, callable $callback): mixed
     {
