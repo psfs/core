@@ -50,15 +50,7 @@ build:
     # 🧪 Test with services
     services-tests:
       services:
-        mysql:
-          image: docker.io/library/mysql:8.4
-          env:
-            MYSQL_ROOT_PASSWORD: "scrutinizer"
-            MYSQL_DATABASE: "scrutinizer"
-          ports:
-            - 3306
-          ramdisks:
-            - /var/lib/mysql
+        mysql: "8.4"
         redis: "6"
 
       environment:
@@ -69,14 +61,14 @@ build:
           API_DB_PORT: "3306"
           API_DB_NAME: "scrutinizer"
           API_DB_USER: "root"
-          API_DB_PASSWORD: "scrutinizer"
+          API_DB_PASSWORD: ""
           API_DB_TIMEOUT: "300"
 
           DB_HOST: "127.0.0.1"
           DB_PORT: "3306"
           DB_NAME: "scrutinizer"
           DB_USER: "root"
-          DB_PASSWORD: "scrutinizer"
+          DB_PASSWORD: ""
 
           PSFS_REDIS_HOST: "127.0.0.1"
           PSFS_REDIS_PORT: "6379"
@@ -91,9 +83,6 @@ build:
 
           # 🧠 Warmup DB (skip timing problems)
           - command: >
-              env
-              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
               php tests/bootstrap/prepare_api_mysql.php
             idle_timeout: 600
 
@@ -119,9 +108,6 @@ build:
         stop_on_failure: true
         override:
           - command: >
-              env
-              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
               php -d pcov.enabled=1
               -d pcov.directory=src
               vendor/bin/phpunit
