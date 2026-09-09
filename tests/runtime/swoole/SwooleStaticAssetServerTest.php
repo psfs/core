@@ -80,6 +80,53 @@ class SwooleStaticAssetServerTest extends TestCase
         }
     }
 
+    public function testTryServeSpaFallbackSupportsHeadWithoutReadingTheBody(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $response = new SwooleStaticResponseDouble();
+        $directory = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-ui-head-fallback';
+        $index = $directory . DIRECTORY_SEPARATOR . 'index.html';
+        mkdir($directory, 0777, true);
+        file_put_contents($index, '<main>head-ui</main>');
+
+        try {
+            $_SERVER['REQUEST_METHOD'] = 'HEAD';
+            $_SERVER['REQUEST_URI'] = '/tmp-ui-head-fallback/orders/42';
+
+            $this->assertTrue($server->tryServeSpaFallback($response, '/tmp-ui-head-fallback'));
+            $this->assertSame(200, $response->statusCode);
+            $this->assertSame('', $response->body);
+        } finally {
+            @unlink($index);
+            @rmdir($directory);
+        }
+    }
+
+    public function testTryServeSpaFallbackRejectsUnsupportedMethodsAndMountMismatches(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $response = new SwooleStaticResponseDouble();
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/tmp-ui/orders';
+        self::assertFalse($server->tryServeSpaFallback($response, '/tmp-ui'));
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/other/orders';
+        self::assertFalse($server->tryServeSpaFallback($response, '/tmp-ui'));
+    }
+
+    public function testTryServeSpaFallbackRejectsMissingMountIndex(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $response = new SwooleStaticResponseDouble();
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/tmp-ui/orders';
+
+        self::assertFalse($server->tryServeSpaFallback($response, '/tmp-ui'));
+    }
+
     public function testTryServeSpaFallbackAllowsAConfiguredDocumentRootSymlink(): void
     {
         $server = new SwooleStaticAssetServer();
@@ -125,6 +172,47 @@ class SwooleStaticAssetServerTest extends TestCase
             @unlink($sourceDirectory . DIRECTORY_SEPARATOR . 'main.js');
             @rmdir($sourceDirectory);
         }
+    }
+
+    public function testTryServeRejectsEncodedNullAndMissingAssetPaths(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $response = new SwooleStaticResponseDouble();
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/assets/%00.js';
+        $this->assertFalse($server->tryServe($response));
+
+        $_SERVER['REQUEST_URI'] = '/assets/does-not-exist.js';
+        $this->assertFalse($server->tryServe($response));
+    }
+
+    public function testTryServeCanWriteAnUnknownAssetWithAMinimalResponseObject(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $assetPath = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-static-asset.bin';
+        file_put_contents($assetPath, 'binary-payload');
+
+        try {
+            $_SERVER['REQUEST_METHOD'] = 'GET';
+            $_SERVER['REQUEST_URI'] = '/tmp-static-asset.bin';
+
+            $this->assertTrue($server->tryServe(new \stdClass()));
+        } finally {
+            @unlink($assetPath);
+        }
+    }
+
+    public function testStaticPathGuardsRejectEscapesAndUnknownMimeFallbacks(): void
+    {
+        $server = new SwooleStaticAssetServer();
+        $allowedMethod = new \ReflectionMethod($server, 'isWithinAllowedStaticRoot');
+        $mimeMethod = new \ReflectionMethod($server, 'resolveStaticMimeType');
+
+        self::assertFalse($allowedMethod->invoke($server, '/tmp/outside', realpath(WEB_DIR), '../file.js', null));
+        self::assertFalse($allowedMethod->invoke($server, '/tmp/outside', realpath(WEB_DIR), 'tmp-mount/file.js', null));
+        self::assertFalse($allowedMethod->invoke($server, '/tmp/outside', realpath(WEB_DIR), 'tmp-mount/file.js', 'tmp-mount'));
+        self::assertSame('application/octet-stream', $mimeMethod->invoke($server, '/tmp/nonexistent.unknown-extension'));
     }
 }
 

@@ -18,7 +18,7 @@ class SwooleRequestHandler
         private readonly ?SwooleRequestExecutor $requestExecutor = null,
         private readonly ?SwooleRuntimeStateManager $stateManager = null,
         private readonly ?UiDevelopmentProxyResolver $uiDevelopmentProxyResolver = null,
-        private readonly ?UiDevelopmentHttpProxy $uiDevelopmentHttpProxy = null
+        private readonly ?UiDevelopmentHttpProxyInterface $uiDevelopmentHttpProxy = null
     ) {
     }
 
@@ -109,7 +109,7 @@ class SwooleRequestHandler
         return $this->uiDevelopmentProxyResolver ?? new UiDevelopmentProxyResolver();
     }
 
-    private function getUiDevelopmentHttpProxy(): UiDevelopmentHttpProxy
+    private function getUiDevelopmentHttpProxy(): UiDevelopmentHttpProxyInterface
     {
         return $this->uiDevelopmentHttpProxy ?? new UiDevelopmentHttpProxy();
     }

@@ -122,6 +122,12 @@ class ApiCoverageTableMapClass
 {
     public static ApiCoverageTableMap $tableMap;
 
+    /** @return array<int, string> */
+    public static function getFieldNames(): array
+    {
+        return [];
+    }
+
     public static function getTableMap(): ApiCoverageTableMap
     {
         return self::$tableMap;
@@ -511,6 +517,11 @@ class ApiCoverageDouble extends Api
         return $reflection->invoke($this);
     }
 
+    public function callResolveTableMapDatabaseNameForTests(TableMap $tableMap): string
+    {
+        return $this->resolveTableMapDatabaseName($tableMap);
+    }
+
     public function callHydrateModelFromRequestForTests(ActiveRecordInterface $model, array $data = []): void
     {
         $this->hydrateModelFromRequest($model, $data);
@@ -621,6 +632,48 @@ class ApiCoverageTraitHydrateExceptionDouble extends ApiCoverageTraitDouble
     protected function prepareQuery()
     {
         throw new \RuntimeException('forced hydrate model failure');
+    }
+}
+
+class ApiCoverageApiTraitSourceDouble extends Api
+{
+    public ApiCoverageConnectionFake $writeConnection;
+
+    public function __construct()
+    {
+        $this->writeConnection = new ApiCoverageConnectionFake();
+        parent::__construct();
+    }
+
+    public function init()
+    {
+        // Keep the source-trait tests independent from a live Propel connection.
+    }
+
+    public function getModelTableMap()
+    {
+        return ApiCoverageTableMapClass::class;
+    }
+
+    public function setListForTests(array $list): void
+    {
+        $this->list = $list;
+    }
+
+    /** @return array<int, mixed> */
+    public function exportListForTests(): array
+    {
+        return $this->exportList();
+    }
+
+    protected function getWriteConnection(string $databaseName): ApiCoverageConnectionFake
+    {
+        return $this->writeConnection;
+    }
+
+    public function callSaveBulkForTests(): void
+    {
+        $this->saveBulk();
     }
 }
 
@@ -736,6 +789,14 @@ class ApiCoverageActiveRecord implements ActiveRecordInterface
     {
         $this->translations['Title'] = $value;
         return $this;
+    }
+}
+
+class ApiCoverageFailingSaveRecord extends ApiCoverageActiveRecord
+{
+    public function save($con = null)
+    {
+        throw new \RuntimeException('save failure');
     }
 }
 
@@ -1284,6 +1345,61 @@ final class ApiCoreCoverageTest extends TestCase
         $this->assertSame(['Id' => 77], $api->callRenderModel());
         $this->assertSame('ApiCoverageActiveRecord', $api->callGetApi());
         $this->assertSame('PSFS', $api->callGetDomain());
+    }
+
+    public function testApiTraitExportsModelsAndResolvesDatabaseNames(): void
+    {
+        $source = new ApiCoverageApiTraitSourceDouble();
+        $first = new ApiCoverageActiveRecord();
+        $first->arrayResult = ['Id' => 1];
+        $second = new ApiCoverageActiveRecord();
+        $second->arrayResult = ['Id' => 2];
+        $source->setListForTests([$first, $second]);
+
+        self::assertSame([['Id' => 1], ['Id' => 2]], $source->exportListForTests());
+
+        $api = new ApiCoverageDouble();
+        self::assertSame('default', $api->callResolveTableMapDatabaseNameForTests(new class extends TableMap {
+            public function getDatabaseName(): string
+            {
+                return '';
+            }
+        }));
+        self::assertSame('default', $api->callResolveTableMapDatabaseNameForTests(new class extends TableMap {
+            public function getDatabaseName(): string
+            {
+                return 'default';
+            }
+        }));
+        self::assertSame(
+            'default',
+            $api->callResolveTableMapDatabaseNameForTests(new ApiCoverageTableMap())
+        );
+    }
+
+    public function testApiTraitSaveBulkCommitsSuccessesAndRollsBackFailures(): void
+    {
+        $source = new ApiCoverageApiTraitSourceDouble();
+        $source->setListForTests([
+            new ApiCoverageActiveRecord(),
+            new ApiCoverageFailingSaveRecord(),
+        ]);
+
+        $source->callSaveBulkForTests();
+
+        self::assertSame(1, $source->bulkSavedCount);
+        self::assertSame(1, $source->writeConnection->commitCalls);
+        self::assertSame(1, $source->writeConnection->rollbackCalls);
+    }
+
+    public function testManagerFormEndpointReturnsTheJsonContractForAnEmptyTableMap(): void
+    {
+        ApiCoverageTableMapClass::$tableMap = new ApiCoverageTableMap();
+
+        $response = json_decode((new ApiCoverageDouble())->getForm(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['success']);
+        self::assertSame([], $response['data']['fields']);
     }
 
     public function testAddExtraColumnsInCompatModeAddsAllLegacyColumns(): void

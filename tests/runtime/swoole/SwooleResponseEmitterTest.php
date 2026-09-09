@@ -32,6 +32,14 @@ class SwooleResponseEmitterTest extends TestCase
         $this->assertSame(401, $status);
     }
 
+    public function testResolveStatusCodeFallsBackWhenTheStatusHeaderIsMissingOrInvalid(): void
+    {
+        $emitter = new SwooleResponseEmitter();
+
+        $this->assertSame(204, $emitter->resolveStatusCode([], 204));
+        $this->assertSame(204, $emitter->resolveStatusCode(['http status' => 'not-a-status'], 204));
+    }
+
     public function testEmitWritesStatusHeadersCookiesAndBody(): void
     {
         $emitter = new SwooleResponseEmitter();
@@ -110,6 +118,29 @@ class SwooleResponseEmitterTest extends TestCase
         $emitter->ensureSessionCookieHeader($headers);
 
         $this->assertSame([], $headers);
+    }
+
+    public function testEnsureSessionCookieHeaderDoesNotDuplicateTheActiveSessionCookie(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $emitter = new SwooleResponseEmitter();
+        $headers = [];
+        $previousName = session_name();
+        session_name('PSFSSESSID');
+        session_start();
+
+        try {
+            $headers['set-cookie'] = ['PSFSSESSID=' . session_id() . '; Path=/'];
+            $emitter->ensureSessionCookieHeader($headers);
+        } finally {
+            session_write_close();
+            session_name($previousName);
+        }
+
+        $this->assertCount(1, $headers['set-cookie']);
     }
 }
 

@@ -43,6 +43,33 @@ class AdminFrontendModulesControllerTest extends TestCase
         self::assertFalse($controller->generated);
     }
 
+    public function testEmptyModulePayloadReturns422BeforeGenerating(): void
+    {
+        $controller = new AdminFrontendModulesControllerProbe(['values' => []]);
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->generated);
+    }
+
+    public function testUnknownCustomApiReturns422WithoutGeneratingTheModule(): void
+    {
+        $controller = new AdminFrontendModulesControllerProbe(['values' => [
+            'module' => 'foo/bar',
+            'controllerType' => 'Normal',
+            'api' => 'Missing\\CustomApi',
+        ]]);
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertStringContainsString('does not exist', $response['message']);
+        self::assertFalse($controller->generated);
+    }
+
     public function testValidModuleNormalizesLegacySeparatorsBeforeGenerating(): void
     {
         foreach (['foo\\bar', '/foo/bar'] as $input) {
@@ -60,6 +87,32 @@ class AdminFrontendModulesControllerTest extends TestCase
             self::assertSame(['FOO/BAR', '', ''], $controller->generatedArguments);
             self::assertSame('FOO/BAR', $response['data']['module']);
         }
+    }
+
+    public function testValidationHelpersReportRequiredAndFieldLevelErrors(): void
+    {
+        $controller = new AdminFrontendModulesControllerProbe();
+        $form = new AdminFrontendModuleFormProbe([
+            'module' => ['required' => true, 'value' => ''],
+            'controllerType' => ['required' => false],
+            'api' => ['error' => 'invalid api'],
+        ]);
+
+        $required = $controller->callRequiredFieldErrors($form);
+        $fieldErrors = $controller->callFieldErrors($form);
+
+        self::assertArrayHasKey('module', $required);
+        self::assertSame(['invalid api'], $fieldErrors['api']);
+    }
+
+    public function testConcreteModuleControllerKeepsItsDefaultFormAndRequestSeams(): void
+    {
+        $controller = new AdminFrontendModulesController();
+        $formMethod = new \ReflectionMethod(AdminFrontendModulesController::class, 'moduleForm');
+        $payloadMethod = new \ReflectionMethod(AdminFrontendModulesController::class, 'requestPayload');
+
+        self::assertInstanceOf(ModuleForm::class, $formMethod->invoke($controller));
+        self::assertIsArray($payloadMethod->invoke($controller));
     }
 }
 
@@ -97,5 +150,31 @@ class AdminFrontendModulesControllerProbe extends AdminFrontendModulesController
     {
         $this->generated = true;
         $this->generatedArguments = [$module, $type, $apiClass];
+    }
+
+    /** @return array<string,string[]> */
+    public function callRequiredFieldErrors(ModuleForm $form): array
+    {
+        $method = new \ReflectionMethod(AdminFrontendModulesController::class, 'requiredFieldErrors');
+        return $method->invoke($this, $form);
+    }
+
+    /** @return array<string,string[]> */
+    public function callFieldErrors(ModuleForm $form): array
+    {
+        $method = new \ReflectionMethod(AdminFrontendModulesController::class, 'fieldErrors');
+        return $method->invoke($this, $form);
+    }
+}
+
+class AdminFrontendModuleFormProbe extends ModuleForm
+{
+    public function __construct(private readonly array $probeFields)
+    {
+    }
+
+    public function getFields(): array
+    {
+        return $this->probeFields;
     }
 }

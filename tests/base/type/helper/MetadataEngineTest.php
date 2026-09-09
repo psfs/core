@@ -248,6 +248,169 @@ class MetadataEngineTest extends TestCase
         $this->assertTrue($probe->queued);
     }
 
+    public function testQueuedSwrRegenerationDrainsSuccessfullyAndReleasesItsLock(): void
+    {
+        $override = $this->configBackup;
+        $override['debug'] = false;
+        $override['metadata.engine.swr.enabled'] = true;
+        $override['metadata.engine.enabled'] = true;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $probe = new class extends MetadataEngine {
+            public int $builds = 0;
+            public int $writes = 0;
+            public int $releases = 0;
+            public bool $failBuild = false;
+
+            protected function sourceSignature(ReflectionClass|ReflectionMethod|ReflectionProperty $reflector): string
+            {
+                return 'swr-drain-signature';
+            }
+
+            protected function acquireLock(string $cacheKey): bool
+            {
+                return true;
+            }
+
+            protected function buildClassBundle(ReflectionClass $reflection): array
+            {
+                if ($this->failBuild) {
+                    throw new \RuntimeException('swr build failed');
+                }
+                $this->builds++;
+                return ['class_tags' => [], 'method_tags' => [], 'property_nodes' => []];
+            }
+
+            protected function writeEntry(string $cacheKey, array $entry): void
+            {
+                $this->writes++;
+            }
+
+            protected function releaseLock(string $cacheKey): void
+            {
+                $this->releases++;
+            }
+
+            public function queue(string $key, string $class): void
+            {
+                $this->queueBackgroundRegeneration($key, $class);
+            }
+
+            public function drain(): void
+            {
+                $this->drainBackgroundRegeneration();
+            }
+        };
+
+        $probe->queue('swr-key', ConfigController::class);
+        $probe->drain();
+
+        self::assertSame(1, $probe->builds);
+        self::assertSame(1, $probe->writes);
+        self::assertSame(1, $probe->releases);
+
+        $probe->queue('missing-key', 'PSFS\\MissingSWRClass');
+        $probe->failBuild = true;
+        $probe->queue('failing-key', ConfigController::class);
+        $probe->drain();
+        self::assertSame(3, $probe->releases);
+    }
+
+    public function testBackgroundQueueHonorsDisabledSwrAndLockContention(): void
+    {
+        $override = $this->configBackup;
+        $override['metadata.engine.swr.enabled'] = false;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $probe = new class extends MetadataEngine {
+            public function queue(string $key, string $class): void
+            {
+                $this->queueBackgroundRegeneration($key, $class);
+            }
+
+            protected function acquireLock(string $cacheKey): bool
+            {
+                return false;
+            }
+        };
+
+        $probe->queue('disabled-swr', ConfigController::class);
+
+        $override['metadata.engine.swr.enabled'] = true;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+        $probe->queue('contended-swr', ConfigController::class);
+
+        self::assertGreaterThanOrEqual(1, $probe->getStats()['metadata.lock_contention']);
+    }
+
+    public function testLocalCacheEvictsTheOldestEntryAtCapacity(): void
+    {
+        $override = $this->configBackup;
+        $override['psfs.cache.mode'] = 'MEMORY';
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $probe = new MetadataEngine();
+        $store = new ReflectionMethod(MetadataEngine::class, 'storeLocal');
+        for ($index = 0; $index <= 4096; ++$index) {
+            $store->invoke($probe, 'local-' . $index, ['index' => $index]);
+        }
+
+        $localCache = new ReflectionProperty(MetadataEngine::class, 'localCache');
+        self::assertArrayNotHasKey('local-0', $localCache->getValue());
+        $probe->clearLocalCache();
+    }
+
+    public function testStaleRedisMetadataUsesSWRWithoutBlockingTheCaller(): void
+    {
+        $override = $this->configBackup;
+        $override['debug'] = false;
+        $override['psfs.cache.mode'] = 'REDIS';
+        $override['metadata.engine.enabled'] = true;
+        $override['metadata.engine.swr.enabled'] = true;
+        $override['metadata.engine.soft_ttl'] = 1;
+        $override['metadata.engine.hard_ttl'] = 30;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $probe = new class extends MetadataEngine {
+            public bool $queued = false;
+
+            protected function sourceSignature(ReflectionClass|ReflectionMethod|ReflectionProperty $reflector): string
+            {
+                return 'stale-redis-signature';
+            }
+
+            protected function readFromRedis(string $cacheKey): ?array
+            {
+                return [
+                    'payload' => ['class_tags' => ['source' => 'stale'], 'method_tags' => [], 'property_nodes' => []],
+                    'signature' => 'stale-redis-signature',
+                    'soft_expires_at' => time() - 2,
+                    'hard_expires_at' => time() + 20,
+                    'created_at' => time() - 3,
+                ];
+            }
+
+            protected function writeOpcacheArtifact(string $cacheKey, array $entry): void
+            {
+            }
+
+            protected function queueBackgroundRegeneration(string $cacheKey, string $className): void
+            {
+                $this->queued = true;
+            }
+        };
+
+        $metadata = $probe->getClassMetadata(ConfigController::class);
+
+        self::assertSame('stale', $metadata->tags['source']);
+        self::assertTrue($probe->queued);
+    }
+
     public function testSignatureMismatchDropsStaleRedisAndOpcacheEntries(): void
     {
         $override = $this->configBackup;
@@ -385,7 +548,14 @@ class MetadataEngineTest extends TestCase
         } catch (MetadataContractException) {
         }
 
-        $this->addToAssertionCount(4);
+        try {
+            $engine->getTagValue('payload', $docMethod, null, new ReflectionClass(MetadataEngineLegacyDocExample::class));
+            self::fail('Expected class contract exception');
+        } catch (MetadataContractException $exception) {
+            self::assertStringContainsString(MetadataEngineLegacyDocExample::class, $exception->getMessage());
+        }
+
+        $this->addToAssertionCount(5);
     }
 
     public function testLegacyDocFallbackReturnsValuesWhenEnabled(): void
@@ -430,6 +600,7 @@ class MetadataEngineTest extends TestCase
     public function testRedisAndLockHelpersHandleExceptionsAndOpcacheDrop(): void
     {
         $override = $this->configBackup;
+        $override['psfs.cache.mode'] = 'REDIS';
         $override['metadata.engine.enabled'] = true;
         $override['metadata.engine.redis.enabled'] = true;
         $override['psfs.redis'] = true;
@@ -495,6 +666,107 @@ class MetadataEngineTest extends TestCase
         $this->assertNull($probe->exposeReadFromRedis('cache-key-2'));
     }
 
+    public function testRedisDropIsANoOpWhenRedisIsUnavailable(): void
+    {
+        $probe = new class extends MetadataEngine {
+            protected function redisClient(): ?\Redis
+            {
+                return null;
+            }
+
+            public function drop(string $cacheKey): void
+            {
+                $this->dropRedisEntry($cacheKey);
+            }
+        };
+
+        $probe->drop('without-redis');
+        self::assertTrue(true);
+    }
+
+    public function testRedisCacheHitHydratesTheMetadataBundleAndOpcacheLayer(): void
+    {
+        $override = $this->configBackup;
+        $override['psfs.cache.mode'] = 'REDIS';
+        $override['metadata.engine.enabled'] = true;
+        $override['metadata.engine.redis.enabled'] = true;
+        $override['metadata.engine.opcache.enabled'] = true;
+        $override['psfs.redis'] = true;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $probe = new class extends MetadataEngine {
+            public bool $opcacheWritten = false;
+
+            protected function sourceSignature(ReflectionClass|ReflectionMethod|ReflectionProperty $reflector): string
+            {
+                return 'redis-signature';
+            }
+
+            protected function readFromRedis(string $cacheKey): ?array
+            {
+                return [
+                    'payload' => [
+                        'class_tags' => ['source' => 'redis'],
+                        'method_tags' => [],
+                        'property_nodes' => [],
+                    ],
+                    'signature' => 'redis-signature',
+                    'soft_expires_at' => time() + 30,
+                    'hard_expires_at' => time() + 60,
+                    'created_at' => time(),
+                ];
+            }
+
+            protected function writeOpcacheArtifact(string $cacheKey, array $entry): void
+            {
+                $this->opcacheWritten = true;
+            }
+        };
+
+        $metadata = $probe->getClassMetadata(ConfigController::class);
+
+        self::assertSame('redis', $metadata->tags['source']);
+        self::assertTrue($probe->opcacheWritten);
+    }
+
+    public function testRedisPayloadValidationSkipsEmptyAndInvalidData(): void
+    {
+        $override = $this->configBackup;
+        $override['metadata.engine.redis.enabled'] = true;
+        $override['psfs.redis'] = true;
+        Config::save($override, []);
+        Config::getInstance()->loadConfigData(true);
+
+        $redis = $this->createMock(\Redis::class);
+        $redis->method('get')->willReturnOnConsecutiveCalls('', 'not-json');
+        $redis->expects($this->never())->method('setex');
+        $probe = new class($redis) extends MetadataEngine {
+            public function __construct(private readonly \Redis $redisStub)
+            {
+            }
+
+            protected function redisClient(): ?\Redis
+            {
+                return $this->redisStub;
+            }
+
+            public function read(string $key): ?array
+            {
+                return $this->readFromRedis($key);
+            }
+
+            public function write(string $key, array $entry): void
+            {
+                $this->writeToRedis($key, $entry);
+            }
+        };
+
+        self::assertNull($probe->read('empty'));
+        self::assertNull($probe->read('invalid'));
+        $probe->write('invalid-json', ['payload' => NAN]);
+    }
+
     public function testCacheModeForcesSpecificLayerSelection(): void
     {
         $override = $this->configBackup;
@@ -535,6 +807,14 @@ class MetadataEngineTest extends TestCase
         $this->assertFalse((bool)$redisMethod->invoke($probe));
         // In CI/local this may be false if extension is unavailable; assert type contract instead.
         $this->assertIsBool((bool)$opcacheMethod->invoke($probe));
+
+        $cacheModeMethod = new \ReflectionMethod(MetadataEngine::class, 'cacheMode');
+        $cacheModeMethod->setAccessible(true);
+        self::assertSame('OPCACHE', $cacheModeMethod->invoke($probe));
+
+        $localEntryMethod = new \ReflectionMethod(MetadataEngine::class, 'readLocalWithoutSignature');
+        $localEntryMethod->setAccessible(true);
+        self::assertNull($localEntryMethod->invoke($probe, 'missing', ConfigController::class, time()));
     }
 
     public function testAttributeBundleBuilderExtractsClassMethodAndPropertyTags(): void

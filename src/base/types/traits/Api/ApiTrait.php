@@ -127,7 +127,7 @@ trait ApiTrait
         $this->bulkSavedCount = 0;
         $databaseName = $this->resolveTableMapDatabaseName($tablemap);
         foreach ($this->list as &$model) {
-            $con = Propel::getWriteConnection($databaseName);
+            $con = $this->getWriteConnection($databaseName);
             try {
                 $model->save($con);
                 $con->commit();
@@ -137,6 +137,11 @@ trait ApiTrait
                 $con->rollBack();
             }
         }
+    }
+
+    protected function getWriteConnection(string $databaseName)
+    {
+        return Propel::getWriteConnection($databaseName);
     }
 
     /**

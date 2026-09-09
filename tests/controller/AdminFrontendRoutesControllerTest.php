@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use PSFS\base\Router;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\SingletonRegistry;
 use PSFS\base\admin\AdminFrontendCsrf;
 use PSFS\base\exception\ApiException;
 use PSFS\controller\AdminFrontendRoutesController;
@@ -52,6 +53,22 @@ class AdminFrontendRoutesControllerTest extends TestCase
         }
     }
 
+    public function testDocumentationIndexNormalizesNonRootDomainNames(): void
+    {
+        $router = Router::getInstance();
+        $domains = new \ReflectionProperty(Router::class, 'domains');
+        $originalDomains = $domains->getValue($router);
+        try {
+            $domains->setValue($router, ['@ROOT/' => [], '@CLIENT/' => []]);
+            $response = json_decode((new AdminFrontendRoutesControllerProbe())->documentation(), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertSame(['client'], $response['data']['domains']);
+            self::assertSame('/CLIENT/api/doc', $response['data']['documentPaths']['client']);
+        } finally {
+            $domains->setValue($router, $originalDomains);
+        }
+    }
+
     public function testDocumentationDomainReturnsTheV2EnvelopeForAnUnknownDomain(): void
     {
         $controller = new AdminFrontendRoutesControllerProbe();
@@ -64,6 +81,31 @@ class AdminFrontendRoutesControllerTest extends TestCase
             'data' => null,
             'errors' => ['domain' => ['Documentation domain not found']],
         ], $response);
+    }
+
+    public function testDocumentationDomainUsesTheCanonicalDomainNameForKnownDomains(): void
+    {
+        $router = Router::getInstance();
+        $domains = new \ReflectionProperty(Router::class, 'domains');
+        $originalDomains = $domains->getValue($router);
+        try {
+            $domains->setValue($router, ['@CLIENT/' => []]);
+            $controller = new AdminFrontendRoutesControllerProbe();
+            $response = json_decode($controller->documentationDomain('CLIENT'), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertTrue($response['ok'], json_encode($response));
+            self::assertArrayHasKey('paths', $response['data']);
+        } finally {
+            $domains->setValue($router, $originalDomains);
+        }
+    }
+
+    public function testCanonicalDomainNameFallsBackToTheRequestedValueWhenNoAliasMatches(): void
+    {
+        $controller = new AdminFrontendRoutesControllerProbe();
+        $method = new \ReflectionMethod(AdminFrontendRoutesController::class, 'canonicalDomainName');
+
+        self::assertSame('MISSING', $method->invoke($controller, ['@CLIENT/' => []], 'MISSING'));
     }
 
     public function testRegenerationWithValidCsrfTokenKeepsTheExistingAuthorizationBoundary(): void
@@ -90,6 +132,38 @@ class AdminFrontendRoutesControllerTest extends TestCase
         $this->expectExceptionMessage('Invalid CSRF token');
         (new AdminFrontendRoutesControllerProbe())->regenerate();
     }
+
+    public function testRegenerationReturnsTheSuccessEnvelopeWhenTheRouterCanRebuild(): void
+    {
+        Security::setTest(true);
+
+        $response = json_decode((new AdminFrontendRoutesControllerProbe())->regenerate(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok'], json_encode($response));
+        self::assertTrue($response['data']['regenerated']);
+    }
+
+    public function testRegenerationReturnsA500EnvelopeWhenRouteHydrationFails(): void
+    {
+        Security::setTest(true);
+        $this->injectRouter(new AdminFrontendRoutesFailureRouter());
+        $controller = new AdminFrontendRoutesControllerProbe();
+
+        $response = json_decode($controller->regenerate(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(500, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertSame('route rebuild failed', $response['errors']['routes'][0]);
+    }
+
+    private function injectRouter(Router $router): void
+    {
+        $property = new \ReflectionProperty(SingletonRegistry::class, 'instances');
+        $instances = $property->getValue();
+        $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
+        $instances[$context][Router::class] = $router;
+        $property->setValue(null, $instances);
+    }
 }
 
 class AdminFrontendRoutesControllerProbe extends AdminFrontendRoutesController
@@ -100,5 +174,17 @@ class AdminFrontendRoutesControllerProbe extends AdminFrontendRoutesController
     {
         $this->statusCode = $statusCode;
         return (string) json_encode($response, JSON_UNESCAPED_SLASHES);
+    }
+}
+
+class AdminFrontendRoutesFailureRouter extends Router
+{
+    public function hydrateRouting()
+    {
+        throw new \RuntimeException('route rebuild failed');
+    }
+
+    public function simpatize()
+    {
     }
 }

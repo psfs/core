@@ -2,19 +2,21 @@
 
 namespace PSFS\runtime\swoole;
 
+use Closure;
 use PSFS\base\config\Config;
 use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\Security;
 
 final class UiDevelopmentWebSocketBridge
 {
-    /** @var array<int, \Swoole\Coroutine\Http\Client> */
+    /** @var array<int, object> */
     private array $clients = [];
 
     public function __construct(
         private readonly ?SwooleRequestHydrator $hydrator = null,
         private readonly ?SwooleRuntimeStateManager $stateManager = null,
-        private readonly ?UiDevelopmentProxyResolver $resolver = null
+        private readonly ?UiDevelopmentProxyResolver $resolver = null,
+        private readonly ?Closure $clientFactory = null
     ) {
     }
 
@@ -77,7 +79,7 @@ final class UiDevelopmentWebSocketBridge
         $this->discard($fd);
     }
 
-    private function connect(UiDevelopmentProxyTarget $target): ?\Swoole\Coroutine\Http\Client
+    private function connect(UiDevelopmentProxyTarget $target): ?object
     {
         $parts = parse_url($target->upstream);
         if (!is_array($parts) || empty($parts['host'])) {
@@ -85,7 +87,9 @@ final class UiDevelopmentWebSocketBridge
         }
         $ssl = ($parts['scheme'] ?? 'http') === 'https';
         $port = (int)($parts['port'] ?? ($ssl ? 443 : 80));
-        $client = new \Swoole\Coroutine\Http\Client((string)$parts['host'], $port, $ssl);
+        $client = $this->clientFactory !== null
+            ? ($this->clientFactory)((string)$parts['host'], $port, $ssl)
+            : new \Swoole\Coroutine\Http\Client((string)$parts['host'], $port, $ssl);
         $client->set(['timeout' => 10, 'keep_alive' => true]);
         $client->setHeaders($this->upstreamHeaders($parts));
         if (!$client->upgrade($this->requestUri())) {

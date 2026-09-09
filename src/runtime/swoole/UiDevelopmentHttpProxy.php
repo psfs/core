@@ -2,12 +2,18 @@
 
 namespace PSFS\runtime\swoole;
 
-final class UiDevelopmentHttpProxy
+use Closure;
+
+final class UiDevelopmentHttpProxy implements UiDevelopmentHttpProxyInterface
 {
     private const HOP_BY_HOP_HEADERS = [
         'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
         'te', 'trailer', 'transfer-encoding', 'upgrade',
     ];
+
+    public function __construct(private readonly ?Closure $clientFactory = null)
+    {
+    }
 
     public function forward(UiDevelopmentProxyTarget $target, string $requestUri): ?array
     {
@@ -18,7 +24,7 @@ final class UiDevelopmentHttpProxy
 
         $ssl = ($parts['scheme'] ?? 'http') === 'https';
         $port = (int)($parts['port'] ?? ($ssl ? 443 : 80));
-        $client = new \Swoole\Coroutine\Http\Client((string)$parts['host'], $port, $ssl);
+        $client = $this->createClient((string)$parts['host'], $port, $ssl);
         $client->set(['timeout' => 10, 'keep_alive' => false]);
         $client->setHeaders($this->requestHeaders($parts));
         $client->setMethod((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -41,6 +47,15 @@ final class UiDevelopmentHttpProxy
         ];
         $client->close();
         return $result;
+    }
+
+    private function createClient(string $host, int $port, bool $ssl): object
+    {
+        if ($this->clientFactory !== null) {
+            return ($this->clientFactory)($host, $port, $ssl);
+        }
+
+        return new \Swoole\Coroutine\Http\Client($host, $port, $ssl);
     }
 
     private function requestHeaders(array $upstream): array

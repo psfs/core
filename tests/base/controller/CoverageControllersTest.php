@@ -16,6 +16,7 @@ use PSFS\base\dto\CsrfValidator;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\RouterException;
 use PSFS\base\types\Form;
+use PSFS\base\types\AuthAdminController;
 use PSFS\base\types\traits\Api\ManagerTrait;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\controller\ConfigController;
@@ -390,6 +391,20 @@ class CoverageControllersTest extends TestCase
         $probe->admin();
     }
 
+    public function testManagerTraitRendersBaseAndItemManagerContracts(): void
+    {
+        Security::setTest(true);
+        Security::dropInstance();
+        $renderer = new AuthAdminControllerCoverageStub();
+        $this->injectSingleton(AuthAdminController::class, $renderer);
+
+        $probe = new ManagerTraitProbe();
+        self::assertSame('manager-rendered', $probe->admin());
+        self::assertSame('manager-rendered', $probe->adminItem('42'));
+        self::assertSame('api.admin.html.twig', $renderer->template);
+        self::assertSame('42', $renderer->vars['initialItemId']);
+    }
+
     private function seedAdmins(array $admins): void
     {
         Cache::getInstance()->storeData($this->adminsPath, $admins, Cache::JSONGZ, true);
@@ -623,5 +638,18 @@ class ManagerTraitProbe
     public function exposeMenu(): array
     {
         return $this->getMenu();
+    }
+}
+
+class AuthAdminControllerCoverageStub extends AuthAdminController
+{
+    public string $template = '';
+    public array $vars = [];
+
+    public function render($template, array $vars = [], $cookies = [], $domain = null)
+    {
+        $this->template = $template;
+        $this->vars = $vars;
+        return 'manager-rendered';
     }
 }

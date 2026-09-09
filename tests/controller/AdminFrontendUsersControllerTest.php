@@ -44,6 +44,51 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertFalse($controller->saved);
     }
 
+    public function testCreateRejectsAnEmptyValuesObject(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => []]);
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testCreatePersistsAValidAdministrator(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'username' => 'new-admin',
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ]);
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(200, $controller->statusCode);
+        self::assertTrue($response['ok']);
+        self::assertTrue($controller->saved);
+    }
+
+    public function testCreateReturnsServerErrorWhenPersistenceFails(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'username' => 'new-admin',
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ], false);
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(500, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertTrue($controller->saved);
+    }
+
     public function testDeleteRejectsInvalidPayloadBeforeDeleting(): void
     {
         $controller = new AdminFrontendUsersControllerProbe(['user' => 'bad user!']);
@@ -95,6 +140,99 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertTrue($controller->saved);
         self::assertSame('alice', $controller->savedValues['username']);
     }
+
+    public function testUpdateReturnsNotFoundForAnUnknownUser(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ]);
+
+        $response = json_decode($controller->update('missing'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(404, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testUpdateRejectsAnEmptyValuesObject(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => []]);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testUpdateRejectsInvalidRequiredFieldsBeforeSaving(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'password' => '',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ]);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('password', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testUpdateReturnsServerErrorWhenPersistenceFails(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe([
+            'values' => [
+                'password' => 'new-password',
+                'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+            ],
+        ], false);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(500, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertTrue($controller->saved);
+    }
+
+    public function testConcreteControllerSeamsReturnTheUserManagementDependencies(): void
+    {
+        $controller = new AdminFrontendUsersController();
+        $formMethod = new \ReflectionMethod(AdminFrontendUsersController::class, 'adminForm');
+        $payloadMethod = new \ReflectionMethod(AdminFrontendUsersController::class, 'requestPayload');
+
+        self::assertInstanceOf(AdminForm::class, $formMethod->invoke($controller));
+        self::assertIsArray($payloadMethod->invoke($controller));
+    }
+
+    public function testConcreteControllerLoadsAdministratorsAndProfiles(): void
+    {
+        $controller = new AdminFrontendUsersController();
+        $adminsMethod = new \ReflectionMethod(AdminFrontendUsersController::class, 'admins');
+        $profilesMethod = new \ReflectionMethod(AdminFrontendUsersController::class, 'profiles');
+
+        self::assertIsArray($adminsMethod->invoke($controller));
+        self::assertIsArray($profilesMethod->invoke($controller));
+    }
+
+    public function testConcreteControllerExtractsFormFieldErrors(): void
+    {
+        $controller = new AdminFrontendUsersController();
+        $form = new AdminForm();
+        $form->setMethod('POST')->build();
+        $form->setData(['username' => '', 'password' => '', 'profile' => '']);
+        $form->isValid();
+
+        $method = new \ReflectionMethod(AdminFrontendUsersController::class, 'fieldErrors');
+        self::assertIsArray($method->invoke($controller, $form));
+    }
 }
 
 class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
@@ -106,7 +244,10 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     public array $savedValues = [];
 
     /** @param array<string,mixed> $payload */
-    public function __construct(private readonly array $payload = [])
+    public function __construct(
+        private readonly array $payload = [],
+        private readonly bool $saveSucceeds = true
+    )
     {
     }
 
@@ -143,7 +284,7 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     {
         $this->saved = true;
         $this->savedValues = $data;
-        return true;
+        return $this->saveSucceeds;
     }
 
     protected function deleteUser(string $username): void

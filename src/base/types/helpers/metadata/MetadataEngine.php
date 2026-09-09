@@ -453,7 +453,7 @@ class MetadataEngine implements MetadataEngineInterface
     /**
      * @param array<string, mixed> $entry
      */
-    private function writeEntry(string $cacheKey, array $entry): void
+    protected function writeEntry(string $cacheKey, array $entry): void
     {
         $this->storeLocal($cacheKey, $entry);
         $this->writeOpcacheArtifact($cacheKey, $entry);
@@ -489,25 +489,30 @@ class MetadataEngine implements MetadataEngineInterface
         }
         $this->shutdownRegistered = true;
         register_shutdown_function(function (): void {
-            while ($pair = array_shift(self::$regenQueue)) {
-                [$key, $className] = $pair;
-                try {
-                    if (!class_exists($className)) {
-                        continue;
-                    }
-                    $reflection = new ReflectionClass($className);
-                    $signature = $this->sourceSignature($reflection);
-                    $payload = $this->buildClassBundle($reflection);
-                    $entry = $this->buildEntryEnvelope($payload, $signature, time());
-                    $this->writeEntry($key, $entry);
-                    self::$stats['metadata.regen']++;
-                } catch (\Throwable $exception) {
-                    Logger::log('[MetadataEngine][SWR] ' . $exception->getMessage(), LOG_WARNING);
-                } finally {
-                    $this->releaseLock($key);
-                }
-            }
+            $this->drainBackgroundRegeneration();
         });
+    }
+
+    protected function drainBackgroundRegeneration(): void
+    {
+        while ($pair = array_shift(self::$regenQueue)) {
+            [$key, $className] = $pair;
+            try {
+                if (!class_exists($className)) {
+                    continue;
+                }
+                $reflection = new ReflectionClass($className);
+                $signature = $this->sourceSignature($reflection);
+                $payload = $this->buildClassBundle($reflection);
+                $entry = $this->buildEntryEnvelope($payload, $signature, time());
+                $this->writeEntry($key, $entry);
+                self::$stats['metadata.regen']++;
+            } catch (\Throwable $exception) {
+                Logger::log('[MetadataEngine][SWR] ' . $exception->getMessage(), LOG_WARNING);
+            } finally {
+                $this->releaseLock($key);
+            }
+        }
     }
 
     protected function readFromOpcacheArtifact(string $cacheKey): ?array
