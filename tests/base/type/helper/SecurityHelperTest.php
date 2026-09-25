@@ -15,7 +15,7 @@ class SecurityHelperTest extends TestCase
      * @param string|null $moduleKO
      */
     #[DataProvider('getBatteryTest')]
-    public function testToken(string $secretOK = null, string $secretKO = null, string $moduleOK = null, string $moduleKO = null)
+    public function testToken(?string $secretOK = null, ?string $secretKO = null, ?string $moduleOK = null, ?string $moduleKO = null)
     {
         $secretOK = $secretOK ?: uniqid('ok', false);
         $secretKO = $secretKO ?: uniqid('fail', false);

@@ -203,7 +203,6 @@ class GeneratorServiceTest extends TestCase
         $database = new Database('source');
         $target = new Database('target');
         $method = new \ReflectionMethod(Service::class, 'computeDatabaseDiff');
-        $method->setAccessible(true);
 
         $diff = $method->invoke($service, $database, $target, ['skip_me']);
 
@@ -223,7 +222,6 @@ class GeneratorServiceTest extends TestCase
         @unlink($testFile);
 
         $method = new \ReflectionMethod(Service::class, 'generateControllerTemplate');
-        $method->setAccessible(true);
         $created = $method->invoke($service, 'Demo', $modulePath, true, 'normal');
 
         $this->assertTrue((bool)$created);
@@ -246,7 +244,6 @@ class GeneratorServiceTest extends TestCase
         $this->injectSingleton(MigrationService::class, $migrationService);
 
         $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
-        $method->setAccessible(true);
 
         $this->expectException(ApiException::class);
         $method->invoke($service, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
@@ -275,7 +272,6 @@ class GeneratorServiceTest extends TestCase
         $this->injectSingleton(MigrationService::class, $migrationService);
 
         $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
-        $method->setAccessible(true);
         $result = $method->invoke($service, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
 
         $this->assertTrue((bool)$result);
@@ -321,7 +317,6 @@ class GeneratorServiceTest extends TestCase
         $serviceDouble->excludedTables = [];
         $serviceDouble->diffsByName = ['bookstore' => $diff];
         $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
-        $method->setAccessible(true);
         $result = $method->invoke($serviceDouble, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
 
         $this->assertTrue((bool)$result);
@@ -443,21 +438,18 @@ class GeneratorServiceTest extends TestCase
     private function invokePrivateMethod(object $instance, string $method, array $arguments = [])
     {
         $reflectionMethod = new \ReflectionMethod(Service::class, $method);
-        $reflectionMethod->setAccessible(true);
         return $reflectionMethod->invokeArgs($instance, $arguments);
     }
 
     private function setObjectProperty(object $target, string $property, mixed $value): void
     {
         $reflection = new \ReflectionProperty($target, $property);
-        $reflection->setAccessible(true);
         $reflection->setValue($target, $value);
     }
 
     private function injectSingleton(string $class, object $instance): void
     {
         $reflection = new \ReflectionProperty(SingletonRegistry::class, 'instances');
-        $reflection->setAccessible(true);
         $instances = $reflection->getValue();
         $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
         if (!isset($instances[$context]) || !is_array($instances[$context])) {

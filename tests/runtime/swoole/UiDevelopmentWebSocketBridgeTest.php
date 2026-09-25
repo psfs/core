@@ -117,7 +117,15 @@ class UiDevelopmentWebSocketBridgeTest extends TestCase
             static fn(): UiDevelopmentWebSocketClientProbe => $client
         );
 
-        $bridge->open($server, new UiDevelopmentWebSocketRequestProbe(11));
+        $open = static function () use ($bridge, $server): void {
+            $bridge->open($server, new UiDevelopmentWebSocketRequestProbe(11));
+        };
+        if (function_exists('Swoole\\Coroutine\\run')) {
+            // Own and drain the event loop, as the real server does for callbacks.
+            \Swoole\Coroutine\run($open);
+        } else {
+            $open();
+        }
 
         self::assertTrue($client->closed);
         self::assertSame([11], $server->disconnected);

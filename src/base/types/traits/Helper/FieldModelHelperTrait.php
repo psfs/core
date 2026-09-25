@@ -80,7 +80,7 @@ trait FieldModelHelperTrait
      * @return ModelCriteria
      * @throws \ReflectionException
      */
-    public static function extractQuery($modelNameNamespace, ConnectionInterface $con = null)
+    public static function extractQuery($modelNameNamespace, ?ConnectionInterface $con = null)
     {
         $queryReflector = new \ReflectionClass($modelNameNamespace . "Query");
 

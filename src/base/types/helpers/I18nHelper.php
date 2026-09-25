@@ -57,7 +57,7 @@ class I18nHelper
      * @param bool $force
      * @throws Exception
      */
-    public static function setLocale(string $default = null, string $customKey = null, bool $force = false): void
+    public static function setLocale(?string $default = null, ?string $customKey = null, bool $force = false): void
     {
         $locale = $force ? $default : self::extractLocale($default);
         $locale = is_string($locale) && $locale !== '' ? $locale : (string)($default ?: 'en_US');

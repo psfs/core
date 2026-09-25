@@ -89,7 +89,9 @@ class AdminFrontendRoutesControllerTest extends TestCase
         $domains = new \ReflectionProperty(Router::class, 'domains');
         $originalDomains = $domains->getValue($router);
         try {
-            $domains->setValue($router, ['@CLIENT/' => []]);
+            $domains->setValue($router, ['@CLIENT/' => [
+                'base' => __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR,
+            ]]);
             $controller = new AdminFrontendRoutesControllerProbe();
             $response = json_decode($controller->documentationDomain('CLIENT'), true, 512, JSON_THROW_ON_ERROR);
 

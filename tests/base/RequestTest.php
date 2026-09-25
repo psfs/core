@@ -55,7 +55,6 @@ class RequestTest extends TestCase
         $request = Request::getInstance();
         $request->setServer(['HTTP_AUTHORIZATION' => '']);
         $queryProperty = new \ReflectionProperty($request, 'query');
-        $queryProperty->setAccessible(true);
         $queryProperty->setValue($request, [
             'h_authorization' => 'Bearer query-fallback',
         ]);

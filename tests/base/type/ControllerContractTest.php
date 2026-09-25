@@ -139,7 +139,6 @@ class ControllerContractTest extends TestCase
         /** @var ControllerContractProbe $instance */
         $instance = $reflection->newInstanceWithoutConstructor();
         $property = new \ReflectionProperty(Controller::class, 'tpl');
-        $property->setAccessible(true);
         $property->setValue($instance, $tpl);
         return $instance;
     }

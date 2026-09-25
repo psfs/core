@@ -93,7 +93,7 @@ class SecurityHelper
      * @param bool|null $isOdd
      * @return int
      */
-    private static function getTs(bool $isOdd = null): int
+    private static function getTs(?bool $isOdd = null): int
     {
         $timestamp = time();
         $tsIsOdd = (bool)((int)substr($timestamp, -1) % 2);
@@ -115,7 +115,7 @@ class SecurityHelper
     public static function generateToken(
         string $secret,
         string $module = Router::PSFS_BASE_NAMESPACE,
-        bool $isOdd = null
+        ?bool $isOdd = null
     ): string {
         $timestamp = self::getTs($isOdd);
         $module = strtolower($module);
@@ -169,7 +169,7 @@ class SecurityHelper
         $decoded = null;
         $parts = self::extractTokenParts($token);
         list($token, $timestamp) = self::parseTokenParts($parts);
-        if ($force || time() - (integer)$timestamp < 300) {
+        if ($force || time() - (int)$timestamp < 300) {
             $decoded = $token;
         }
         return $decoded;

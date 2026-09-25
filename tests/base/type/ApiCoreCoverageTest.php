@@ -426,7 +426,6 @@ class ApiCoverageDouble extends Api
     public function callAddExtraColumns(ModelCriteria $query, string $action): void
     {
         $reflection = new \ReflectionMethod($this, 'addExtraColumns');
-        $reflection->setAccessible(true);
         $reflection->invokeArgs($this, [&$query, $action]);
     }
 
@@ -513,7 +512,6 @@ class ApiCoverageDouble extends Api
     public function callGetTableMapForTests(): ?TableMap
     {
         $reflection = new \ReflectionMethod($this, 'getTableMap');
-        $reflection->setAccessible(true);
         return $reflection->invoke($this);
     }
 

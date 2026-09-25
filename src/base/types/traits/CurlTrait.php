@@ -77,7 +77,6 @@ trait CurlTrait
     protected function closeConnection()
     {
         if (null !== $this?->con) {
-            curl_close($this->con);
             $this->setCon(null);
         }
     }

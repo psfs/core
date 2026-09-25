@@ -779,11 +779,8 @@ class MetadataEngineTest extends TestCase
 
         $probe = new MetadataEngine();
         $localMethod = new \ReflectionMethod(MetadataEngine::class, 'localCacheEnabled');
-        $localMethod->setAccessible(true);
         $redisMethod = new \ReflectionMethod(MetadataEngine::class, 'redisEnabled');
-        $redisMethod->setAccessible(true);
         $opcacheMethod = new \ReflectionMethod(MetadataEngine::class, 'opcacheEnabled');
-        $opcacheMethod->setAccessible(true);
 
         $config = Config::getInstance()->dumpConfig();
         $config['psfs.cache.mode'] = 'MEMORY';
@@ -809,11 +806,9 @@ class MetadataEngineTest extends TestCase
         $this->assertIsBool((bool)$opcacheMethod->invoke($probe));
 
         $cacheModeMethod = new \ReflectionMethod(MetadataEngine::class, 'cacheMode');
-        $cacheModeMethod->setAccessible(true);
         self::assertSame('OPCACHE', $cacheModeMethod->invoke($probe));
 
         $localEntryMethod = new \ReflectionMethod(MetadataEngine::class, 'readLocalWithoutSignature');
-        $localEntryMethod->setAccessible(true);
         self::assertNull($localEntryMethod->invoke($probe, 'missing', ConfigController::class, time()));
     }
 

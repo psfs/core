@@ -78,7 +78,6 @@ class MigrationEngineResolverTest extends TestCase
     {
         $instance = Config::getInstance();
         $reflection = new \ReflectionProperty($instance, 'config');
-        $reflection->setAccessible(true);
         $reflection->setValue($instance, $config);
     }
 }

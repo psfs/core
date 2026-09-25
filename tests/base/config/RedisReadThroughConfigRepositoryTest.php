@@ -161,7 +161,6 @@ class RedisReadThroughConfigRepositoryTest extends TestCase
     private function setRedis(RedisReadThroughConfigRepository $repo, ?\Redis $redis): void
     {
         $property = new \ReflectionProperty($repo, 'redis');
-        $property->setAccessible(true);
         $property->setValue($repo, $redis);
     }
 }

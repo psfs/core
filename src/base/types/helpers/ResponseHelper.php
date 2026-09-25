@@ -118,7 +118,7 @@ class ResponseHelper
     /**
      * @param string|null $statusCode
      */
-    public static function setStatusHeader(string $statusCode = null): void
+    public static function setStatusHeader(?string $statusCode = null): void
     {
         if (null !== $statusCode && !self::isTest()) {
             self::setHeader($statusCode);

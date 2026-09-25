@@ -144,14 +144,12 @@ class SecurityBranchTest extends TestCase
     private function setProperty(object $instance, string $property, mixed $value): void
     {
         $reflection = new \ReflectionProperty($instance, $property);
-        $reflection->setAccessible(true);
         $reflection->setValue($instance, $value);
     }
 
     private function invokePrivate(object $instance, string $method, array $args = []): mixed
     {
         $reflection = new \ReflectionMethod($instance, $method);
-        $reflection->setAccessible(true);
         return $reflection->invokeArgs($instance, $args);
     }
 }

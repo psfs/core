@@ -488,7 +488,6 @@ class AuthHelperTest extends TestCase
     private function invokeAuthPrivateStatic(string $method, array $args = []): mixed
     {
         $reflection = new \ReflectionMethod(AuthHelper::class, $method);
-        $reflection->setAccessible(true);
         return $reflection->invokeArgs(null, $args);
     }
 }

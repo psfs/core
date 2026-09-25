@@ -172,7 +172,6 @@ class RouterTest extends TestCase
         $router = Router::getInstance();
 
         $method = new \ReflectionMethod($router, 'debugLoad');
-        $method->setAccessible(true);
         $method->invoke($router);
 
         ResponseHelper::setTest(true);

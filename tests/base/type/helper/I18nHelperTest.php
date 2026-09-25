@@ -230,7 +230,6 @@ class I18nHelperTest extends TestCase
         $request = Request::getInstance();
         $reflection = new \ReflectionClass($request);
         $headerProperty = $reflection->getProperty('header');
-        $headerProperty->setAccessible(true);
         $headers = $headerProperty->getValue($request);
         if (!is_array($headers)) {
             $headers = [];
@@ -252,7 +251,6 @@ class I18nHelperTest extends TestCase
         ];
         foreach ($values as $property => $value) {
             $prop = $reflection->getProperty($property);
-            $prop->setAccessible(true);
             $prop->setValue(null, $value);
         }
     }
