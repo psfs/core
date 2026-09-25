@@ -235,7 +235,6 @@ class OutputTraitTest extends TestCase
     {
         $reflection = new \ReflectionClass(SingletonRegistry::class);
         $property = $reflection->getProperty('instances');
-        $property->setAccessible(true);
         $this->singletonRegistryBackup = $property->getValue() ?? [];
     }
 
@@ -243,7 +242,6 @@ class OutputTraitTest extends TestCase
     {
         $reflection = new \ReflectionClass(SingletonRegistry::class);
         $property = $reflection->getProperty('instances');
-        $property->setAccessible(true);
         $property->setValue(null, $this->singletonRegistryBackup);
     }
 
@@ -251,7 +249,6 @@ class OutputTraitTest extends TestCase
     {
         $reflection = new \ReflectionClass(SingletonRegistry::class);
         $property = $reflection->getProperty('instances');
-        $property->setAccessible(true);
         $instances = $property->getValue() ?? [];
         $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
         if (!isset($instances[$context]) || !is_array($instances[$context])) {

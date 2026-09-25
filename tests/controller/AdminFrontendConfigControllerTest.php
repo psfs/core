@@ -91,6 +91,21 @@ class AdminFrontendConfigControllerTest extends TestCase
         self::assertFalse($controller->saved);
     }
 
+    public function testListExtraPayloadIsRejectedBeforeAnySave(): void
+    {
+        $controller = new AdminFrontendConfigControllerProbe([
+            'values' => ['app.name' => 'PSFS v2'],
+            'extra' => ['not-an-object'],
+        ]);
+
+        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
     public function testConfigFormRejectsAnEmptyRequiredValueOutsideTheLegacyCsrfFlow(): void
     {
         $form = new ConfigForm('/admin/api/v2/config', ['app.name'], [], ['app.name' => 'PSFS']);
@@ -98,6 +113,14 @@ class AdminFrontendConfigControllerTest extends TestCase
         $form->setData(['app.name' => '']);
 
         self::assertFalse($form->isValid());
+    }
+
+    public function testProductionConfigFormKeepsItsNativeRequiredAndOptionalContract(): void
+    {
+        $form = (new AdminFrontendConfigControllerProbe())->productionConfigForm();
+
+        self::assertSame('config', $form->getName());
+        self::assertArrayHasKey('db.host', $form->getFields());
     }
 
     public function testSuccessfulSaveAppliesLegacyPostSaveEffectsForEveryDebugTransition(): void
@@ -185,6 +208,11 @@ class AdminFrontendConfigControllerProbe extends AdminFrontendConfigController
             'app.name' => 'PSFS',
             'root.api.secret' => 'do-not-leak',
         ]);
+    }
+
+    public function productionConfigForm(): ConfigForm
+    {
+        return parent::configForm();
     }
 
     /** @return array<string,mixed> */

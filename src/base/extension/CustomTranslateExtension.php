@@ -106,7 +106,7 @@ class CustomTranslateExtension extends AbstractExtension
         $locale = self::hydrateLocaleAliasIfNeeded($locale);
         if (!self::hasTranslationsLoaded($locale)) {
             Inspector::stats('[translationsCheckLoad] Extracting translations', Inspector::SCOPE_DEBUG);
-            self::$generate = (boolean)Config::getParam('i18n.autogenerate', false);
+            self::$generate = (bool)Config::getParam('i18n.autogenerate', false);
             if (null !== $version && $version === $configVersion) {
                 Inspector::stats('[translationsCheckLoad] Translations loaded from session', Inspector::SCOPE_DEBUG);
                 self::$translations = $session->getSessionKey(self::LOCALE_CACHED_TAG) ?: [];

@@ -1,0 +1,7 @@
+{
+  "patches": {
+    "psfs/propel": {
+      "Remove obsolete XML parser cleanup for PHP 8.5": "patches/propel-php85-xml-parser.patch"
+    }
+  }
+}

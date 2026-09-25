@@ -32,7 +32,7 @@ trait FieldMapperHelperTrait
                 $realValue = $value;
             }
             if (Api::API_MODEL_KEY_FIELD === $key) {
-                $result[$key] = (integer)$realValue;
+                $result[$key] = (int)$realValue;
             } else {
                 $result[$key] = $realValue;
             }

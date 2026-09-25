@@ -507,11 +507,8 @@ class MetadataEngineTest extends TestCase
 
         $probe = new MetadataEngine();
         $localMethod = new \ReflectionMethod(MetadataEngine::class, 'localCacheEnabled');
-        $localMethod->setAccessible(true);
         $redisMethod = new \ReflectionMethod(MetadataEngine::class, 'redisEnabled');
-        $redisMethod->setAccessible(true);
         $opcacheMethod = new \ReflectionMethod(MetadataEngine::class, 'opcacheEnabled');
-        $opcacheMethod->setAccessible(true);
 
         $config = Config::getInstance()->dumpConfig();
         $config['psfs.cache.mode'] = 'MEMORY';

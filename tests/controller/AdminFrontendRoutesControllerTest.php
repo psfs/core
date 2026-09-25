@@ -66,6 +66,36 @@ class AdminFrontendRoutesControllerTest extends TestCase
         ], $response);
     }
 
+    public function testDocumentationDomainReturnsTheOpenApiEnvelopeForAKnownDomain(): void
+    {
+        $controller = new AdminFrontendRoutesControllerProbe();
+        $response = json_decode($controller->documentationDomain('TEST'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(200, $controller->statusCode);
+        self::assertTrue($response['ok']);
+        self::assertSame('3.1.0', $response['data']['openapi']);
+        self::assertSame([], $response['data']['components']['schemas']);
+    }
+
+    public function testDocumentationDomainReturnsNotFoundWhenTheDomainHasNoModule(): void
+    {
+        $controller = new AdminFrontendRoutesControllerProbe();
+        $response = json_decode($controller->documentationDomain('ROOT'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(404, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('domain', $response['errors']);
+    }
+
+    public function testRegenerationReturnsSuccessInTheTestAuthorizationContext(): void
+    {
+        Security::setTest(true);
+        $response = json_decode((new AdminFrontendRoutesControllerProbe())->regenerate(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok'], json_encode($response));
+        self::assertTrue($response['data']['regenerated']);
+    }
+
     public function testRegenerationWithValidCsrfTokenKeepsTheExistingAuthorizationBoundary(): void
     {
         Security::setTest(false);

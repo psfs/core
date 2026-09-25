@@ -25,6 +25,28 @@ El build genera `src/public/ui/`. Para producción, copia su contenido a
 `UI_DEV_UPSTREAM`, PSFS sirve esos assets y entrega `html/ui/index.html` como
 fallback SPA para rutas cliente bajo `ui.path`.
 
+### Admin 2.0 distribuido con PSFS
+
+El bundle versionado de Admin 2.0 vive en `SOURCE_DIR/public/admin-v2/`. No se
+compila dentro de un proyecto que consume PSFS como dependencia. Tras actualizar
+PSFS, publica la versión incluida en el document root efectivo (`WEB_DIR`) con:
+
+```sh
+# PSFS como proyecto standalone
+docker exec <php-container> php src/bin/psfs psfs:assets:install
+
+# PSFS instalado mediante Composer
+docker exec <php-container> php vendor/bin/psfs psfs:assets:install
+```
+
+El comando no recibe rutas: copia exclusivamente a `WEB_DIR/admin-v2/`, que es
+`html/admin-v2/` en un proyecto standalone y el `html/` del proyecto consumidor
+en modo Composer. Construye una copia temporal, verifica `index.html` y sólo
+entonces reemplaza el mount anterior; `config/config.json` no se lee ni se
+modifica. Para desarrollar en este repositorio se puede mantener el enlace
+`html/admin-v2 -> ../src/public/admin-v2`; el comando lo sustituye por una copia
+real, adecuada para PHP-FPM, CDN o Amplify.
+
 ## Verificación ejecutable
 
 ```sh

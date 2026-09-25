@@ -69,7 +69,6 @@ class AssetsParserTestProxy extends AssetsParser
     public function exposeSetFiles(array $files): void
     {
         $ref = new \ReflectionProperty(AssetsParser::class, 'files');
-        $ref->setAccessible(true);
         $ref->setValue($this, $files);
     }
 }
@@ -202,7 +201,6 @@ class AssetsParserTest extends TestCase
         $parser->addFile('tmp-assets/missing.js');
         $parser->addFile('tmp-assets/file.css');
         $ref = new \ReflectionProperty(AssetsParser::class, 'files');
-        $ref->setAccessible(true);
         $this->assertSame([], $ref->getValue($parser));
     }
 
@@ -219,7 +217,6 @@ class AssetsParserTest extends TestCase
         $this->cleanupFiles[] = $imgFile;
 
         $method = new \ReflectionMethod(AssetsParser::class, 'calculateResourcePathname');
-        $method->setAccessible(true);
         $resolved = $method->invoke(null, $cssFile, [0 => "url('logo.png?v=1#x')", 1 => "'logo.png?v=1#x'"]);
         $this->assertSame(realpath($imgFile), $resolved);
     }

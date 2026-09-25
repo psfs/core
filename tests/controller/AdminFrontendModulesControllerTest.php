@@ -43,6 +43,33 @@ class AdminFrontendModulesControllerTest extends TestCase
         self::assertFalse($controller->generated);
     }
 
+    public function testMissingValuesPayloadIsRejectedBeforeBuildingTheForm(): void
+    {
+        $controller = new AdminFrontendModulesControllerProbe();
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->generated);
+    }
+
+    public function testUnknownCustomApiReturnsAValidationEnvelope(): void
+    {
+        $controller = new AdminFrontendModulesControllerProbe(['values' => [
+            'module' => 'foo/bar',
+            'controllerType' => 'Normal',
+            'api' => 'PSFS\\Missing\\Api',
+        ]]);
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertNotEmpty($response['message']);
+        self::assertFalse($controller->generated);
+    }
+
     public function testValidModuleNormalizesLegacySeparatorsBeforeGenerating(): void
     {
         foreach (['foo\\bar', '/foo/bar'] as $input) {

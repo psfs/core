@@ -46,7 +46,6 @@ class AdminAccessControlTest extends TestCase
         Security::getInstance()->updateAdmin('manager', AuthHelper::MANAGER_ID_TOKEN);
 
         $method = new \ReflectionMethod(UserController::class, 'assertSuperAdminUserWriteAccess');
-        $method->setAccessible(true);
 
         $this->expectException(ApiException::class);
         $this->expectExceptionCode(403);
@@ -61,7 +60,6 @@ class AdminAccessControlTest extends TestCase
         Security::getInstance()->updateAdmin('manager', AuthHelper::MANAGER_ID_TOKEN);
 
         $method = new \ReflectionMethod(ConfigController::class, 'assertSuperAdminConfigWriteAccess');
-        $method->setAccessible(true);
 
         $this->expectException(ConfigException::class);
         $method->invoke(null);
@@ -75,12 +73,10 @@ class AdminAccessControlTest extends TestCase
         Security::getInstance()->updateAdmin('admin', AuthHelper::ADMIN_ID_TOKEN);
 
         $userMethod = new \ReflectionMethod(UserController::class, 'assertSuperAdminUserWriteAccess');
-        $userMethod->setAccessible(true);
         $userMethod->invoke(null);
         $this->assertTrue(true);
 
         $configMethod = new \ReflectionMethod(ConfigController::class, 'assertSuperAdminConfigWriteAccess');
-        $configMethod->setAccessible(true);
         $configMethod->invoke(null);
         $this->assertTrue(true);
     }
@@ -91,12 +87,10 @@ class AdminAccessControlTest extends TestCase
         Security::getInstance()->updateAdmin('manager', AuthHelper::MANAGER_ID_TOKEN);
 
         $userMethod = new \ReflectionMethod(UserController::class, 'assertSuperAdminUserWriteAccess');
-        $userMethod->setAccessible(true);
         $userMethod->invoke(null);
         $this->assertTrue(true);
 
         $configMethod = new \ReflectionMethod(ConfigController::class, 'assertSuperAdminConfigWriteAccess');
-        $configMethod->setAccessible(true);
         $configMethod->invoke(null);
         $this->assertTrue(true);
     }

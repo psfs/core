@@ -104,11 +104,9 @@ class TemplateFunctionsTest extends TestCase
         $this->assertFileExists($copied);
 
         $extractPathname = new \ReflectionMethod(TemplateFunctions::class, 'extractPathname');
-        $extractPathname->setAccessible(true);
         $this->assertSame($source, $extractPathname->invoke(null, $source, []));
 
         $processAsset = new \ReflectionMethod(TemplateFunctions::class, 'processAsset');
-        $processAsset->setAccessible(true);
         $processedPath = $processAsset->invoke(null, '/cache/tmp-template-source.txt', null, true, $source);
         $this->assertIsString($processedPath);
         $this->assertNotSame('', $processedPath);
@@ -173,11 +171,9 @@ class TemplateFunctionsTest extends TestCase
         $this->cleanupPaths[] = $cssFile;
 
         $processCssLines = new \ReflectionMethod(TemplateFunctions::class, 'processCssLines');
-        $processCssLines->setAccessible(true);
         $processCssLines->invoke(null, $cssFile);
 
         $putResourceContent = new \ReflectionMethod(TemplateFunctions::class, 'putResourceContent');
-        $putResourceContent->setAccessible(true);
         $namedTarget = 'tmp-template-target.txt';
         $this->cleanupPaths[] = WEB_DIR . DIRECTORY_SEPARATOR . $namedTarget;
         $putResourceContent->invoke(null, $namedTarget, $cssFile, WEB_DIR . DIRECTORY_SEPARATOR, '/ignored.txt');

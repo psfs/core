@@ -12,7 +12,7 @@ class RouterException extends \RuntimeException
      * @param integer $code
      * @param \Exception $exception
      */
-    public function __construct($message = null, $code = 404, \Exception $exception = null)
+    public function __construct($message = null, $code = 404, ?\Exception $exception = null)
     {
         parent::__construct($message ?: t("Page not found"), $code, $exception);
     }

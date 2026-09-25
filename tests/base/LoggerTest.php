@@ -94,7 +94,6 @@ class LoggerTest extends TestCase
     {
         $config = Config::getInstance();
         $configProperty = new \ReflectionProperty(Config::class, 'config');
-        $configProperty->setAccessible(true);
         $defaultConfig = $configProperty->getValue($config);
         $overrideConfig = $defaultConfig;
         $overrideConfig['log.output'] = 'stdout';
@@ -106,7 +105,6 @@ class LoggerTest extends TestCase
             $logger = $reflection->newInstanceWithoutConstructor();
 
             $method = new \ReflectionMethod(Logger::class, 'resolveLogOutputTarget');
-            $method->setAccessible(true);
             [$target, $closeStreamOnDestruct] = $method->invoke($logger);
 
             $this->assertSame('php://stdout', $target);

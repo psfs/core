@@ -183,14 +183,12 @@ class AuthApiTest extends TestCase
     private function setQuery(AuthApiTestDouble $api, array $query): void
     {
         $property = new \ReflectionProperty($api, 'query');
-        $property->setAccessible(true);
         $property->setValue($api, $query);
     }
 
     private function setRequestHeaders(Request $request, array $headers): void
     {
         $property = new \ReflectionProperty($request, 'header');
-        $property->setAccessible(true);
         $property->setValue($request, $headers);
     }
 
@@ -205,7 +203,6 @@ class AuthApiTest extends TestCase
     private function callPrivate(object $instance, string $method, array $args = []): mixed
     {
         $reflection = new \ReflectionMethod($instance, $method);
-        $reflection->setAccessible(true);
         return $reflection->invokeArgs($instance, $args);
     }
 

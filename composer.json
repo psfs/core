@@ -28,12 +28,19 @@
   "require-dev": {
     "phpunit/phpunit": "11.5.56",
     "roave/security-advisories": "dev-master",
-    "symfony/process": "7.4.18"
+    "symfony/process": "7.4.18",
+    "cweagans/composer-patches": "^2.0"
   },
   "config": {
     "optimize-autoloader": true,
     "discard-changes": true,
-    "apcu-autoloader": true
+    "apcu-autoloader": true,
+    "platform": {
+      "php": "8.3.0"
+    },
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
   },
   "license": "MIT",
   "authors": [

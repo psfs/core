@@ -74,7 +74,6 @@ class FormValidatorHarness
     public function checkFieldValidationPublic(array $field, string $key): array
     {
         $method = new \ReflectionMethod($this, 'checkFieldValidation');
-        $method->setAccessible(true);
         return $method->invoke($this, $field, $key);
     }
 }

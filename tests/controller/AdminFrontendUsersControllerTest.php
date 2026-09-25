@@ -44,6 +44,48 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertFalse($controller->saved);
     }
 
+    public function testCreateRejectsAListPayloadBeforeBuildingTheForm(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => ['alice']]);
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testCreatePersistsAValidUser(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => [
+            'username' => 'new-admin',
+            'password' => 'secret',
+            'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+        ]]);
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok'], json_encode($response));
+        self::assertTrue($controller->saved);
+        self::assertSame('new-admin', $controller->savedValues['username']);
+    }
+
+    public function testCreateReturnsServerErrorWhenPersistenceFails(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => [
+            'username' => 'new-admin',
+            'password' => 'secret',
+            'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+        ]]);
+        $controller->saveResult = false;
+
+        $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(500, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertTrue($controller->saved);
+    }
+
     public function testDeleteRejectsInvalidPayloadBeforeDeleting(): void
     {
         $controller = new AdminFrontendUsersControllerProbe(['user' => 'bad user!']);
@@ -95,6 +137,57 @@ class AdminFrontendUsersControllerTest extends TestCase
         self::assertTrue($controller->saved);
         self::assertSame('alice', $controller->savedValues['username']);
     }
+
+    public function testUpdateReturnsNotFoundForAnUnknownUser(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe();
+        $response = json_decode($controller->update('missing'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(404, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('username', $response['errors']);
+    }
+
+    public function testUpdateRejectsAnEmptyValuesObject(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => []]);
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('payload', $response['errors']);
+    }
+
+    public function testUpdateReturnsFieldErrorsForInvalidFormValues(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => [
+            'username' => 'alice',
+            'password' => '',
+            'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+        ]]);
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(422, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertArrayHasKey('password', $response['errors']);
+        self::assertFalse($controller->saved);
+    }
+
+    public function testUpdateReturnsServerErrorWhenPersistenceFails(): void
+    {
+        $controller = new AdminFrontendUsersControllerProbe(['values' => [
+            'password' => 'new-password',
+            'profile' => '889a3a791b3875cfae413574b53da4bb8a90d53e',
+        ]]);
+        $controller->saveResult = false;
+
+        $response = json_decode($controller->update('alice'), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(500, $controller->statusCode);
+        self::assertFalse($response['ok']);
+        self::assertTrue($controller->saved);
+    }
 }
 
 class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
@@ -102,6 +195,7 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     public int $statusCode = 200;
     public bool $saved = false;
     public bool $deleted = false;
+    public bool $saveResult = true;
     /** @var array<string,mixed> */
     public array $savedValues = [];
 
@@ -143,7 +237,7 @@ class AdminFrontendUsersControllerProbe extends AdminFrontendUsersController
     {
         $this->saved = true;
         $this->savedValues = $data;
-        return true;
+        return $this->saveResult;
     }
 
     protected function deleteUser(string $username): void

@@ -70,7 +70,7 @@ trait SystemTrait
         set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             Logger::log($errstr, LOG_CRIT, ['file' => $errfile, 'line' => $errline, 'errno' => $errno]);
             return true;
-        }, E_ALL | E_STRICT | E_DEPRECATED | E_USER_DEPRECATED | E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR);
+        }, E_ALL);
 
         if (!self::$shutdownHandlerBound) {
             self::$shutdownHandlerBound = true;

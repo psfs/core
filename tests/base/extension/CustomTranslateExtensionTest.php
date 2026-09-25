@@ -219,15 +219,10 @@ class CustomTranslateExtensionTest extends TestCase
 
         $reflection = new \ReflectionClass(CustomTranslateExtension::class);
         $translations = $reflection->getProperty('translations');
-        $translations->setAccessible(true);
         $translationsKeys = $reflection->getProperty('translationsKeys');
-        $translationsKeys->setAccessible(true);
         $locale = $reflection->getProperty('locale');
-        $locale->setAccessible(true);
         $filename = $reflection->getProperty('filename');
-        $filename->setAccessible(true);
         $generate = $reflection->getProperty('generate');
-        $generate->setAccessible(true);
 
         $this->assertSame([], $translations->getValue());
         $this->assertSame([], $translationsKeys->getValue());
@@ -259,7 +254,6 @@ class CustomTranslateExtensionTest extends TestCase
         ];
         foreach ($values as $property => $value) {
             $reflectionProperty = $reflection->getProperty($property);
-            $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue(null, $value);
         }
 
@@ -273,7 +267,6 @@ class CustomTranslateExtensionTest extends TestCase
     {
         $reflection = new \ReflectionClass(CustomTranslateExtension::class);
         $translationsProperty = $reflection->getProperty('translations');
-        $translationsProperty->setAccessible(true);
         $translationsProperty->setValue(null, [
             $locale => $catalog,
         ]);
@@ -283,13 +276,11 @@ class CustomTranslateExtensionTest extends TestCase
             $map[mb_convert_case($key, MB_CASE_LOWER, 'UTF-8')] = $key;
         }
         $keysProperty = $reflection->getProperty('translationsKeys');
-        $keysProperty->setAccessible(true);
         $keysProperty->setValue(null, [
             $locale => $map,
         ]);
 
         $localeProperty = $reflection->getProperty('locale');
-        $localeProperty->setAccessible(true);
         $localeProperty->setValue(null, $locale);
     }
 

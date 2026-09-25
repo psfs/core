@@ -269,11 +269,11 @@ class Request
      */
     protected function checkServerPort(string $url): string
     {
-        $port = (integer)$this->getServer('SERVER_PORT');
+        $port = (int)$this->getServer('SERVER_PORT');
         $host = $this->getServer('HTTP_HOST');
         if (!empty($host)) {
             $parts = explode(':', $host);
-            $hostPort = (integer)end($parts);
+            $hostPort = (int)end($parts);
             if ($hostPort !== $port && count($parts) > 1) {
                 $port = $hostPort;
             }

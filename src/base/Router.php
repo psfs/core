@@ -332,7 +332,7 @@ class Router
      * @return string
      * @throws GeneratorException
      */
-    public function httpNotFound(\Throwable $exception = null, $isJson = false)
+    public function httpNotFound(?\Throwable $exception = null, $isJson = false)
     {
         return ResponseHelper::httpNotFound($exception, $isJson);
     }

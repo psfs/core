@@ -1,0 +1,10 @@
+--- a/src/Propel/Generator/Builder/Util/SchemaReader.php
++++ b/src/Propel/Generator/Builder/Util/SchemaReader.php
+@@ -195,7 +195,6 @@
+                 ),
+             );
+         }
+-        xml_parser_free($this->parser);
+         $this->parser = $parserStash;
+ 
+         array_pop($this->schemasTagsStack);

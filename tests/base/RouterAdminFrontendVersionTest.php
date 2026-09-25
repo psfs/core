@@ -84,11 +84,9 @@ class RedirectingAdminRouter extends Router
         $reflection = new \ReflectionClass(Router::class);
         foreach (['routing' => $routes, 'slugs' => [], 'domains' => [], 'cache' => Cache::getInstance()] as $property => $value) {
             $field = $reflection->getProperty($property);
-            $field->setAccessible(true);
             $field->setValue($this, $value);
         }
         $loaded = $reflection->getProperty('loaded');
-        $loaded->setAccessible(true);
         $loaded->setValue($this, true);
     }
 

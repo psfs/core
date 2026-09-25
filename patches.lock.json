@@ -1,0 +1,17 @@
+{
+    "_hash": "9f2b333db6e5eb163554faa050bd93e71fd610266d9afcf76078bdf5ffdbadd0",
+    "patches": {
+        "psfs/propel": [
+            {
+                "package": "psfs/propel",
+                "description": "Remove obsolete XML parser cleanup for PHP 8.5",
+                "url": "patches/propel-php85-xml-parser.patch",
+                "sha256": "21e87b3bf824e7432ce7b36e121bf259bdb5908e3de6e82c46c785a1df87ab64",
+                "depth": 1,
+                "extra": {
+                    "provenance": "patches-file:patches.json"
+                }
+            }
+        ]
+    }
+}

@@ -49,7 +49,7 @@ class TemplateFunctions
      * @return string|null
      * @throws \PSFS\base\exception\GeneratorException
      */
-    public static function asset(string $string, string $name = null, bool $return = true): ?string
+    public static function asset(string $string, ?string $name = null, bool $return = true): ?string
     {
         $filePath = $returnPath = '';
         if (!file_exists($filePath)) {
@@ -140,7 +140,7 @@ class TemplateFunctions
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public static function widget(array $field, string $label = null): void
+    public static function widget(array $field, ?string $label = null): void
     {
         if (null !== $label) {
             $field['label'] = $label;

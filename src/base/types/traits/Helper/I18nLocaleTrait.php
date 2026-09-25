@@ -34,7 +34,7 @@ trait I18nLocaleTrait
      * @param string|null $default
      * @return string
      */
-    public static function extractLocale(string $default = null): string
+    public static function extractLocale(?string $default = null): string
     {
         $locale = Request::header('X-API-LANG', $default);
         if (empty($locale)) {

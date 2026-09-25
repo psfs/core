@@ -31,7 +31,7 @@ class DispatcherTest extends TestCase
      * @param MockObject|Security|null $security
      * @return Dispatcher
      */
-    private function getInstance(MockObject|Config $config = null, MockObject|Router $router = null, MockObject|Security $security = null): Dispatcher
+    private function getInstance(MockObject|Config|null $config = null, MockObject|Router|null $router = null, MockObject|Security|null $security = null): Dispatcher
     {
         $dispatcher = Dispatcher::getInstance();
         Security::setTest(false);

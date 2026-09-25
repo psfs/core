@@ -138,7 +138,7 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function extractVarType($doc, ReflectionProperty $property = null)
+    public static function extractVarType($doc, ?ReflectionProperty $property = null)
     {
         return MetadataReader::extractVarType($property, self::docValue($doc));
     }
@@ -147,7 +147,7 @@ class InjectorHelper
      * @param $doc
      * @return bool
      */
-    public static function checkIsRequired($doc, ReflectionProperty $property = null)
+    public static function checkIsRequired($doc, ?ReflectionProperty $property = null)
     {
         $doc = self::docValue($doc);
         return (bool)MetadataReader::getTagValue('required', $doc, false, $property);
@@ -166,7 +166,7 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getLabel($doc, ReflectionProperty $property = null)
+    public static function getLabel($doc, ?ReflectionProperty $property = null)
     {
         return t(AnnotationHelper::extractReflectionLabel(self::docValue($doc), $property));
     }
@@ -175,7 +175,7 @@ class InjectorHelper
      * @param $doc
      * @return null|array
      */
-    public static function getValues($doc, ReflectionProperty $property = null)
+    public static function getValues($doc, ?ReflectionProperty $property = null)
     {
         $values = AnnotationHelper::extractFromDoc('values', self::docValue($doc), '', $property);
         if (is_array($values)) {
@@ -191,7 +191,7 @@ class InjectorHelper
      * @param $doc
      * @return null|string
      */
-    public static function getDefaultValue($doc, ReflectionProperty $property = null)
+    public static function getDefaultValue($doc, ?ReflectionProperty $property = null)
     {
         return AnnotationHelper::extractFromDoc('default', self::docValue($doc), null, $property);
     }

@@ -181,7 +181,6 @@ class RouterFlowContractTest extends TestCase
     {
         $router = new TestableRouter();
         $method = new \ReflectionMethod(Router::class, 'checkRequirements');
-        $method->setAccessible(true);
 
         $action = [
             'requirements' => ['id', 'type'],
@@ -263,7 +262,6 @@ class RouterFlowContractTest extends TestCase
 
         try {
             $method = new \ReflectionMethod(Router::class, 'executeMatchedRoute');
-            $method->setAccessible(true);
             $action = $this->buildAction('get', RouterFlowController::class, 'GET');
             try {
                 $method->invoke($router, '/admin/private', 'GET#|#/admin/private', $action);
@@ -351,7 +349,6 @@ class RouterFlowContractTest extends TestCase
         $this->setRouterPrivateProperty($router, 'domains', 'invalid');
 
         $extractDomain = new \ReflectionMethod(Router::class, 'extractDomain');
-        $extractDomain->setAccessible(true);
         $extractDomain->invoke($router, new \ReflectionClass(RouterDomainContractController::class));
 
         $this->assertTrue($router->domainExists('contractdomain'));
@@ -382,7 +379,6 @@ class RouterFlowContractTest extends TestCase
 
         try {
             $method = new \ReflectionMethod(Router::class, 'loadExternalAutoloader');
-            $method->setAccessible(true);
             $method->invokeArgs($router, [true, $moduleInfo, $externalModulePath, &$routing]);
             $this->assertGreaterThan(0, (int)($GLOBALS['psfs_contract_module_autoload_hits'] ?? 0));
             $this->assertIsArray($routing);
@@ -404,7 +400,6 @@ class RouterFlowContractTest extends TestCase
         $routing = [];
         try {
             $method = new \ReflectionMethod(Router::class, 'loadExternalModule');
-            $method->setAccessible(true);
             $method->invokeArgs($router, [false, $moduleName, &$routing]);
             $this->assertSame([], $routing);
         } finally {
@@ -425,21 +420,17 @@ class RouterFlowContractTest extends TestCase
         Config::getInstance()->loadConfigData(true);
 
         $normalizeHomeAction = new \ReflectionMethod(Router::class, 'normalizeHomeAction');
-        $normalizeHomeAction->setAccessible(true);
         $this->assertNull($normalizeHomeAction->invoke($router, null));
         $this->assertNull($normalizeHomeAction->invoke($router, '  '));
 
         $specificity = new \ReflectionMethod(Router::class, 'calculateRouteSpecificity');
-        $specificity->setAccessible(true);
         $this->assertSame(0, $specificity->invoke($router, '/'));
 
         $shouldRebuildRouting = new \ReflectionMethod(Router::class, 'shouldRebuildRouting');
-        $shouldRebuildRouting->setAccessible(true);
         $this->assertFalse((bool)$shouldRebuildRouting->invoke($router));
 
         Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'routes.meta.json', [], Cache::JSON, true);
         $isRoutingMetaFresh = new \ReflectionMethod(Router::class, 'isRoutingMetaFresh');
-        $isRoutingMetaFresh->setAccessible(true);
         $this->assertFalse((bool)$isRoutingMetaFresh->invoke($router));
     }
 
@@ -461,7 +452,6 @@ class RouterFlowContractTest extends TestCase
     {
         $reflection = new \ReflectionClass(Router::class);
         $reflectionProperty = $reflection->getProperty($property);
-        $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($router, $value);
     }
 
@@ -545,7 +535,6 @@ class TestableRouter extends Router
     {
         $reflection = new \ReflectionClass(Router::class);
         $reflectionProperty = $reflection->getProperty($property);
-        $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($this, $value);
     }
 }

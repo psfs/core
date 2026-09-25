@@ -89,11 +89,8 @@ class CoverageControllersTest extends TestCase
         Config::getInstance()->loadConfigData(true);
 
         $normalize = new \ReflectionMethod(UserController::class, 'normalizeLocaleCode');
-        $normalize->setAccessible(true);
         $extract = new \ReflectionMethod(UserController::class, 'extractAllowedAdminLocales');
-        $extract->setAccessible(true);
         $resolve = new \ReflectionMethod(UserController::class, 'resolveSwitchLocale');
-        $resolve->setAccessible(true);
 
         $this->assertNull($normalize->invoke(null, ''));
         $this->assertSame('es_ES', $normalize->invoke(null, 'es'));
@@ -452,14 +449,12 @@ class CoverageControllersTest extends TestCase
     private function setObjectProperty(object $target, string $property, mixed $value): void
     {
         $reflection = new \ReflectionProperty($target, $property);
-        $reflection->setAccessible(true);
         $reflection->setValue($target, $value);
     }
 
     private function injectSingleton(string $class, object $instance): void
     {
         $reflection = new \ReflectionProperty(SingletonRegistry::class, 'instances');
-        $reflection->setAccessible(true);
         $instances = $reflection->getValue();
         $context = $_SERVER[SingletonRegistry::CONTEXT_SESSION] ?? SingletonRegistry::CONTEXT_SESSION;
         if (!isset($instances[$context]) || !is_array($instances[$context])) {
