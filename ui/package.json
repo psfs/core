@@ -20,7 +20,7 @@
     "test:e2e:static": "sh scripts/run-static-e2e.sh"
   },
   "dependencies": {
-    "@angular/common": "22.0.6",
+    "@angular/common": "22.1.1",
     "@angular/compiler": "22.0.6",
     "@angular/core": "22.0.6",
     "@angular/forms": "^22.0.6",
