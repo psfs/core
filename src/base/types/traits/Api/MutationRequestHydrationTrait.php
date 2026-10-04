@@ -120,7 +120,7 @@ trait MutationRequestHydrationTrait
         }
         try {
             $this->applyI18nFieldsToModel($model, $tableMap, $data, $this->resolveLocaleFromInput($data));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_DEBUG);
         }
     }

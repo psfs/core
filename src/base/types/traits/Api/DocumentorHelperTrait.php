@@ -184,7 +184,7 @@ trait DocumentorHelperTrait
                             'path' => realpath(dirname($info['base'] . DIRECTORY_SEPARATOR . '..')),
                         ];
                     }
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     $modules[] = $e->getMessage();
                 }
             }
@@ -226,7 +226,7 @@ trait DocumentorHelperTrait
             } elseif (null !== $reflector && $reflector->isSubclassOf(Dto::class)) {
                 $payload = $this->extractDtoProperties($namespace);
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
 

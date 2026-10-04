@@ -145,7 +145,7 @@ abstract class Api extends Singleton
             } else {
                 $message = t('Selected model could not be saved');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $message = $this->buildMutationErrorMessage(
                 'An error occurred while saving the item: ',
                 $e,
@@ -180,7 +180,7 @@ abstract class Api extends Singleton
                 } else {
                     $message = t('An error occurred while updating the item, please check logs');
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $message = $this->buildMutationErrorMessage(
                     'An error occurred while updating the item, please check logs: ',
                     $e,
@@ -216,7 +216,7 @@ abstract class Api extends Singleton
                     $this->model->delete($this->con);
                     $deleted = true;
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logCriticalException($e);
             }
         }
@@ -242,7 +242,7 @@ abstract class Api extends Singleton
             $savedCount = $this->getBulkSavedCount();
             $saved = true;
             $status = 200;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
             $message = t('Bulk insert rolled back');
         }
@@ -290,7 +290,7 @@ abstract class Api extends Singleton
                     $pages = 1;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
         }
 

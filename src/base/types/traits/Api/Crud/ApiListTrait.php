@@ -129,7 +129,7 @@ trait ApiListTrait
             } else {
                 $this->list = $query->paginate($page, $limit, $this->con);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
     }

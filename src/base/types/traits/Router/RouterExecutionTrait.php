@@ -117,7 +117,7 @@ trait RouterExecutionTrait
                 return $this->executeCachedRoute($route, $action, $class, $params);
             }
             throw new RouterException(t('Preconditions failed'), 412);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }

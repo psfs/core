@@ -7,7 +7,7 @@ use PSFS\base\Logger;
 
 trait ApiCrudResponseTrait
 {
-    protected function buildMutationErrorMessage(string $publicPrefix, Exception $e, bool $debug): string
+    protected function buildMutationErrorMessage(string $publicPrefix, \Throwable $e, bool $debug): string
     {
         if ($debug) {
             return t($publicPrefix) . '<br>' . $e->getMessage();
@@ -15,7 +15,7 @@ trait ApiCrudResponseTrait
         return t($publicPrefix) . '<br>' . $e->getCode();
     }
 
-    protected function logCriticalException(Exception $e): void
+    protected function logCriticalException(\Throwable $e): void
     {
         $context = $this->extractExceptionContext($e);
         Logger::log($e->getMessage(), LOG_CRIT, $context);
@@ -24,7 +24,7 @@ trait ApiCrudResponseTrait
     /**
      * @return array<int, string>
      */
-    protected function extractExceptionContext(Exception $e): array
+    protected function extractExceptionContext(\Throwable $e): array
     {
         $context = [];
         if (null !== $e->getPrevious()) {
@@ -33,4 +33,3 @@ trait ApiCrudResponseTrait
         return $context;
     }
 }
-

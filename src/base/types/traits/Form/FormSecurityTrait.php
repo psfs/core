@@ -249,7 +249,7 @@ trait FormSecurityTrait
     {
         try {
             return bin2hex(random_bytes(32));
-        } catch (\Exception) {
+        } catch (\Throwable) {
             return hash('sha256', uniqid('csrf', true) . microtime(true));
         }
     }

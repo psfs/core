@@ -52,7 +52,7 @@ class RouteController extends Admin
             $router->simpatize();
             Security::getInstance()->setFlash("callback_message", t("Routes generated successfully"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             Security::getInstance()->setFlash("callback_message", t("Something went wrong, check the logs"));
             Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-routes", true));

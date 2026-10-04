@@ -96,7 +96,7 @@ class Singleton
             } else {
                 $this->$variable = $instance;
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
             if (!$required) {
                 Logger::log('[Injectable][optional] Skipping optional dependency: ' . $variable, LOG_WARNING);

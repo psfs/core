@@ -42,7 +42,7 @@ class GeneratorHelper
             ) {
                 try {
                     self::deleteDir($target);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     syslog(LOG_INFO, $e->getMessage());
                 }
             }
@@ -60,7 +60,7 @@ class GeneratorHelper
                 if (!is_dir($dir) && @mkdir($dir, 0775, true) === false) {
                     throw new Exception(t('Can\'t create directory ') . $dir);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 syslog(LOG_WARNING, $e->getMessage());
                 if (!file_exists(dirname($dir))) {
                     throw new GeneratorException($e->getMessage() . $dir);

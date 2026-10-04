@@ -18,7 +18,7 @@ class EventHelper
                 try {
                     $return = (new $eventClass)($context);
                     Logger::log("$eventClass event handled with return $return");
-                } catch (\Exception $exception) {
+                } catch (\Throwable $exception) {
                     Logger::log("$eventClass event handled with exception:" . $exception->getMessage(), LOG_CRIT);
                 }
             }

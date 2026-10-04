@@ -47,7 +47,7 @@ class AdminFrontendRoutesController extends Admin
             return $this->json(AdminApiResponse::success([
                 'regenerated' => true,
             ], t('Routes generated successfully')));
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             Logger::log($exception->getMessage(), LOG_ERR);
 
             return $this->json(AdminApiResponse::failure(

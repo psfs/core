@@ -116,7 +116,7 @@ class Template
         $dump = '';
         try {
             $dump = $this->tpl->render($tpl, $vars);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
         return $dump;
@@ -176,7 +176,7 @@ class Template
             if ($file->isFile()) {
                 try {
                     $this->tpl->load(str_replace($tplDir . '/', '', $file));
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Logger::log($e->getMessage(), LOG_ERR, ['file' => $e->getFile(), 'line' => $e->getLine()]);
                 }
             }

@@ -66,7 +66,7 @@ class Dto extends Singleton implements \JsonSerializable
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
         }
         return $dto;

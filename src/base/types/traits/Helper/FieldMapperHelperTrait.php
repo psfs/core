@@ -28,7 +28,7 @@ trait FieldMapperHelperTrait
         foreach ($data as $key => $value) {
             try {
                 $realValue = $model->getByName($key);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $realValue = $value;
             }
             if (Api::API_MODEL_KEY_FIELD === $key) {

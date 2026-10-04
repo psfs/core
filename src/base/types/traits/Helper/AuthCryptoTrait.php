@@ -20,7 +20,7 @@ trait AuthCryptoTrait
         }
         try {
             $iv = random_bytes($ivLen);
-        } catch (\Exception) {
+        } catch (\Throwable) {
             return false;
         }
         $tag = '';

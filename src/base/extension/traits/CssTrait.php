@@ -130,7 +130,7 @@ trait CssTrait
                     Logger::log("$orig copiado a $dest", LOG_INFO);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
         }
         Inspector::stats('[CssTrait] End collecting resources from ' . $file, Inspector::SCOPE_DEBUG);

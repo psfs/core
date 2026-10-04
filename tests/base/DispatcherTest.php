@@ -254,6 +254,22 @@ class DispatcherTest extends TestCase
         $dispatcher->run();
     }
 
+    public function testCatchThrowable()
+    {
+        $router = $this->mockDebugRouter();
+        $router->expects($this->once())
+            ->method('execute')
+            ->willThrowException(new \TypeError('CATCH THROWABLE'));
+        $router->expects($this->once())
+            ->method('httpNotFound')
+            ->with($this->isInstanceOf(\Throwable::class))
+            ->willReturn('handled');
+        $dispatcher = $this->getInstance($this->mockConfiguredDebugConfig(), $router);
+        Security::setTest(true);
+
+        $this->assertSame('handled', $dispatcher->run());
+    }
+
     /**
      * @return void
      */

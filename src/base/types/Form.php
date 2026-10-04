@@ -67,7 +67,7 @@ abstract class Form extends Singleton implements FormType
             $model->save();
             $save = true;
             Logger::log(get_class($this->model) . ' guardado con id ' . $this->model->getPrimaryKey(), LOG_INFO);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw new FormException($e->getMessage(), $e->getCode(), $e);
         }

@@ -113,7 +113,7 @@ class Router
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
             throw $this->stageMapNotFoundException($r);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR);
             throw $e;
         }
@@ -318,7 +318,7 @@ class Router
                 );
                 error_clear_last();
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage(), LOG_ERR, [$class, $method]);
             if ($throwExceptions) {
                 throw $e;

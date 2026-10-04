@@ -76,7 +76,7 @@ class TemplateFunctions
         $router = Router::getInstance();
         try {
             return $router->getRoute($path, $absolute, $params);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log($e->getMessage());
             return $router->getRoute('', $absolute, $params);
         }

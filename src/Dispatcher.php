@@ -104,7 +104,7 @@ class Dispatcher extends Singleton
             return $this->router->httpNotFound($r);
         } catch (ApiException $a) {
             return $this->router->httpNotFound($a, true);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->handleException($e);
         }
 
@@ -140,7 +140,7 @@ class Dispatcher extends Singleton
         return !defined('PSFS_UNIT_TESTING_EXECUTION') && empty($this->security->getAdmins());
     }
 
-    protected function handleException(\Exception $exception): string
+    protected function handleException(\Throwable $exception): string
     {
         Inspector::stats('[Dispatcher] Starting dump exception', Inspector::SCOPE_DEBUG);
 

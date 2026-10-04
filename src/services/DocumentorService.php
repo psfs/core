@@ -95,7 +95,7 @@ class DocumentorService extends SimpleService
                         if (null !== $mInfo) {
                             $info[] = $mInfo;
                         }
-                    } catch (Exception $e) {
+                    } catch (\Throwable $e) {
                         Logger::log($e->getMessage(), LOG_ERR);
                     }
                 }

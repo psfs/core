@@ -132,7 +132,7 @@ trait ApiTrait
                 $model->save($con);
                 $con->commit();
                 $this->bulkSavedCount++;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Logger::log($e->getMessage(), LOG_ERR, $model->toArray());
                 $con->rollBack();
             }
@@ -205,7 +205,7 @@ trait ApiTrait
         try {
             $query = $this->prepareQuery();
             $this->model = $this->findPk($query, $primaryKey);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::log(get_class($this) . ': ' . $e->getMessage(), LOG_ERR);
         }
     }
@@ -280,7 +280,7 @@ trait ApiTrait
                 if ($item >= count($pkTokens)) {
                     break;
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Logger::log($e->getMessage(), LOG_DEBUG);
             }
         }

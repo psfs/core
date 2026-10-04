@@ -15,7 +15,7 @@ use PSFS\base\types\helpers\Inspector;
 trait ResponseNotFoundTrait
 {
     /**
-     * @param Exception|NULL $exception
+     * @param Throwable|NULL $exception
      * @param bool $isJson
      * @return int|string
      * @throws GeneratorException

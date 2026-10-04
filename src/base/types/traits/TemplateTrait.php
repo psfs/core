@@ -28,7 +28,7 @@ trait TemplateTrait
             try {
                 Cache::getInstance()->storeData($filename, $fileContent, Cache::TEXT, true);
                 $created = true;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Logger::log($e->getMessage(), LOG_ERR);
             }
         } else {

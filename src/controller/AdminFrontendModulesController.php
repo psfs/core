@@ -72,7 +72,7 @@ class AdminFrontendModulesController extends Admin
         try {
             GeneratorHelper::checkCustomNamespaceApi($apiClass);
             $this->generateModule($module, $type, $apiClass);
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->json(AdminApiResponse::failure($exception->getMessage()), 422);
         }
 

@@ -66,7 +66,7 @@ class GeneratorController extends Admin
                     str_replace("%s", $module, t("Module %s generated successfully"))
                 );
                 Security::getInstance()->setFlash("callback_route", $this->getRoute("admin-module", true));
-            } catch (Exception $e) {
+            } catch (\Throwable $e) {
                 Logger::log($e->getMessage() . " [" . $e->getFile() . ":" . $e->getLine() . "]");
                 Security::getInstance()->setFlash("callback_message", htmlentities($e->getMessage()));
             }
