@@ -3,11 +3,8 @@ version: '3.3'
 services:
   php:
     image: stratecode/php:${PHP_VERSION:-8.3}${DEBUG:-}
-    volumes:
-      - .:/var/www
-      - ./docker/php.ini:/usr/local/etc/php/php.ini
     working_dir: /var/www
-    command: php -S 0.0.0.0:8080 -t ./html
+    command: sleep 86400
     environment:
       XDEBUG_MODE: coverage
       PHP_TIMEZONE: Europe/Madrid
