@@ -33,16 +33,16 @@ build:
     analysis:
       commands:
         - checkout-code ~/build
-        - cd ~/build && docker compose up -d php redis
-        - cd ~/build && docker compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && docker-compose up -d php redis
+        - cd ~/build && docker-compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
         - cd ~/build && php-scrutinizer-run
 
     services-tests:
       commands:
         - checkout-code ~/build
-        - cd ~/build && docker compose up -d php db redis
-        - cd ~/build && docker compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
-        - cd ~/build && docker compose exec -T php sh prepare-test-runtime.sh
-        - cd ~/build && docker compose exec -T -e SERVICE_MYSQL_IP=db -e API_DB_PASSWORD=psfs -e API_DB_NAME=core_test -e PSFS_REDIS_HOST=redis php sh scrutinizer-setup.sh
-        - command: cd ~/build && docker compose exec -T -e SERVICE_MYSQL_IP=db -e PSFS_REDIS_HOST=redis php sh scrutinizer-tests.sh
+        - cd ~/build && docker-compose up -d php db redis
+        - cd ~/build && docker-compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && docker-compose exec -T php sh prepare-test-runtime.sh
+        - cd ~/build && docker-compose exec -T -e SERVICE_MYSQL_IP=db -e API_DB_PASSWORD=psfs -e API_DB_NAME=core_test -e PSFS_REDIS_HOST=redis php sh scrutinizer-setup.sh
+        - command: cd ~/build && docker-compose exec -T -e SERVICE_MYSQL_IP=db -e PSFS_REDIS_HOST=redis php sh scrutinizer-tests.sh
           idle_timeout: 1200
