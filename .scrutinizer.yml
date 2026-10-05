@@ -28,7 +28,7 @@ build:
     php:
       version: "8.3.33"
       pecl_extensions:
-        - xdebug
+        - xdebug-3.5.3
       ini:
         memory_limit: "-1"
 
