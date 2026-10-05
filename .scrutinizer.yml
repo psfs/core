@@ -36,7 +36,7 @@ build:
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php redis
         - cd ~/build && docker cp ./. $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/var/www
         - cd ~/build && docker cp docker/php.ini $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/usr/local/etc/php/php.ini
-        - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml ps && docker-compose -f docker-compose.scrutinizer.yml logs --tail=20 php
+        - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml ps && docker-compose -f docker-compose.scrutinizer.yml logs --tail=50 php redis
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e XDEBUG_MODE=off php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
         - cd ~/build && docker cp $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/var/www/vendor ./vendor
         - cd ~/build && php-scrutinizer-run
@@ -47,7 +47,7 @@ build:
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php db redis
         - cd ~/build && docker cp ./. $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/var/www
         - cd ~/build && docker cp docker/php.ini $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/usr/local/etc/php/php.ini
-        - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml ps && docker-compose -f docker-compose.scrutinizer.yml logs --tail=20 php
+        - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml ps && docker-compose -f docker-compose.scrutinizer.yml logs --tail=50 php db redis
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e XDEBUG_MODE=off php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e SERVICE_MYSQL_IP=db -e API_DB_PASSWORD=psfs -e API_DB_NAME=core_test -e PSFS_REDIS_HOST=redis php sh scrutinizer-setup.sh
         - command: cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e XDEBUG_MODE=coverage -e SERVICE_MYSQL_IP=db -e PSFS_REDIS_HOST=redis php sh scrutinizer-tests.sh && mkdir -p cache/coverage && docker cp $(docker-compose -f docker-compose.scrutinizer.yml ps -q php):/var/www/cache/coverage/coverage.xml ./cache/coverage/coverage.xml
