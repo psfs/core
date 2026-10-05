@@ -27,6 +27,7 @@ build:
   environment:
     php:
       version: "8.3.33"
+      compile_options: "--without-pear"
       pecl_extensions: []
       ini:
         memory_limit: "-1"
