@@ -78,8 +78,7 @@ build:
 
       dependencies:
         override:
-          # Install Xdebug from its versioned source archive; Scrutinizer's PECL resolver fails.
-          - sh install-xdebug-for-scrutinizer.sh
+          - sh prepare-test-runtime.sh
 
           # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
@@ -113,18 +112,4 @@ build:
       tests:
         stop_on_failure: true
         override:
-          - command: >
-              env
-              XDEBUG_MODE=coverage
-              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              vendor/bin/phpunit
-              --configuration phpunit.xml.dist
-              --colors=never
-              --stop-on-error
-              --stop-on-failure
-              --coverage-clover cache/coverage/coverage.xml
-            idle_timeout: 1200
-            coverage:
-              file: "cache/coverage/coverage.xml"
-              format: "clover"
+          - sh scrutinizer-tests.sh
