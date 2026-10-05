@@ -28,7 +28,7 @@ build:
     docker: true
     variables:
       PHP_VERSION: "8.3"
-      DEBUG: ""
+      DEBUG: "-xdebug"
   nodes:
     analysis:
       commands:
@@ -42,7 +42,6 @@ build:
         - checkout-code ~/build
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php db redis
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
-        - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T php sh prepare-test-runtime.sh
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e SERVICE_MYSQL_IP=db -e API_DB_PASSWORD=psfs -e API_DB_NAME=core_test -e PSFS_REDIS_HOST=redis php sh scrutinizer-setup.sh
         - command: cd ~/build && docker-compose -f docker-compose.scrutinizer.yml exec -T -e SERVICE_MYSQL_IP=db -e PSFS_REDIS_HOST=redis php sh scrutinizer-tests.sh
           idle_timeout: 1200
