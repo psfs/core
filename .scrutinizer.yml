@@ -32,8 +32,7 @@ build:
     analysis:
       environment:
         docker:
-          remote_engine:
-            enabled: true
+          remote_engine: true
       commands:
         - checkout-code ~/build
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php redis
@@ -47,8 +46,7 @@ build:
     services-tests:
       environment:
         docker:
-          remote_engine:
-            enabled: true
+          remote_engine: true
       commands:
         - checkout-code ~/build
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php db redis
