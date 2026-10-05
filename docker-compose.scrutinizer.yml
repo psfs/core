@@ -8,6 +8,10 @@ services:
       - ./docker/php.ini:/usr/local/etc/php/php.ini
     working_dir: /var/www
     command: php -S 0.0.0.0:8080 -t ./html
+    environment:
+      XDEBUG_MODE: coverage
+      PHP_TIMEZONE: Europe/Madrid
+      PHP_OPCACHE: '0'
     depends_on:
       - redis
 
