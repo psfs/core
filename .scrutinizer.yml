@@ -25,7 +25,8 @@ tools:
 
 build:
   environment:
-    docker: true
+    docker:
+      remote_engine: true
     variables:
       PHP_VERSION: "8.3"
       DEBUG: "-xdebug"
