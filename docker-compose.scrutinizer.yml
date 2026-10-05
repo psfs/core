@@ -15,9 +15,15 @@ services:
   redis:
     image: valkey/valkey:latest
     command: ["valkey-server", "--appendonly", "no", "--save", ""]
+    # Scrutinizer's Docker seccomp profile returns EPERM for clone3, preventing glibc thread creation.
+    security_opt:
+      - seccomp=unconfined
 
   db:
     image: mysql:8.4
+    # Keep this exception scoped to the disposable Scrutinizer database service.
+    security_opt:
+      - seccomp=unconfined
     environment:
       MYSQL_USER: psfs
       MYSQL_PASSWORD: psfs
