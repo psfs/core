@@ -27,13 +27,9 @@ build:
   environment:
     php:
       version: "8.3.33"
-      pecl_extensions:
-        - xdebug-3.5.3
       ini:
         memory_limit: "-1"
 
-        # Explicitly install Xdebug for coverage; PCOV is incompatible with this test setup.
-        xdebug.mode: "coverage"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
@@ -82,6 +78,9 @@ build:
 
       dependencies:
         override:
+          # Install Xdebug from its versioned source archive; Scrutinizer's PECL resolver fails.
+          - sh install-xdebug-for-scrutinizer.sh
+
           # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
