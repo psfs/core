@@ -27,6 +27,7 @@ build:
   environment:
     php:
       version: "8.3.33"
+      pecl_extensions: []
       ini:
         memory_limit: "-1"
 
@@ -35,11 +36,13 @@ build:
         opcache.jit_buffer_size: "0"
   nodes:
 
-    # 🔍 Analysys (without tests, faster)
+    # Minimal nodes keep Scrutinizer from inferring a coverage driver before our bootstrap runs.
     analysis:
-      tests:
-        override:
-          - php-scrutinizer-run
+      commands:
+        - checkout-code ~/build
+        - cd ~/build && sh prepare-test-runtime.sh
+        - cd ~/build && composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && php-scrutinizer-run
 
     # 🧪 Test with services
     services-tests:
@@ -76,40 +79,10 @@ build:
           PSFS_REDIS_PORT: "6379"
           PSFS_REDIS_TIMEOUT: "1.5"
 
-      dependencies:
-        override:
-          - sh prepare-test-runtime.sh
-
-          # ⚡ Optimized composer
-          - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
-
-          # 🧠 Warmup DB (skip timing problems)
-          - command: >
-              env
-              API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              php tests/bootstrap/prepare_api_mysql.php
-            idle_timeout: 600
-
-          # ⚙️ Dynamic config
-          - php -r '
-            $f="config/config.json";
-            $d=file_exists($f)?json_decode((string)file_get_contents($f),true):[];
-            if(!is_array($d)){$d=[];}
-            $d["psfs.redis"]=true;
-            $d["redis.host"]="127.0.0.1";
-            $d["redis.port"]=6379;
-            $d["redis.timeout"]=1.5;
-            $d["cache.config.ttl"]=$d["cache.config.ttl"]??60;
-            $d["cache.reflections.ttl"]=$d["cache.reflections.ttl"]??300;
-            file_put_contents($f, json_encode($d, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
-            '
-
-      project_setup:
-        override:
-          - true
-
-      tests:
-        stop_on_failure: true
-        override:
-          - sh scrutinizer-tests.sh
+      commands:
+        - checkout-code ~/build
+        - cd ~/build && sh prepare-test-runtime.sh
+        - cd ~/build && composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && sh scrutinizer-setup.sh
+        - command: cd ~/build && sh scrutinizer-tests.sh
+          idle_timeout: 1200
