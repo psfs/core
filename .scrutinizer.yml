@@ -25,13 +25,15 @@ tools:
 
 build:
   environment:
-    docker:
-      remote_engine: true
     variables:
       PHP_VERSION: "8.3"
       DEBUG: "-xdebug"
   nodes:
     analysis:
+      environment:
+        docker:
+          remote_engine:
+            enabled: true
       commands:
         - checkout-code ~/build
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php redis
@@ -43,6 +45,10 @@ build:
         - cd ~/build && php-scrutinizer-run
 
     services-tests:
+      environment:
+        docker:
+          remote_engine:
+            enabled: true
       commands:
         - checkout-code ~/build
         - cd ~/build && docker-compose -f docker-compose.scrutinizer.yml up -d php db redis
