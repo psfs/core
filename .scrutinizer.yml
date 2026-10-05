@@ -27,17 +27,11 @@ build:
   environment:
     php:
       version: "8.3.33"
-      pecl_extensions:
-        - pcov
       ini:
         memory_limit: "-1"
 
-        # PCOV keeps the full suite below Scrutinizer's command timeout.
-        # The few process-isolated tests may not contribute coverage, but the
-        # suite remains executable and the coverage report stays valid.
-        pcov.enabled: "1"
-        pcov.directory: "src"
-        xdebug.mode: "off"
+        # Xdebug is supplied by Scrutinizer and covers process-isolated tests.
+        xdebug.mode: "coverage"
         opcache.enable_cli: "0"
         opcache.jit: "0"
         opcache.jit_buffer_size: "0"
@@ -120,10 +114,9 @@ build:
         override:
           - command: >
               env
+              XDEBUG_MODE=coverage
               API_DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
               DB_HOST="${SERVICE_MYSQL_IP:-127.0.0.1}"
-              php -d pcov.enabled=1
-              -d pcov.directory=src
               vendor/bin/phpunit
               --configuration phpunit.xml.dist
               --colors=never
