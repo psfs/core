@@ -27,10 +27,12 @@ build:
   environment:
     php:
       version: "8.3.33"
+      pecl_extensions:
+        - xdebug
       ini:
         memory_limit: "-1"
 
-        # Xdebug is supplied by Scrutinizer and covers process-isolated tests.
+        # Explicitly install Xdebug for coverage; PCOV is incompatible with this test setup.
         xdebug.mode: "coverage"
         opcache.enable_cli: "0"
         opcache.jit: "0"
