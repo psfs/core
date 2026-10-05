@@ -27,6 +27,8 @@ build:
   environment:
     php:
       version: "8.3"
+      pecl_extensions:
+        - pcov
       ini:
         memory_limit: "-1"
 
@@ -84,8 +86,6 @@ build:
 
       dependencies:
         override:
-          - pecl install pcov
-
           # ⚡ Optimized composer
           - composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
 
