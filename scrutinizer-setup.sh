@@ -13,7 +13,7 @@ if (!is_array($config)) {
     $config = [];
 }
 $config["psfs.redis"] = true;
-$config["redis.host"] = "127.0.0.1";
+$config["redis.host"] = getenv("PSFS_REDIS_HOST") ?: "127.0.0.1";
 $config["redis.port"] = 6379;
 $config["redis.timeout"] = 1.5;
 $config["cache.config.ttl"] = $config["cache.config.ttl"] ?? 60;

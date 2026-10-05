@@ -25,65 +25,24 @@ tools:
 
 build:
   environment:
-    php:
-      version: "8.3.33"
-      compile_options: "--without-pear"
-      pecl_extensions: []
-      ini:
-        memory_limit: "-1"
-
-        opcache.enable_cli: "0"
-        opcache.jit: "0"
-        opcache.jit_buffer_size: "0"
+    docker: true
+    variables:
+      PHP_VERSION: "8.3"
+      DEBUG: ""
   nodes:
-
-    # Minimal nodes keep Scrutinizer from inferring a coverage driver before our bootstrap runs.
     analysis:
       commands:
         - checkout-code ~/build
-        - cd ~/build && sh prepare-test-runtime.sh
-        - cd ~/build && composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && docker compose up -d php redis
+        - cd ~/build && docker compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
         - cd ~/build && php-scrutinizer-run
 
-    # 🧪 Test with services
     services-tests:
-      services:
-        mysql:
-          image: docker.io/library/mysql:8.4
-          env:
-            MYSQL_ROOT_PASSWORD: "scrutinizer"
-            MYSQL_DATABASE: "scrutinizer"
-          ports:
-            - 3306
-          ramdisks:
-            - /var/lib/mysql
-        redis: "6"
-
-      environment:
-        variables:
-          APP_ENVIRONMENT: "test"
-
-          API_DB_HOST: "127.0.0.1"
-          API_DB_PORT: "3306"
-          API_DB_NAME: "scrutinizer"
-          API_DB_USER: "root"
-          API_DB_PASSWORD: "scrutinizer"
-          API_DB_TIMEOUT: "300"
-
-          DB_HOST: "127.0.0.1"
-          DB_PORT: "3306"
-          DB_NAME: "scrutinizer"
-          DB_USER: "root"
-          DB_PASSWORD: "scrutinizer"
-
-          PSFS_REDIS_HOST: "127.0.0.1"
-          PSFS_REDIS_PORT: "6379"
-          PSFS_REDIS_TIMEOUT: "1.5"
-
       commands:
         - checkout-code ~/build
-        - cd ~/build && sh prepare-test-runtime.sh
-        - cd ~/build && composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
-        - cd ~/build && sh scrutinizer-setup.sh
-        - command: cd ~/build && sh scrutinizer-tests.sh
+        - cd ~/build && docker compose up -d php db redis
+        - cd ~/build && docker compose exec -T php composer install -o --no-interaction --no-progress --prefer-dist --classmap-authoritative
+        - cd ~/build && docker compose exec -T php sh prepare-test-runtime.sh
+        - cd ~/build && docker compose exec -T -e SERVICE_MYSQL_IP=db -e API_DB_PASSWORD=psfs -e API_DB_NAME=core_test -e PSFS_REDIS_HOST=redis php sh scrutinizer-setup.sh
+        - command: cd ~/build && docker compose exec -T -e SERVICE_MYSQL_IP=db -e PSFS_REDIS_HOST=redis php sh scrutinizer-tests.sh
           idle_timeout: 1200
