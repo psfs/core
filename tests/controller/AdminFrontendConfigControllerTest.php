@@ -48,15 +48,24 @@ class AdminFrontendConfigControllerTest extends TestCase
 
     public function testBlankMaskedSecretIsPersistedFromTheExistingConfiguration(): void
     {
-        $controller = new AdminFrontendConfigControllerProbe([
-            'values' => ['app.name' => 'PSFS v2', 'root.api.secret' => ''],
-            'extra' => [],
-        ]);
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $property->setValue($config, array_merge($original, ['root.api.secret' => 'do-not-leak']));
 
-        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $controller = new AdminFrontendConfigControllerProbe([
+                'values' => ['app.name' => 'PSFS v2', 'root.api.secret' => ''],
+                'extra' => [],
+            ]);
 
-        self::assertTrue($response['ok']);
-        self::assertSame('do-not-leak', $controller->savedValues['root.api.secret']);
+            $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertTrue($response['ok']);
+            self::assertSame('do-not-leak', $controller->savedValues['root.api.secret']);
+        } finally {
+            $property->setValue($config, $original);
+        }
     }
 
     public function testBlankNewMaskedSecretIsRemovedInsteadOfPersisted(): void

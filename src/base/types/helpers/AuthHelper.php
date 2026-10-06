@@ -23,9 +23,11 @@ class AuthHelper
     const CRYPTO_VERSION_PREFIX = 'v2:';
     const CRYPTO_CIPHER = 'aes-256-gcm';
     const CRYPTO_TAG_LENGTH = 16;
+    private const COOKIE_SECRET_CONFIG_PARAM = 'auth.cookie.secret';
     const USER_ID_TOKEN = '12dea96fec20593566ab75692c9949596833adc9';
     const MANAGER_ID_TOKEN = 'd033e22ae348aeb5660fc2140aec35850c4da997';
     const ADMIN_ID_TOKEN = '889a3a791b3875cfae413574b53da4bb8a90d53e';
+    // Retained for the cookie name and read-only decryption of historical cookies.
     const SESSION_TOKEN = '659d0629624c0071863f3783e19608ffd9eb97e2';
     const EXPIRATION_TIMESTAMP_FORMAT = 'YmdHis';
 
@@ -100,6 +102,31 @@ class AuthHelper
         return self::legacyEncrypt($data, $key);
     }
 
+    public static function encryptCookieCredentials(string $data): false|string
+    {
+        $key = self::getCookieEncryptionKey();
+        if (null === $key) {
+            return false;
+        }
+
+        $payload = self::secureEncrypt($data, $key);
+        return false === $payload ? false : self::CRYPTO_VERSION_PREFIX . $payload;
+    }
+
+    public static function decryptCookieCredentials(string $encryptedData): false|string
+    {
+        if (!str_starts_with($encryptedData, self::CRYPTO_VERSION_PREFIX)) {
+            return false;
+        }
+
+        $key = self::getCookieEncryptionKey();
+        if (null === $key) {
+            return false;
+        }
+
+        return self::secureDecrypt(substr($encryptedData, strlen(self::CRYPTO_VERSION_PREFIX)), $key);
+    }
+
     public static function decrypt(string $encrypted_data, string $key): false|string
     {
         if (str_starts_with($encrypted_data, self::CRYPTO_VERSION_PREFIX)) {
@@ -118,6 +145,17 @@ class AuthHelper
         }
 
         return $legacyData;
+    }
+
+    private static function getCookieEncryptionKey(): ?string
+    {
+        $secret = Config::getParam(self::COOKIE_SECRET_CONFIG_PARAM);
+        if (!is_string($secret) || preg_match('/\A[a-f0-9]{64}\z/i', $secret) !== 1) {
+            return null;
+        }
+
+        $key = hex2bin($secret);
+        return false === $key ? null : $key;
     }
 
     public static function generateToken(string $user, string $password, $userAgent = null): string

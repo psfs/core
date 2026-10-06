@@ -54,4 +54,28 @@ class ConfigFormTest extends TestCase
         $this->assertStringContainsString('addNewField', $button['onclick']);
         $this->assertArrayNotHasKey('ng-click', $button);
     }
+
+    public function testCookieSecretIsMaskedAndBlankUpdatesRetainItsValue(): void
+    {
+        $secret = bin2hex(random_bytes(32));
+        $form = new ConfigForm('/admin/config', [], [], ['auth.cookie.secret' => $secret]);
+        $this->assertSame('', $form->getFields()['auth.cookie.secret']['value']);
+        $this->assertSame('', $form->getData()['auth.cookie.secret']);
+
+        $form->retainExistingSensitiveValues(['auth.cookie.secret' => $secret]);
+        $this->assertSame($secret, $form->getData()['auth.cookie.secret']);
+
+        $form->maskSensitiveFieldValues();
+        $this->assertSame('', $form->getData()['auth.cookie.secret']);
+    }
+
+    public function testExistingRequiredPasswordCanBeLeftBlankWhenMasked(): void
+    {
+        $form = new ConfigForm('/admin/config', ['db.password'], [], ['db.password' => 'existing-password']);
+        $form->build();
+
+        $this->assertSame('', $form->getFields()['db.password']['value']);
+        $this->assertFalse($form->getFields()['db.password']['required']);
+        $this->assertTrue($form->isValid());
+    }
 }

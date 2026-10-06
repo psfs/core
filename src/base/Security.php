@@ -126,15 +126,19 @@ class Security
             return;
         }
         $this->updateAdmin($user, $admins[$user]['profile']);
-        $encrypted = AuthHelper::encrypt("$user:$pass", AuthHelper::SESSION_TOKEN);
-        ResponseHelper::setCookieHeaders([
-            [
-                'name' => AuthHelper::generateProfileHash(),
-                'value' => $encrypted,
-                'http' => true,
-                'domain' => '',
-            ]
-        ]);
+        $encrypted = AuthHelper::encryptCookieCredentials("$user:$pass");
+        if (false === $encrypted) {
+            Logger::log('Admin auth cookie was not issued because auth.cookie.secret is missing or invalid', LOG_WARNING);
+        } else {
+            ResponseHelper::setCookieHeaders([
+                [
+                    'name' => AuthHelper::generateProfileHash(),
+                    'value' => $encrypted,
+                    'http' => true,
+                    'domain' => '',
+                ]
+            ]);
+        }
         $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
     }
 

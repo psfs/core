@@ -101,6 +101,58 @@ class SecurityBranchTest extends TestCase
         $this->assertSame('root', $security->getAdmin()['alias'] ?? null);
     }
 
+    public function testAuthorizeAdminCredentialsEncryptsCookieWithInstallationSecret(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $originalHeaders = ResponseHelper::$headers_sent;
+        $secret = bin2hex(random_bytes(32));
+        $property->setValue($config, array_merge($original, ['auth.cookie.secret' => $secret]));
+        ResponseHelper::$headers_sent = [];
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+
+            $header = ResponseHelper::$headers_sent['set-cookie'][0] ?? '';
+            $this->assertStringContainsString(AuthHelper::generateProfileHash() . '=', $header);
+            preg_match('/^[^=]+=([^;]+)/', $header, $matches);
+            $cookie = rawurldecode($matches[1] ?? '');
+            $this->assertStringStartsWith('v2:', $cookie);
+            $this->assertSame('root:secret', AuthHelper::decryptCookieCredentials($cookie));
+            $this->assertFalse(AuthHelper::decrypt($cookie, AuthHelper::SESSION_TOKEN));
+        } finally {
+            ResponseHelper::$headers_sent = $originalHeaders;
+            $property->setValue($config, $original);
+        }
+    }
+
+    public function testAuthorizeAdminCredentialsDoesNotWriteCookieWithoutInstallationSecret(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $originalHeaders = ResponseHelper::$headers_sent;
+        $withoutSecret = $original;
+        unset($withoutSecret['auth.cookie.secret']);
+        $property->setValue($config, $withoutSecret);
+        ResponseHelper::$headers_sent = [];
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+
+            $this->assertArrayNotHasKey('set-cookie', ResponseHelper::$headers_sent);
+            $this->assertSame('root', $security->getAdmin()['alias'] ?? null);
+        } finally {
+            ResponseHelper::$headers_sent = $originalHeaders;
+            $property->setValue($config, $original);
+        }
+    }
+
     public function testResolveAdminCredentialsUsesJwtWhenEnabled(): void
     {
         $config = Config::getInstance()->dumpConfig();

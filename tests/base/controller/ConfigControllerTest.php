@@ -4,6 +4,7 @@ namespace PSFS\tests\base\controller;
 
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Cache;
+use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
@@ -69,6 +70,38 @@ class ConfigControllerTest extends TestCase
         $this->expectExceptionMessage('Restricted area');
 
         $controller->saveConfig();
+    }
+
+    public function testSaveConfigClearsSubmittedCookieSecretBeforeRendering(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $originalConfig = $configProperty->getValue($config);
+        $existingSecret = bin2hex(random_bytes(32));
+        $submittedSecret = 'submitted-cookie-secret-sentinel';
+        $configProperty->setValue($config, array_merge($originalConfig, ['auth.cookie.secret' => $existingSecret]));
+
+        $originalRequest = $_REQUEST;
+        $originalGet = $_GET;
+        $_REQUEST = ['config' => ['auth.cookie.secret' => $submittedSecret]];
+        $_GET = [];
+        Request::dropInstance();
+        Request::getInstance()->init();
+        Security::setTest(true);
+
+        try {
+            $rendered = $this->newController()->saveConfig();
+            $fields = $rendered['config']->getFields();
+
+            $this->assertSame('', $fields['auth.cookie.secret']['value']);
+            $this->assertStringNotContainsString($submittedSecret, json_encode($fields));
+        } finally {
+            Security::setTest(false);
+            Request::dropInstance();
+            $_REQUEST = $originalRequest;
+            $_GET = $originalGet;
+            $configProperty->setValue($config, $originalConfig);
+        }
     }
 
     private function seedAdmins(array $admins): void

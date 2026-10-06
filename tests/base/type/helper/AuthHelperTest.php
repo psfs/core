@@ -6,6 +6,7 @@ use Firebase\JWT\JWT;
 use PHPUnit\Framework\TestCase;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\config\Config;
 use PSFS\base\types\helpers\AuthHelper;
 
 class AuthHelperTest extends TestCase
@@ -168,6 +169,26 @@ class AuthHelperTest extends TestCase
         $this->assertSame(sha1($cookieUser . $cookiePass), $hash);
         $telemetry = AuthHelper::getLegacyFallbackTelemetry();
         $this->assertArrayHasKey('cookie_key_admin_token', $telemetry);
+    }
+
+    public function testCheckBasicAuthReadsHistoricalSessionKeyCookie(): void
+    {
+        $cookieUser = 'historical_cookie_user';
+        $cookiePass = 'historical_cookie_pass';
+        $this->bootstrapRequest([], [
+            AuthHelper::generateProfileHash() => AuthHelper::encrypt(
+                $cookieUser . ':' . $cookiePass,
+                AuthHelper::SESSION_TOKEN
+            ),
+        ]);
+
+        [$user, $hash] = AuthHelper::checkBasicAuth(null, null, [
+            $cookieUser => ['hash' => sha1($cookieUser . $cookiePass)],
+        ]);
+
+        $this->assertSame($cookieUser, $user);
+        $this->assertSame(sha1($cookieUser . $cookiePass), $hash);
+        $this->assertArrayHasKey('cookie_key_session_token', AuthHelper::getLegacyFallbackTelemetry());
     }
 
     public function testCheckComplexAuthRejectsMalformedAuthorizationHeader(): void
@@ -489,5 +510,58 @@ class AuthHelperTest extends TestCase
     {
         $reflection = new \ReflectionMethod(AuthHelper::class, $method);
         return $reflection->invokeArgs(null, $args);
+    }
+
+    public function testCookieEncryptionRequiresAConfiguredInstallationSecret(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $withoutSecret = $original;
+        unset($withoutSecret['auth.cookie.secret']);
+        $property->setValue($config, $withoutSecret);
+
+        try {
+            $this->assertFalse(AuthHelper::encryptCookieCredentials('admin:password'));
+        } finally {
+            $property->setValue($config, $original);
+        }
+    }
+
+    public function testCookieEncryptionRejectsMalformedInstallationSecrets(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $property->setValue($config, array_merge($original, ['auth.cookie.secret' => str_repeat('z', 64)]));
+
+        try {
+            $this->assertFalse(AuthHelper::encryptCookieCredentials('admin:password'));
+        } finally {
+            $property->setValue($config, $original);
+        }
+    }
+
+    public function testCookieEncryptionUsesConfiguredSecretAndOnlyAcceptsVersionedPayloads(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $secret = bin2hex(random_bytes(32));
+        $property->setValue($config, array_merge($original, ['auth.cookie.secret' => $secret]));
+
+        try {
+            $encrypted = AuthHelper::encryptCookieCredentials('admin:password');
+
+            $this->assertIsString($encrypted);
+            $this->assertStringStartsWith('v2:', $encrypted);
+            $this->assertSame('admin:password', AuthHelper::decryptCookieCredentials($encrypted));
+            $this->assertFalse(AuthHelper::decryptCookieCredentials(AuthHelper::encrypt('admin:password', AuthHelper::SESSION_TOKEN)));
+
+            $property->setValue($config, array_merge($original, ['auth.cookie.secret' => bin2hex(random_bytes(32))]));
+            $this->assertFalse(AuthHelper::decryptCookieCredentials($encrypted));
+        } finally {
+            $property->setValue($config, $original);
+        }
     }
 }

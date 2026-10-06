@@ -74,12 +74,21 @@ trait AuthFlowTrait
 
     private static function extractCredentialsFromCookie(string $authCookie): array
     {
-        $secret = self::decrypt($authCookie, AuthHelper::SESSION_TOKEN);
+        $secret = AuthHelper::decryptCookieCredentials($authCookie);
         if (is_string($secret) && str_contains($secret, ':')) {
             [$user, $pass] = explode(':', $secret, 2);
             return self::authTuple($user, $pass);
         }
-        // Legacy fallback: old cookies/tests may still use ADMIN_ID_TOKEN.
+
+        // Read-only fallback for cookies written with the historical source key.
+        $legacySecret = self::decrypt($authCookie, AuthHelper::SESSION_TOKEN);
+        if (is_string($legacySecret) && str_contains($legacySecret, ':')) {
+            self::logLegacyFallbackUsage('cookie_key_session_token');
+            [$user, $pass] = explode(':', $legacySecret, 2);
+            return self::authTuple($user, $pass);
+        }
+
+        // Older installations also used ADMIN_ID_TOKEN as the cookie key.
         $legacySecret = self::decrypt($authCookie, AuthHelper::ADMIN_ID_TOKEN);
         if (is_string($legacySecret) && str_contains($legacySecret, ':')) {
             self::logLegacyFallbackUsage('cookie_key_admin_token');

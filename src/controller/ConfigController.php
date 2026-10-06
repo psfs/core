@@ -88,6 +88,7 @@ class ConfigController extends Admin
         );
         $form->build();
         $form->hydrate();
+        $form->retainExistingSensitiveValues(Config::getInstance()->dumpConfig());
         if ($form->isValid()) {
             $debug = Config::getInstance()->getDebugMode();
             if (Config::save($form->getData(), $form->getExtraData())) {
@@ -107,6 +108,7 @@ class ConfigController extends Admin
                 throw new ConfigException(t('Error while saving configuration, please verify filesystem permissions'));
             }
         }
+        $form->maskSensitiveFieldValues();
         return $this->render('welcome.html.twig', array(
             'text' => t("Welcome to PSFS"),
             'config' => $form,

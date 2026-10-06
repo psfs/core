@@ -22,7 +22,28 @@ class FileConfigRepository implements ConfigRepositoryInterface
 
     public function save(array $data): bool
     {
-        return false !== file_put_contents($this->configPath, json_encode($data, JSON_PRETTY_PRINT));
+        $content = json_encode($data, JSON_PRETTY_PRINT);
+        if (false === $content) {
+            return false;
+        }
+
+        if (file_exists($this->configPath) && !chmod($this->configPath, 0600)) {
+            return false;
+        }
+
+        // New files inherit owner-only permissions even under a permissive process umask.
+        $previousUmask = umask(0077);
+        try {
+            $written = file_put_contents($this->configPath, $content, LOCK_EX);
+        } finally {
+            umask($previousUmask);
+        }
+        if (false === $written) {
+            return false;
+        }
+
+        clearstatcache(true, $this->configPath);
+        return chmod($this->configPath, 0600);
     }
 
     public function refresh(): array
@@ -46,4 +67,3 @@ class FileConfigRepository implements ConfigRepositoryInterface
         return $mtime . ':' . $hash;
     }
 }
-

@@ -31,6 +31,19 @@ class FileConfigRepositoryTest extends TestCase
         $repository = new FileConfigRepository($this->tmpConfigPath);
         $this->assertTrue($repository->save(['debug' => true, 'cache.var' => 'vtest']));
         $this->assertSame(['debug' => true, 'cache.var' => 'vtest'], $repository->read());
+        clearstatcache(true, $this->tmpConfigPath);
+        $this->assertSame(0600, fileperms($this->tmpConfigPath) & 0777);
+    }
+
+    public function testSaveRestrictsConfigurationFilePermissions(): void
+    {
+        file_put_contents($this->tmpConfigPath, '{"old":"value"}');
+        chmod($this->tmpConfigPath, 0644);
+        $repository = new FileConfigRepository($this->tmpConfigPath);
+
+        $this->assertTrue($repository->save(['auth.cookie.secret' => 'value']));
+        clearstatcache(true, $this->tmpConfigPath);
+        $this->assertSame(0600, fileperms($this->tmpConfigPath) & 0777);
     }
 
     public function testReadReturnsEmptyArrayForInvalidJson(): void

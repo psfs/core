@@ -22,13 +22,13 @@ class ConfigForm extends Form
     {
         parent::__construct();
         $this->setAction($route);
-        $this->addRequiredFields($required);
+        $this->addRequiredFields($required, $data);
         $this->add(Form::SEPARATOR);
         $this->addOptionalFields($optional, $data);
         $this->addExtraFields($required, $optional, $data);
         $this->add(Form::SEPARATOR);
         $this->setAttrs(['class' => 'form-horizontal']);
-        $this->setData($data);
+        $this->setData($this->maskSensitiveValues($data));
         $add = $this->buildAddFieldButtonAttrs();
         $this->addButton('submit', t('Save configuration'), 'submit', array(
             'class' => 'btn-success col-md-offset-2 md-primary',
@@ -37,17 +37,18 @@ class ConfigForm extends Form
             ->addButton('add_field', t('Add new parameter'), 'button', $add);
     }
 
-    private function addRequiredFields(array $required): void
+    private function addRequiredFields(array $required, array $data): void
     {
         foreach ($required as $field) {
-            $type = in_array($field, Config::$encrypted, true) ? 'password' : 'text';
+            $type = in_array($field, Config::$encrypted, true) || $this->isSensitiveField($field) ? 'password' : 'text';
             $value = isset(Config::$defaults[$field]) ? Config::$defaults[$field] : null;
+            $hasExistingSensitiveValue = $this->isSensitiveField($field) && $this->hasNonEmptyFieldValue($data, $field);
             $this->add($field, [
                 'label' => t($field),
                 'class' => 'col-md-6',
-                'required' => true,
+                'required' => !$hasExistingSensitiveValue,
                 'type' => $type,
-                'value' => $value,
+                'value' => $this->isSensitiveField($field) ? '' : $value,
             ]);
         }
     }
@@ -65,7 +66,7 @@ class ConfigForm extends Form
                 'label' => t($field),
                 'class' => 'col-md-6',
                 'required' => false,
-                'value' => $data[$field],
+                'value' => $this->isSensitiveField($field) ? '' : $data[$field],
                 'type' => $this->resolveFieldType($field),
             ]);
         }
@@ -85,7 +86,7 @@ class ConfigForm extends Form
                 'label' => $field,
                 'class' => 'col-md-6',
                 'required' => false,
-                'value' => $data[$field],
+                'value' => $this->isSensitiveField($field) ? '' : $data[$field],
                 'type' => $this->resolveFieldType($field),
             ]);
         }
@@ -93,7 +94,46 @@ class ConfigForm extends Form
 
     private function resolveFieldType(string $field): string
     {
-        return preg_match('/(password|secret)/i', $field) ? 'password' : 'text';
+        return $this->isSensitiveField($field) ? 'password' : 'text';
+    }
+
+    private function isSensitiveField(string $field): bool
+    {
+        return preg_match('/(?:secret|password|token|hash)/i', $field) === 1;
+    }
+
+    private function maskSensitiveValues(array $data): array
+    {
+        foreach ($data as $field => $value) {
+            if (is_string($field) && $this->isSensitiveField($field)) {
+                $data[$field] = '';
+            }
+        }
+
+        return $data;
+    }
+
+    public function maskSensitiveFieldValues(): void
+    {
+        foreach ($this->fields as $field => &$definition) {
+            if (is_string($field) && is_array($definition) && $this->isSensitiveField($field)) {
+                $definition['value'] = '';
+            }
+        }
+    }
+
+    public function retainExistingSensitiveValues(array $existing): void
+    {
+        foreach ($this->fields as $field => &$definition) {
+            if (!is_string($field) || !is_array($definition) || !$this->isSensitiveField($field)) {
+                continue;
+            }
+
+            $value = $definition['value'] ?? null;
+            if (($value === null || $value === '') && array_key_exists($field, $existing)) {
+                $definition['value'] = $existing[$field];
+            }
+        }
     }
 
     private function hasNonEmptyFieldValue(array $data, string $field): bool
