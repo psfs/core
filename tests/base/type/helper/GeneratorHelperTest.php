@@ -142,14 +142,22 @@ class GeneratorHelperTest extends TestCase
 
     public function testModulePathRejectsSymlinkEscapingCoreDirectory(): void
     {
+        $createdCoreDirectory = false;
+        if (!is_dir(CORE_DIR)) {
+            $createdCoreDirectory = @mkdir(CORE_DIR, 0775, true);
+        }
         $linkPath = CORE_DIR . DIRECTORY_SEPARATOR . 'MODULE_PATH_LINK_' . bin2hex(random_bytes(6));
-        self::assertTrue(@symlink(sys_get_temp_dir(), $linkPath), 'Could not create temporary symlink for the path-boundary check');
 
         try {
+            self::assertDirectoryExists(CORE_DIR, 'Could not prepare the core directory for the path-boundary check');
+            self::assertTrue(@symlink(sys_get_temp_dir(), $linkPath), 'Could not create temporary symlink for the path-boundary check');
             $this->expectException(GeneratorException::class);
             GeneratorHelper::assertModulePathWithinCore(basename($linkPath) . '/MODULE');
         } finally {
             @unlink($linkPath);
+            if ($createdCoreDirectory) {
+                @rmdir(CORE_DIR);
+            }
         }
     }
 
