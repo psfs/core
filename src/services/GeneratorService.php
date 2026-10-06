@@ -14,6 +14,7 @@ use PSFS\base\exception\GeneratorException;
 use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\attributes\Injectable;
+use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\ApiGenerationTrait;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
@@ -50,8 +51,9 @@ class GeneratorService extends SimpleService
         string $apiClass = "",
         bool $skipMigration = false
     ): void {
+        $module = ucfirst(GeneratorHelper::normalizeModuleName($module));
+        GeneratorHelper::assertModulePathWithinCore($module);
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
-        $module = ucfirst($module);
         $this->createModulePath($module, $modPath);
         $this->createModulePathTree($module, $modPath);
         $this->createModuleBaseFiles($module, $modPath, $force, $type);

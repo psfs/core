@@ -66,10 +66,8 @@ class AdminFrontendModulesController extends Admin
         $module = strtoupper((string) $form->getFieldValue('module'));
         $type = (string) preg_replace('/normal/i', '', (string) $form->getFieldValue('controllerType'));
         $apiClass = (string) $form->getFieldValue('api');
-        $module = (string) preg_replace('/[\\\\\\/]/', '/', $module);
-        $module = (string) preg_replace('/^\\//', '', $module);
-
         try {
+            $module = GeneratorHelper::normalizeModuleName($module);
             GeneratorHelper::checkCustomNamespaceApi($apiClass);
             $this->generateModule($module, $type, $apiClass);
         } catch (\Throwable $exception) {

@@ -70,6 +70,110 @@ class GeneratorHelper
     }
 
     /**
+     * Normalize legacy module separators and reject path components that can
+     * escape or be reinterpreted outside the intended module root.
+     *
+     * @throws GeneratorException
+     */
+    public static function normalizeModuleName(string $module): string
+    {
+        $module = str_replace('\\', '/', $module);
+        if (str_starts_with($module, '/')) {
+            $module = substr($module, 1);
+        }
+
+        if (
+            $module === ''
+            || str_starts_with($module, '/')
+            || str_contains($module, ':')
+            || preg_match('/[\x00-\x1F\x7F]/', $module) === 1
+        ) {
+            throw new GeneratorException(t('Invalid module path'));
+        }
+
+        foreach (explode('/', $module) as $segment) {
+            if ($segment === '' || rtrim($segment, '. ') !== $segment) {
+                throw new GeneratorException(t('Invalid module path'));
+            }
+        }
+
+        return $module;
+    }
+
+    /**
+     * Ensure the existing destination or its nearest existing ancestor stays
+     * within the canonical CORE_DIR, including when an existing path is a symlink.
+     *
+     * @throws GeneratorException
+     */
+    public static function assertModulePathWithinCore(string $module): void
+    {
+        $module = self::normalizeModuleName($module);
+        $coreDirectory = rtrim(CORE_DIR, '/\\');
+        if ($coreDirectory === '') {
+            $coreDirectory = DIRECTORY_SEPARATOR;
+        }
+
+        $canonicalRoot = realpath($coreDirectory);
+        $rootExists = $canonicalRoot !== false;
+        if ($canonicalRoot === false) {
+            if (is_link($coreDirectory)) {
+                throw new GeneratorException(t('Invalid module path'));
+            }
+            $canonicalParent = realpath(dirname($coreDirectory));
+            $rootName = basename($coreDirectory);
+            if ($canonicalParent === false || $rootName === '' || $rootName === '.' || $rootName === '..') {
+                throw new GeneratorException(t('Invalid module path'));
+            }
+            $canonicalRoot = rtrim($canonicalParent, '/\\') . DIRECTORY_SEPARATOR . $rootName;
+        }
+
+        $modulePath = $canonicalRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $module);
+        $existingPath = $modulePath;
+        while (
+            $existingPath !== $canonicalRoot
+            && !file_exists($existingPath)
+            && !is_link($existingPath)
+        ) {
+            $parentPath = dirname($existingPath);
+            if ($parentPath === $existingPath) {
+                break;
+            }
+            $existingPath = $parentPath;
+        }
+
+        if (!$rootExists && $existingPath === $canonicalRoot) {
+            return;
+        }
+
+        $canonicalExistingPath = realpath($existingPath);
+        if ($canonicalExistingPath === false) {
+            throw new GeneratorException(t('Invalid module path'));
+        }
+
+        $normalizedRoot = rtrim($canonicalRoot, '/\\');
+        if ($normalizedRoot === '') {
+            $normalizedRoot = DIRECTORY_SEPARATOR;
+        }
+        $rootPrefix = $normalizedRoot === DIRECTORY_SEPARATOR
+            ? DIRECTORY_SEPARATOR
+            : $normalizedRoot . DIRECTORY_SEPARATOR;
+        $resolvedPath = DIRECTORY_SEPARATOR === '\\'
+            ? strtolower($canonicalExistingPath)
+            : $canonicalExistingPath;
+        $resolvedRoot = DIRECTORY_SEPARATOR === '\\'
+            ? strtolower($normalizedRoot)
+            : $normalizedRoot;
+        $resolvedPrefix = DIRECTORY_SEPARATOR === '\\'
+            ? strtolower($rootPrefix)
+            : $rootPrefix;
+
+        if ($resolvedPath !== $resolvedRoot && !str_starts_with($resolvedPath, $resolvedPrefix)) {
+            throw new GeneratorException(t('Invalid module path'));
+        }
+    }
+
+    /**
      * @return string
      */
     public static function getTemplatePath(): string

@@ -43,6 +43,23 @@ class AdminFrontendModulesControllerTest extends TestCase
         self::assertFalse($controller->generated);
     }
 
+    public function testTraversalModuleNameReturns422BeforeGeneratorIsCalled(): void
+    {
+        foreach (['../outside', 'foo/../../outside', 'foo\\..\\outside'] as $module) {
+            $controller = new AdminFrontendModulesControllerProbe(['values' => [
+                'module' => $module,
+                'controllerType' => 'Normal',
+                'api' => '',
+            ]]);
+
+            $response = json_decode($controller->create(), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertSame(422, $controller->statusCode, json_encode($response));
+            self::assertFalse($response['ok']);
+            self::assertFalse($controller->generated);
+        }
+    }
+
     public function testEmptyModulePayloadReturns422BeforeGenerating(): void
     {
         $controller = new AdminFrontendModulesControllerProbe(['values' => []]);

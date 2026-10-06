@@ -112,6 +112,47 @@ class GeneratorHelperTest extends TestCase
         GeneratorHelper::checkCustomNamespaceApi('Non\\Existing\\Api');
     }
 
+    public function testModuleNameNormalizationPreservesNestedLegacySeparators(): void
+    {
+        self::assertSame('foo/bar', GeneratorHelper::normalizeModuleName('foo\\bar'));
+        self::assertSame('foo/bar', GeneratorHelper::normalizeModuleName('/foo/bar'));
+    }
+
+    public function testModuleNameNormalizationRejectsTraversalAndAmbiguousSegments(): void
+    {
+        foreach ([
+            '../outside',
+            'foo/../outside',
+            'foo\\..\\outside',
+            '//outside',
+            'foo//bar',
+            'foo/./bar',
+            'foo/.. /bar',
+            'C:/outside',
+            'foo/' . chr(0) . '/bar',
+        ] as $module) {
+            try {
+                GeneratorHelper::normalizeModuleName($module);
+                self::fail('Expected unsafe module path to be rejected: ' . addcslashes($module, "\\0..\\37"));
+            } catch (GeneratorException) {
+                self::assertTrue(true);
+            }
+        }
+    }
+
+    public function testModulePathRejectsSymlinkEscapingCoreDirectory(): void
+    {
+        $linkPath = CORE_DIR . DIRECTORY_SEPARATOR . 'MODULE_PATH_LINK_' . bin2hex(random_bytes(6));
+        self::assertTrue(@symlink(sys_get_temp_dir(), $linkPath), 'Could not create temporary symlink for the path-boundary check');
+
+        try {
+            $this->expectException(GeneratorException::class);
+            GeneratorHelper::assertModulePathWithinCore(basename($linkPath) . '/MODULE');
+        } finally {
+            @unlink($linkPath);
+        }
+    }
+
     public function testCopyResourcesAndDeleteDirSymlinkAndFailurePath(): void
     {
         $srcDir = WEB_DIR . DIRECTORY_SEPARATOR . 'tmp-generator-src';

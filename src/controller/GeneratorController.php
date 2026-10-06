@@ -57,8 +57,7 @@ class GeneratorController extends Admin
             $type = preg_replace('/normal/i', '', (string)$form->getFieldValue("controllerType"));
             $apiClass = (string)$form->getFieldValue("api");
             try {
-                $module = preg_replace('/(\\\|\/)/', '/', $module);
-                $module = preg_replace('/^\//', '', $module);
+                $module = GeneratorHelper::normalizeModuleName($module);
                 GeneratorHelper::checkCustomNamespaceApi($apiClass);
                 $this->gen->createStructureModule($module, false, $type, $apiClass);
                 Security::getInstance()->setFlash(

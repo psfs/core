@@ -9,6 +9,7 @@ use Propel\Generator\Model\Database;
 use Propel\Generator\Model\Schema;
 use PSFS\base\SingletonRegistry;
 use PSFS\base\exception\ApiException;
+use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\traits\BoostrapTrait;
 use PSFS\services\GeneratorService as Service;
@@ -32,6 +33,25 @@ class GeneratorServiceTest extends TestCase
     public function testBaseClass()
     {
         $this->assertTrue(true);
+    }
+
+    public function testCreateStructureModuleRejectsTraversalBeforeWritingOutsideCore(): void
+    {
+        $moduleName = 'PSFS_MODULE_TRAVERSAL_' . bin2hex(random_bytes(8));
+        $outsidePath = dirname(CORE_DIR) . DIRECTORY_SEPARATOR . $moduleName;
+        self::assertDirectoryDoesNotExist($outsidePath);
+
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        try {
+            $service->createStructureModule('../' . $moduleName, skipMigration: true);
+            self::fail('Expected traversal module path to be rejected');
+        } catch (GeneratorException) {
+            self::assertDirectoryDoesNotExist($outsidePath);
+        } finally {
+            if (is_dir($outsidePath)) {
+                GeneratorHelper::deleteDir($outsidePath);
+            }
+        }
     }
 
     public function testBuildReversedSchemaAddsOnlyDatabasesReturnedByMigrationService(): void
