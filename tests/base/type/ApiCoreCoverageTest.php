@@ -530,6 +530,14 @@ class ApiCoverageDouble extends Api
         $this->checkI18n($query);
     }
 
+    public function callAppendI18nColumnsToQueryForTests(
+        ModelCriteria $query,
+        TableMap $i18nTableMap,
+        string $lang
+    ): void {
+        $this->appendI18nColumnsToQuery($query, $i18nTableMap, $lang);
+    }
+
     /**
      * @return array<string, string>
      */
@@ -956,6 +964,25 @@ final class ApiCoreCoverageTest extends TestCase
         Config::getInstance()->loadConfigData(true);
 
         $api = new ApiCoverageDouble();
+        $this->assertSame('en_GB', $api->callExtractApiLang());
+    }
+
+    public function testExtractApiLangValidatesAndNormalizesHeaderLocale(): void
+    {
+        Config::save(array_merge($this->configBackup, ['default.language' => 'en_GB']), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $api = new ApiCoverageDouble();
+        foreach (['es' => 'es', 'pt-br' => 'pt_BR'] as $headerLocale => $expectedLocale) {
+            $_SERVER['HTTP_X_API_LANG'] = $headerLocale;
+            Request::dropInstance();
+            Request::getInstance()->init();
+            $this->assertSame($expectedLocale, $api->callExtractApiLang());
+        }
+
+        $_SERVER['HTTP_X_API_LANG'] = 'en_GB") OR 1=1 --';
+        Request::dropInstance();
+        Request::getInstance()->init();
         $this->assertSame('en_GB', $api->callExtractApiLang());
     }
 
@@ -1717,6 +1744,9 @@ final class ApiCoreCoverageTest extends TestCase
 
     public function testCheckI18nAddsColumnsAndLocaleAwarePkAlias(): void
     {
+        Config::save(array_merge($this->configBackup, ['default.language' => 'en_GB']), []);
+        Config::getInstance()->loadConfigData(true);
+
         if (!class_exists('PSFS\\tests\\base\\type\\Map\\ApiCoverageActiveRecordI18nTableMap', false)) {
             class_alias(
                 ApiCoverageI18nMapTableMapProxy::class,
@@ -1755,6 +1785,34 @@ final class ApiCoreCoverageTest extends TestCase
 
         $this->assertSame('it_IT', $query->usedI18nLang);
         $this->assertNotEmpty($query->withColumns);
+        $this->assertSame(
+            ['IFNULL(demo_i18n.LOCALE, "it_IT")', 'Locale'],
+            $query->withColumns[1]
+        );
+
+        $_SERVER['HTTP_X_API_LANG'] = 'en_GB") OR 1=1 --';
+        Request::dropInstance();
+        Request::getInstance()->init();
+
+        $untrustedQuery = new ApiCoverageModelCriteria();
+        $api->callCheckI18nForTests($untrustedQuery);
+
+        $this->assertSame('en_GB', $untrustedQuery->usedI18nLang);
+        $this->assertSame(
+            ['IFNULL(demo_i18n.LOCALE, "en_GB")', 'Locale'],
+            $untrustedQuery->withColumns[1]
+        );
+
+        $directQuery = new ApiCoverageModelCriteria();
+        $api->callAppendI18nColumnsToQueryForTests(
+            $directQuery,
+            ApiCoverageI18nMapTableMapProxy::$localTable,
+            'en_GB") OR 1=1 --'
+        );
+        $this->assertSame(
+            ['IFNULL(demo_i18n.LOCALE, "en_GB")', 'Locale'],
+            $directQuery->withColumns[1]
+        );
     }
 
     public function testHydrateModelFromRequestAppliesI18nSetters(): void

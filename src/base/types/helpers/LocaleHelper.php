@@ -52,6 +52,19 @@ class LocaleHelper
         return null;
     }
 
+    /**
+     * Preserve the two-letter codes used by API translations; normalize regional codes.
+     */
+    public static function normalizeApiLocaleCode(string $locale): ?string
+    {
+        $value = trim($locale);
+        if (preg_match('/^[a-z]{2}$/i', $value) === 1) {
+            return strtolower($value);
+        }
+
+        return self::normalizeLocaleCode($value);
+    }
+
     private static function normalizeShortLocale(string $locale): string
     {
         $lang = strtolower($locale);

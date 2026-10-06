@@ -15,6 +15,14 @@ class LocaleHelperTest extends TestCase
         $this->assertNull(LocaleHelper::normalizeLocaleCode('bad-locale-value'));
     }
 
+    public function testNormalizeApiLocaleCodePreservesShortCodesAndRejectsInvalidValues(): void
+    {
+        $this->assertSame('en', LocaleHelper::normalizeApiLocaleCode('EN'));
+        $this->assertSame('es', LocaleHelper::normalizeApiLocaleCode('es'));
+        $this->assertSame('pt_BR', LocaleHelper::normalizeApiLocaleCode('pt-br'));
+        $this->assertNull(LocaleHelper::normalizeApiLocaleCode('en_GB") OR 1=1 --'));
+    }
+
     public function testBuildAvailableLocalesMergesConfiguredSessionAndDefaultWithFallback(): void
     {
         $locales = LocaleHelper::buildAvailableLocales('', 'de_de', 'ca_es');

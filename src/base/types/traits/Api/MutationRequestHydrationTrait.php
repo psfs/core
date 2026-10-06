@@ -12,6 +12,7 @@ use PSFS\base\Request;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
 use PSFS\base\types\helpers\I18nHelper;
+use PSFS\base\types\helpers\LocaleHelper;
 use PSFS\base\types\helpers\attributes\DefaultValue;
 use PSFS\base\types\helpers\attributes\Header;
 use PSFS\base\types\helpers\attributes\Label;
@@ -63,8 +64,13 @@ trait MutationRequestHydrationTrait
 
     protected function extractApiLang()
     {
-        $defaultLanguage = (string)Config::getParam('default.language', 'en_US');
-        $this->lang = Request::header(Api::HEADER_API_LANG, $defaultLanguage);
+        $defaultLanguage = LocaleHelper::normalizeApiLocaleCode(
+            (string)Config::getParam('default.language', 'en_US')
+        ) ?? 'en_US';
+        $requestedLanguage = LocaleHelper::normalizeApiLocaleCode(
+            (string)Request::header(Api::HEADER_API_LANG, $defaultLanguage)
+        );
+        $this->lang = $requestedLanguage ?? $defaultLanguage;
     }
 
     /**

@@ -67,6 +67,9 @@ These are review requirements, not a claim that every path has been audited:
 - Parsing, template generation, uploads and file access must preserve their
   intended boundaries. Untrusted input must not grant arbitrary file access,
   code execution, or unauthorized outbound access.
+- Treat `X-API-LANG` as untrusted. Validate it as a locale code before passing it
+  to Propel or composing SQL; invalid values fall back to a valid configured
+  `default.language` (or `en_US`). Preserve supported two-letter API locale codes.
 - Secrets and sensitive authentication material must not be committed, emitted
   in public artifacts, or exposed through logs or error responses.
 

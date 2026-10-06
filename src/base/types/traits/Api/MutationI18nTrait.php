@@ -6,7 +6,9 @@ use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Map\ColumnMap;
 use Propel\Runtime\Map\TableMap;
+use PSFS\base\config\Config;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\LocaleHelper;
 
 trait MutationI18nTrait
 {
@@ -24,6 +26,11 @@ trait MutationI18nTrait
 
     protected function appendI18nColumnsToQuery(ModelCriteria $query, TableMap $i18nTableMap, string $lang): void
     {
+        $defaultLanguage = LocaleHelper::normalizeApiLocaleCode(
+            (string)Config::getParam('default.language', 'en_US')
+        ) ?? 'en_US';
+        $lang = LocaleHelper::normalizeApiLocaleCode($lang) ?? $defaultLanguage;
+
         foreach ($i18nTableMap->getColumns() as $columnMap) {
             if (!$columnMap instanceof ColumnMap) {
                 continue;
@@ -73,4 +80,3 @@ trait MutationI18nTrait
         }
     }
 }
-
