@@ -62,6 +62,11 @@ These are review requirements, not a claim that every path has been audited:
   `SameSite=Lax` or `Strict`, a coherent domain, and a lifetime aligned with the
   session. Security-sensitive mutations must enforce authorization and applicable
   CSRF protection.
+- A successful transition from an unauthenticated request to an admin session
+  must rotate and invalidate the previous session ID before saving the admin
+  identity or issuing authentication cookies. If rotation cannot be completed,
+  authentication must fail closed. The session payload must survive rotation,
+  and response handlers must emit the active session ID.
 - CORS must use an explicit allowlist and deny unapproved origins. The strict
   hardening profile forbids `cors.enabled="*"`.
 - Parsing, template generation, uploads and file access must preserve their

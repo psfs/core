@@ -125,6 +125,14 @@ class Security
         if (!$this->authorized) {
             return;
         }
+        if (null === $this->admin
+            && (PHP_SESSION_ACTIVE !== session_status() || false === @session_regenerate_id(true))) {
+            $this->authorized = false;
+            $this->admin = null;
+            $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
+            Logger::log('Admin authentication rejected because the session ID could not be rotated', LOG_WARNING);
+            return;
+        }
         $this->updateAdmin($user, $admins[$user]['profile']);
         $encrypted = AuthHelper::encryptCookieCredentials("$user:$pass");
         if (false === $encrypted) {

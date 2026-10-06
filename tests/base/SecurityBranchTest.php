@@ -9,6 +9,7 @@ use PSFS\base\Request;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\ResponseHelper;
+use PSFS\runtime\swoole\SwooleResponseEmitter;
 
 /**
  * @runInSeparateProcess
@@ -99,6 +100,97 @@ class SecurityBranchTest extends TestCase
 
         $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', 'wrong-token', 'secret']);
         $this->assertSame('root', $security->getAdmin()['alias'] ?? null);
+    }
+
+    public function testAdminAuthenticationRotatesSessionIdOnceAndSwooleEmitsTheNewId(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $originalConfig = $configProperty->getValue($config);
+        $originalHeaders = ResponseHelper::$headers_sent;
+        $previousSessionName = session_name();
+        $configProperty->setValue($config, array_merge($originalConfig, ['auth.cookie.secret' => bin2hex(random_bytes(32))]));
+        ResponseHelper::$headers_sent = [];
+        session_name('PSFSSESSID');
+        session_start();
+        $_SESSION['preauth-state'] = 'preserved';
+        $oldSessionId = session_id();
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+
+            $rotatedSessionId = session_id();
+            $this->assertNotSame($oldSessionId, $rotatedSessionId);
+            $this->assertSame('preserved', $_SESSION['preauth-state'] ?? null);
+            $security->updateSession();
+            $this->assertSame('root', $_SESSION[AuthHelper::ADMIN_ID_TOKEN]['alias'] ?? null);
+
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+            $this->assertSame($rotatedSessionId, session_id());
+
+            $headers = ResponseHelper::$headers_sent;
+            (new SwooleResponseEmitter())->ensureSessionCookieHeader($headers);
+            $sessionCookie = null;
+            foreach ($headers['set-cookie'] ?? [] as $header) {
+                if (is_string($header) && str_starts_with($header, 'PSFSSESSID=')) {
+                    $sessionCookie = $header;
+                    break;
+                }
+            }
+            $this->assertNotNull($sessionCookie);
+            $this->assertStringStartsWith('PSFSSESSID=' . $rotatedSessionId, $sessionCookie);
+        } finally {
+            ResponseHelper::$headers_sent = $originalHeaders;
+            $configProperty->setValue($config, $originalConfig);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+            session_name($previousSessionName);
+        }
+    }
+
+    public function testAdminAuthenticationFailsClosedWhenSessionIsInactive(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $originalConfig = $configProperty->getValue($config);
+        $originalHeaders = ResponseHelper::$headers_sent;
+        $previousSessionName = session_name();
+        $configProperty->setValue($config, array_merge($originalConfig, ['auth.cookie.secret' => bin2hex(random_bytes(32))]));
+        ResponseHelper::$headers_sent = [];
+        session_name('PSFSFAIL' . bin2hex(random_bytes(4)));
+        session_start();
+        $_SESSION = [];
+
+        try {
+            $security = Security::getInstance(true);
+            $this->assertSame(PHP_SESSION_ACTIVE, session_status());
+            session_write_close();
+
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+
+            $this->assertNull($security->getAdmin());
+            $this->assertNull($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN));
+            $this->assertArrayNotHasKey('set-cookie', ResponseHelper::$headers_sent);
+        } finally {
+            ResponseHelper::$headers_sent = $originalHeaders;
+            $configProperty->setValue($config, $originalConfig);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+            session_name($previousSessionName);
+        }
     }
 
     public function testAuthorizeAdminCredentialsEncryptsCookieWithInstallationSecret(): void
