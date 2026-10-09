@@ -13,6 +13,30 @@ use PSFS\services\migration\SqlStatementSplitter;
 
 class PhinxMigrationEngineTest extends TestCase
 {
+    public function testAvailabilitySupportsInjectedAndFilesystemChecks(): void
+    {
+        $runner = new CapturingCommandRunner(['exit_code' => 0, 'output' => 'ok']);
+        $checkedBinary = null;
+        $engineWithChecker = new PhinxMigrationEngine(
+            $runner,
+            new StaticPhinxConfigFactory('psfs'),
+            new SqlStatementSplitter(),
+            static function (string $binary) use (&$checkedBinary): bool {
+                $checkedBinary = $binary;
+                return true;
+            }
+        );
+        $engineWithoutChecker = new PhinxMigrationEngine(
+            $runner,
+            new StaticPhinxConfigFactory('psfs'),
+            new SqlStatementSplitter()
+        );
+
+        $this->assertTrue($engineWithChecker->isAvailable());
+        $this->assertNotEmpty($checkedBinary);
+        $this->assertIsBool($engineWithoutChecker->isAvailable());
+    }
+
     public function testMigrateBuildsCommandAndUsesDryRunWhenSimulate(): void
     {
         $runner = new CapturingCommandRunner(['exit_code' => 0, 'output' => 'migrated']);
@@ -185,6 +209,22 @@ class PhinxMigrationEngineTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('multiple datasources');
         $engine->generateFromDiff('client', ['main' => $first, 'audit' => $second], ['main' => $first, 'audit' => $second], $tmpDir, 1700000000);
+    }
+
+    public function testGenerateFromMismatchedPropelDiffKeysIsRejected(): void
+    {
+        $diff = new DatabaseDiff();
+        $engine = new PhinxMigrationEngine(
+            new CapturingCommandRunner(['exit_code' => 0, 'output' => 'ok']),
+            new StaticPhinxConfigFactory('psfs'),
+            new SqlStatementSplitter(),
+            static fn(string $binary): bool => true
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('matching Propel DatabaseDiff objects');
+
+        $engine->generateFromDiff('client', ['main' => $diff], ['audit' => $diff], sys_get_temp_dir(), 1700000000);
     }
 
     public function testSeedRunsPhinxSeedCommandAndPassesThroughOutput(): void

@@ -11,10 +11,30 @@ use Propel\Generator\Model\Diff\ColumnDiff;
 use Propel\Generator\Model\Diff\TableDiff;
 use Propel\Generator\Model\Index;
 use Propel\Generator\Model\Table as PropelTable;
+use Propel\Generator\Model\Unique;
 use PSFS\services\migration\PropelDiffToPhinxMigrationGenerator;
 
 class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
 {
+    public function testNonDatabaseDiffIsRejectedWithExpectedType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(DatabaseDiff::class);
+
+        (new PropelDiffToPhinxMigrationGenerator())->translate(new \stdClass());
+    }
+
+    public function testAmbiguousTableRenameMustBeResolvedBeforeTranslation(): void
+    {
+        $diff = new DatabaseDiff();
+        $diff->addPossibleRenamedTable('old_users', 'users');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('old_users');
+
+        (new PropelDiffToPhinxMigrationGenerator())->translate($diff);
+    }
+
     public function testAddedPropelTableBecomesDeclarativePhinxUpAndDown(): void
     {
         $table = new PropelTable('users');
@@ -49,6 +69,35 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
         $this->assertStringNotContainsString('$this->execute(', $up);
         $this->assertStringContainsString("\$this->table('users')->drop()->update()", $down);
         $this->assertStringNotContainsString('$this->execute(', $down);
+    }
+
+    public function testCreatedTablePreservesCommentsAndNamedIndexes(): void
+    {
+        $table = new PropelTable('users');
+        $table->setDescription('Application users');
+        $email = new PropelColumn('email', 'VARCHAR', 255);
+        $email->setDescription('Primary contact address');
+        $table->addColumn($email);
+
+        $index = new Index();
+        $index->setName('users_email_idx');
+        $index->addColumn($email);
+        $table->addIndex($index);
+
+        $unique = new Unique();
+        $unique->setName('users_email_unique');
+        $unique->addColumn($email);
+        $table->addUnique($unique);
+
+        $diff = new DatabaseDiff();
+        $diff->addAddedTable('users', $table);
+        $migration = (new PropelDiffToPhinxMigrationGenerator())->translate($diff);
+        $up = implode("\n", $migration['up']);
+
+        $this->assertStringContainsString("'comment' => 'Application users'", $up);
+        $this->assertStringContainsString("'comment' => 'Primary contact address'", $up);
+        $this->assertStringContainsString("->addIndex(['email'], ['name' => 'users_email_idx'])", $up);
+        $this->assertStringContainsString("->addIndex(['email'], ['name' => 'users_email_unique', 'unique' => true])", $up);
     }
 
     public function testUnsupportedPropelColumnTypeFailsWithColumnContext(): void
@@ -100,6 +149,13 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
         $diffTable->addAddedColumn('email', $new->getColumn('email'));
         $diffTable->addRenamedColumn($old->getColumn('status'), $new->getColumn('state'));
         $diffTable->addModifiedColumn('nickname', new ColumnDiff($old->getColumn('nickname'), $new->getColumn('nickname')));
+        $oldIndex = new Index();
+        $oldIndex->setName('users_nickname_idx');
+        $oldIndex->addColumn($old->getColumn('nickname'));
+        $newIndex = new Unique();
+        $newIndex->setName('users_nickname_idx');
+        $newIndex->addColumn($new->getColumn('nickname'));
+        $diffTable->addModifiedIndex('users_nickname_idx', $oldIndex, $newIndex);
         $index = new Index();
         $index->setName('users_email_idx');
         $index->addColumn($new->getColumn('email'));
@@ -117,11 +173,19 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
         $this->assertStringContainsString("->addColumn('email', 'string', ['limit' => 255, 'null' => true])->update()", $up);
         $this->assertStringContainsString("->changeColumn('nickname', 'string', ['limit' => 80, 'null' => true])->update()", $up);
         $this->assertStringContainsString("->addIndex(['email'], ['name' => 'users_email_idx'])->update()", $up);
+        $this->assertStringContainsString(
+            "->addIndex(['nickname'], ['name' => 'users_nickname_idx', 'unique' => true])->update()",
+            $up
+        );
         $this->assertStringContainsString("->addColumn('legacy', 'string', ['limit' => 40, 'null' => true])->update()", $down);
         $this->assertStringContainsString("->renameColumn('state', 'status')->update()", $down);
         $this->assertStringContainsString("->changeColumn('nickname', 'string', ['limit' => 40, 'null' => true])->update()", $down);
         $this->assertStringContainsString("->removeColumn('email')->update()", $down);
         $this->assertStringContainsString("->removeIndexByName('users_email_idx')->update()", $down);
+        $this->assertStringContainsString(
+            "->addIndex(['nickname'], ['name' => 'users_nickname_idx'])->update()",
+            $down
+        );
     }
 
     public function testCreateTableForeignKeysAreAddedAfterTablesExist(): void
@@ -155,6 +219,26 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
         $this->assertNotFalse($addForeignKey);
         $this->assertGreaterThan($createPosts, $addForeignKey);
         $this->assertGreaterThan($createUsers, $addForeignKey);
+    }
+
+    public function testForeignKeyUpdateActionIsRenderedDeclaratively(): void
+    {
+        $orders = new PropelTable('orders');
+        $orders->addColumn(new PropelColumn('customer_id', 'INTEGER'));
+        $foreignKey = new ForeignKey('orders_customer_fk');
+        $foreignKey->setForeignTableCommonName('customers');
+        $foreignKey->addReference('customer_id', 'id');
+        $foreignKey->setOnUpdate('CASCADE');
+        $orders->addForeignKey($foreignKey);
+        $diff = new DatabaseDiff();
+        $diff->addAddedTable('orders', $orders);
+
+        $migration = (new PropelDiffToPhinxMigrationGenerator())->translate($diff);
+
+        $this->assertStringContainsString(
+            "->addForeignKey(['customer_id'], 'customers', ['id'], ['constraint' => 'orders_customer_fk', 'update' => 'CASCADE'])->update()",
+            implode("\n", $migration['up'])
+        );
     }
 
     public function testExpressionLikeStringDefaultRemainsAQuotedValueAndIdentifiersAreEscaped(): void
@@ -301,6 +385,23 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('users');
+        (new PropelDiffToPhinxMigrationGenerator())->translate($diff);
+    }
+
+    public function testUnsupportedModifiedColumnNodeIsRejectedWithTableAndColumnContext(): void
+    {
+        $old = new PropelTable('users');
+        $new = new PropelTable('users');
+        $tableDiff = new TableDiff($old, $new);
+        $tableDiff->setModifiedColumns([
+            'email' => new ColumnDiff(new PropelColumn('email', 'VARCHAR'), null),
+        ]);
+        $diff = new DatabaseDiff();
+        $diff->addModifiedTable('users', $tableDiff);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('users.email');
+
         (new PropelDiffToPhinxMigrationGenerator())->translate($diff);
     }
 

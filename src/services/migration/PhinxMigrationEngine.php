@@ -9,16 +9,19 @@ use PSFS\base\Logger;
 
 class PhinxMigrationEngine implements MigrationEngineInterface
 {
+    private readonly MigrationStatementNormalizer $statementNormalizer;
+
     /**
      * @param null|callable(string):bool $binaryChecker
      */
     public function __construct(
         private readonly CommandRunner $runner,
         private readonly PhinxConfigFactory $configFactory,
-        private readonly SqlStatementSplitter $splitter,
+        SqlStatementSplitter $splitter,
         private readonly ?Closure $binaryChecker = null,
         private readonly ?PropelDiffToPhinxMigrationGenerator $diffTranslator = null
     ) {
+        $this->statementNormalizer = new MigrationStatementNormalizer($splitter);
     }
 
     public function getName(): string
@@ -90,8 +93,8 @@ class PhinxMigrationEngine implements MigrationEngineInterface
             [$upStatements, $downStatements] = $this->translateDatabaseDiffs($migrationsUp, $migrationsDown);
             $content = $this->buildDeclarativeMigrationClass($className, $upStatements, $downStatements);
         } else {
-            $upStatements = $this->normalizeStatements($migrationsUp);
-            $downStatements = $this->normalizeStatements($migrationsDown);
+            $upStatements = $this->statementNormalizer->normalize($migrationsUp);
+            $downStatements = $this->statementNormalizer->normalize($migrationsDown);
             $content = $this->buildMigrationClass($className, $upStatements, $downStatements);
         }
         file_put_contents($target, $content);
@@ -167,49 +170,6 @@ final class {$className} extends AbstractMigration
     }
 }
 PHP;
-    }
-
-    /**
-     * @param array<string, mixed> $migrationSql
-     * @return array<int, string>
-     */
-    private function normalizeStatements(array $migrationSql): array
-    {
-        return array_values(iterator_to_array($this->iterateNormalizedStatements($migrationSql), false));
-    }
-
-    /**
-     * @param array<string, mixed> $migrationSql
-     * @return \Generator<int, string>
-     */
-    private function iterateNormalizedStatements(array $migrationSql): \Generator
-    {
-        foreach ($migrationSql as $sql) {
-            if (is_array($sql)) {
-                foreach ($sql as $raw) {
-                    if (is_string($raw)) {
-                        yield from $this->splitAndNormalize($raw);
-                    }
-                }
-                continue;
-            }
-            if (is_string($sql)) {
-                yield from $this->splitAndNormalize($sql);
-            }
-        }
-    }
-
-    /**
-     * @return \Generator<int, string>
-     */
-    private function splitAndNormalize(string $sql): \Generator
-    {
-        foreach ($this->splitter->split($sql) as $statement) {
-            $statement = trim($statement);
-            if ('' !== $statement) {
-                yield $statement;
-            }
-        }
     }
 
     /**

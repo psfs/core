@@ -46,16 +46,39 @@ final class PropelDiffToPhinxMigrationGenerator
     /** @return list<string> */
     private function renderDiff(DatabaseDiff $diff): array
     {
-        $statements = [];
+        $modifiedTables = $this->modifiedTables($diff);
 
-        foreach ($this->sortNamed($diff->getRenamedTables()) as $oldName => $newName) {
-            $statements[] = sprintf(
-                '$this->table(%s)->rename(%s)->update();',
-                $this->export($oldName),
-                $this->export($newName)
-            );
-        }
+        return array_merge(
+            $this->renderRenamedTables($diff),
+            $this->renderModifiedTableForeignKeyDrops($modifiedTables),
+            $this->renderRemovedTableForeignKeyDrops($diff),
+            $this->renderRemovedTables($diff),
+            $this->renderAddedTables($diff),
+            $this->renderAddedTableForeignKeys($diff),
+            $this->renderModifiedTables($modifiedTables)
+        );
+    }
 
+    /** @return list<string> */
+    private function renderTableDiff(string $tableName, TableDiff $diff): array
+    {
+        $table = '$this->table(' . $this->export($tableName) . ')';
+
+        return array_merge(
+            $this->renderRemovedAndModifiedIndices($table, $diff),
+            $this->renderRenamedColumns($table, $diff),
+            $this->renderAddedAndModifiedColumns($tableName, $table, $diff),
+            $this->renderPrimaryKeyChange($tableName, $table, $diff),
+            $this->renderRemovedColumns($table, $diff),
+            $this->renderAddedIndices($table, $diff),
+            $this->renderForeignKeyChanges($table, $diff)
+        );
+    }
+
+    /** @return array<string, TableDiff> */
+    private function modifiedTables(DatabaseDiff $diff): array
+    {
+        $tables = [];
         foreach ($this->sortNamed($diff->getModifiedTables()) as $name => $tableDiff) {
             if (!$tableDiff instanceof TableDiff) {
                 throw new \InvalidArgumentException(sprintf(
@@ -64,14 +87,46 @@ final class PropelDiffToPhinxMigrationGenerator
                     get_debug_type($tableDiff)
                 ));
             }
+            $tables[$name] = $tableDiff;
+        }
+
+        return $tables;
+    }
+
+    /** @return list<string> */
+    private function renderRenamedTables(DatabaseDiff $diff): array
+    {
+        $statements = [];
+        foreach ($this->sortNamed($diff->getRenamedTables()) as $oldName => $newName) {
+            $statements[] = sprintf(
+                '$this->table(%s)->rename(%s)->update();',
+                $this->export($oldName),
+                $this->export($newName)
+            );
+        }
+        return $statements;
+    }
+
+    /** @param array<string, TableDiff> $tables @return list<string> */
+    private function renderModifiedTableForeignKeyDrops(array $tables): array
+    {
+        $statements = [];
+        foreach ($tables as $name => $diff) {
             $table = '$this->table(' . $this->export($name) . ')';
-            foreach ($this->sortNamed($tableDiff->getRemovedFks()) as $foreignKey) {
+            foreach ($this->sortNamed($diff->getRemovedFks()) as $foreignKey) {
                 $statements[] = $this->renderDropForeignKey($table, $foreignKey);
             }
-            foreach ($this->sortNamed($tableDiff->getModifiedFks()) as [$from]) {
+            foreach ($this->sortNamed($diff->getModifiedFks()) as [$from]) {
                 $statements[] = $this->renderDropForeignKey($table, $from);
             }
         }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderRemovedTableForeignKeyDrops(DatabaseDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getRemovedTables()) as $name => $removedTable) {
             foreach ($this->sortNamed($removedTable->getForeignKeys()) as $foreignKey) {
                 $statements[] = '$this->table(' . $this->export($name) . ')->dropForeignKey('
@@ -79,13 +134,33 @@ final class PropelDiffToPhinxMigrationGenerator
                     . $this->export($foreignKey->getName()) . ')->update();';
             }
         }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderRemovedTables(DatabaseDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getRemovedTables()) as $name => $_removedTable) {
             $statements[] = sprintf('$this->table(%s)->drop()->update();', $this->export($name));
         }
+        return $statements;
+    }
 
+    /** @return list<string> */
+    private function renderAddedTables(DatabaseDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getAddedTables()) as $table) {
             $statements[] = $this->renderCreateTable($table);
         }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderAddedTableForeignKeys(DatabaseDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getAddedTables()) as $name => $table) {
             foreach ($this->sortNamed($table->getForeignKeys()) as $foreignKey) {
                 $statements[] = $this->renderForeignKeyOperation(
@@ -94,51 +169,54 @@ final class PropelDiffToPhinxMigrationGenerator
                 );
             }
         }
+        return $statements;
+    }
 
-        foreach ($this->sortNamed($diff->getModifiedTables()) as $name => $tableDiff) {
-            if (!$tableDiff instanceof TableDiff) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Unsupported Propel table diff node for "%s": %s',
-                    $name,
-                    get_debug_type($tableDiff)
-                ));
-            }
-            array_push($statements, ...$this->renderTableDiff($name, $tableDiff, true));
+    /** @param array<string, TableDiff> $tables @return list<string> */
+    private function renderModifiedTables(array $tables): array
+    {
+        $statements = [];
+        foreach ($tables as $name => $tableDiff) {
+            array_push($statements, ...$this->renderTableDiff($name, $tableDiff));
         }
-
         return $statements;
     }
 
     /** @return list<string> */
-    private function renderTableDiff(string $tableName, TableDiff $diff, bool $foreignKeyDropsHandled = false): array
+    private function renderRemovedAndModifiedIndices(string $table, TableDiff $diff): array
     {
         $statements = [];
-        $table = '$this->table(' . $this->export($tableName) . ')';
-
-        if (!$foreignKeyDropsHandled) {
-            foreach ($this->sortNamed($diff->getRemovedFks()) as $name => $foreignKey) {
-                $columns = $foreignKey->getLocalColumns();
-                $statements[] = $table . '->dropForeignKey(' . $this->export($columns) . ', '
-                    . $this->export((string)$name) . ')->update();';
-            }
-        }
-        foreach ($this->sortNamed($diff->getRemovedIndices()) as $name => $index) {
+        foreach ($this->sortNamed($diff->getRemovedIndices()) as $name => $_index) {
             $statements[] = $table . '->removeIndexByName(' . $this->export((string)$name) . ')->update();';
         }
         foreach ($this->sortNamed($diff->getModifiedIndices()) as $name => [$from, $to]) {
             $statements[] = $table . '->removeIndexByName(' . $this->export((string)$name) . ')->update();';
             $statements[] = $this->renderIndexOperation($table, $to, $to->isUnique());
         }
+        return $statements;
+    }
 
+    /** @return list<string> */
+    private function renderRenamedColumns(string $table, TableDiff $diff): array
+    {
         $renamedColumns = $diff->getRenamedColumns();
         usort($renamedColumns, static fn(array $left, array $right): int => strcmp(
             $left[0]->getName(),
             $right[0]->getName()
         ));
+
+        $statements = [];
         foreach ($renamedColumns as [$from, $to]) {
             $statements[] = $table . '->renameColumn(' . $this->export($from->getName()) . ', '
                 . $this->export($to->getName()) . ')->update();';
         }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderAddedAndModifiedColumns(string $tableName, string $table, TableDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getAddedColumns()) as $column) {
             $statements[] = $this->renderColumnOperation($table, 'addColumn', $column);
         }
@@ -153,34 +231,54 @@ final class PropelDiffToPhinxMigrationGenerator
             }
             $statements[] = $this->renderColumnOperation($table, 'changeColumn', $columnDiff->getToColumn());
         }
-        if ($diff->hasModifiedPk()) {
-            $toTable = $diff->getToTable();
-            if (null === $toTable) {
-                throw new \InvalidArgumentException(sprintf('Propel table diff for "%s" has no target table', $tableName));
-            }
-            $keys = array_map(static fn(Column $column): string => $column->getName(), $toTable->getPrimaryKey());
-            $statements[] = $table . '->changePrimaryKey(' . $this->export($keys === [] ? null : $keys) . ')->update();';
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderPrimaryKeyChange(string $tableName, string $table, TableDiff $diff): array
+    {
+        if (!$diff->hasModifiedPk()) {
+            return [];
         }
 
-        // Update the key before removing old key columns. New and renamed key
-        // columns are already in place, so both directions remain executable.
+        $toTable = $diff->getToTable();
+        if (null === $toTable) {
+            throw new \InvalidArgumentException(sprintf('Propel table diff for "%s" has no target table', $tableName));
+        }
+        $keys = array_map(static fn(Column $column): string => $column->getName(), $toTable->getPrimaryKey());
+        return [$table . '->changePrimaryKey(' . $this->export($keys === [] ? null : $keys) . ')->update();'];
+    }
+
+    /** @return list<string> */
+    private function renderRemovedColumns(string $table, TableDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getRemovedColumns()) as $name => $_column) {
             $statements[] = $table . '->removeColumn(' . $this->export((string)$name) . ')->update();';
         }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderAddedIndices(string $table, TableDiff $diff): array
+    {
+        $statements = [];
         foreach ($this->sortNamed($diff->getAddedIndices()) as $index) {
             $statements[] = $this->renderIndexOperation($table, $index, $index->isUnique());
         }
+        return $statements;
+    }
 
-        foreach ($this->sortNamed($diff->getModifiedFks()) as [$from, $to]) {
-            if (!$foreignKeyDropsHandled) {
-                $statements[] = $this->renderDropForeignKey($table, $from);
-            }
+    /** @return list<string> */
+    private function renderForeignKeyChanges(string $table, TableDiff $diff): array
+    {
+        $statements = [];
+        foreach ($this->sortNamed($diff->getModifiedFks()) as [, $to]) {
             $statements[] = $this->renderForeignKeyOperation($table, $to);
         }
         foreach ($this->sortNamed($diff->getAddedFks()) as $foreignKey) {
             $statements[] = $this->renderForeignKeyOperation($table, $foreignKey);
         }
-
         return $statements;
     }
 
