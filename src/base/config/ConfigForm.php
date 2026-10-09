@@ -18,11 +18,11 @@ class ConfigForm extends Form
      * @throws \PSFS\base\exception\FormException
      * @throws \PSFS\base\exception\RouterException
      */
-    public function __construct($route, array $required, array $optional = [], array $data = [])
+    public function __construct($route, array $required, array $optional = [], array $data = [], bool $allowEmpty = false)
     {
         parent::__construct();
         $this->setAction($route);
-        $this->addRequiredFields($required, $data);
+        $this->addRequiredFields($required, $data, $allowEmpty);
         $this->add(Form::SEPARATOR);
         $this->addOptionalFields($optional, $data);
         $this->addExtraFields($required, $optional, $data);
@@ -37,7 +37,7 @@ class ConfigForm extends Form
             ->addButton('add_field', t('Add new parameter'), 'button', $add);
     }
 
-    private function addRequiredFields(array $required, array $data): void
+    private function addRequiredFields(array $required, array $data, bool $allowEmpty): void
     {
         foreach ($required as $field) {
             $type = in_array($field, Config::$encrypted, true) || $this->isSensitiveField($field) ? 'password' : 'text';
@@ -46,7 +46,7 @@ class ConfigForm extends Form
             $this->add($field, [
                 'label' => t($field),
                 'class' => 'col-md-6',
-                'required' => !$hasExistingSensitiveValue,
+                'required' => !$allowEmpty && !$hasExistingSensitiveValue,
                 'type' => $type,
                 'value' => $this->isSensitiveField($field) ? '' : $value,
             ]);
@@ -59,7 +59,7 @@ class ConfigForm extends Form
             return;
         }
         foreach ($optional as $field) {
-            if (!$this->hasNonEmptyFieldValue($data, $field)) {
+            if (!array_key_exists($field, $data)) {
                 continue;
             }
             $this->add($field, [
@@ -79,7 +79,7 @@ class ConfigForm extends Form
         }
         $extraKeys = array_diff(array_keys($data), array_merge($required, $optional));
         foreach ($extraKeys as $field) {
-            if (!$this->hasNonEmptyFieldValue($data, $field)) {
+            if (!is_string($field)) {
                 continue;
             }
             $this->add($field, [

@@ -16,7 +16,7 @@ trait ConfigPersistenceTrait
         Logger::log('Saving required config parameters');
         if (!empty($extra) && array_key_exists('label', $extra) && is_array($extra['label'])) {
             foreach ($extra['label'] as $index => $field) {
-                if (array_key_exists($index, $extra['value']) && !empty($extra['value'][$index])) {
+                if (array_key_exists($index, $extra['value'])) {
                     $data[$field] = $extra['value'][$index];
                 }
             }
@@ -36,22 +36,14 @@ trait ConfigPersistenceTrait
         }
         Logger::log('Saving extra configuration parameters');
         foreach (self::iterateConfigEntries($data) as [$key, $value]) {
-            if (null !== $value) {
-                $finalData[$key] = $value;
-            }
+            $finalData[$key] = $value;
         }
         return $finalData;
     }
 
     protected static function shouldPersistConfigEntry(mixed $value, string $key): bool
     {
-        if (in_array($key, self::$required, true)) {
-            return true;
-        }
-        if (is_bool($value) || is_int($value) || is_float($value)) {
-            return true;
-        }
-        return $value !== null && $value !== '';
+        return true;
     }
 
     /**
@@ -65,4 +57,3 @@ trait ConfigPersistenceTrait
         }
     }
 }
-

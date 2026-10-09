@@ -20,7 +20,8 @@ class AdminFormSchemaFactoryTest extends TestCase
 
         self::assertArrayNotHasKey('__token', $schema['fields']);
         self::assertArrayNotHasKey('__token_key', $schema['fields']);
-        self::assertSame('', $schema['fields']['root.api.secret']['value']);
+        self::assertArrayNotHasKey('value', $schema['fields']['root.api.secret']);
+        self::assertTrue($schema['fields']['root.api.secret']['preserveIfEmpty']);
         self::assertNotContains('must-not-leak', $schema, true);
     }
 

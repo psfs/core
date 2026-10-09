@@ -30,6 +30,7 @@ class ConfigFormTest extends TestCase
             'custom.password' => 'opt_secret',
             'custom.empty' => '',
             'extra.value' => 'extra_data',
+            'extra.empty' => '',
         ];
 
         $form = new ConfigForm('/admin/config', $required, $optional, $data);
@@ -39,8 +40,11 @@ class ConfigFormTest extends TestCase
         $this->assertSame('password', $fields['db.password']['type']);
         $this->assertArrayHasKey('custom.password', $fields);
         $this->assertSame('password', $fields['custom.password']['type']);
-        $this->assertArrayNotHasKey('custom.empty', $fields);
+        $this->assertArrayHasKey('custom.empty', $fields);
+        $this->assertSame('', $fields['custom.empty']['value']);
         $this->assertArrayHasKey('extra.value', $fields);
+        $this->assertArrayHasKey('extra.empty', $fields);
+        $this->assertSame('', $fields['extra.empty']['value']);
         $this->assertSame('text', $fields['extra.value']['type']);
         $this->assertSame('form-horizontal', $form->getAttrs()['class']);
     }

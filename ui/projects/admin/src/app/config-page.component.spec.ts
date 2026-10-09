@@ -57,6 +57,30 @@ describe('ConfigPageComponent', () => {
     fixture.componentInstance.setExtra(0, 'custom.flag', 'enabled');
     fixture.componentInstance.save({ values: { 'app.name': 'PSFS' }, extra: fixture.componentInstance.extraValues() });
 
-    expect(put).toHaveBeenCalledWith('config', { values: { 'app.name': 'PSFS' }, extra: { 'custom.flag': 'enabled' } });
+    expect(put).toHaveBeenCalledWith('config', { values: { 'app.name': 'PSFS' }, extra: { 'custom.flag': 'enabled' }, preserve: [] });
+  });
+
+  it('removes a configuration variable from the submitted save payload', () => {
+    const put = vi.fn(() => of({ ok: true, message: null, data: { changed: ['app.name'] }, errors: {} }));
+    const api = {
+      get: () => of({ ok: true, message: null, data: { form: schema }, errors: {} }),
+      put
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: AdminApiService, useValue: api }] });
+
+    const fixture = TestBed.createComponent(ConfigPageComponent);
+    fixture.detectChanges();
+
+    const removeSecret = fixture.nativeElement.querySelector('[data-field-name="root.api.secret"]') as HTMLButtonElement;
+    expect(removeSecret).not.toBeNull();
+    if (!removeSecret) return;
+    removeSecret.click();
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('psfs-dynamic-form form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+
+    expect(put).toHaveBeenCalledWith('config', { values: { 'app.name': 'PSFS' }, extra: {}, preserve: [] });
   });
 });

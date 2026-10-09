@@ -40,5 +40,19 @@ class ConfigSaveOrderTest extends TestCase
         $this->assertIsInt($zetaPos);
         $this->assertLessThan($zetaPos, $alphaPos);
     }
-}
 
+    public function testSavePersistsEmptyOptionalAndExtraValues(): void
+    {
+        $data = $this->configBackup;
+        $data['optional.empty'] = '';
+
+        $this->assertTrue(Config::save($data, [
+            'label' => ['extra.empty'],
+            'value' => [''],
+        ]));
+
+        $raw = json_decode((string) file_get_contents(CONFIG_DIR . DIRECTORY_SEPARATOR . Config::CONFIG_FILE), true);
+        $this->assertSame('', $raw['optional.empty']);
+        $this->assertSame('', $raw['extra.empty']);
+    }
+}

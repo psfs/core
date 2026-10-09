@@ -23,7 +23,7 @@ import { AdminTranslatePipe } from './admin-translate.pipe';
         <ul *ngIf="generalErrors().length"><li *ngFor="let message of generalErrors()">{{ message }}</li></ul>
       </section>
       <p *ngIf="message()" class="notice notice--success">{{ message() }}</p>
-      <psfs-dynamic-form *ngIf="schema() as form" [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" (submitted)="save($event)" />
+      <psfs-dynamic-form *ngIf="schema() as form" [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" [removable]="true" (submitted)="save($event)" />
       <section class="config-extra" *ngIf="schema()">
         <div class="panel-heading"><div><h2>{{ 'Additional parameters' | t }}</h2><p>{{ 'Add keys not included in the base form.' | t }}</p></div><button class="button button--secondary" type="button" (click)="addExtra()">{{ 'Add parameter' | t }}</button></div>
         <datalist id="config-suggestions"><option *ngFor="let suggestion of suggestions()" [value]="suggestion"></option></datalist>
@@ -64,7 +64,7 @@ export class ConfigPageComponent {
     this.message.set('');
     this.failure.set(null);
     this.fieldErrors.set({});
-    this.api.put<{ changed: string[] }>('config', { values: submission.values, extra: this.extraValues() }).subscribe({
+    this.api.put<{ changed: string[] }>('config', { values: submission.values, extra: this.extraValues(), preserve: submission.preserve ?? [] }).subscribe({
       next: (response) => {
         this.saving.set(false);
         this.message.set(response.message ?? 'Configuración actualizada.');

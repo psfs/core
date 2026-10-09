@@ -27,14 +27,25 @@ class AdminFrontendConfigControllerTest extends TestCase
         Security::dropInstance();
     }
 
-    public function testConfigReadDoesNotExposeConfiguredSecrets(): void
+    public function testConfigReadReturnsConfiguredSecretValuesAsPasswordFields(): void
     {
-        $body = (new AdminFrontendConfigControllerProbe())->show();
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $property->setValue($config, array_merge($original, ['root.api.secret' => 'do-not-leak']));
 
-        self::assertStringContainsString('"ok":true', $body);
-        self::assertStringContainsString('"app.name"', $body);
-        self::assertStringNotContainsString('do-not-leak', $body);
-        self::assertStringContainsString('"value":""', $body);
+        try {
+            $body = (new AdminFrontendConfigControllerProbe())->show();
+            $response = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertStringContainsString('"ok":true', $body);
+            self::assertStringContainsString('"app.name"', $body);
+            self::assertSame('do-not-leak', $response['data']['form']['fields']['root.api.secret']['value']);
+            self::assertSame('password', $response['data']['form']['fields']['root.api.secret']['type']);
+            self::assertTrue($response['data']['form']['fields']['root.api.secret']['preserveIfEmpty']);
+        } finally {
+            $property->setValue($config, $original);
+        }
     }
 
     public function testConfigReadPublishesTheLegacyParameterSuggestionsForNewEntries(): void
@@ -56,6 +67,7 @@ class AdminFrontendConfigControllerTest extends TestCase
         try {
             $controller = new AdminFrontendConfigControllerProbe([
                 'values' => ['app.name' => 'PSFS v2', 'root.api.secret' => ''],
+                'preserve' => ['root.api.secret'],
                 'extra' => [],
             ]);
 
@@ -66,6 +78,54 @@ class AdminFrontendConfigControllerTest extends TestCase
         } finally {
             $property->setValue($config, $original);
         }
+    }
+
+    public function testExplicitEmptySecretValueIsNotReplacedByTheStoredSecret(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $property->setValue($config, array_merge($original, ['root.api.secret' => 'existing-secret']));
+
+        try {
+            $controller = new AdminFrontendConfigControllerProbe([
+                'values' => ['app.name' => 'PSFS v2', 'root.api.secret' => ''],
+                'extra' => [],
+            ]);
+
+            $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+            self::assertTrue($response['ok']);
+            self::assertSame('', $controller->savedValues['root.api.secret']);
+        } finally {
+            $property->setValue($config, $original);
+        }
+    }
+
+    public function testOmittedConfigurationFieldsStayOmittedFromTheSavePayload(): void
+    {
+        $controller = new AdminFrontendConfigControllerProbe([
+            'values' => ['app.name' => 'PSFS v2'],
+            'extra' => [],
+        ]);
+
+        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok']);
+        self::assertSame(['app.name' => 'PSFS v2'], $controller->savedValues);
+    }
+
+    public function testEmptyRequiredConfigurationValueIsAcceptedByTheV2Api(): void
+    {
+        $controller = new AdminFrontendConfigControllerProbe([
+            'values' => ['app.name' => ''],
+            'extra' => [],
+        ]);
+
+        $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($response['ok']);
+        self::assertSame(['app.name' => ''], $controller->savedValues);
     }
 
     public function testBlankNewMaskedSecretIsRemovedInsteadOfPersisted(): void
@@ -115,10 +175,10 @@ class AdminFrontendConfigControllerTest extends TestCase
         );
     }
 
-    public function testInvalidConfigWriteReturnsFieldErrorsWithoutSaving(): void
+    public function testInvalidConfigWriteReturnsPayloadErrorsWithoutSaving(): void
     {
         $controller = new AdminFrontendConfigControllerProbe([
-            'values' => ['app.name' => ''],
+            'values' => ['sequential-value'],
             'extra' => [],
         ]);
 
@@ -126,19 +186,19 @@ class AdminFrontendConfigControllerTest extends TestCase
 
         self::assertSame(422, $controller->statusCode, json_encode($response));
         self::assertFalse($response['ok']);
-        self::assertArrayHasKey('app.name', $response['errors'], json_encode($response));
-        self::assertNotEmpty($response['errors']['app.name']);
+        self::assertArrayHasKey('payload', $response['errors'], json_encode($response));
+        self::assertNotEmpty($response['errors']['payload']);
         self::assertFalse($controller->saved);
     }
 
-    public function testEmptyValuesPayloadIsRejectedBeforeAnySave(): void
+    public function testEmptyValuesPayloadIsAcceptedBeforeSave(): void
     {
         $controller = new AdminFrontendConfigControllerProbe(['values' => [], 'extra' => []]);
         $response = json_decode($controller->update(), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame(422, $controller->statusCode);
-        self::assertSame(['payload' => ['Expected values and extra objects']], $response['errors']);
-        self::assertFalse($controller->saved);
+        self::assertSame(200, $controller->statusCode);
+        self::assertTrue($response['ok']);
+        self::assertTrue($controller->saved);
     }
 
     public function testConfigFormRejectsAnEmptyRequiredValueOutsideTheLegacyCsrfFlow(): void
@@ -221,9 +281,8 @@ class AdminFrontendConfigControllerTest extends TestCase
         $configInstance = Config::getInstance();
         $configProperty = new \ReflectionProperty(Config::class, 'config');
         $configProperty->setValue($configInstance, ['root.api.secret' => 'existing-secret']);
-        $form = new ConfigForm('/admin/api/v2/config', ['root.api.secret'], [], ['root.api.secret' => 'existing-secret']);
         $retainMethod = new \ReflectionMethod(AdminFrontendConfigController::class, 'retainExistingMaskedSecrets');
-        $retained = $retainMethod->invoke($controller, $form, ['root.api.secret' => '']);
+        $retained = $retainMethod->invoke($controller, ['root.api.secret' => ''], ['root.api.secret']);
         self::assertSame('existing-secret', $retained['root.api.secret']);
 
         $router = Router::getInstance();
@@ -297,7 +356,7 @@ class AdminFrontendConfigControllerProbe extends AdminFrontendConfigController
         return new ConfigForm('/admin/api/v2/config', ['app.name'], ['root.api.secret', 'missing.api.token'], [
             'app.name' => 'PSFS',
             'root.api.secret' => 'do-not-leak',
-        ]);
+        ], true);
     }
 
     /** @return array<string,mixed> */

@@ -16,6 +16,8 @@ import { SwaggerExplorerComponent } from './swagger-explorer.component';
 import { AdminLocaleService } from './admin-locale.service';
 import { AdminTranslatePipe } from './admin-translate.pipe';
 import { AdminTranslationService } from './admin-translation.service';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerBook, tablerCube, tablerMenu2, tablerRoute, tablerSettings, tablerUsers, tablerX } from '@ng-icons/tabler-icons';
 
 interface AdminMenuEntry {
   label: string;
@@ -46,18 +48,19 @@ const FALLBACK_MENU: AdminMenuGroup[] = [
   {
     module: 'PSFS',
     items: [
-      { label: 'Configuración general', icon: '⚙', path: '/config' },
-      { label: 'Gestión de usuarios', icon: '👥', path: '/setup' },
-      { label: 'Generar módulo', icon: '🧩', path: '/module' },
-      { label: 'Rutas del sistema', icon: '🧭', path: '/routes' },
-      { label: 'Documentación API', icon: '📚', path: '/api/docs' }
+      { label: 'Configuración general', icon: 'cog', path: '/config' },
+      { label: 'Gestión de usuarios', icon: 'users', path: '/setup' },
+      { label: 'Generar módulo', icon: 'cube', path: '/module' },
+      { label: 'Rutas del sistema', icon: 'route', path: '/routes' },
+      { label: 'Documentación API', icon: 'book', path: '/api/docs' }
     ]
   }
 ];
 
 @Component({
   selector: 'psfs-admin-root',
-  imports: [AdminTranslatePipe, FormsModule, NgFor, NgIf, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [AdminTranslatePipe, FormsModule, NgFor, NgIf, NgIcon, RouterLink, RouterLinkActive, RouterOutlet],
+  providers: [provideIcons({ tablerBook, tablerCube, tablerMenu2, tablerRoute, tablerSettings, tablerUsers, tablerX })],
   template: `
     <div class="admin-app">
       <header class="admin-header">
@@ -72,7 +75,7 @@ const FALLBACK_MENU: AdminMenuGroup[] = [
           </div>
           <label class="locale-picker" *ngIf="bootstrap() as state"><span class="visually-hidden">{{ 'Language' | t }}</span><select [ngModel]="state.locale ?? ''" (ngModelChange)="switchLocale($event)"><option *ngFor="let locale of state.locales ?? []" [value]="locale">{{ locale }}</option></select></label>
           <button class="sidebar-toggle" type="button" (click)="toggleNavigation()" [attr.aria-expanded]="navigationOpen()" [attr.aria-label]="(navigationOpen() ? 'Close navigation' : 'Open navigation') | t" aria-controls="admin-navigation">
-            <span class="visually-hidden">{{ (navigationOpen() ? 'Close navigation' : 'Open navigation') | t }}</span><span aria-hidden="true">☰</span>
+            <span class="visually-hidden">{{ (navigationOpen() ? 'Close navigation' : 'Open navigation') | t }}</span><ng-icon [name]="navigationOpen() ? 'tablerX' : 'tablerMenu2'" aria-hidden="true" />
           </button>
         </div>
       </header>
@@ -82,7 +85,7 @@ const FALLBACK_MENU: AdminMenuGroup[] = [
             <section class="navigation-group" *ngFor="let group of menu()">
               <h2>{{ group.module }}</h2>
               <a *ngFor="let entry of group.items" [routerLink]="entry.path" routerLinkActive="navigation-link--active" (click)="closeNavigation()">
-                <span class="navigation-icon" aria-hidden="true">{{ navigationSymbol(entry.icon) }}</span><span>{{ entry.label | t }}</span>
+                <ng-icon class="navigation-icon" [name]="navigationIcon(entry.icon)" aria-hidden="true" /><span>{{ entry.label | t }}</span>
               </a>
             </section>
           </nav>
@@ -137,14 +140,14 @@ export class AdminShellComponent {
     this.navigationOpen.set(false);
   }
 
-  navigationSymbol(icon: string): string {
+  navigationIcon(icon: string): string {
     const normalized = icon.toLowerCase();
-    if (normalized.includes('cog')) return '⚙';
-    if (normalized.includes('user')) return '◉';
-    if (normalized.includes('layer')) return '◇';
-    if (normalized.includes('folder') || normalized.includes('route')) return '⌘';
-    if (normalized.includes('book') || normalized.includes('doc')) return '▤';
-    return '•';
+    if (normalized.includes('cog') || normalized.includes('setting')) return 'tablerSettings';
+    if (normalized.includes('user')) return 'tablerUsers';
+    if (normalized.includes('layer') || normalized.includes('module') || normalized.includes('cube')) return 'tablerCube';
+    if (normalized.includes('folder') || normalized.includes('route')) return 'tablerRoute';
+    if (normalized.includes('book') || normalized.includes('doc')) return 'tablerBook';
+    return 'tablerCube';
   }
 
   switchLocale(locale: string): void {

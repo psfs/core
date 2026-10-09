@@ -28,9 +28,10 @@ class AdminFrontendConfigController extends Admin
     {
         $form = $this->configForm();
         $form->build();
+        $form->retainExistingSensitiveValues(Config::getInstance()->dumpConfig());
 
         return $this->json(AdminApiResponse::success([
-            'form' => (new AdminFormSchemaFactory())->fromForm($form),
+            'form' => (new AdminFormSchemaFactory())->fromForm($form, true),
             'suggestions' => $this->suggestions(),
         ]));
     }
@@ -45,18 +46,26 @@ class AdminFrontendConfigController extends Admin
         $payload = $this->requestPayload();
         $values = $payload['values'] ?? null;
         $extra = $payload['extra'] ?? null;
+        $preserve = $payload['preserve'] ?? [];
 
-        if (!$this->isValueRecord($values) || !$this->isRecord($extra)) {
+        if (!$this->isValueRecord($values) || !$this->isRecord($extra) || !$this->isStringList($preserve)) {
             return $this->json(AdminApiResponse::failure(
                 t('Invalid configuration payload'),
-                ['payload' => [t('Expected values and extra objects')]]
+                ['payload' => [t('Expected values and extra objects, and an optional preserve list')]]
             ), 422);
         }
 
         $form = $this->configForm();
         // API clients authenticate independently; legacy form CSRF fields do not belong in this JSON contract.
         $form->setMethod('PUT')->build();
-        $values = $this->retainExistingMaskedSecrets($form, $values);
+        $values = array_intersect_key($values, array_filter($form->getFields(), 'is_array'));
+        if (!$this->isValidPreserveList($preserve, $values, $form)) {
+            return $this->json(AdminApiResponse::failure(
+                t('Invalid configuration payload'),
+                ['preserve' => [t('Only submitted secret fields can be preserved')]]
+            ), 422);
+        }
+        $values = $this->retainExistingMaskedSecrets($values, $preserve);
         $form->setData($values);
         $errors = $this->requiredFieldErrors($form);
 
@@ -68,7 +77,7 @@ class AdminFrontendConfigController extends Admin
         }
 
         $debug = $this->debugMode();
-        if (!$this->save($form->getData(), $this->normalizeExtra($extra))) {
+        if (!$this->save($values, $this->normalizeExtra($extra))) {
             return $this->json(AdminApiResponse::failure(
                 t('Error while saving configuration, please verify filesystem permissions')
             ), 500);
@@ -87,7 +96,8 @@ class AdminFrontendConfigController extends Admin
             '/admin/api/v2/config',
             Config::$required,
             Config::$optional,
-            Config::getInstance()->dumpConfig()
+            Config::getInstance()->dumpConfig(),
+            true
         );
     }
 
@@ -151,27 +161,39 @@ class AdminFrontendConfigController extends Admin
     /** @param mixed $value */
     private function isValueRecord($value): bool
     {
-        return $this->isRecord($value) && $value !== [];
+        return $this->isRecord($value);
     }
 
-    /** @param array<string,mixed> $values @return array<string,mixed> */
-    private function retainExistingMaskedSecrets(ConfigForm $form, array $values): array
+    /** @param mixed $value */
+    private function isStringList($value): bool
     {
-        $existing = Config::getInstance()->dumpConfig();
-        foreach ($form->getFields() as $field => $definition) {
-            if (!preg_match('/(?:secret|password|token|hash)/i', (string) $field)) {
-                continue;
-            }
+        return is_array($value) && array_is_list($value)
+            && array_reduce($value, static fn (bool $valid, $field): bool => $valid && is_string($field), true);
+    }
 
-            if (array_key_exists($field, $values) && $values[$field] === '') {
-                if (array_key_exists($field, $existing)) {
-                    $values[$field] = $existing[$field];
-                } else {
-                    unset($values[$field]);
-                }
+    /** @param string[] $preserve @param array<string,mixed> $values */
+    private function isValidPreserveList(array $preserve, array $values, ConfigForm $form): bool
+    {
+        $fields = $form->getFields();
+        foreach ($preserve as $field) {
+            if (!array_key_exists($field, $values)
+                || !array_key_exists($field, $fields)
+                || !preg_match('/(?:secret|password|token|hash)/i', $field)) {
+                return false;
             }
         }
+        return true;
+    }
 
+    /** @param array<string,mixed> $values @param string[] $preserve @return array<string,mixed> */
+    private function retainExistingMaskedSecrets(array $values, array $preserve): array
+    {
+        $existing = Config::getInstance()->dumpConfig();
+        foreach ($preserve as $field) {
+            if (array_key_exists($field, $existing)) {
+                $values[$field] = $existing[$field];
+            }
+        }
         return $values;
     }
 

@@ -12,7 +12,7 @@ class AdminFormSchemaFactory
     /**
      * @return array{name:mixed,title:mixed,fields:array<string,array<string,mixed>>}
      */
-    public function fromForm(object $form): array
+    public function fromForm(object $form, bool $includeSensitiveValues = false): array
     {
         $fields = [];
 
@@ -21,7 +21,7 @@ class AdminFormSchemaFactory
                 continue;
             }
 
-            $fields[$key] = $this->normalizeField((string) $key, $field);
+            $fields[$key] = $this->normalizeField((string) $key, $field, $includeSensitiveValues);
         }
 
         return [
@@ -35,18 +35,22 @@ class AdminFormSchemaFactory
      * @param array<string,mixed> $field
      * @return array<string,mixed>
      */
-    private function normalizeField(string $key, array $field): array
+    private function normalizeField(string $key, array $field, bool $includeSensitiveValues): array
     {
+        $isSecret = $this->isSecretField($key, $field);
         $normalized = [
             'name' => $key,
             'label' => $field['label'] ?? $key,
             'type' => $field['type'] ?? 'text',
-            'value' => $this->isSecretField($key, $field) ? '' : ($field['value'] ?? null),
-            'preserveIfEmpty' => $this->isSecretField($key, $field),
+            'preserveIfEmpty' => $isSecret,
             'required' => $field['required'] ?? true,
             'options' => $field['data'] ?? [],
             'help' => $field['help'] ?? null,
         ];
+
+        if (!$isSecret || $includeSensitiveValues) {
+            $normalized['value'] = $field['value'] ?? null;
+        }
 
         foreach (['pattern', 'min', 'max', 'minlength', 'maxlength'] as $rule) {
             if (array_key_exists($rule, $field)) {

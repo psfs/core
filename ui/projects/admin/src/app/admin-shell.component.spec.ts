@@ -66,8 +66,8 @@ describe('AdminShellComponent', () => {
     fixture.componentInstance.closeNavigation();
 
     expect(fixture.componentInstance.navigationOpen()).toBe(false);
-    expect(fixture.componentInstance.navigationSymbol('fa-cogs')).toBe('⚙');
-    expect(fixture.componentInstance.navigationSymbol('unknown')).toBe('•');
+    expect(fixture.componentInstance.navigationIcon('fa-cogs')).toBe('tablerSettings');
+    expect(fixture.componentInstance.navigationIcon('unknown')).toBe('tablerCube');
   });
 });
 
