@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Propel\Generator\Config\GeneratorConfig;
 use Propel\Generator\Manager\MigrationManager;
 use Propel\Generator\Model\Database;
+use Propel\Generator\Model\Diff\DatabaseDiff;
+use Propel\Generator\Model\Table;
 use Propel\Generator\Model\Schema;
 use PSFS\base\SingletonRegistry;
 use PSFS\base\exception\ApiException;
@@ -117,8 +119,11 @@ class GeneratorServiceTest extends TestCase
     {
         $service = $this->newServiceWithoutConstructor(GeneratorServiceTestDouble::class);
         $service->excludedTables = ['skip_me'];
+        $users = new Table('users');
+        $databaseDiff = new DatabaseDiff();
+        $databaseDiff->addAddedTable('users', $users);
         $service->diffsByName = [
-            'with_diff' => new GeneratorServiceDiffStub('reverse-with-diff'),
+            'with_diff' => $databaseDiff,
             'without_diff' => false,
         ];
 
@@ -146,16 +151,7 @@ class GeneratorServiceTest extends TestCase
             }
         );
 
-        $platform = new class {
-            public function getModifyDatabaseDDL($diff): string
-            {
-                return 'ddl:' . (is_string($diff) ? $diff : 'with-diff');
-            }
-        };
-        $migrationService->expects($this->once())
-            ->method('getPlatformAndConnection')
-            ->with($manager, 'with_diff', $generatorConfig)
-            ->willReturn([null, $platform]);
+        $migrationService->expects($this->never())->method('getPlatformAndConnection');
 
         [$up, $down] = $this->invokePrivateMethod(
             $service,
@@ -163,8 +159,9 @@ class GeneratorServiceTest extends TestCase
             [$manager, $generatorConfig, $migrationService, $reversedSchema, false]
         );
 
-        $this->assertSame(['with_diff' => 'ddl:with-diff'], $up);
-        $this->assertSame(['with_diff' => 'ddl:reverse-with-diff'], $down);
+        $this->assertSame(['with_diff' => $databaseDiff], $up);
+        $this->assertInstanceOf(DatabaseDiff::class, $down['with_diff']);
+        $this->assertArrayHasKey('users', $down['with_diff']->getRemovedTables());
         $this->assertSame(
             ['with_diff' => ['skip_me'], 'without_diff' => ['skip_me']],
             $service->capturedExcludedTablesByDatabase
@@ -313,24 +310,28 @@ class GeneratorServiceTest extends TestCase
             'phpConfDir' => CORE_DIR . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'propel' . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'bookstore',
         ]);
 
-        $platform = new class {
-            public function getModifyDatabaseDDL($diff): string
-            {
-                return is_string($diff) ? $diff : 'ddl-up';
-            }
-        };
-        $diff = new GeneratorServiceDiffStub('ddl-down');
+        $diff = new DatabaseDiff();
+        $diff->addAddedTable('users', new Table('users'));
 
         $migrationService = $this->getMockBuilder(MigrationService::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getConnectionManager', 'checkSourceDatabase', 'getPlatformAndConnection', 'generateMigrationFile'])
+            ->onlyMethods(['getConnectionManager', 'checkSourceDatabase', 'generateMigrationFile'])
             ->getMock();
         $migrationService->method('getConnectionManager')->willReturn([$manager, $generatorConfig]);
         $migrationService->method('checkSourceDatabase')->willReturn([new Database('bookstore'), 1]);
-        $migrationService->method('getPlatformAndConnection')->willReturn([null, $platform]);
         $migrationService->expects($this->once())
             ->method('generateMigrationFile')
-            ->with($manager, ['bookstore' => 'ddl-up'], ['bookstore' => 'ddl-down'], $generatorConfig, 'Demo');
+            ->with(
+                $manager,
+                ['bookstore' => $diff],
+                $this->callback(static fn(array $down): bool =>
+                    isset($down['bookstore'])
+                    && $down['bookstore'] instanceof DatabaseDiff
+                    && isset($down['bookstore']->getRemovedTables()['users'])
+                ),
+                $generatorConfig,
+                'Demo'
+            );
         $this->injectSingleton(MigrationService::class, $migrationService);
 
         $serviceDouble = $this->newServiceWithoutConstructor(GeneratorServiceTestDouble::class);

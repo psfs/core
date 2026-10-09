@@ -15,6 +15,10 @@ use PSFS\services\migration\MigrationEngineInterface;
 use PSFS\services\migration\MigrationEngineResolver;
 use PSFS\services\migration\MigrationExecutionContext;
 use PSFS\services\migration\MigrationExecutionResult;
+use PSFS\services\migration\CommandRunner;
+use PSFS\services\migration\PhinxConfigFactory;
+use PSFS\services\migration\PhinxMigrationEngine;
+use PSFS\services\migration\SqlStatementSplitter;
 
 class MigrationServiceTest extends TestCase
 {
@@ -290,6 +294,71 @@ class MigrationServiceTest extends TestCase
         @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations');
         @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config');
         @rmdir($moduleDir);
+    }
+
+    public function testRunSeedsResolvesPhinxExplicitlyAndBuildsModuleContext(): void
+    {
+        $moduleDir = CACHE_DIR . DIRECTORY_SEPARATOR . 'migration_seed_module_' . uniqid('', true);
+        mkdir($moduleDir . DIRECTORY_SEPARATOR . 'Config', 0777, true);
+        $engine = new class(new CommandRunner(), new PhinxConfigFactory(), new SqlStatementSplitter()) extends PhinxMigrationEngine {
+            public ?MigrationExecutionContext $seedContext = null;
+
+            public function seed(MigrationExecutionContext $context): MigrationExecutionResult
+            {
+                $this->seedContext = $context;
+                return MigrationExecutionResult::success('phinx', 'seeded');
+            }
+        };
+        $resolver = $this->createMock(MigrationEngineResolver::class);
+        $resolver->expects($this->once())->method('resolve')->with('phinx', 'client')->willReturn($engine);
+        $service = new class($resolver) extends MigrationService {
+            public function __construct(private MigrationEngineResolver $resolverMock)
+            {
+            }
+
+            protected function createMigrationEngineResolver(): MigrationEngineResolver
+            {
+                return $this->resolverMock;
+            }
+        };
+
+        $result = $service->runSeeds('Client', $moduleDir);
+
+        $this->assertTrue($result->isSuccess());
+        $this->assertSame('seeded', $result->getOutput());
+        $this->assertSame('Client', $engine->seedContext->getModule());
+        $this->assertFalse($engine->seedContext->isSimulate());
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'Migrations');
+        @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config');
+        @rmdir($moduleDir);
+    }
+
+    public function testRunSeedsDoesNotUsePropelAsFallback(): void
+    {
+        $moduleDir = CACHE_DIR . DIRECTORY_SEPARATOR . 'migration_seed_fallback_' . uniqid('', true);
+        mkdir($moduleDir . DIRECTORY_SEPARATOR . 'Config', 0777, true);
+        $resolver = $this->createMock(MigrationEngineResolver::class);
+        $resolver->expects($this->once())->method('resolve')->with('phinx', 'client')->willReturn(new TestMigrationEngine('propel'));
+        $service = new class($resolver) extends MigrationService {
+            public function __construct(private MigrationEngineResolver $resolverMock)
+            {
+            }
+
+            protected function createMigrationEngineResolver(): MigrationEngineResolver
+            {
+                return $this->resolverMock;
+            }
+        };
+
+        try {
+            $service->runSeeds('Client', $moduleDir);
+            self::fail('Expected Phinx-only seed execution to reject Propel fallback');
+        } catch (\RuntimeException $exception) {
+            $this->assertStringContainsString('cannot fall back to Propel', $exception->getMessage());
+        } finally {
+            @rmdir($moduleDir . DIRECTORY_SEPARATOR . 'Config');
+            @rmdir($moduleDir);
+        }
     }
 
     public function testGetPlatformAndConnectionDelegatesToManagerAndGeneratorConfig(): void

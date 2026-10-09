@@ -70,5 +70,22 @@ class ApiPhaseAGenerationTest extends TestCase
         $this->assertTrue(class_exists(\CLIENT\Models\Test\TestQuery::class));
         $this->assertTrue(class_exists(\CLIENT\Models\Related\RelatedQuery::class));
     }
-}
 
+    public function testGeneratedSchemaMigrationUsesDeclarativePhinxOperations(): void
+    {
+        $migrationDir = ClientModuleHarness::modulePath() . '/Config/Migrations';
+        $files = glob($migrationDir . '/*_AutoCLIENTSchemaDiff*.php') ?: [];
+        $this->assertCount(3, $files);
+
+        $migrations = array_map(static fn(string $file): string => (string)file_get_contents($file), $files);
+        foreach ($migrations as $migration) {
+            $this->assertStringContainsString('public function up(): void', $migration);
+            $this->assertStringContainsString('public function down(): void', $migration);
+            $this->assertStringNotContainsString('$this->execute(', $migration);
+        }
+        $this->assertStringContainsString("\$this->table('CLIENT_TEST'", $migrations[0]);
+        $this->assertStringContainsString("'tinyinteger', ['null' => false]", $migrations[0]);
+        $this->assertStringContainsString('MIGRATION_STAGE_LABEL', $migrations[1]);
+        $this->assertStringContainsString('idx_related_migration_stage_label', $migrations[2]);
+    }
+}

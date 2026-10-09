@@ -19,7 +19,9 @@ $console
     ->addOption('module', 'm', InputOption::VALUE_OPTIONAL, 'Specific module to migrate')
     ->addOption('simulate', 's', InputOption::VALUE_OPTIONAL, 'Dry run mode (1/0)', '0')
     ->addOption('engine', 'e', InputOption::VALUE_OPTIONAL, 'Migration engine (phinx|propel)')
+    ->addOption('target', 't', InputOption::VALUE_REQUIRED, 'Phinx migration version to apply up to')
     ->addUsage('psfs:migrate --module=TEST')
+    ->addUsage('psfs:migrate --module=TEST --target=20261009123456')
     ->addUsage('psfs:migrate --simulate=1')
     ->addUsage('psfs:migrate --module=TEST --simulate=1 --engine=propel')
     ->setDescription('Run database migrations')
@@ -27,6 +29,7 @@ $console
         $module = $input->getOption('module');
         $simulate = in_array((string)$input->getOption('simulate'), ['1', 'true', 'yes'], true);
         $engine = $input->getOption('engine');
+        $targetOption = $input->getOption('target');
         $domains = Router::getInstance()->getDomains();
         $service = MigrationService::getInstance();
         $errors = [];
@@ -61,7 +64,11 @@ $console
                     continue;
                 }
                 try {
-                    $result = $service->runMigrate($resolvedModule, $moduleBase, $simulate, is_string($engine) ? $engine : null);
+                    if (null !== $targetOption && !ctype_digit((string)$targetOption)) {
+                        throw new \InvalidArgumentException('Migration target must be a non-negative integer version');
+                    }
+                    $targetVersion = null === $targetOption ? null : (int)$targetOption;
+                    $result = $service->runMigrate($resolvedModule, $moduleBase, $simulate, is_string($engine) ? $engine : null, $targetVersion);
                     $output->writeln($result->getOutput());
                     if (!$result->isSuccess()) {
                         $errors[] = sprintf('%s (%s)', $resolvedModule, $result->getEngine());

@@ -300,9 +300,8 @@ class GeneratorService extends SimpleService
                 }
                 continue;
             }
-            list(, $platform) = $migrationService->getPlatformAndConnection($manager, $name, $generatorConfig);
-            $migrationsUp[$name] = $platform->getModifyDatabaseDDL($databaseDiff);
-            $migrationsDown[$name] = $platform->getModifyDatabaseDDL($databaseDiff->getReverseDiff());
+            $migrationsUp[$name] = $databaseDiff;
+            $migrationsDown[$name] = $databaseDiff->getReverseDiff();
         }
 
         return [$migrationsUp, $migrationsDown];

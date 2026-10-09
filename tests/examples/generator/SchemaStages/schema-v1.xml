@@ -8,10 +8,6 @@
     <table name="RELATED" namespace="Related">
         <column name="ID_RELATED" type="INTEGER" autoIncrement="true" primaryKey="true"/>
         <column name="TITLE" type="VARCHAR" size="100" required="true"/>
-        <column name="MIGRATION_STAGE_LABEL" type="VARCHAR" size="80"/>
-        <index name="idx_related_migration_stage_label">
-            <index-column name="MIGRATION_STAGE_LABEL"/>
-        </index>
     </table>
     <table name="TEST" namespace="Test">
         <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>

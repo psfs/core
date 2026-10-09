@@ -21,6 +21,8 @@ final class ClientModuleHarness
     private static ?array $configBackup = null;
     private static ?string $moduleBackupPath = null;
     private static ?string $resolvedHost = null;
+    private static ?string $resolvedDatabaseName = null;
+    private static bool $ownsDatabase = false;
     private static bool $seedIntegrityChecked = false;
 
     public static function acquire(): void
@@ -38,7 +40,6 @@ final class ClientModuleHarness
         self::generateModuleStructure();
         self::loadModulePropelConfig();
         self::generateMigrations();
-        self::runMigrations();
         self::resetSeedData();
     }
 
@@ -51,6 +52,7 @@ final class ClientModuleHarness
         self::restoreConfig();
         self::cleanupModule();
         self::restoreModuleBackup();
+        self::dropOwnedDatabase();
         self::resetRuntimeState();
     }
 
@@ -115,12 +117,95 @@ final class ClientModuleHarness
         }
     }
 
+    public static function tableExists(string $table): bool
+    {
+        $statement = self::connectTestDatabase()->prepare(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table'
+        );
+        $statement->execute(['table' => $table]);
+        return (int)$statement->fetchColumn() > 0;
+    }
+
+    public static function columnExists(string $table, string $column): bool
+    {
+        $statement = self::connectTestDatabase()->prepare(
+            'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column'
+        );
+        $statement->execute(['table' => $table, 'column' => $column]);
+        return (int)$statement->fetchColumn() > 0;
+    }
+
+    public static function columnLength(string $table, string $column): ?int
+    {
+        $statement = self::connectTestDatabase()->prepare(
+            'SELECT character_maximum_length FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column'
+        );
+        $statement->execute(['table' => $table, 'column' => $column]);
+        $length = $statement->fetchColumn();
+        return false === $length || null === $length ? null : (int)$length;
+    }
+
+    public static function indexExists(string $table, string $index): bool
+    {
+        $statement = self::connectTestDatabase()->prepare(
+            'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = :table AND index_name = :index'
+        );
+        $statement->execute(['table' => $table, 'index' => $index]);
+        return (int)$statement->fetchColumn() > 0;
+    }
+
+    public static function appliedMigrationCount(): int
+    {
+        if (!self::tableExists('phinxlog_client')) {
+            return 0;
+        }
+
+        return (int)self::connectTestDatabase()->query('SELECT COUNT(*) FROM `phinxlog_client`')->fetchColumn();
+    }
+
+    /** @return list<int> */
+    public static function appliedMigrationVersions(): array
+    {
+        if (!self::tableExists('phinxlog_client')) {
+            return [];
+        }
+        $versions = self::connectTestDatabase()->query('SELECT version FROM `phinxlog_client` ORDER BY version')->fetchAll(\PDO::FETCH_COLUMN);
+        return array_map('intval', $versions);
+    }
+
+    /** @return list<int> */
+    public static function migrationVersions(): array
+    {
+        $files = glob(self::modulePath() . '/Config/Migrations/*_AutoCLIENTSchemaDiff*.php') ?: [];
+        sort($files, SORT_STRING);
+        return array_map(static function (string $file): int {
+            if (!preg_match('/^(\d+)_AutoCLIENTSchemaDiff\d+\.php$/', basename($file), $matches)) {
+                throw new \RuntimeException('Unexpected generated Phinx migration name: ' . basename($file));
+            }
+            return (int)$matches[1];
+        }, $files);
+    }
+
+    public static function countRows(string $table, string $column, string $value): int
+    {
+        foreach ([$table, $column] as $identifier) {
+            if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+                throw new \InvalidArgumentException('Invalid test database identifier: ' . $identifier);
+            }
+        }
+        $statement = self::connectTestDatabase()->prepare(
+            sprintf('SELECT COUNT(*) FROM `%s` WHERE `%s` = :value', $table, $column)
+        );
+        $statement->execute(['value' => $value]);
+        return (int)$statement->fetchColumn();
+    }
+
     private static function configureRuntime(): void
     {
         $config = self::$configBackup ?? [];
         $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
         $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
-        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        $dbName = self::testDatabaseName();
         $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
         $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
 
@@ -165,13 +250,47 @@ final class ClientModuleHarness
     private static function generateMigrations(): void
     {
         $generator = GeneratorService::getInstance();
-        $generator->createStructureModule(self::MODULE, skipMigration: false);
+        $schemaStages = BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'examples' . DIRECTORY_SEPARATOR . 'generator' . DIRECTORY_SEPARATOR . 'SchemaStages';
+        $schemaVersions = [
+            $schemaStages . DIRECTORY_SEPARATOR . 'schema-v1.xml',
+            $schemaStages . DIRECTORY_SEPARATOR . 'schema-v2.xml',
+            BASE_DIR . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'examples' . DIRECTORY_SEPARATOR . 'generator' . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'schema.xml',
+        ];
+        if (self::tableExists('CLIENT_TEST') || self::tableExists('phinxlog_client')) {
+            throw new \RuntimeException('Phinx round-trip fixture must start from an empty database');
+        }
+
+        foreach ($schemaVersions as $index => $schemaFile) {
+            $moduleSchema = self::modulePath() . DIRECTORY_SEPARATOR . 'Config' . DIRECTORY_SEPARATOR . 'schema.xml';
+            if ($schemaFile !== $moduleSchema && !copy($schemaFile, $moduleSchema)) {
+                throw new \RuntimeException('Unable to load migration schema stage ' . ($index + 1));
+            }
+            $generator->createStructureModule(self::MODULE, skipMigration: false);
+            self::runMigrations();
+        }
     }
 
-    private static function runMigrations(): void
+    public static function runMigrations(?int $targetVersion = null): void
+    {
+        $target = null === $targetVersion ? '' : ' --target=' . $targetVersion;
+        self::runConsoleCommand('psfs:migrate --module=' . self::MODULE . $target, 'Migration');
+    }
+
+    public static function rollbackMigrations(?int $targetVersion = null): void
+    {
+        $target = null === $targetVersion ? '' : ' --target=' . $targetVersion;
+        self::runConsoleCommand('psfs:migrate:rollback --module=' . self::MODULE . $target, 'Rollback');
+    }
+
+    public static function runSeeders(): void
+    {
+        self::runConsoleCommand('psfs:seed --module=' . self::MODULE, 'Seeder');
+    }
+
+    private static function runConsoleCommand(string $arguments, string $operation): void
     {
         self::resetRuntimeState();
-        $command = 'php src/bin/psfs psfs:migrate --module=' . self::MODULE;
+        $command = 'php src/bin/psfs ' . $arguments;
         $descriptor = [
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
@@ -186,7 +305,7 @@ final class ClientModuleHarness
         fclose($pipes[2]);
         $exitCode = proc_close($proc);
         if ($exitCode !== 0) {
-            throw new \RuntimeException('Migration command failed: ' . trim($stdout . PHP_EOL . $stderr));
+            throw new \RuntimeException($operation . ' command failed: ' . trim($stdout . PHP_EOL . $stderr));
         }
     }
 
@@ -194,7 +313,17 @@ final class ClientModuleHarness
     {
         $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
         $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
-        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        // API_DB_NAME belongs to PHPUnit's bootstrap. Only the explicit test override
+        // may bypass an isolated database so API tests never mutate core_test.
+        $configuredDbName = getenv('PSFS_API_TEST_DB_NAME');
+        if (false === $configuredDbName || '' === $configuredDbName) {
+            self::$resolvedDatabaseName = 'psfs_api_test_' . getmypid() . '_' . bin2hex(random_bytes(5));
+            self::$ownsDatabase = true;
+        } else {
+            self::$resolvedDatabaseName = $configuredDbName;
+            self::$ownsDatabase = false;
+        }
+        $dbName = self::testDatabaseName();
         $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
         $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
         $hosts = self::candidateHosts($host);
@@ -219,6 +348,9 @@ final class ClientModuleHarness
         if (!$pdo instanceof \PDO) {
             throw new \RuntimeException('Unable to connect to MySQL test service: ' . ($lastError?->getMessage() ?? 'unknown error'));
         }
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $dbName)) {
+            throw new \RuntimeException('Invalid API test database name');
+        }
         $pdo->exec(sprintf('CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $dbName));
     }
 
@@ -226,7 +358,7 @@ final class ClientModuleHarness
     {
         $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
         $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
-        $dbName = self::envValue(['API_DB_NAME', 'DB_NAME'], 'core_test');
+        $dbName = self::testDatabaseName();
         $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
         $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
         $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $dbName);
@@ -234,6 +366,35 @@ final class ClientModuleHarness
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+    }
+
+    private static function testDatabaseName(): string
+    {
+        return self::$resolvedDatabaseName ?? self::envValue(['PSFS_API_TEST_DB_NAME'], 'core_test');
+    }
+
+    private static function dropOwnedDatabase(): void
+    {
+        if (!self::$ownsDatabase || null === self::$resolvedDatabaseName) {
+            self::$resolvedDatabaseName = null;
+            self::$ownsDatabase = false;
+            return;
+        }
+
+        $dbName = self::$resolvedDatabaseName;
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $dbName)) {
+            throw new \RuntimeException('Refusing to remove invalid API test database name');
+        }
+        $host = self::$resolvedHost ?: self::envValue(['API_DB_HOST', 'DB_HOST'], 'db');
+        $port = self::envValue(['API_DB_PORT', 'DB_PORT'], '3306');
+        $dbUser = self::envValue(['API_DB_USER', 'DB_USER'], 'root');
+        $dbPassword = self::envValue(['API_DB_PASSWORD', 'DB_PASSWORD'], 'psfs');
+        $pdo = new \PDO(sprintf('mysql:host=%s;port=%s;charset=utf8mb4', $host, $port), $dbUser, $dbPassword, [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+        $pdo->exec(sprintf('DROP DATABASE IF EXISTS `%s`', $dbName));
+        self::$resolvedDatabaseName = null;
+        self::$ownsDatabase = false;
     }
 
     private static function backupExistingModule(): void

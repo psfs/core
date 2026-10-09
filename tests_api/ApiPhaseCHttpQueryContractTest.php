@@ -76,6 +76,7 @@ class ApiPhaseCHttpQueryContractTest extends TestCase
 
     public function testListSupportsExactAndCompoundFilters(): void
     {
+        $this->assertGreaterThan(0, ClientModuleHarness::countRows('CLIENT_TEST', 'TYPE', 'DEV'));
         $order = rawurlencode(json_encode(['Id' => 'asc']));
         $response = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test?Type=DEV&Checker=1&__order=' . $order));
         $this->assertTrue((bool)$response['success']);

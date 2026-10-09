@@ -8,8 +8,12 @@ class MigrationExecutionContext
         private readonly string $module,
         private readonly string $configDir,
         private readonly string $migrationDir,
-        private readonly bool $simulate = false
+        private readonly bool $simulate = false,
+        private readonly ?int $targetVersion = null
     ) {
+        if (null !== $targetVersion && $targetVersion < 0) {
+            throw new \InvalidArgumentException('Migration target version cannot be negative');
+        }
     }
 
     public function getModule(): string
@@ -35,5 +39,10 @@ class MigrationExecutionContext
     public function isSimulate(): bool
     {
         return $this->simulate;
+    }
+
+    public function getTargetVersion(): ?int
+    {
+        return $this->targetVersion;
     }
 }

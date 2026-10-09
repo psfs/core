@@ -15,6 +15,7 @@ use PSFS\services\migration\MigrationExecutionContext;
 use PSFS\services\migration\MigrationExecutionResult;
 use PSFS\services\migration\PhinxConfigFactory;
 use PSFS\services\migration\PhinxMigrationEngine;
+use PSFS\services\migration\PropelDiffToPhinxMigrationGenerator;
 use PSFS\services\migration\PropelMigrationEngine;
 use PSFS\services\migration\SqlStatementSplitter;
 use Symfony\Component\Console\Output\Output;
@@ -162,17 +163,23 @@ class MigrationService extends SimpleService
         Logger::log($result->getOutput());
     }
 
-    public function runMigrate(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null): MigrationExecutionResult
+    public function runMigrate(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null, ?int $targetVersion = null): MigrationExecutionResult
     {
-        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate);
+        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate, $targetVersion);
         $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
+        if (null !== $targetVersion && !$engine instanceof PhinxMigrationEngine) {
+            throw new \InvalidArgumentException('Target versions are only supported by the Phinx migration engine');
+        }
         return $engine->migrate($context);
     }
 
-    public function runRollback(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null): MigrationExecutionResult
+    public function runRollback(string $module, string $moduleBasePath, bool $simulate = false, ?string $engineName = null, ?int $targetVersion = null): MigrationExecutionResult
     {
-        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate);
+        $context = $this->buildExecutionContext($module, $moduleBasePath, $simulate, $targetVersion);
         $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
+        if (null !== $targetVersion && !$engine instanceof PhinxMigrationEngine) {
+            throw new \InvalidArgumentException('Target versions are only supported by the Phinx migration engine');
+        }
         return $engine->rollback($context);
     }
 
@@ -181,6 +188,17 @@ class MigrationService extends SimpleService
         $context = $this->buildExecutionContext($module, $moduleBasePath, false);
         $engine = $this->createMigrationEngineResolver()->resolve($engineName, strtolower($module));
         return $engine->status($context);
+    }
+
+    public function runSeeds(string $module, string $moduleBasePath): MigrationExecutionResult
+    {
+        $context = $this->buildExecutionContext($module, $moduleBasePath, false);
+        $engine = $this->createMigrationEngineResolver()->resolve('phinx', strtolower($module));
+        if (!$engine instanceof PhinxMigrationEngine) {
+            throw new \RuntimeException('Phinx seeding is unavailable; seed execution cannot fall back to Propel');
+        }
+
+        return $engine->seed($context);
     }
 
     protected function createMigrationManager(): MigrationManager
@@ -210,7 +228,9 @@ class MigrationService extends SimpleService
         $phinx = new PhinxMigrationEngine(
             $runner,
             new PhinxConfigFactory(),
-            new SqlStatementSplitter()
+            new SqlStatementSplitter(),
+            null,
+            new PropelDiffToPhinxMigrationGenerator()
         );
 
         return new MigrationEngineResolver($phinx, $propel);
@@ -227,7 +247,7 @@ class MigrationService extends SimpleService
         return '' !== $module ? $module : 'module';
     }
 
-    private function buildExecutionContext(string $module, string $moduleBasePath, bool $simulate): MigrationExecutionContext
+    private function buildExecutionContext(string $module, string $moduleBasePath, bool $simulate, ?int $targetVersion = null): MigrationExecutionContext
     {
         $moduleRoot = realpath($moduleBasePath);
         if (false === $moduleRoot) {
@@ -238,6 +258,6 @@ class MigrationService extends SimpleService
             throw new \RuntimeException(sprintf('Module config directory not found: %s', $configDir));
         }
         $migrationDir = $configDir . DIRECTORY_SEPARATOR . 'Migrations';
-        return new MigrationExecutionContext($module, $configDir, $migrationDir, $simulate);
+        return new MigrationExecutionContext($module, $configDir, $migrationDir, $simulate, $targetVersion);
     }
 }

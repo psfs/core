@@ -3,6 +3,7 @@
 namespace PSFS\services\migration;
 
 use Propel\Generator\Manager\MigrationManager;
+use Propel\Generator\Model\Diff\DatabaseDiff;
 use Closure;
 use PSFS\base\Logger;
 
@@ -15,7 +16,8 @@ class PhinxMigrationEngine implements MigrationEngineInterface
         private readonly CommandRunner $runner,
         private readonly PhinxConfigFactory $configFactory,
         private readonly SqlStatementSplitter $splitter,
-    private readonly ?Closure $binaryChecker = null
+        private readonly ?Closure $binaryChecker = null,
+        private readonly ?PropelDiffToPhinxMigrationGenerator $diffTranslator = null
     ) {
     }
 
@@ -48,6 +50,22 @@ class PhinxMigrationEngine implements MigrationEngineInterface
         return $this->executePhinx('status', $context);
     }
 
+    public function seed(MigrationExecutionContext $context): MigrationExecutionResult
+    {
+        $config = $this->configFactory->createForModule($context->getModule(), $context->getMigrationDir());
+        $seedDir = $config['paths']['seeds'] ?? ($context->getMigrationDir() . DIRECTORY_SEPARATOR . 'Seeds');
+        $seeders = is_dir($seedDir) ? glob(rtrim($seedDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*.php') : false;
+        if (!is_array($seeders) || $seeders === []) {
+            return MigrationExecutionResult::failure(
+                $this->getName(),
+                sprintf('No Phinx seeders found in %s', $seedDir),
+                1
+            );
+        }
+
+        return $this->executePhinx('seed:run', $context);
+    }
+
     public function generateFromDiff(
         string $module,
         array $migrationsUp,
@@ -57,17 +75,98 @@ class PhinxMigrationEngine implements MigrationEngineInterface
         ?MigrationManager $manager = null
     ): MigrationExecutionResult {
         $moduleClass = $this->normalizeModuleClassName($module);
-        $className = sprintf('Auto%sSchemaDiff', $moduleClass);
-        $fileName = sprintf('%s_%s.php', date('YmdHis', $timestamp), $className);
+        do {
+            $version = date('YmdHis', $timestamp);
+            $className = sprintf('Auto%sSchemaDiff%s', $moduleClass, $version);
+            $fileName = sprintf('%s_%s.php', $version, $className);
+            $target = $migrationDir . DIRECTORY_SEPARATOR . $fileName;
+            if (file_exists($target)) {
+                ++$timestamp;
+            }
+        } while (file_exists($target));
 
-        $upStatements = $this->normalizeStatements($migrationsUp);
-        $downStatements = $this->normalizeStatements($migrationsDown);
-
-        $content = $this->buildMigrationClass($className, $upStatements, $downStatements);
-        $target = $migrationDir . DIRECTORY_SEPARATOR . $fileName;
+        $structuredDiffs = $this->containsDatabaseDiff($migrationsUp) || $this->containsDatabaseDiff($migrationsDown);
+        if ($structuredDiffs) {
+            [$upStatements, $downStatements] = $this->translateDatabaseDiffs($migrationsUp, $migrationsDown);
+            $content = $this->buildDeclarativeMigrationClass($className, $upStatements, $downStatements);
+        } else {
+            $upStatements = $this->normalizeStatements($migrationsUp);
+            $downStatements = $this->normalizeStatements($migrationsDown);
+            $content = $this->buildMigrationClass($className, $upStatements, $downStatements);
+        }
         file_put_contents($target, $content);
 
         return MigrationExecutionResult::success($this->getName(), sprintf('Generated phinx migration: %s', $target));
+    }
+
+    private function containsDatabaseDiff(array $diffs): bool
+    {
+        foreach ($diffs as $diff) {
+            if ($diff instanceof DatabaseDiff) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return array{0: list<string>, 1: list<string>} */
+    private function translateDatabaseDiffs(array $migrationsUp, array $migrationsDown): array
+    {
+        if (count($migrationsUp) > 1 || count($migrationsDown) > 1) {
+            throw new \InvalidArgumentException(
+                'Cannot generate Phinx migration for multiple datasources: the module runtime config exposes one Phinx environment'
+            );
+        }
+
+        $upKey = array_key_first($migrationsUp);
+        $downKey = array_key_first($migrationsDown);
+        if (null === $upKey || $upKey !== $downKey
+            || !$migrationsUp[$upKey] instanceof DatabaseDiff
+            || !$migrationsDown[$downKey] instanceof DatabaseDiff) {
+            throw new \InvalidArgumentException(
+                'Declarative Phinx migrations require matching Propel DatabaseDiff objects for up and down'
+            );
+        }
+
+        $translator = $this->diffTranslator ?? new PropelDiffToPhinxMigrationGenerator();
+        return [
+            $translator->translate($migrationsUp[$upKey])['up'],
+            $translator->translate($migrationsDown[$downKey])['up'],
+        ];
+    }
+
+    /**
+     * @param list<string> $up
+     * @param list<string> $down
+     */
+    private function buildDeclarativeMigrationClass(string $className, array $up, array $down): string
+    {
+        $render = static fn(array $statements): string => implode("\n", array_map(
+            static fn(string $statement): string => '        ' . $statement,
+            $statements
+        ));
+
+        return <<<PHP
+<?php
+
+declare(strict_types=1);
+
+use Phinx\\Migration\\AbstractMigration;
+
+final class {$className} extends AbstractMigration
+{
+    public function up(): void
+    {
+{$render($up)}
+    }
+
+    public function down(): void
+    {
+{$render($down)}
+    }
+}
+PHP;
     }
 
     /**
@@ -161,14 +260,16 @@ PHP;
         $runtimeConfig = $this->persistRuntimeConfig($context);
         $environment = $this->configFactory->createForModule($context->getModule(), $context->getMigrationDir())['environments']['default_environment'];
         $simulate = $context->isSimulate() ? ' --dry-run' : '';
+        $target = null !== $context->getTargetVersion() ? ' --target=' . $context->getTargetVersion() : '';
 
         $command = sprintf(
-            '%s %s -c %s -e %s%s',
+            '%s %s -c %s -e %s%s%s',
             escapeshellarg($this->getBinaryPath()),
             $subCommand,
             escapeshellarg($runtimeConfig),
             escapeshellarg((string)$environment),
-            $simulate
+            $simulate,
+            $target
         );
 
         $result = $this->runner->run($command);

@@ -32,7 +32,7 @@ class PhinxMigrationGeneratorTest extends TestCase
 
         $this->assertTrue($result->isSuccess());
 
-        $files = glob($dir . DIRECTORY_SEPARATOR . '*_AutoCLIENTSchemaDiff.php');
+        $files = glob($dir . DIRECTORY_SEPARATOR . '*_AutoCLIENTSchemaDiff*.php');
         $this->assertNotEmpty($files);
 
         $content = (string)file_get_contents($files[0]);
