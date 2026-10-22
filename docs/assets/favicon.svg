@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="psfs-favicon-title">
+  <title id="psfs-favicon-title">PSFS</title>
+  <defs>
+    <path id="shield" d="M120 30 L190 56 V110 C190 150 160 175 120 190 C80 175 50 150 50 110 V56 Z"/>
+    <path id="shield-left" d="M120 30 L50 56 V110 C50 150 80 175 120 190 Z"/>
+    <path id="shield-right" d="M120 30 L190 56 V110 C190 150 160 175 120 190 Z"/>
+  </defs>
+  <g transform="translate(32 32) scale(0.29) translate(-120 -110)">
+    <g fill="#FFD21F">
+      <use href="#shield" transform="translate(120 110) scale(1.3) translate(-120 -110)" fill-opacity="0.2"/>
+      <use href="#shield" transform="translate(120 110) scale(1.15) translate(-120 -110)" fill-opacity="0.45"/>
+    </g>
+    <use href="#shield-left" fill="#7479BF"/>
+    <use href="#shield-right" fill="#12296B"/>
+    <path transform="translate(120 112) skewX(-10) translate(-13.5 -25)" d="M0 50 V0 H14 a13 13 0 0 1 0 26 H0" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

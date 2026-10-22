@@ -3,6 +3,8 @@
 Status: active
 Runtime baseline: Docker Compose + PHP 8.3
 
+Compose defaults to PHP 8.5. To validate against the baseline, start the stack with `PHP_VERSION=8.3 docker compose up -d`. PHP 8.3, 8.4 and 8.5 are supported targets; see [PHP compatibility](../docs/php-compatibility.md).
+
 ## 1) First day flow
 
 ### 1.1 Boot and verify runtime
@@ -11,20 +13,20 @@ Runtime baseline: Docker Compose + PHP 8.3
 ```bash
 docker compose up -d
 docker compose ps
-docker exec core-php-1 php -v
-docker exec core-php-1 php src/bin/psfs list
+docker exec psfs-php-1 php -v
+docker exec psfs-php-1 php src/bin/psfs list
 ```
 
 Expected markers:
 
-- `core-php-1` is `Up`
+- `psfs-php-1` is `Up`
 - `php src/bin/psfs list` prints PSFS commands (`psfs:migrate`, `psfs:queue:*`, `psfs:swoole:*`)
 
 ### 1.2 Verify security-critical tests
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
+docker exec psfs-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
 ```
 
 Expected marker: `OK` with tests executed.
@@ -49,16 +51,16 @@ docker compose down
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 composer install --no-interaction --prefer-dist
-docker exec core-php-1 composer audit --no-interaction
+docker exec psfs-php-1 composer install --no-interaction --prefer-dist
+docker exec psfs-php-1 composer audit --no-interaction
 ```
 
 ### 2.3 Run security gates locally
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php scripts/security/hardening_gate.php
-docker exec core-php-1 php scripts/security/quality_gate.php
+docker exec psfs-php-1 php scripts/security/hardening_gate.php
+docker exec psfs-php-1 php scripts/security/quality_gate.php
 ```
 
 <!-- example-only -->
@@ -75,24 +77,24 @@ Important: queue jobs must be implemented and discoverable by `JobRegistry` befo
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:queue:dispatch --code=<job_code> --payload='{"k":"v"}'
-docker exec core-php-1 php src/bin/psfs psfs:queue:work --queue=<queue_name> --max-jobs=10 --stop-when-empty=1
-docker exec core-php-1 php src/bin/psfs psfs:queue:run-parallel --queue=<queue_name> --workers=2 --stop-when-empty=1
+docker exec psfs-php-1 php src/bin/psfs psfs:queue:dispatch --code=<job_code> --payload='{"k":"v"}'
+docker exec psfs-php-1 php src/bin/psfs psfs:queue:work --queue=<queue_name> --max-jobs=10 --stop-when-empty=1
+docker exec psfs-php-1 php src/bin/psfs psfs:queue:run-parallel --queue=<queue_name> --workers=2 --stop-when-empty=1
 ```
 
 ### 3.2 Swoole runtime
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:swoole:check
+docker exec psfs-php-1 php src/bin/psfs psfs:swoole:check
 ```
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
-docker exec core-php-1 php src/bin/psfs psfs:swoole:status
-docker exec core-php-1 php src/bin/psfs psfs:swoole:reload
-docker exec core-php-1 php src/bin/psfs psfs:swoole:stop
+docker exec psfs-php-1 php src/bin/psfs psfs:swoole:start --host=0.0.0.0 --port=8080
+docker exec psfs-php-1 php src/bin/psfs psfs:swoole:status
+docker exec psfs-php-1 php src/bin/psfs psfs:swoole:reload
+docker exec psfs-php-1 php src/bin/psfs psfs:swoole:stop
 ```
 
 ## 4) Optimization knobs (safe defaults)
@@ -113,7 +115,7 @@ docker exec core-php-1 php src/bin/psfs psfs:swoole:stop
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:deploy:project
+docker exec psfs-php-1 php src/bin/psfs psfs:deploy:project
 ```
 
 Use deploy command when you need to regenerate document root + route hydration in one path.
@@ -130,7 +132,9 @@ Use deploy command when you need to regenerate document root + route hydration i
 
 ## 6) Related references
 
-- [Core Contracts](./CONTRACTS.md)
+- [DTO Validation Engine](./DTO_VALIDATION.md)
 - [Propel Workflow](./PROPEL_WORKFLOW.md)
-- [Async Jobs and Connectors Contracts](./contracts/async-jobs-connectors-contracts.md)
-- [Security Plan](./security/PLAN.md)
+- [PHP compatibility](../docs/php-compatibility.md)
+- [Security policy](../SECURITY.md)
+- [Admin auth cookie secret](../docs/security/auth-cookie-secret.md)
+- [Security contracts](../security/contracts)

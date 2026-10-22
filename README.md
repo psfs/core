@@ -1,13 +1,17 @@
-# Php Simple Fast and Secure
-## PSFS Core
+<p align="center">
+  <img src="./docs/assets/logo.svg" alt="PSFS - Php Simple Fast &amp; Secure" width="200">
+</p>
+
+<h1 align="center">Php Simple Fast and Secure</h1>
+<h2 align="center">PSFS Core</h2>
 
 [![Build Status](https://scrutinizer-ci.com/g/psfs/core/badges/build.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/build-status/master)
 [![Security Pipeline](https://github.com/psfs/core/actions/workflows/security-pipeline.yml/badge.svg)](https://github.com/psfs/core/actions/workflows/security-pipeline.yml)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/psfs/core/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/psfs/core/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/psfs/core/?branch=master)
 [![Packagist Stable Version](https://img.shields.io/packagist/v/psfs/core)](https://packagist.org/packages/psfs/core)
-[![Minimum PHP Version](http://img.shields.io/badge/php-%3E%3D%208-8892BF.svg)](https://php.net/)
-[![License](https://poser.pugx.org/propel/propel/license.svg)](https://packagist.org/packages/psfs/core)
+[![Minimum PHP Version](http://img.shields.io/badge/php-%3E%3D%208.3-8892BF.svg)](https://php.net/)
+[![License](https://poser.pugx.org/psfs/core/license.svg)](https://packagist.org/packages/psfs/core)
 
 PSFS is a lightweight PHP framework for MVC/API applications (Twig + Propel + Symfony components).
 
@@ -18,15 +22,17 @@ Prerequisites:
 - Docker + Docker Compose
 - Git
 
+The validation baseline is PHP 8.3. Compose defaults to PHP 8.5, so select the baseline explicitly with `PHP_VERSION=8.3 docker compose up -d` when validating changes (see [PHP compatibility](./docs/php-compatibility.md)).
+
 <!-- validated -->
 ```bash
 docker compose up -d
 docker compose ps
-docker exec core-php-1 php -v
-docker exec core-php-1 composer install --no-interaction --prefer-dist
+docker exec psfs-php-1 php -v
+docker exec psfs-php-1 composer install --no-interaction --prefer-dist
 ```
 
-If your PHP container name is not `core-php-1`:
+If your PHP container name is not `psfs-php-1`:
 
 <!-- validated -->
 ```bash
@@ -39,10 +45,10 @@ docker ps --format '{{.Names}}'
 <!-- example-only -->
 ```bash
 # Run key tests
-docker exec core-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
+docker exec psfs-php-1 php vendor/bin/phpunit --no-coverage --filter '/(AuthApiTest|RequestResponseSecurityContractTest)/'
 
 # List PSFS CLI commands
-docker exec core-php-1 php src/bin/psfs list
+docker exec psfs-php-1 php src/bin/psfs list
 
 # Security local pre-check (act)
 act push --container-architecture linux/amd64
@@ -75,6 +81,8 @@ For operational Propel flow (schema, model generation context, migration executi
 - [Operations Playbook](./doc/OPERATIONS.md)
 - [DTO Validation Engine](./doc/DTO_VALIDATION.md)
 - [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+- [PHP compatibility](./docs/php-compatibility.md)
+- [Security policy](./SECURITY.md)
 
 ## Rules
 

@@ -121,8 +121,7 @@ by adding this policy. Do not relax security checks to conceal failures.
 Passing tests and static checks do not establish that an application deployment
 is secure. Validate the effective runtime configuration and trust boundaries.
 
-The PHP 8.5 compatibility patch for Propel is applied by Composer's development
-patch plugin in this repository. It removes an obsolete XML parser cleanup call;
-it is not a vulnerability remediation or an accepted-risk exception. Fresh
-`--no-dev` installs and downstream applications do not automatically receive this
-patch. See [PHP compatibility](docs/php-compatibility.md).
+PHP 8.5 compatibility of Propel's schema reader is provided by the `psfs/propel`
+fork this project depends on; no local patch is applied. It is not a
+vulnerability remediation or an accepted-risk exception. See
+[PHP compatibility](docs/php-compatibility.md).

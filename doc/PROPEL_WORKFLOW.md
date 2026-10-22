@@ -45,7 +45,7 @@ Connection values come from module-scoped config keys:
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php src/bin/psfs list
+docker exec psfs-php-1 php src/bin/psfs list
 ```
 
 Expected marker: command list includes `psfs:migrate` and `psfs:migrate:rollback`.
@@ -54,7 +54,7 @@ Expected marker: command list includes `psfs:migrate` and `psfs:migrate:rollback
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate --simulate=1
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate --simulate=1
 ```
 
 Expected marker: command ends with `Migration completed`.
@@ -63,7 +63,7 @@ Expected marker: command ends with `Migration completed`.
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate --module=<MODULE> --simulate=1 --engine=propel
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate --module=<MODULE> --simulate=1 --engine=propel
 ```
 
 Use this when validating legacy engine behavior or fallback scenarios.
@@ -72,12 +72,12 @@ Use this when validating legacy engine behavior or fallback scenarios.
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate:rollback --simulate=1
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate:rollback --simulate=1
 ```
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=propel
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=propel
 ```
 
 ### Step 5: Model generation context in code
@@ -116,15 +116,15 @@ Treat this as integration pattern; concrete class names depend on your schema.
 
 <!-- example-only -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=phinx
-docker exec core-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=propel
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=phinx
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate:rollback --module=<MODULE> --engine=propel
 ```
 
 ### 5.2 Recovery checks
 
 <!-- validated -->
 ```bash
-docker exec core-php-1 php src/bin/psfs psfs:migrate --simulate=1
+docker exec psfs-php-1 php src/bin/psfs psfs:migrate --simulate=1
 ```
 
 Ensure result is deterministic and does not produce unexpected pending changes.
