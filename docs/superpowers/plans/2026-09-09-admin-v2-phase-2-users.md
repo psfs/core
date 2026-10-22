@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Admin 2.0: fase 2 — edición segura de usuarios
+<!-- breadcrumb:end -->
+
 # Admin 2.0: fase 2 — edición segura de usuarios
 
 ## Objetivo
@@ -29,3 +33,9 @@ cancelar una edición, nunca durante la escritura del usuario.
    alias.
 3. Playwright contra Vite y el mock API aislado: editar un usuario, comprobar
    `PUT /admin/api/v2/users/admin` y el mensaje de éxito.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

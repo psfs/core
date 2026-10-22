@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Admin 2.0: fase 0 — frontera de migración UI
+<!-- breadcrumb:end -->
+
 # Admin 2.0: fase 0 — frontera de migración UI
 
 ## Decisión
@@ -92,3 +96,9 @@ excepción intencionada: se consume como estado inicial del shell.
 No activar `admin.front.version=v2` por defecto ni retirar `/admin/*` hasta
 que las fases 1 a 4 hayan demostrado paridad, autenticación, rollback y
 operación estática en navegador real.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

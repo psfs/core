@@ -6,7 +6,7 @@ declare(strict_types=1);
  * PSFS Security Quality Gate
  * - Blocks on open high/critical findings
  * - Executes must_pass tests from control-matrix.yaml
- * - Emits doc/security/quality-gate.json
+ * - Emits security/reports/quality-gate.json
  */
 
 function out(string $message): void

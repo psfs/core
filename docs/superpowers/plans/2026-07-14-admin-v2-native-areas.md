@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Admin 2.0 Native Areas Implementation Plan
+<!-- breadcrumb:end -->
+
 # Admin 2.0 Native Areas Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -359,7 +363,7 @@ Do not commit. Await user instruction for the test module creation.
 **Files:**
 - Modify: `ui/projects/admin/src/app/admin-shell.component.ts`
 - Modify: `ui/README.md`
-- Modify: `docs/ui-development.md`
+- Modify: `docs/admin-ui/development.md`
 - Create: `ui/e2e/admin-v2-core.spec.mjs`
 - Test: `tests/base/AdminFrontendVersionResolverTest.php`
 
@@ -410,3 +414,9 @@ Do not commit. Present test output, screenshots and the full diff for approval.
 - Spec coverage: Tasks 1-7 cover removal of embeds, JSON contracts, five native areas, preserved backend checks, rollback compatibility and browser verification.
 - Placeholder scan: every task has concrete files, interfaces, test cases and commands; persistent writes explicitly require human validation.
 - Type consistency: all Angular requests use `AdminEnvelope<T>` and all PHP adapters return the same structured envelope.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

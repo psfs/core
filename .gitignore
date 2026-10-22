@@ -33,22 +33,21 @@ benchmark-report.*
 
 # Internal local implementation docs and tools (not public)
 .ai/
-doc/guides/
-doc/migrations/
-doc/naming/
-doc/rollout/
-doc/analysis/
+docs/guides/
+docs/migrations/
+docs/naming/
+docs/rollout/
+docs/analysis/
 
-# Security architecture/internal ops docs:
-# ignore by default to avoid publishing sensitive threat model/controls/prompts.
-doc/security/**
-!doc/security/README.public.md
+# Internal security architecture/ops docs (threat model, controls, prompts):
+# keep them out of the public repository.
+docs/security/internal/
 
 # Explicit generated security artifacts (defensive redundancy)
-doc/security/**/quality-gate.json
-doc/security/**/*-report.json
-doc/security/**/security-testing-*.xml
-doc/security/**/security-testing-*.sarif
+docs/security/**/quality-gate.json
+docs/security/**/*-report.json
+docs/security/**/security-testing-*.xml
+docs/security/**/security-testing-*.sarif
 
 # CI runtime security artifacts
 security/reports/*

@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../README.md) › [Admin UI](./README.md) › UI development
+<!-- breadcrumb:end -->
+
 # UI moderna: estado validado
 
 ## Base estable
@@ -79,3 +83,9 @@ rechazo con credenciales inválidas y HMR sin recarga completa.
    Angular fija en `/ui/`.
 2. Migrar una pantalla administrativa real manteniendo permisos, APIs y
    pruebas de paridad frente a AngularJS.
+
+<!-- nav:start -->
+---
+
+← Previous: [Admin UI overview](./README.md) · Next: [Regression contract](./regression-contract.md) →
+<!-- nav:end -->

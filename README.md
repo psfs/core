@@ -58,31 +58,35 @@ act push --container-architecture linux/amd64
 
 ### Onboarding path
 
-1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
+1. Read [Operations Playbook](./docs/operations.md)
+2. Read [DTO Validation Engine](./docs/dto-validation.md)
 3. Execute the "First day" flow
 4. Use troubleshooting matrix when blocked
 
 ### Core contributor path
 
-1. Read [Operations Playbook](./doc/OPERATIONS.md)
-2. Read [DTO Validation Engine](./doc/DTO_VALIDATION.md)
-3. Read [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+1. Read [Operations Playbook](./docs/operations.md)
+2. Read [DTO Validation Engine](./docs/dto-validation.md)
+3. Read [Propel Workflow](./docs/propel-workflow.md)
 4. Run key tests and validate changes in Docker
 
 ## Propel models and migrations
 
 For operational Propel flow (schema, model generation context, migration execution, rollback, failure modes), see:
 
-- [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+- [Propel Workflow](./docs/propel-workflow.md)
 
 ## Documentation index
 
-- [Operations Playbook](./doc/OPERATIONS.md)
-- [DTO Validation Engine](./doc/DTO_VALIDATION.md)
-- [Propel Workflow](./doc/PROPEL_WORKFLOW.md)
+Full documentation site: [docs/README.md](./docs/README.md).
+
+- [Operations Playbook](./docs/operations.md)
+- [DTO Validation Engine](./docs/dto-validation.md)
+- [Propel Workflow](./docs/propel-workflow.md)
 - [PHP compatibility](./docs/php-compatibility.md)
+- [Security overview](./docs/security/README.md)
 - [Security policy](./SECURITY.md)
+- [Admin UI](./docs/admin-ui/README.md)
 
 ## Rules
 

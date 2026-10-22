@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › UI HMR, E2E and Static Fallback Implementation Plan
+<!-- breadcrumb:end -->
+
 # UI HMR, E2E and Static Fallback Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -37,9 +41,15 @@
 
 ### Task 3: Static SPA fallback
 
-**Files:** `src/runtime/swoole/SwooleStaticAssetServer.php`, `src/runtime/swoole/SwooleRequestHandler.php`, relevant tests and `docs/ui-development.md`.
+**Files:** `src/runtime/swoole/SwooleStaticAssetServer.php`, `src/runtime/swoole/SwooleRequestHandler.php`, relevant tests and `docs/admin-ui/development.md`.
 
 - [ ] Add failing tests for serving `/ui/<client-route>` from `src/public/ui/index.html` after admin authentication.
 - [ ] Preserve normal assets, non-UI routes and path traversal protections.
 - [ ] Build Angular, stop the development upstream and prove browser load through the static fallback.
 - [ ] Run PHPUnit, Docker Compose validation and the E2E suite; commit the independently verified fallback.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

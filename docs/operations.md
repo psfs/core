@@ -1,9 +1,13 @@
-# PSFS Operations Playbook
+<!-- breadcrumb:start -->
+[Home](./README.md) › [Guides](./README.md#guides) › Operations playbook
+<!-- breadcrumb:end -->
+
+# Operations playbook
 
 Status: active
 Runtime baseline: Docker Compose + PHP 8.3
 
-Compose defaults to PHP 8.5. To validate against the baseline, start the stack with `PHP_VERSION=8.3 docker compose up -d`. PHP 8.3, 8.4 and 8.5 are supported targets; see [PHP compatibility](../docs/php-compatibility.md).
+Compose defaults to PHP 8.5. To validate against the baseline, start the stack with `PHP_VERSION=8.3 docker compose up -d`. PHP 8.3, 8.4 and 8.5 are supported targets; see [PHP compatibility](./php-compatibility.md).
 
 ## 1) First day flow
 
@@ -132,9 +136,15 @@ Use deploy command when you need to regenerate document root + route hydration i
 
 ## 6) Related references
 
-- [DTO Validation Engine](./DTO_VALIDATION.md)
-- [Propel Workflow](./PROPEL_WORKFLOW.md)
-- [PHP compatibility](../docs/php-compatibility.md)
+- [DTO Validation Engine](./dto-validation.md)
+- [Propel Workflow](./propel-workflow.md)
+- [PHP compatibility](./php-compatibility.md)
 - [Security policy](../SECURITY.md)
-- [Admin auth cookie secret](../docs/security/auth-cookie-secret.md)
+- [Admin auth cookie secret](./security/auth-cookie-secret.md)
 - [Security contracts](../security/contracts)
+
+<!-- nav:start -->
+---
+
+← Previous: [Home](./README.md) · Next: [DTO validation engine](./dto-validation.md) →
+<!-- nav:end -->

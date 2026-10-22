@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../README.md) › [Security](./README.md) › Admin auth cookie secret
+<!-- breadcrumb:end -->
+
 # Admin auth cookie secret
 
 PSFS encrypts the credentials in the admin auth cookie with AES-256-GCM. New
@@ -48,3 +52,9 @@ source key, and the older `ADMIN_ID_TOKEN` key, as read-only fallbacks. Those
 fallbacks do not write new cookies. While they remain enabled, rotating
 `auth.cookie.secret` alone cannot invalidate a legacy cookie; removing the
 fallback requires a separate compatibility decision.
+
+<!-- nav:start -->
+---
+
+← Previous: [Security policy](../../SECURITY.md) · Next: [Admin UI overview](../admin-ui/README.md) →
+<!-- nav:end -->

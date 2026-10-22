@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](./docs/README.md) › [Security](./docs/security/README.md) › Security policy
+<!-- breadcrumb:end -->
+
 # Security Policy
 
 ## Reporting a vulnerability
@@ -125,3 +129,9 @@ PHP 8.5 compatibility of Propel's schema reader is provided by the `psfs/propel`
 fork this project depends on; no local patch is applied. It is not a
 vulnerability remediation or an accepted-risk exception. See
 [PHP compatibility](docs/php-compatibility.md).
+
+<!-- nav:start -->
+---
+
+← Previous: [Security overview](./docs/security/README.md) · Next: [Admin auth cookie secret](./docs/security/auth-cookie-secret.md) →
+<!-- nav:end -->

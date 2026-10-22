@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Admin 2.0 Phase 1 Parity Implementation Plan
+<!-- breadcrumb:end -->
+
 # Admin 2.0 Phase 1 Parity Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -155,3 +159,9 @@ Expected: only phase-1 parity code and tests are present; unrelated working-tree
 - [ ] **Step 3: Request human validation before committing**
 
 Present the passing test output and diff. Do not create a commit.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

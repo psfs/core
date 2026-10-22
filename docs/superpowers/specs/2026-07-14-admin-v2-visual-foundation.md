@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Base visual de Admin 2.0
+<!-- breadcrumb:end -->
+
 # Base visual de Admin 2.0
 
 ## Decisiones
@@ -14,3 +18,9 @@
 - La acción principal, tablas y controles de dominio tienen estados visuales inequívocos.
 - El layout funciona desde 320 px de ancho sin pérdida de navegación.
 - La verificación incluye build Angular y Playwright con captura de pantalla real dentro de Docker.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

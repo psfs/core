@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../README.md) › [Admin UI](./README.md) › Regression contract
+<!-- breadcrumb:end -->
+
 # Contrato de regresión de Admin 2.0
 
 ## Configuración
@@ -24,3 +28,9 @@
 - PHPUnit cubre serialización segura de usuarios, secretos en blanco, parámetros extra y rutas de documentación.
 - Angular cubre formularios, confirmación, componentes de documentación y secreto preservable.
 - Playwright cubre configuración, navegación tras fallo del generador, usuarios y documentación bajo Basic Auth, todo dentro de Docker.
+
+<!-- nav:start -->
+---
+
+← Previous: [UI development](./development.md) · Next: [Design history](../superpowers/README.md) →
+<!-- nav:end -->

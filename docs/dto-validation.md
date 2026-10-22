@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](./README.md) › [Guides](./README.md#guides) › DTO validation engine
+<!-- breadcrumb:end -->
+
 # DTO Validation Engine (API + CSRF)
 
 ## Purpose
@@ -152,3 +156,9 @@ Mandatory for each new validated DTO:
 - Default strict unknown-field policy is intentional.
 - CSRF should be enabled for browser/session-admin mutations.
 - Machine-to-machine/JWT-only endpoints may skip CSRF by design.
+
+<!-- nav:start -->
+---
+
+← Previous: [Operations playbook](./operations.md) · Next: [Propel workflow](./propel-workflow.md) →
+<!-- nav:end -->

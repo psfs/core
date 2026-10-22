@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](../../README.md) › [Admin UI](../../admin-ui/README.md) › [Design history](../README.md) › Admin 2.0 nativo: diseño de transición
+<!-- breadcrumb:end -->
+
 # Admin 2.0 nativo: diseño de transición
 
 ## Objetivo
@@ -71,3 +75,9 @@ validación. Los valores sensibles nunca se devuelven como texto plano.
   shell Angular.
 - Playwright verifica cada flujo principal en navegador contra los contenedores
   Docker.
+
+<!-- nav:start -->
+---
+
+← Back to [Design history](../README.md)
+<!-- nav:end -->

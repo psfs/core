@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](./README.md) › [Guides](./README.md#guides) › Propel workflow
+<!-- breadcrumb:end -->
+
 # PSFS Propel Workflow
 
 Status: operational guide
@@ -146,3 +150,8 @@ Ensure result is deterministic and does not produce unexpected pending changes.
 - `src/services/migration/PropelMigrationEngine.php`
 - `src/base/types/traits/Generator/PropelHelperTrait.php`
 
+<!-- nav:start -->
+---
+
+← Previous: [DTO validation engine](./dto-validation.md) · Next: [PHP compatibility](./php-compatibility.md) →
+<!-- nav:end -->

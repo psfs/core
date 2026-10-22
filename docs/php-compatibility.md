@@ -1,3 +1,7 @@
+<!-- breadcrumb:start -->
+[Home](./README.md) › [Reference](./README.md#reference) › PHP compatibility
+<!-- breadcrumb:end -->
+
 # PHP 8.3, 8.4 and 8.5
 
 The development environment supports PHP 8.3, 8.4 and 8.5. Compose defaults to
@@ -37,3 +41,9 @@ The schema generation and API tests exercise this path.
 Because the fix lives in the dependency, downstream applications and fresh
 `--no-dev` installs receive it automatically, as long as they resolve
 `psfs/propel` rather than upstream `propel/propel`.
+
+<!-- nav:start -->
+---
+
+← Previous: [Propel workflow](./propel-workflow.md) · Next: [Security overview](./security/README.md) →
+<!-- nav:end -->
