@@ -3,26 +3,27 @@ import { NgFor, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminApiService } from './admin-api.service';
 import { AdminEnvelope } from './admin-contracts';
+import { AdminTranslatePipe } from './admin-translate.pipe';
 
 @Component({
   selector: 'psfs-documentation-page',
-  imports: [NgFor, NgIf, RouterLink],
+  imports: [AdminTranslatePipe, NgFor, NgIf, RouterLink],
   template: `
     <article class="native-page page" aria-live="polite">
-      <header class="page-header"><div><p class="page-eyebrow">Integración</p><h1>Documentación API</h1><p class="page-description">Explora los contratos OpenAPI publicados por cada dominio de PSFS.</p></div></header>
-      <p *ngIf="state() === 'loading'" class="notice notice--info">Cargando dominios documentables…</p>
-      <section *ngIf="error() as failure" class="form-errors" aria-label="Errores de documentación">
-        <p>{{ failure.message ?? 'No se pudo cargar la documentación.' }}</p>
+      <header class="page-header"><div><p class="page-eyebrow">{{ 'Integración' | t }}</p><h1>{{ 'Documentación API' | t }}</h1><p class="page-description">{{ 'Explora los contratos OpenAPI publicados por cada dominio de PSFS.' | t }}</p></div></header>
+      <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Cargando dominios documentables…' | t }}</p>
+      <section *ngIf="error() as failure" class="form-errors" [attr.aria-label]="'Errores de documentación' | t">
+        <p>{{ (failure.message ?? 'No se pudo cargar la documentación.') | t }}</p>
         <ul *ngIf="errorMessages(failure).length"><li *ngFor="let message of errorMessages(failure)">{{ message }}</li></ul>
       </section>
       <ng-container *ngIf="state() === 'success'">
-        <p *ngIf="!domains().length" class="empty-state">No hay dominios API documentables.</p>
-        <div *ngIf="domains().length" class="chip-list" aria-label="Dominios API">
+        <p *ngIf="!domains().length" class="empty-state">{{ 'No hay dominios API documentables.' | t }}</p>
+        <div *ngIf="domains().length" class="chip-list" [attr.aria-label]="'Dominios API' | t">
           <button *ngFor="let domain of domains()" class="chip" [class.chip--active]="selectedDomain() === domain" type="button" (click)="selectDomain(domain)">{{ domain }}</button>
         </div>
         <section *ngIf="selectedDomain() as domain" class="documentation-choice">
-          <p class="notice notice--info">Elige un explorador para {{ domain }}. No se incrusta una pantalla legacy.</p>
-          <a class="button button--primary" [routerLink]="['/', domain, 'swagger-ui']" [queryParams]="{ document: documentPath(domain) }">Abrir explorador API</a>
+          <p class="notice notice--info">{{ 'Elige un explorador para {{domain}}. No se incrusta una pantalla legacy.' | t: { domain } }}</p>
+          <a class="button button--primary" [routerLink]="['/', domain, 'swagger-ui']" [queryParams]="{ document: documentPath(domain) }">{{ 'Abrir explorador API' | t }}</a>
         </section>
       </ng-container>
     </article>

@@ -20,7 +20,7 @@ describe('DocumentationPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.domains()).toEqual(['Sales']);
-    expect(fixture.nativeElement.textContent).toContain('Abrir explorador API');
+    expect(fixture.nativeElement.textContent).toContain('Open API explorer');
     expect(fixture.nativeElement.querySelector('pre')).toBeNull();
   });
 

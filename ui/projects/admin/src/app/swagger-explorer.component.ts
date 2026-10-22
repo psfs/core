@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { AdminTranslatePipe } from './admin-translate.pipe';
+import { AdminTranslationService } from './admin-translation.service';
 
 declare global {
   interface Window {
@@ -15,18 +17,18 @@ declare global {
 
 @Component({
   selector: 'psfs-swagger-explorer',
-  imports: [NgIf],
+  imports: [AdminTranslatePipe, NgIf],
   template: `
     <article class="native-page swagger-page" aria-live="polite">
       <header class="page-header">
         <div>
-          <p class="page-eyebrow">Integración</p>
-          <h1>Documentación API · {{ domain() }}</h1>
-          <p class="page-description">Explorador interactivo compatible con Swagger 2.0 y OpenAPI 3.1.</p>
+          <p class="page-eyebrow">{{ 'Integración' | t }}</p>
+          <h1>{{ 'Documentación API · {{domain}}' | t: { domain: domain() } }}</h1>
+          <p class="page-description">{{ 'Explorador interactivo compatible con Swagger 2.0 y OpenAPI 3.1.' | t }}</p>
         </div>
       </header>
-      <p *ngIf="loading()" class="notice notice--info">Cargando explorador API…</p>
-      <p *ngIf="error()" class="form-errors">{{ error() }}</p>
+      <p *ngIf="loading()" class="notice notice--info">{{ 'Cargando explorador API…' | t }}</p>
+      <p *ngIf="error()" class="form-errors">{{ error() | t }}</p>
       <div id="swagger-ui" [class.swagger-ui--ready]="!loading() && !error()"></div>
     </article>
   `,
@@ -34,6 +36,7 @@ declare global {
 })
 export class SwaggerExplorerComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly translations = inject(AdminTranslationService);
   readonly domain = signal('');
   readonly loading = signal(true);
   readonly error = signal('');
@@ -98,7 +101,7 @@ export class SwaggerExplorerComponent implements OnInit {
       script.async = true;
       script.dataset['psfsSwagger'] = source;
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`No se pudo cargar ${source}.`));
+      script.onerror = () => reject(new Error(this.translations.translate('Could not load {{source}}.', { source })));
       document.head.appendChild(script);
     });
   }

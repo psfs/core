@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { NgFor, NgIf, JsonPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { AdminTranslatePipe } from './admin-translate.pipe';
 
 interface ManagerMetadata {
   domain: string;
@@ -21,41 +22,41 @@ interface LegacyResponse<T> {
 
 @Component({
   selector: 'psfs-manager-page',
-  imports: [NgFor, NgIf, JsonPipe],
+  imports: [AdminTranslatePipe, NgFor, NgIf, JsonPipe],
   template: `
     <article class="page manager-page" aria-live="polite">
       <header class="page-header">
-        <div><p class="page-eyebrow">Manager API</p><h1>{{ title() }}</h1></div>
+        <div><p class="page-eyebrow">{{ 'Gestor API' | t }}</p><h1>{{ title() | t }}</h1></div>
       </header>
 
-      <p class="notice notice--info" *ngIf="loading()">Cargando datos del manager…</p>
-      <section class="form-errors" *ngIf="error() as failure"><p>{{ failure }}</p></section>
+      <p class="notice notice--info" *ngIf="loading()">{{ 'Cargando datos del manager…' | t }}</p>
+      <section class="form-errors" *ngIf="error() as failure"><p>{{ failure | t }}</p></section>
 
       <section class="card manager-toolbar" *ngIf="metadata()">
-        <label class="form-field"><span>Filtrar registros</span><input class="form-control" #filterInput [value]="filter()" (keyup.enter)="applyFilter(filterInput.value)" placeholder="Busca por texto o campo"></label>
-        <button class="button button--secondary" type="button" (click)="applyFilter(filterInput.value)">Aplicar filtro</button>
-        <span class="table-meta" *ngIf="total() !== null">{{ total() }} registros</span>
+        <label class="form-field"><span>{{ 'Filtrar registros' | t }}</span><input class="form-control" #filterInput [value]="filter()" (keyup.enter)="applyFilter(filterInput.value)" [placeholder]="'Busca por texto o campo' | t"></label>
+        <button class="button button--secondary" type="button" (click)="applyFilter(filterInput.value)">{{ 'Aplicar filtro' | t }}</button>
+        <span class="table-meta" *ngIf="total() !== null">{{ total() }} {{ 'registros' | t }}</span>
       </section>
 
-      <p class="notice notice--info" *ngIf="metadata() && !metadata()!.mutation.supported">Este manager se muestra en modo consulta. Las altas, cambios y borrados se habilitarán únicamente mediante un endpoint v2 que aplique CSRF y autorización en el servidor.</p>
+      <p class="notice notice--info" *ngIf="metadata() && !metadata()!.mutation.supported">{{ 'Este manager se muestra en modo consulta. Las altas, cambios y borrados se habilitarán únicamente mediante un endpoint v2 que aplique CSRF y autorización en el servidor.' | t }}</p>
 
       <section class="card table-card" *ngIf="rows().length || !loading()">
         <div class="table-scroll">
           <table>
-            <thead><tr><th *ngFor="let column of columns()">{{ column }}</th><th>Acciones</th></tr></thead>
+            <thead><tr><th *ngFor="let column of columns()">{{ column | t }}</th><th>{{ 'Acciones' | t }}</th></tr></thead>
             <tbody>
               <tr *ngFor="let row of rows()">
                 <td *ngFor="let column of columns()">{{ display(row[column]) }}</td>
-                <td><button class="button button--text" type="button" (click)="openDetail(row)">Ver detalle</button></td>
+                <td><button class="button button--text" type="button" (click)="openDetail(row)">{{ 'Ver detalle' | t }}</button></td>
               </tr>
-              <tr *ngIf="!rows().length"><td [attr.colspan]="columns().length + 1">No hay registros para la consulta actual.</td></tr>
+              <tr *ngIf="!rows().length"><td [attr.colspan]="columns().length + 1">{{ 'No hay registros para la consulta actual.' | t }}</td></tr>
             </tbody>
           </table>
         </div>
-        <footer class="pagination" *ngIf="pages() > 1"><button class="button button--secondary" type="button" (click)="previous()" [disabled]="page() <= 1">Anterior</button><span>Página {{ page() }} de {{ pages() }}</span><button class="button button--secondary" type="button" (click)="next()" [disabled]="page() >= pages()">Siguiente</button></footer>
+        <footer class="pagination" *ngIf="pages() > 1"><button class="button button--secondary" type="button" (click)="previous()" [disabled]="page() <= 1">{{ 'Anterior' | t }}</button><span>{{ 'Página' | t }} {{ page() }} {{ 'de' | t }} {{ pages() }}</span><button class="button button--secondary" type="button" (click)="next()" [disabled]="page() >= pages()">{{ 'Siguiente' | t }}</button></footer>
       </section>
 
-      <section class="card" *ngIf="detail() as item"><header class="card-header"><h2>Detalle</h2><button class="button button--text" type="button" (click)="detail.set(null)">Cerrar</button></header><pre class="json-view">{{ item | json }}</pre></section>
+      <section class="card" *ngIf="detail() as item"><header class="card-header"><h2>{{ 'Detalle' | t }}</h2><button class="button button--text" type="button" (click)="detail.set(null)">{{ 'Cerrar' | t }}</button></header><pre class="json-view">{{ item | json }}</pre></section>
     </article>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -75,7 +76,7 @@ export class ManagerPageComponent implements OnInit {
   readonly columns = computed(() => Object.keys(this.rows()[0] ?? {}));
   readonly title = computed(() => {
     const metadata = this.metadata();
-    return metadata ? `${metadata.domain} / ${metadata.api}` : 'Manager API';
+    return metadata ? `${metadata.domain} / ${metadata.api}` : 'Gestor API';
   });
 
   ngOnInit(): void {

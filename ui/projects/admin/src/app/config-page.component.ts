@@ -18,11 +18,11 @@ import { AdminTranslatePipe } from './admin-translate.pipe';
         </div>
       </header>
       <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Loading configuration…' | t }}</p>
-      <section *ngIf="failure() as error" class="form-errors" aria-label="Errores de configuración">
-        <p>{{ error.message || 'No se pudo guardar la configuración.' }}</p>
+      <section *ngIf="failure() as error" class="form-errors" [attr.aria-label]="'Errores de configuración' | t">
+        <p>{{ (error.message || 'No se pudo guardar la configuración.') | t }}</p>
         <ul *ngIf="generalErrors().length"><li *ngFor="let message of generalErrors()">{{ message }}</li></ul>
       </section>
-      <p *ngIf="message()" class="notice notice--success">{{ message() }}</p>
+      <p *ngIf="message()" class="notice notice--success">{{ message() | t }}</p>
       <psfs-dynamic-form *ngIf="schema() as form" [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" [removable]="true" (submitted)="save($event)" />
       <section class="config-extra" *ngIf="schema()">
         <div class="panel-heading"><div><h2>{{ 'Additional parameters' | t }}</h2><p>{{ 'Add keys not included in the base form.' | t }}</p></div><button class="button button--secondary" type="button" (click)="addExtra()">{{ 'Add parameter' | t }}</button></div>

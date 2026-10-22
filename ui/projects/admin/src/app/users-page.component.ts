@@ -4,6 +4,8 @@ import { AdminApiService } from './admin-api.service';
 import { AdminEnvelope, AdminFormSchema } from './admin-contracts';
 import { DynamicFormComponent, DynamicFormSubmission } from './dynamic-form.component';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { AdminTranslatePipe } from './admin-translate.pipe';
+import { AdminTranslationService } from './admin-translation.service';
 
 interface AdminUser {
   username: string;
@@ -20,51 +22,51 @@ interface UsersContract {
 
 @Component({
   selector: 'psfs-users-page',
-  imports: [DynamicFormComponent, ConfirmDialogComponent, NgFor, NgIf],
+  imports: [AdminTranslatePipe, DynamicFormComponent, ConfirmDialogComponent, NgFor, NgIf],
   template: `
     <article class="native-page page users-page" aria-live="polite">
       <header class="page-header">
         <div>
-          <p class="page-eyebrow">Administración</p>
-          <h1>Gestión de usuarios</h1>
-          <p class="page-description">Gestiona las credenciales administrativas de PSFS sin abandonar la aplicación.</p>
+          <p class="page-eyebrow">{{ 'Administración' | t }}</p>
+          <h1>{{ 'Gestión de usuarios' | t }}</h1>
+          <p class="page-description">{{ 'Gestiona las credenciales administrativas de PSFS sin abandonar la aplicación.' | t }}</p>
         </div>
       </header>
 
-      <p *ngIf="state() === 'loading'" class="notice notice--info">Cargando usuarios…</p>
-      <section *ngIf="failure() as error" class="form-errors" aria-label="Errores de usuarios">
-        <p>{{ error.message || 'No se pudo completar la operación.' }}</p>
+      <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Cargando usuarios…' | t }}</p>
+      <section *ngIf="failure() as error" class="form-errors" [attr.aria-label]="'Errores de usuarios' | t">
+        <p>{{ (error.message || 'No se pudo completar la operación.') | t }}</p>
         <ul *ngIf="generalErrors().length"><li *ngFor="let message of generalErrors()">{{ message }}</li></ul>
       </section>
-      <psfs-confirm-dialog [open]="pendingDelete() !== ''" title="Eliminar usuario" [message]="'Se eliminará el usuario ' + pendingDelete() + '. Esta acción no se puede deshacer.'" confirmLabel="Eliminar" (cancel)="pendingDelete.set('')" (confirm)="confirmRemove()" />
-      <p *ngIf="message()" class="notice notice--success">{{ message() }}</p>
+      <psfs-confirm-dialog [open]="pendingDelete() !== ''" title="Eliminar usuario" [message]="deleteMessage()" confirmLabel="Eliminar" (cancel)="pendingDelete.set('')" (confirm)="confirmRemove()" />
+      <p *ngIf="message()" class="notice notice--success">{{ message() | t }}</p>
 
       <section *ngIf="state() === 'success'" class="users-layout">
         <div class="panel users-list">
-          <div class="panel-heading users-list__heading"><div><h2>Usuarios activos</h2><p>{{ users().length }} configurados</p></div><label class="users-filter"><span class="visually-hidden">Filtrar usuarios</span><input class="form-control" type="search" placeholder="Buscar usuario o rol" [value]="filter()" (input)="setFilter($any($event.target).value)"></label></div>
+          <div class="panel-heading users-list__heading"><div><h2>{{ 'Usuarios activos' | t }}</h2><p>{{ users().length }} {{ 'configurados' | t }}</p></div><label class="users-filter"><span class="visually-hidden">{{ 'Filtrar usuarios' | t }}</span><input class="form-control" type="search" [placeholder]="'Buscar usuario o rol' | t" [value]="filter()" (input)="setFilter($any($event.target).value)"></label></div>
           <div class="table-container" *ngIf="filteredUsers().length; else emptyUsers">
             <table class="data-table">
-              <thead><tr><th scope="col">Alias</th><th scope="col">Rol</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+              <thead><tr><th scope="col">{{ 'Alias' | t }}</th><th scope="col">{{ 'Rol' | t }}</th><th scope="col"><span class="visually-hidden">{{ 'Acciones' | t }}</span></th></tr></thead>
               <tbody>
                 <tr *ngFor="let user of visibleUsers()">
                   <td><strong>{{ user.username }}</strong></td>
-                  <td><span class="role-badge" [class]="'role-badge role-badge--' + user.class">{{ user.role }}</span></td>
-                  <td class="table-actions"><button type="button" class="button button--secondary button--small" [disabled]="saving()" (click)="edit(user)">Editar</button><button type="button" class="button button--danger button--small" [disabled]="saving()" (click)="remove(user.username)">Eliminar</button></td>
+                  <td><span class="role-badge" [class]="'role-badge role-badge--' + user.class">{{ user.role | t }}</span></td>
+                  <td class="table-actions"><button type="button" class="button button--secondary button--small" [disabled]="saving()" (click)="edit(user)">{{ 'Editar' | t }}</button><button type="button" class="button button--danger button--small" [disabled]="saving()" (click)="remove(user.username)">{{ 'Eliminar' | t }}</button></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div class="pagination" *ngIf="pageCount() > 1" aria-label="Paginación de usuarios">
-            <button class="button button--secondary button--small" type="button" [disabled]="page() === 0" (click)="previousPage()">Anterior</button>
-            <span>Página {{ page() + 1 }} de {{ pageCount() }}</span>
-            <button class="button button--secondary button--small" type="button" [disabled]="page() + 1 >= pageCount()" (click)="nextPage()">Siguiente</button>
+          <div class="pagination" *ngIf="pageCount() > 1" [attr.aria-label]="'Paginación de usuarios' | t">
+            <button class="button button--secondary button--small" type="button" [disabled]="page() === 0" (click)="previousPage()">{{ 'Anterior' | t }}</button>
+            <span>{{ 'Página' | t }} {{ page() + 1 }} {{ 'de' | t }} {{ pageCount() }}</span>
+            <button class="button button--secondary button--small" type="button" [disabled]="page() + 1 >= pageCount()" (click)="nextPage()">{{ 'Siguiente' | t }}</button>
           </div>
-          <ng-template #emptyUsers><p class="empty-state">No hay usuarios configurados todavía.</p></ng-template>
+          <ng-template #emptyUsers><p class="empty-state">{{ 'No hay usuarios configurados todavía.' | t }}</p></ng-template>
         </div>
 
         <section class="panel users-create" *ngIf="activeSchema() as form">
-          <div class="panel-heading"><div><h2>{{ editing() ? 'Editar usuario' : 'Nuevo usuario' }}</h2><p>{{ editing() ? 'La contraseña se sustituirá al guardar.' : 'Define alias, contraseña y rol.' }}</p></div><button *ngIf="editing()" class="button button--secondary" type="button" (click)="cancelEdit()">Cancelar</button></div>
-          <psfs-dynamic-form [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" [submitLabel]="editing() ? 'Actualizar usuario' : 'Crear usuario'" (submitted)="save($event)" />
+          <div class="panel-heading"><div><h2>{{ (editing() ? 'Editar usuario' : 'Nuevo usuario') | t }}</h2><p>{{ (editing() ? 'La contraseña se sustituirá al guardar.' : 'Define alias, contraseña y rol.') | t }}</p></div><button *ngIf="editing()" class="button button--secondary" type="button" (click)="cancelEdit()">{{ 'Cancelar' | t }}</button></div>
+          <psfs-dynamic-form [schema]="form" [errors]="fieldErrors()" [disabled]="saving()" [submitLabel]="(editing() ? 'Actualizar usuario' : 'Crear usuario') | t" (submitted)="save($event)" />
         </section>
       </section>
     </article>
@@ -73,6 +75,7 @@ interface UsersContract {
 })
 export class UsersPageComponent {
   private readonly api = inject(AdminApiService);
+  private readonly translations = inject(AdminTranslationService);
   readonly users = signal<AdminUser[]>([]);
   readonly schema = signal<AdminFormSchema | null>(null);
   readonly profiles = signal<Record<string, string>>({});
@@ -82,6 +85,7 @@ export class UsersPageComponent {
   readonly failure = signal<AdminEnvelope<null> | null>(null);
   readonly fieldErrors = signal<Record<string, string[]>>({});
   readonly pendingDelete = signal('');
+  readonly deleteMessage = computed(() => this.translations.translate('User {{username}} will be deleted. This action cannot be undone.', { username: this.pendingDelete() }));
   readonly editing = signal<AdminUser | null>(null);
   readonly activeSchema = computed<AdminFormSchema | null>(() => {
     const form = this.schema();

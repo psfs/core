@@ -3,35 +3,38 @@ import { NgFor, NgIf } from '@angular/common';
 import { AdminApiService } from './admin-api.service';
 import { AdminEnvelope, AdminFormSchema } from './admin-contracts';
 import { DynamicFormComponent, DynamicFormSubmission } from './dynamic-form.component';
+import { AdminTranslatePipe } from './admin-translate.pipe';
+import { AdminTranslationService } from './admin-translation.service';
 
 @Component({
   selector: 'psfs-modules-page',
-  imports: [DynamicFormComponent, NgFor, NgIf],
+  imports: [AdminTranslatePipe, DynamicFormComponent, NgFor, NgIf],
   template: `
     <article class="native-page page" aria-live="polite">
       <header class="page-header">
         <div>
-          <p class="page-eyebrow">Desarrollo</p>
-          <h1>Generador de módulos</h1>
-          <p class="page-description">Crea la estructura base de un módulo PSFS desde un contrato nativo y validado.</p>
+          <p class="page-eyebrow">{{ 'Desarrollo' | t }}</p>
+          <h1>{{ 'Generador de módulos' | t }}</h1>
+          <p class="page-description">{{ 'Crea la estructura base de un módulo PSFS desde un contrato nativo y validado.' | t }}</p>
         </div>
       </header>
-      <section class="notice notice--warning" aria-label="Advertencia de generación">
-        Esta operación escribe archivos y genera migraciones. Revisa los datos antes de confirmar.
+      <section class="notice notice--warning" [attr.aria-label]="'Advertencia de generación' | t">
+        {{ 'Esta operación escribe archivos y genera migraciones. Revisa los datos antes de confirmar.' | t }}
       </section>
-      <p *ngIf="state() === 'loading'" class="notice notice--info">Cargando generador…</p>
-      <section *ngIf="failure() as error" class="form-errors" aria-label="Errores del generador">
-        <p>{{ error.message || 'No se pudo generar el módulo.' }}</p>
+      <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Cargando generador…' | t }}</p>
+      <section *ngIf="failure() as error" class="form-errors" [attr.aria-label]="'Errores del generador' | t">
+        <p>{{ (error.message || 'No se pudo generar el módulo.') | t }}</p>
         <ul *ngIf="generalErrors().length"><li *ngFor="let message of generalErrors()">{{ message }}</li></ul>
       </section>
-      <p *ngIf="message()" class="notice notice--success">{{ message() }}</p>
-      <psfs-dynamic-form *ngIf="schema() as form" [schema]="form" [errors]="fieldErrors()" [disabled]="generating()" submitLabel="Generar módulo" (submitted)="create($event)" />
+      <p *ngIf="message()" class="notice notice--success">{{ message() | t }}</p>
+      <psfs-dynamic-form *ngIf="schema() as form" [schema]="form" [errors]="fieldErrors()" [disabled]="generating()" [submitLabel]="'Generar módulo' | t" (submitted)="create($event)" />
     </article>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModulesPageComponent {
   private readonly api = inject(AdminApiService);
+  private readonly translations = inject(AdminTranslationService);
   readonly schema = signal<AdminFormSchema | null>(null);
   readonly state = signal<'loading' | 'success' | 'error'>('loading');
   readonly generating = signal(false);
@@ -57,7 +60,7 @@ export class ModulesPageComponent {
     this.api.post<{ module: string }>('modules', submission).subscribe({
       next: (response) => {
         this.generating.set(false);
-        this.message.set(response.message ?? `Módulo ${response.data.module} generado correctamente.`);
+        this.message.set(response.message ?? this.translations.translate('Module {{module}} generated successfully.', { module: response.data.module }));
       },
       error: (failure: unknown) => {
         this.generating.set(false);

@@ -92,7 +92,7 @@ const FALLBACK_MENU: AdminMenuGroup[] = [
           <p class="sidebar-footer">PSFS · Angular 22</p>
         </aside>
         <main id="main-content" class="admin-main">
-        <p class="load-error" *ngIf="loadError()">{{ loadError() }}</p>
+        <p class="load-error" *ngIf="loadError()">{{ loadError() | t }}</p>
         <router-outlet *ngIf="bootstrap()" />
         </main>
       </div>
@@ -122,6 +122,7 @@ export class AdminShellComponent {
         const selectedLocale = preferredLocale || this.locale.current() || state.locale || '';
         if (selectedLocale) this.locale.set(selectedLocale);
         this.translations.setLocale(selectedLocale || state.locale || 'en_US');
+        document.documentElement.lang = (selectedLocale || state.locale || 'en_US').startsWith('es') ? 'es' : 'en';
         this.bootstrap.set({ ...state, locale: selectedLocale || state.locale });
         this.menu.set(state.menu.length ? state.menu : FALLBACK_MENU);
       },
@@ -154,6 +155,7 @@ export class AdminShellComponent {
     if (!/^[a-z]{2}(?:_[A-Z]{2})?$/.test(locale)) return;
     this.locale.set(locale);
     this.translations.setLocale(locale);
+    document.documentElement.lang = locale.startsWith('es') ? 'es' : 'en';
     this.http.put<{ ok: boolean; data: { locale: string } }>(`/admin/api/v2/locale/${encodeURIComponent(locale)}`, {}).subscribe({
       next: () => this.loadBootstrap(locale),
       error: () => this.loadError.set('No se pudo cambiar el idioma.')
@@ -163,21 +165,21 @@ export class AdminShellComponent {
 
 @Component({
   selector: 'psfs-admin-native-page',
-  imports: [NgFor, NgIf],
+  imports: [AdminTranslatePipe, NgFor, NgIf],
   template: `
     <article class="native-page page" aria-live="polite">
       <header class="page-header">
-        <div><p class="page-eyebrow">Administración</p><h1>{{ title() }}</h1></div>
+        <div><p class="page-eyebrow">{{ 'Administración' | t }}</p><h1>{{ title() | t }}</h1></div>
       </header>
-      <p *ngIf="state() === 'loading'" class="notice notice--info">Cargando contrato administrativo…</p>
+      <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Cargando contrato administrativo…' | t }}</p>
       <ng-container *ngIf="state() === 'success'">
-        <p class="page-description">{{ description() }}</p>
-        <p class="notice notice--info">La vista nativa está preparada para consumir su contrato administrativo v2.</p>
+        <p class="page-description">{{ description() | t }}</p>
+        <p class="notice notice--info">{{ 'La vista nativa está preparada para consumir su contrato administrativo v2.' | t }}</p>
       </ng-container>
-      <section *ngIf="state() === 'error' && error() as failure" class="form-errors" aria-label="Errores de administración">
-        <p>{{ failure.message ?? 'No se pudo cargar la pantalla administrativa.' }}</p>
+      <section *ngIf="state() === 'error' && error() as failure" class="form-errors" [attr.aria-label]="'Errores de administración' | t">
+        <p>{{ (failure.message ?? 'No se pudo cargar la pantalla administrativa.') | t }}</p>
         <ul *ngIf="errorMessages(failure).length">
-          <li *ngFor="let message of errorMessages(failure)">{{ message }}</li>
+          <li *ngFor="let message of errorMessages(failure)">{{ message | t }}</li>
         </ul>
       </section>
     </article>

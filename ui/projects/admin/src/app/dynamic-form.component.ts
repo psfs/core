@@ -20,25 +20,25 @@ export interface DynamicFormSubmission {
     <form class="dynamic-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <div class="form-field" [class.form-field--wide]="isWide(field)" *ngFor="let field of fields">
         <div class="form-field-heading">
-          <label [for]="field.name">{{ field.label || field.name }} <span *ngIf="field.required" aria-hidden="true">*</span></label>
-          <button *ngIf="removable" class="field-remove" type="button" [attr.data-field-name]="field.name" [attr.aria-label]="('Remove' | t) + ' ' + (field.label || field.name)" (click)="removeField(field.name)"><ng-icon name="tablerTrash" aria-hidden="true" /><span>{{ 'Remove' | t }}</span></button>
+          <label [for]="field.name">{{ (field.label || field.name) | t }} <span *ngIf="field.required" aria-hidden="true">*</span></label>
+          <button *ngIf="removable" class="field-remove" type="button" [attr.data-field-name]="field.name" [attr.aria-label]="('Remove' | t) + ' ' + ((field.label || field.name) | t)" (click)="removeField(field.name)"><ng-icon name="tablerTrash" aria-hidden="true" /><span>{{ 'Remove' | t }}</span></button>
         </div>
         <textarea *ngIf="field.type === 'textarea'" class="form-control" [id]="field.name" [formControlName]="controlName(field.name)" [attr.aria-invalid]="messages(field.name).length > 0"></textarea>
         <select *ngIf="field.type === 'select'" class="form-control" [id]="field.name" [formControlName]="controlName(field.name)" [attr.aria-invalid]="messages(field.name).length > 0">
-          <option *ngFor="let option of optionsFor(field)" [value]="option.value">{{ option.label }}</option>
+          <option *ngFor="let option of optionsFor(field)" [value]="option.value">{{ option.label | t }}</option>
         </select>
         <input *ngIf="field.type === 'checkbox'" class="form-control form-control--checkbox" [id]="field.name" type="checkbox" [formControlName]="controlName(field.name)" [attr.aria-invalid]="messages(field.name).length > 0">
         <div *ngIf="field.type !== 'textarea' && field.type !== 'select' && field.type !== 'checkbox'" class="form-control-wrap" [class.form-control-wrap--password]="field.type === 'password'">
           <input class="form-control" [id]="field.name" [type]="inputType(field)" [formControlName]="controlName(field.name)" [attr.aria-invalid]="messages(field.name).length > 0">
           <button *ngIf="field.type === 'password'" class="password-toggle" type="button" [attr.data-password-toggle]="field.name" [attr.aria-label]="(passwordVisible(field.name) ? 'Hide password' : 'Show password') | t" [attr.aria-pressed]="passwordVisible(field.name)" (click)="togglePassword(field.name)"><ng-icon [name]="passwordVisible(field.name) ? 'tablerEyeOff' : 'tablerEye'" aria-hidden="true" /><span class="visually-hidden">{{ (passwordVisible(field.name) ? 'Hide password' : 'Show password') | t }}</span></button>
         </div>
-        <small *ngIf="field.help" class="form-help">{{ field.help }}</small>
-        <ul class="field-errors" *ngIf="messages(field.name).length" [attr.aria-label]="'Errores de ' + field.label">
+        <small *ngIf="field.help" class="form-help">{{ field.help | t }}</small>
+        <ul class="field-errors" *ngIf="messages(field.name).length" [attr.aria-label]="('Field errors for {{field}}' | t: { field: ((field.label || field.name) | t) })">
           <li *ngFor="let message of messages(field.name)">{{ message }}</li>
         </ul>
       </div>
       <div class="form-actions">
-        <button class="button button--primary" type="submit" [disabled]="disabled">{{ submitLabel }}</button>
+        <button class="button button--primary" type="submit" [disabled]="disabled">{{ submitLabel | t }}</button>
       </div>
     </form>
   `,

@@ -20,7 +20,11 @@ describe('ModulesPageComponent', () => {
     const fixture = TestBed.createComponent(ModulesPageComponent);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Generador de módulos');
+    expect(fixture.nativeElement.textContent).toContain('Module generator');
+    expect(fixture.nativeElement.textContent).toContain('Module Name');
+    expect(fixture.nativeElement.textContent).toContain('Controller type');
+    expect(fixture.nativeElement.textContent).toContain('Requires user authentication');
+    expect(fixture.nativeElement.textContent).toContain('Custom API class');
     expect(fixture.nativeElement.querySelector('select#controllerType')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
   });

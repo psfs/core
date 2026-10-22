@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgIf } from '@angular/common';
+import { AdminTranslatePipe } from './admin-translate.pipe';
 
 @Component({
   selector: 'psfs-confirm-dialog',
-  imports: [NgIf],
-  template: `<div class="dialog-backdrop" *ngIf="open" role="presentation"><section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title"><h2 id="confirm-title">{{ title }}</h2><p>{{ message }}</p><div class="dialog-actions"><button class="button button--secondary" type="button" (click)="cancel.emit()">Cancelar</button><button class="button button--danger" type="button" (click)="confirm.emit()" autofocus>{{ confirmLabel }}</button></div></section></div>`,
+  imports: [AdminTranslatePipe, NgIf],
+  template: `<div class="dialog-backdrop" *ngIf="open" role="presentation"><section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title"><h2 id="confirm-title">{{ title | t }}</h2><p>{{ message }}</p><div class="dialog-actions"><button class="button button--secondary" type="button" (click)="cancel.emit()">{{ 'Cancelar' | t }}</button><button class="button button--danger" type="button" (click)="confirm.emit()" autofocus>{{ confirmLabel | t }}</button></div></section></div>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfirmDialogComponent {

@@ -5,7 +5,7 @@ import { AdminTranslationService } from './admin-translation.service';
 export class AdminTranslatePipe implements PipeTransform {
   private readonly translations = inject(AdminTranslationService);
 
-  transform(value: string): string {
-    return this.translations.translate(value);
+  transform(value: string, parameters: Record<string, string | number> = {}): string {
+    return this.translations.translate(value, parameters);
   }
 }

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { NgFor, NgIf } from '@angular/common';
 import { AdminApiService } from './admin-api.service';
 import { AdminEnvelope } from './admin-contracts';
+import { AdminTranslatePipe } from './admin-translate.pipe';
 
 interface RouteRow {
   slug: string;
@@ -10,22 +11,22 @@ interface RouteRow {
 
 @Component({
   selector: 'psfs-routes-page',
-  imports: [NgFor, NgIf],
+  imports: [AdminTranslatePipe, NgFor, NgIf],
   template: `
     <article class="native-page page" aria-live="polite">
       <header class="page-header">
-        <div><p class="page-eyebrow">Sistema</p><h1>Rutas del sistema</h1><p class="page-description">Consulta el catálogo activo y regenera la definición de rutas cuando sea necesario.</p></div>
-        <div class="page-actions" *ngIf="state() === 'success'"><button class="button button--primary" type="button" (click)="regenerate()" [disabled]="regenerating()">{{ regenerating() ? 'Regenerando…' : 'Regenerar rutas' }}</button></div>
+        <div><p class="page-eyebrow">{{ 'Sistema' | t }}</p><h1>{{ 'Rutas del sistema' | t }}</h1><p class="page-description">{{ 'Consulta el catálogo activo y regenera la definición de rutas cuando sea necesario.' | t }}</p></div>
+        <div class="page-actions" *ngIf="state() === 'success'"><button class="button button--primary" type="button" (click)="regenerate()" [disabled]="regenerating()">{{ (regenerating() ? 'Regenerando…' : 'Regenerar rutas') | t }}</button></div>
       </header>
-      <p *ngIf="state() === 'loading'" class="notice notice--info">Cargando catálogo de rutas…</p>
-      <section *ngIf="error() as failure" class="form-errors" aria-label="Errores de rutas">
-        <p>{{ failure.message ?? 'No se pudo cargar el catálogo.' }}</p>
+      <p *ngIf="state() === 'loading'" class="notice notice--info">{{ 'Cargando catálogo de rutas…' | t }}</p>
+      <section *ngIf="error() as failure" class="form-errors" [attr.aria-label]="'Errores de rutas' | t">
+        <p>{{ (failure.message ?? 'No se pudo cargar el catálogo de rutas.') | t }}</p>
         <ul *ngIf="errorMessages(failure).length"><li *ngFor="let message of errorMessages(failure)">{{ message }}</li></ul>
       </section>
       <ng-container *ngIf="state() === 'success'">
-        <p *ngIf="operationMessage()" class="notice notice--success">{{ operationMessage() }}</p>
+        <p *ngIf="operationMessage()" class="notice notice--success">{{ operationMessage() | t }}</p>
         <div class="table-container"><table class="data-table">
-          <thead><tr><th><button class="table-sort" type="button" (click)="sortBy('slug')">Slug</button></th><th><button class="table-sort" type="button" (click)="sortBy('route')">Ruta</button></th></tr></thead>
+          <thead><tr><th><button class="table-sort" type="button" (click)="sortBy('slug')">Slug</button></th><th><button class="table-sort" type="button" (click)="sortBy('route')">{{ 'Ruta' | t }}</button></th></tr></thead>
           <tbody><tr *ngFor="let row of routes()"><td>{{ row.slug }}</td><td>{{ routeText(row.route) }}</td></tr></tbody>
         </table></div>
       </ng-container>

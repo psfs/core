@@ -14,7 +14,7 @@ describe('ManagerPageComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Related fixture');
-    expect(fixture.nativeElement.textContent).toContain('modo consulta');
+    expect(fixture.nativeElement.textContent).toContain('read-only mode');
     requests.verify();
   });
 });

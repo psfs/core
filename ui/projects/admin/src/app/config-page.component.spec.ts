@@ -21,7 +21,7 @@ describe('ConfigPageComponent', () => {
     const fixture = TestBed.createComponent(ConfigPageComponent);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Nombre');
+    expect(fixture.nativeElement.textContent).toContain('Name');
     expect(fixture.nativeElement.querySelector('input[type="password"]').value).toBe('');
   });
 
