@@ -86,6 +86,9 @@ docker exec psfs-php-1 php src/bin/psfs psfs:queue:work --queue=<queue_name> --m
 docker exec psfs-php-1 php src/bin/psfs psfs:queue:run-parallel --queue=<queue_name> --workers=2 --stop-when-empty=1
 ```
 
+Redis is the primary queue backend and a file queue (`job.queue.file.path`, default `cache/queue`) is the fallback. If Redis is down when a job is dispatched, or fails later, the job is written to the file queue instead of being lost. `psfs:queue:work` reads Redis first and then the file queue, so jobs parked during an outage are processed once it is over. Redis connections are retried every 5 seconds, and delivery is at-least-once with ordering guaranteed only inside each backend.
+
+
 ### 3.2 Swoole runtime
 
 <!-- validated -->
