@@ -87,7 +87,7 @@ trait SystemTrait
 	    }
     }
 
-	protected function handleShutdown(): void
+	public function handleShutdown(): void
 	{
 		$error = error_get_last();
 
