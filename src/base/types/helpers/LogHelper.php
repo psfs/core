@@ -58,6 +58,23 @@ class LogHelper
     }
 
     /**
+     * Reads a log setting. A non-empty PSFS_<KEY> environment variable (log.level.php -> PSFS_LOG_LEVEL_PHP)
+     * wins over the PSFS configuration, so containers can be tuned without touching config files.
+     * @param string $key
+     * @param string|null $default
+     * @return string|null
+     */
+    public static function setting(string $key, ?string $default = null): ?string
+    {
+        $env = getenv('PSFS_' . strtoupper(str_replace('.', '_', $key)));
+        if (false !== $env && '' !== trim($env)) {
+            return $env;
+        }
+        $value = Config::getParam($key);
+        return null !== $value && '' !== trim((string)$value) ? (string)$value : $default;
+    }
+
+    /**
      * Resolves the configured threshold for a channel: log.level.<channel>, then the built-in channel
      * default (deprecation, security) and finally log.level
      * @param string|null $channel
@@ -65,12 +82,12 @@ class LogHelper
      */
     public static function resolveChannelLevel(?string $channel = null): string
     {
-        $default = (string)Config::getParam('log.level', self::DEFAULT_LEVEL);
+        $default = (string)self::setting('log.level', self::DEFAULT_LEVEL);
         if (null === $channel || '' === $channel) {
             return strtoupper($default);
         }
         $channel = strtolower($channel);
-        $channelLevel = (string)Config::getParam('log.level.' . $channel, '');
+        $channelLevel = (string)self::setting('log.level.' . $channel, '');
         if ('' === trim($channelLevel)) {
             $channelLevel = self::CHANNEL_DEFAULT_LEVELS[$channel] ?? $default;
         }
@@ -134,7 +151,7 @@ class LogHelper
      */
     private static function acceptDeprecation(string $message, string $file, int $line): bool
     {
-        $mode = strtolower((string)Config::getParam('log.deprecation.mode', self::DEFAULT_DEPRECATION_MODE));
+        $mode = strtolower((string)self::setting('log.deprecation.mode', self::DEFAULT_DEPRECATION_MODE));
         if (self::DEPRECATION_OFF === $mode) {
             return false;
         }

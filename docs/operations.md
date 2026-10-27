@@ -141,6 +141,35 @@ With the default `WARNING` threshold you get errors, fatals, PHP warnings and de
 
 Channel names can be extended in code: `Logger::log($msg, LOG_DEBUG, $context, false, 'mychannel')` reads `log.level.mychannel`.
 
+### 4.5 Log destination in containers
+
+Writing log files inside a container filesystem is slow and grows without bound. In Docker, send the logs to stdout/stderr and let the Docker log driver collect and rotate them:
+
+| Key | Env override | Values |
+| --- | --- | --- |
+| `log.output` | `PSFS_LOG_OUTPUT` | `file` (default outside compose), `stdout`, `stderr` |
+| `log.format` | `PSFS_LOG_FORMAT` | `line` (default, human readable) or `json` (one JSON object per line, with `message`, `level_name`, `channel`, `datetime`, `context` and `extra.uid`) |
+
+Every `log.*` key can be overridden by an environment variable named `PSFS_` + the key in upper case with dots as underscores (`log.level.cache` → `PSFS_LOG_LEVEL_CACHE`, `log.deprecation.mode` → `PSFS_LOG_DEPRECATION_MODE`). A non-empty variable wins over the PSFS configuration; an empty one is ignored.
+
+`docker-compose.yml` defaults the `php` and `php-swoole` services to `PSFS_LOG_OUTPUT=stdout` and `PSFS_LOG_FORMAT=json`, and rotates the output of every service with the `json-file` driver (`max-size` 10m, `max-file` 3). Read the logs with `docker compose logs -f php`. To go back to files in `logs/`, set `PSFS_LOG_OUTPUT=file` and `PSFS_LOG_FORMAT=line` in `.env`. `docker/php.ini` sends native PHP errors (the ones PSFS does not capture) to `/dev/stderr`, so they follow the same path.
+
+The phpunit configuration empties the `PSFS_LOG_*` variables, so the test suite does not depend on the container environment.
+
+To ship the logs to a central service, change the log driver instead of the code, for example CloudWatch:
+
+<!-- example-only -->
+```yaml
+logging:
+  driver: awslogs
+  options:
+    awslogs-region: eu-west-1
+    awslogs-group: psfs
+    awslogs-stream: php
+```
+
+With `log.format=json` CloudWatch Logs Insights can filter by `level_name`, `channel` or any `context` field. A sidecar collector (Fluent Bit, Vector) is only worth adding when you need to filter or enrich records before they leave the host.
+
 ## 5) Troubleshooting matrix
 
 | Symptom | Likely cause | Fix command |

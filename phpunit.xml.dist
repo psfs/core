@@ -32,6 +32,11 @@
     <php>
         <const name="PSFS_UNIT_TESTING_EXECUTION" value="true"/>
         <ini name="error_reporting" value="-1"/>
+        <!-- Empty means unset: isolate the tests from the container PSFS_LOG_* environment -->
+        <env name="PSFS_LOG_OUTPUT" value="" force="true"/>
+        <env name="PSFS_LOG_FORMAT" value="" force="true"/>
+        <env name="PSFS_LOG_LEVEL" value="" force="true"/>
+        <env name="PSFS_LOG_DEPRECATION_MODE" value="" force="true"/>
         <ini name="memory_limit" value="-1"/>
         <ini name="zend.assertions" value="1"/>
         <ini name="assert.assertions" value="1"/>

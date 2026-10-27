@@ -2,6 +2,7 @@
 
 namespace PSFS\base;
 
+use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
@@ -29,6 +30,7 @@ class Logger
     private const OUTPUT_FILE = 'file';
     private const OUTPUT_STDOUT = 'stdout';
     private const OUTPUT_STDERR = 'stderr';
+    private const FORMAT_JSON = 'json';
 
     use SingletonTrait;
 
@@ -66,7 +68,7 @@ class Logger
         } else {
             throw new ConfigException(t('Error creating logger'));
         }
-        $this->logLevel = strtoupper((string)Config::getParam('log.level', LogHelper::DEFAULT_LEVEL));
+        $this->logLevel = LogHelper::resolveChannelLevel();
     }
 
     public function __destruct()
@@ -113,7 +115,7 @@ class Logger
      */
     private function resolveLogOutputTarget(): array
     {
-        $output = strtolower(trim((string)Config::getParam('log.output', self::OUTPUT_FILE)));
+        $output = strtolower(trim((string)LogHelper::setting('log.output', self::OUTPUT_FILE)));
         if ($output === self::OUTPUT_STDOUT) {
             return ['php://stdout', false];
         }
@@ -206,16 +208,27 @@ class Logger
      */
     private function addDefaultStreamHandler($debug = false): StreamHandler
     {
+        // Filtering is done per channel in addLog (log.level / log.level.<channel>), so the handler accepts everything
+        $stream = new StreamHandler($this->stream, \Monolog\Level::Debug);
+        $stream->setFormatter($this->createFormatter());
+        return $stream;
+    }
+
+    /**
+     * log.format=json emits one JSON object per line (what container log drivers and CloudWatch expect);
+     * anything else keeps the human readable line format
+     * @return FormatterInterface
+     */
+    private function createFormatter(): FormatterInterface
+    {
+        if (self::FORMAT_JSON === strtolower(trim((string)LogHelper::setting('log.format', 'line')))) {
+            return new JsonFormatter(JsonFormatter::BATCH_MODE_JSON, true, true);
+        }
         // the default date format is "Y-m-d H:i:s"
         $dateFormat = 'Y-m-d H:i:s.u';
         // the default output format is "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
         $output = "[%datetime%] [%channel%:%level_name%]\t%message%\t%context%\t%extra%\n";
-        // finally, create a formatter
-        $formatter = new LineFormatter($output, $dateFormat);
-        // Filtering is done per channel in addLog (log.level / log.level.<channel>), so the handler accepts everything
-        $stream = new StreamHandler($this->stream, \Monolog\Level::Debug);
-        $stream->setFormatter($formatter);
-        return $stream;
+        return new LineFormatter($output, $dateFormat);
     }
 
     /**

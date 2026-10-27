@@ -1,5 +1,19 @@
 name: psfs
 
+# Container logs go through the Docker log driver with rotation, never to unbounded files
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# PSFS logs to stdout as JSON by default; set PSFS_LOG_OUTPUT=file / PSFS_LOG_FORMAT=line in .env to go back to logs/
+x-psfs-logging-env: &psfs-logging-env
+  PSFS_LOG_OUTPUT: "${PSFS_LOG_OUTPUT:-stdout}"
+  PSFS_LOG_FORMAT: "${PSFS_LOG_FORMAT:-json}"
+  PSFS_LOG_LEVEL: "${PSFS_LOG_LEVEL:-}"
+  PSFS_LOG_DEPRECATION_MODE: "${PSFS_LOG_DEPRECATION_MODE:-}"
+
 services:
   php:
     image: stratecode/php:${PHP_VERSION:-8.5}${DEBUG:-}
@@ -16,6 +30,7 @@ services:
       - "${HOST_PORT:-8001}:8080"
     command: 'php -S 0.0.0.0:8080 -t ./html'
     environment:
+      <<: *psfs-logging-env
       XDEBUG_CONFIG: "remote_host=localhost"
       PHP_IDE_CONFIG: "serverName=PSFSCore"
       PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
@@ -23,11 +38,7 @@ services:
       PSFS_BENCHMARK_ENABLED: "${PSFS_BENCHMARK_ENABLED:-0}"
     depends_on:
       - redis
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    logging: *default-logging
 
   php-swoole:
     image: stratecode/php:${PHP_VERSION:-8.5}${DEBUG:-}
@@ -53,6 +64,7 @@ services:
       --pid-file=/tmp/psfs-swoole.pid
       --log-file=/tmp/psfs-swoole.log
     environment:
+      <<: *psfs-logging-env
       XDEBUG_CONFIG: "remote_host=localhost"
       PHP_IDE_CONFIG: "serverName=PSFSCore"
       PHP_TIMEZONE: "${PHP_TIMEZONE:-Europe/Madrid}"
@@ -63,11 +75,7 @@ services:
       ADMIN_UI_DEV_UPSTREAM: "${ADMIN_UI_DEV_UPSTREAM-http://ui:4200}"
     depends_on:
       - redis
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    logging: *default-logging
 
   ui:
     image: node:24.15.0-alpine
@@ -161,6 +169,7 @@ services:
       start_period: 5s
     security_opt:
       - no-new-privileges:true
+    logging: *default-logging
     deploy:
       resources:
         limits:
@@ -183,6 +192,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    logging: *default-logging
 
 networks:
   psfs-network:

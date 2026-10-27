@@ -173,4 +173,94 @@ class LoggerTest extends TestCase
             $configProperty->setValue($config, $defaultConfig);
         }
     }
+
+    public function testLoggerOutputCanBeSelectedFromTheEnvironment(): void
+    {
+        $logger = (new \ReflectionClass(Logger::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod(Logger::class, 'resolveLogOutputTarget');
+
+        try {
+            putenv('PSFS_LOG_OUTPUT=stderr');
+            [$target, $closeStreamOnDestruct] = $method->invoke($logger);
+            $this->assertSame('php://stderr', $target);
+            $this->assertFalse($closeStreamOnDestruct);
+
+            putenv('PSFS_LOG_OUTPUT=STDOUT');
+            [$target] = $method->invoke($logger);
+            $this->assertSame('php://stdout', $target);
+        } finally {
+            putenv('PSFS_LOG_OUTPUT');
+        }
+    }
+
+    public function testFormatterFollowsTheLogFormatSetting(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $defaultConfig = $configProperty->getValue($config);
+        $logger = (new \ReflectionClass(Logger::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod(Logger::class, 'createFormatter');
+
+        try {
+            $configProperty->setValue($config, array_diff_key($defaultConfig, ['log.format' => true]));
+            $this->assertInstanceOf(\Monolog\Formatter\LineFormatter::class, $method->invoke($logger));
+
+            $configProperty->setValue($config, array_merge($defaultConfig, ['log.format' => 'json']));
+            $this->assertInstanceOf(\Monolog\Formatter\JsonFormatter::class, $method->invoke($logger));
+
+            $configProperty->setValue($config, array_merge($defaultConfig, ['log.format' => 'unknown']));
+            $this->assertInstanceOf(\Monolog\Formatter\LineFormatter::class, $method->invoke($logger));
+
+            putenv('PSFS_LOG_FORMAT=json');
+            $this->assertInstanceOf(\Monolog\Formatter\JsonFormatter::class, $method->invoke($logger));
+        } finally {
+            putenv('PSFS_LOG_FORMAT');
+            $configProperty->setValue($config, $defaultConfig);
+        }
+    }
+
+    public function testJsonFormatWritesOneParsableObjectPerLine(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $defaultConfig = $configProperty->getValue($config);
+        $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'psfs-log-' . uniqid('', true);
+        mkdir($dir, 0777, true);
+        $configProperty->setValue($config, array_merge($defaultConfig, [
+            'log.output' => 'file',
+            'log.format' => 'json',
+            'default.log.path' => $dir,
+            'log.level' => 'DEBUG',
+        ]));
+
+        try {
+            Logger::dropInstance();
+            Logger::log('first json record', LOG_ERR, ['order_id' => 7], false, 'cache');
+            Logger::log("second\njson record", LOG_WARNING);
+            Logger::dropInstance();
+
+            $files = glob($dir . '/*/*/*/*.log') ?: [];
+            $this->assertNotEmpty($files, 'Log file not created');
+            $lines = array_values(array_filter(explode("\n", implode('', array_map('file_get_contents', $files)))));
+            $this->assertCount(2, $lines, 'A multi-line message must not break the one-record-per-line contract');
+
+            $first = json_decode($lines[0], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('first json record', $first['message']);
+            $this->assertSame('ERROR', $first['level_name']);
+            $this->assertSame(7, $first['context']['order_id']);
+            $this->assertSame('cache', $first['context']['channel']);
+            $this->assertArrayHasKey('datetime', $first);
+            $this->assertArrayHasKey('uid', $first['extra']);
+
+            $second = json_decode($lines[1], true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame("second\njson record", $second['message']);
+            $this->assertSame('WARNING', $second['level_name']);
+        } finally {
+            Logger::dropInstance();
+            $configProperty->setValue($config, $defaultConfig);
+            foreach (glob($dir . '/*/*/*/*.log') ?: [] as $file) {
+                unlink($file);
+            }
+        }
+    }
 }

@@ -9,6 +9,13 @@ use PSFS\base\types\helpers\LogHelper;
 
 class LogHelperTest extends TestCase
 {
+    private const ENV_KEYS = [
+        'PSFS_LOG_LEVEL',
+        'PSFS_LOG_LEVEL_CACHE',
+        'PSFS_LOG_OUTPUT',
+        'PSFS_LOG_DEPRECATION_MODE',
+    ];
+
     private array $serverBackup = [];
     private array $configBackup = [];
 
@@ -16,6 +23,9 @@ class LogHelperTest extends TestCase
     {
         $this->serverBackup = $_SERVER ?? [];
         $this->configBackup = $this->configProperty()->getValue(Config::getInstance());
+        foreach (self::ENV_KEYS as $name) {
+            putenv($name);
+        }
         LogHelper::resetSeenDeprecations();
     }
 
@@ -23,6 +33,9 @@ class LogHelperTest extends TestCase
     {
         $_SERVER = $this->serverBackup;
         $this->configProperty()->setValue(Config::getInstance(), $this->configBackup);
+        foreach (self::ENV_KEYS as $name) {
+            putenv($name);
+        }
         LogHelper::resetSeenDeprecations();
     }
 
@@ -171,5 +184,52 @@ class LogHelperTest extends TestCase
         $this->setConfig(['log.level.php' => 'EMERGENCY', 'log.deprecation.mode' => 'once']);
         self::assertSame(Level::Warning, LogHelper::reportPhpError(E_WARNING, 'w', 'a.php', 1));
         self::assertSame(Level::Warning, LogHelper::reportPhpError(E_WARNING, 'w', 'a.php', 1));
+    }
+
+    public function testSettingPrefersTheEnvironmentOverTheConfiguration(): void
+    {
+        $this->setConfig(['log.output' => 'file']);
+        self::assertSame('file', LogHelper::setting('log.output', 'stdout'));
+
+        putenv('PSFS_LOG_OUTPUT=stderr');
+        self::assertSame('stderr', LogHelper::setting('log.output', 'stdout'));
+    }
+
+    public function testSettingTreatsEmptyEnvironmentValuesAsUnset(): void
+    {
+        $this->setConfig(['log.output' => 'file']);
+        putenv('PSFS_LOG_OUTPUT=');
+        self::assertSame('file', LogHelper::setting('log.output', 'stdout'));
+
+        $config = $this->configBackup;
+        unset($config['log.output']);
+        $this->configProperty()->setValue(Config::getInstance(), $config);
+        self::assertSame('stdout', LogHelper::setting('log.output', 'stdout'));
+        self::assertNull(LogHelper::setting('log.output'));
+    }
+
+    public function testEnvironmentOverridesGlobalAndChannelLevels(): void
+    {
+        $this->setConfig(['log.level' => 'ERROR']);
+        putenv('PSFS_LOG_LEVEL=debug');
+        putenv('PSFS_LOG_LEVEL_CACHE=critical');
+
+        self::assertSame('DEBUG', LogHelper::resolveChannelLevel());
+        self::assertSame('DEBUG', LogHelper::resolveChannelLevel('curl'));
+        self::assertSame('CRITICAL', LogHelper::resolveChannelLevel('cache'));
+        self::assertTrue(LogHelper::isEnabled(Level::Debug, 'curl'));
+        self::assertFalse(LogHelper::isEnabled(Level::Error, 'cache'));
+    }
+
+    public function testEnvironmentControlsTheDeprecationMode(): void
+    {
+        $this->setConfig(['log.level.deprecation' => 'EMERGENCY', 'log.deprecation.mode' => 'once']);
+        putenv('PSFS_LOG_DEPRECATION_MODE=off');
+
+        self::assertNull(LogHelper::reportPhpError(E_DEPRECATED, 'env off', 'a.php', 1));
+
+        putenv('PSFS_LOG_DEPRECATION_MODE=log');
+        self::assertSame(Level::Notice, LogHelper::reportPhpError(E_DEPRECATED, 'env log', 'a.php', 1));
+        self::assertSame(Level::Notice, LogHelper::reportPhpError(E_DEPRECATED, 'env log', 'a.php', 1));
     }
 }
