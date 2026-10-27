@@ -124,6 +124,23 @@ docker exec psfs-php-1 php src/bin/psfs psfs:deploy:project
 
 Use deploy command when you need to regenerate document root + route hydration in one path.
 
+### 4.4 Log granularity
+
+Every log record has a threshold. `log.level` is the global one (`DEBUG|INFO|NOTICE|WARNING|ERROR|CRITICAL|ALERT|EMERGENCY`, default `WARNING`; unknown values fall back to the default) and a channel can override it with `log.level.<channel>`:
+
+| Key | Applies to |
+| --- | --- |
+| `log.level.php` | PHP errors, warnings and notices captured by the error handler |
+| `log.level.deprecation` | `E_DEPRECATED` / `E_USER_DEPRECATED` (separate channel so PHP upgrades do not flood the logs). Default `ERROR`, i.e. silenced until you lower it |
+| `log.level.cache` | Cache internals |
+| `log.level.curl` | `CurlService` request/response traces |
+| `log.level.security` | Admin session, auth cookies, token rejections and legacy auth fallbacks. Default `WARNING`, so raising `log.level` does not hide auth events |
+| `log.deprecation.mode` | `once` (default, no configuration needed: one record per message/file/line per process), `log` (every occurrence), `off` |
+
+With the default `WARNING` threshold you get errors, fatals, PHP warnings and degraded-mode signals (Redis fallbacks, auth rejections); notices, info/debug traces and PHP deprecations are not recorded. Lower `log.level` or a channel level while investigating (deprecations need `log.level.deprecation=NOTICE`). Records below the threshold are discarded before the log file is opened, so a quiet configuration costs no filesystem I/O. Only real PHP failures (fatal errors) are reported to Slack; warnings, notices and deprecations are not. `log.output` (`file|stdout|stderr`) keeps selecting the sink.
+
+Channel names can be extended in code: `Logger::log($msg, LOG_DEBUG, $context, false, 'mychannel')` reads `log.level.mychannel`.
+
 ## 5) Troubleshooting matrix
 
 | Symptom | Likely cause | Fix command |

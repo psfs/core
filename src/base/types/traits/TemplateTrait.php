@@ -32,7 +32,7 @@ trait TemplateTrait
                 Logger::log($e->getMessage(), LOG_ERR);
             }
         } else {
-            Logger::log($filename . t(' not exists or cant write'), LOG_ERR);
+            Logger::log($filename . t(' not exists or cant write'), LOG_DEBUG);
         }
         return $created;
     }

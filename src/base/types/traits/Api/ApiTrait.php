@@ -98,7 +98,7 @@ trait ApiTrait
                 $this->list[] = $model;
                 continue;
             }
-            Logger::log(t('Max items per bulk insert raised'), LOG_WARNING, [count($this->data) . t('items')]);
+            Logger::log(t('Max items per bulk insert raised'), LOG_INFO, [count($this->data) . t('items')]);
         }
     }
 

@@ -227,7 +227,7 @@ trait DocumentorHelperTrait
                 $payload = $this->extractDtoProperties($namespace);
             }
         } catch (\Throwable $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
+            Logger::log($e->getMessage(), LOG_WARNING);
         }
 
         return $payload;

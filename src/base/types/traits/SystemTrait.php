@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\LogHelper;
 use PSFS\base\types\helpers\ServerHelper;
 use PSFS\base\types\helpers\SlackHelper;
 
@@ -72,11 +73,7 @@ trait SystemTrait
 			    return true;
 		    }
 
-		    Logger::log($errstr, LOG_CRIT, [
-			    'file' => $errfile,
-			    'line' => $errline,
-			    'errno' => $errno
-		    ]);
+		    LogHelper::reportPhpError($errno, (string)$errstr, (string)$errfile, (int)$errline);
 
 		    return true;
 	    }, E_ALL);
@@ -131,13 +128,10 @@ trait SystemTrait
 			$errline = $error['line'];
 			$errstr = $error['message'];
 
-			Logger::log($errstr, LOG_CRIT, [
-				'file' => $errfile,
-				'line' => $errline,
-				'errno' => $errno
-			]);
+			$level = LogHelper::reportPhpError($errno, (string)$errstr, (string)$errfile, (int)$errline);
 
-			if (null !== Config::getParam('log.slack.hook')) {
+			// Slack only for real failures, not for PHP warnings, notices or deprecations
+			if (null !== Config::getParam('log.slack.hook') && \Monolog\Level::Critical === $level) {
 				SlackHelper::getInstance()->trace(
 					$errstr,
 					$errfile,

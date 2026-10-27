@@ -117,7 +117,7 @@ trait ApiEndpointExtractorTrait
             $this->setRequestHeaders($reflection, $methodInfo);
             return $methodInfo;
         } catch (\Throwable $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
+            Logger::log($e->getMessage(), LOG_WARNING);
             return $methodInfo;
         }
     }

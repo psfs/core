@@ -97,11 +97,12 @@ class Singleton
                 $this->$variable = $instance;
             }
         } catch (\Throwable $e) {
-            Logger::log($e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']', LOG_ERR);
+            $detail = $e->getMessage() . ': ' . $e->getFile() . ' [' . $e->getLine() . ']';
             if (!$required) {
-                Logger::log('[Injectable][optional] Skipping optional dependency: ' . $variable, LOG_WARNING);
+                Logger::log('[Injectable][optional] Skipping optional dependency: ' . $variable . ' (' . $detail . ')', LOG_WARNING);
                 return $this;
             }
+            Logger::log($detail, LOG_ERR);
             throw $e;
         }
         return $this;
@@ -144,7 +145,7 @@ class Singleton
             }
             $this->setLoaded();
         } else {
-            Logger::log(get_class($this) . ' already loaded', LOG_INFO);
+            Logger::log(get_class($this) . ' already loaded', LOG_DEBUG);
         }
     }
 

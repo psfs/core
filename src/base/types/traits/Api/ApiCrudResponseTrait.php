@@ -18,7 +18,7 @@ trait ApiCrudResponseTrait
     protected function logCriticalException(\Throwable $e): void
     {
         $context = $this->extractExceptionContext($e);
-        Logger::log($e->getMessage(), LOG_CRIT, $context);
+        Logger::log($e->getMessage(), LOG_ERR, $context);
     }
 
     /**

@@ -89,7 +89,9 @@ abstract class AuthApi extends Api
             Logger::log(
                 '[AuthApi] Legacy API token in query string has been rejected by policy',
                 LOG_WARNING,
-                ['param' => self::LEGACY_QUERY_TOKEN_PARAM, 'route' => Request::requestUri()]
+                ['param' => self::LEGACY_QUERY_TOKEN_PARAM, 'route' => Request::requestUri()],
+                false,
+                'security'
             );
             return '';
         }
@@ -97,8 +99,10 @@ abstract class AuthApi extends Api
         if (!self::$legacyTokenWarningLogged) {
             Logger::log(
                 '[AuthApi] API token in query string is deprecated. Use header X-API-SEC-TOKEN or secure cookie.',
-                LOG_WARNING,
-                ['param' => self::LEGACY_QUERY_TOKEN_PARAM, 'route' => Request::requestUri()]
+                LOG_NOTICE,
+                ['param' => self::LEGACY_QUERY_TOKEN_PARAM, 'route' => Request::requestUri()],
+                false,
+                'security'
             );
             self::$legacyTokenWarningLogged = true;
         }
@@ -140,7 +144,7 @@ abstract class AuthApi extends Api
         if (preg_match('/[\x00-\x1F\x7F\s]/', $token) === 1) {
             if (!array_key_exists($source, self::$invalidTokenTelemetry)) {
                 self::$invalidTokenTelemetry[$source] = true;
-                Logger::log('[AuthApi][InvalidToken] rejected malformed token', LOG_WARNING, ['source' => $source]);
+                Logger::log('[AuthApi][InvalidToken] rejected malformed token', LOG_WARNING, ['source' => $source], false, 'security');
             }
             return '';
         }

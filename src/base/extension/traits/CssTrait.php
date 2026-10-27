@@ -127,7 +127,7 @@ trait CssTrait
                     if (!FileHelper::copyFileAtomic($orig, $dest)) {
                         throw new \RuntimeException('Can\' copy ' . $dest . '');
                     }
-                    Logger::log("$orig copiado a $dest", LOG_INFO);
+                    Logger::log("$orig copiado a $dest", LOG_DEBUG);
                 }
             }
         } catch (\Throwable $e) {

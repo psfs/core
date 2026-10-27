@@ -75,7 +75,7 @@ class Security
      */
     public function checkAdmin($user = null, $pass = null, $force = false)
     {
-        Logger::log('Checking admin session');
+        Logger::log('Checking admin session', LOG_DEBUG, null, false, 'security');
         if (!$this->shouldCheckAdmin($force)) {
             return $this->authorized || self::isTest();
         }
@@ -130,13 +130,13 @@ class Security
             $this->authorized = false;
             $this->admin = null;
             $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
-            Logger::log('Admin authentication rejected because the session ID could not be rotated', LOG_WARNING);
+            Logger::log('Admin authentication rejected because the session ID could not be rotated', LOG_WARNING, null, false, 'security');
             return;
         }
         $this->updateAdmin($user, $admins[$user]['profile']);
         $encrypted = AuthHelper::encryptCookieCredentials("$user:$pass");
         if (false === $encrypted) {
-            Logger::log('Admin auth cookie was not issued because auth.cookie.secret is missing or invalid', LOG_WARNING);
+            Logger::log('Admin auth cookie was not issued because auth.cookie.secret is missing or invalid', LOG_ERR, null, false, 'security');
         } else {
             ResponseHelper::setCookieHeaders([
                 [
@@ -260,7 +260,7 @@ class Security
         // Legacy compatibility: historic sessions were stored serialized.
         $legacyData = @unserialize($data, ['allowed_classes' => false]);
         if (is_array($legacyData)) {
-            Logger::log('[LegacyFallback] session_serialized_' . $key, LOG_NOTICE);
+            Logger::log('[LegacyFallback] session_serialized_' . $key, LOG_NOTICE, null, false, 'security');
             return $legacyData;
         }
 

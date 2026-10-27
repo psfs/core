@@ -136,7 +136,7 @@ final class MetadataEngineConfig
         self::$debugOpcacheWarningLogged = true;
         Logger::log(
             '[MetadataEngine] Disabled opcache layer in debug mode: require opcache.validate_timestamps=1 and opcache.revalidate_freq=0',
-            LOG_WARNING
+            LOG_INFO
         );
     }
 }

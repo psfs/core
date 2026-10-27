@@ -151,7 +151,9 @@ abstract class CurlService extends SimpleService
         Logger::log(
             $this->getUrl() . ' response: ',
             LOG_DEBUG,
-            [$this->getRawResult()]
+            [$this->getRawResult()],
+            false,
+            'curl'
         );
         $this->info = array_merge($this->info, curl_getinfo($this->con));
     }
@@ -198,7 +200,7 @@ abstract class CurlService extends SimpleService
             'headers' => $this->getHeaders(),
             'options' => $this->getOptions(),
             'url' => $this->getUrl(),
-        ]);
+        ], false, 'curl');
         $this->info['verbose'] = $verboseLog;
     }
 }

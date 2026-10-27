@@ -134,7 +134,7 @@ class Cache
      */
     public static function transformData($data, $transform = Cache::TEXT)
     {
-        Logger::log('Transform data in cache', LOG_DEBUG);
+        Logger::log('Transform data in cache', LOG_DEBUG, null, false, 'cache');
         switch ($transform) {
             case self::JSON:
                 $data = json_encode($data, JSON_PRETTY_PRINT);
@@ -212,10 +212,10 @@ class Cache
     public static function needCache()
     {
         $needCache = false;
-        Logger::log('Checking cache requirements');
+        Logger::log('Checking cache requirements', LOG_DEBUG, null, false, 'cache');
         if (!self::checkAdminSite() && !Config::getParam('debug') && Config::getParam('cache.data.enable', false)) {
             $action = Security::getInstance()->getSessionKey(self::CACHE_SESSION_VAR);
-            Logger::log('Gathering cache params from Session', LOG_DEBUG, $action);
+            Logger::log('Gathering cache params from Session', LOG_DEBUG, $action, false, 'cache');
             if (null !== $action && array_key_exists('cache', $action) && $action['cache'] > 0) {
                 $needCache = $action['cache'];
             }
@@ -241,7 +241,7 @@ class Cache
                 '[Cache] Cache file calculated: ' . json_encode(['file' => $filename, 'hash' => $hashPath]),
                 Inspector::SCOPE_DEBUG
             );
-            Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath]);
+            Logger::log('Cache file calculated', LOG_DEBUG, ['file' => $filename, 'hash' => $hashPath], false, 'cache');
         }
         return [$hashPath, $filename];
     }

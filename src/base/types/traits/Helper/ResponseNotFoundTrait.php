@@ -27,7 +27,7 @@ trait ResponseNotFoundTrait
         }
         Inspector::stats('[Router] Throw not found exception', Inspector::SCOPE_DEBUG);
         if (null === $exception) {
-            Logger::log('Not found page thrown without previous exception', LOG_WARNING);
+            Logger::log('Not found page thrown without previous exception', LOG_INFO);
             $exception = new Exception(t('Page not found'), 404);
         }
         $template = Template::getInstance()->setStatus($exception->getCode());

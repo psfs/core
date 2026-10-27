@@ -46,7 +46,7 @@ trait JsonTrait
 
         $data = json_encode($response, $mask);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            Logger::log(json_last_error_msg(), LOG_CRIT);
+            Logger::log(json_last_error_msg(), LOG_ERR);
         }
 
         $this->setStatus($statusCode);

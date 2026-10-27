@@ -243,7 +243,7 @@ abstract class Api extends Singleton
             $saved = true;
             $status = 200;
         } catch (\Throwable $e) {
-            Logger::log($e->getMessage(), LOG_CRIT, $this->getRequest()->getData());
+            Logger::log($e->getMessage(), LOG_ERR, ['bulk_items' => count((array)$this->getRequest()->getData())]);
             $message = t('Bulk insert rolled back');
         }
         return $this->json(new JsonResponse($this->exportList(), $saved, $savedCount, 1, $message), $status);

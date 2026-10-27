@@ -107,15 +107,12 @@ class Router
         } catch (AccessDeniedException $e) {
             Logger::log(
                 t('Requesting credentials for restricted area access'),
-                LOG_WARNING,
+                LOG_INFO,
                 ['file' => $e->getFile() . '[' . $e->getLine() . ']']
             );
             return Admin::staticAdminLogon();
         } catch (RouterException $r) {
             throw $this->stageMapNotFoundException($r);
-        } catch (\Throwable $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
-            throw $e;
         }
     }
 
@@ -313,7 +310,7 @@ class Router
             if (false === call_user_func_array([$class, $method], [])) {
                 Logger::log(
                     t("[Router] action " . get_class($class) . "::{$method} failed"),
-                    LOG_ERR,
+                    LOG_WARNING,
                     [error_get_last()]
                 );
                 error_clear_last();

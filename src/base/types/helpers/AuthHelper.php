@@ -244,7 +244,7 @@ class AuthHelper
             return self::authTuple($subject, $hash);
         } catch (Throwable $exception) {
             self::logInvalidAuthInput('jwt_decode_failure');
-            Logger::log('[AuthInvalid] jwt_decode_failure:' . get_class($exception), LOG_WARNING);
+            Logger::log('[AuthInvalid] jwt_decode_failure:' . get_class($exception), LOG_WARNING, null, false, 'security');
             return self::authTuple();
         }
     }

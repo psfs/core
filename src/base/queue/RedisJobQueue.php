@@ -78,7 +78,7 @@ class RedisJobQueue implements JobQueueInterface
                 return $redis;
             }
         } catch (\Throwable $exception) {
-            Logger::log('[RedisJobQueue] redis unavailable: ' . $exception->getMessage(), LOG_NOTICE);
+            Logger::log('[RedisJobQueue] redis unavailable: ' . $exception->getMessage(), LOG_WARNING);
         }
         return null;
     }

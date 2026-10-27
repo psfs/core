@@ -4,9 +4,7 @@ namespace PSFS\base;
 
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\FirePHPHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\UidProcessor;
 use PSFS\base\config\Config;
 use PSFS\base\exception\ConfigException;
@@ -68,7 +66,7 @@ class Logger
         } else {
             throw new ConfigException(t('Error creating logger'));
         }
-        $this->logLevel = strtoupper((string)Config::getParam('log.level', 'NOTICE'));
+        $this->logLevel = strtoupper((string)Config::getParam('log.level', LogHelper::DEFAULT_LEVEL));
     }
 
     public function __destruct()
@@ -87,16 +85,6 @@ class Logger
     {
         $this->logger = new \Monolog\Logger(strtoupper($logger));
         $this->logger->pushHandler($this->addDefaultStreamHandler($debug));
-        if ($debug) {
-            $phpFireLog = Config::getParam('logger.phpFire');
-            if (!empty($phpFireLog)) {
-                $this->logger->pushHandler(new FirePHPHandler());
-            }
-            $memoryLog = Config::getParam('logger.memory');
-            if (!empty($memoryLog)) {
-                $this->logger->pushProcessor(new MemoryUsageProcessor());
-            }
-        }
         $this->uuid = new UidProcessor();
         $this->logger->pushProcessor($this->uuid);
     }
@@ -168,13 +156,20 @@ class Logger
      * @param boolean $force
      * @return bool
      */
-    public function addLog($msg, $type = \Monolog\Level::Notice, $context = [], $force = false)
+    public function addLog($msg, $type = \Monolog\Level::Notice, $context = [], $force = false, ?string $channel = null)
     {
-        return !(LogHelper::checkLogLevel($this->logLevel, $type) || $force) || $this->logger->addRecord(
-                $type,
-                $msg,
-                LogHelper::addMinimalContext($context)
-            );
+        $threshold = null === $channel ? $this->logLevel : LogHelper::resolveChannelLevel($channel);
+        if (!(LogHelper::checkLogLevel($threshold, $type) || $force)) {
+            return true;
+        }
+        if (null !== $channel) {
+            $context['channel'] = $channel;
+        }
+        return $this->logger->addRecord(
+            $type,
+            $msg,
+            LogHelper::addMinimalContext($context)
+        );
     }
 
     /**
@@ -182,21 +177,26 @@ class Logger
      * @param int $type
      * @param array|null $context
      * @param bool $force
+     * @param string|null $channel Optional channel (php, deprecation, cache, curl, security...)
+     *                             whose threshold is read from log.level.<channel>
      */
-    public static function log($msg, $type = LOG_DEBUG, $context = null, $force = false): void
+    public static function log($msg, $type = LOG_DEBUG, $context = null, $force = false, ?string $channel = null): void
     {
         if (null === $context) {
             $context = [];
         }
-        if (Config::getParam('profiling.enable') && 'DEBUG' === (string)Config::getParam('log.level', 'NOTICE')) {
+        $level = LogHelper::calculateLogLevel($type);
+        if (!$force && !LogHelper::isEnabled($level, $channel)) {
+            return;
+        }
+        if (Config::getParam('profiling.enable') && 'DEBUG' === (string)Config::getParam('log.level', LogHelper::DEFAULT_LEVEL)) {
             Inspector::stats($msg, Inspector::SCOPE_DEBUG);
         }
-        $level = LogHelper::calculateLogLevel($type);
         if (in_array($level, [\Monolog\Level::Critical, \Monolog\Level::Error, \Monolog\Level::Emergency], true) &&
             strlen((string)Config::getParam('log.slack.hook', '')) > 0) {
             SlackHelper::getInstance()->trace($msg, '', '', $context);
         }
-        self::getInstance()->addLog($msg, $level, $context, $force);
+        self::getInstance()->addLog($msg, $level, $context, $force, $channel);
     }
 
     /**
@@ -212,7 +212,8 @@ class Logger
         $output = "[%datetime%] [%channel%:%level_name%]\t%message%\t%context%\t%extra%\n";
         // finally, create a formatter
         $formatter = new LineFormatter($output, $dateFormat);
-        $stream = new StreamHandler($this->stream, $debug ? \Monolog\Level::Debug : \Monolog\Level::Warning);
+        // Filtering is done per channel in addLog (log.level / log.level.<channel>), so the handler accepts everything
+        $stream = new StreamHandler($this->stream, \Monolog\Level::Debug);
         $stream->setFormatter($formatter);
         return $stream;
     }

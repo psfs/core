@@ -177,7 +177,7 @@ class Template
                 try {
                     $this->tpl->load(str_replace($tplDir . '/', '', $file));
                 } catch (\Throwable $e) {
-                    Logger::log($e->getMessage(), LOG_ERR, ['file' => $e->getFile(), 'line' => $e->getLine()]);
+                    Logger::log($e->getMessage(), LOG_WARNING, ['file' => $e->getFile(), 'line' => $e->getLine()]);
                 }
             }
         }

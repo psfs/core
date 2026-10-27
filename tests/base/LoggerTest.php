@@ -75,18 +75,17 @@ class LoggerTest extends TestCase
      */
     public function testLogSetup()
     {
-        // Add memory logger to test this functionality
+        // Enable profiling to cover the debug stats path
         $config = Config::getInstance();
         $this->assertInstanceOf(Config::class, $config, 'Config interface');
         $defaultConfig = $config->dumpConfig();
-        Config::save(array_merge($defaultConfig, ['logger.memory' => true, 'logger.phpFire' => true, 'profiling.enable' => true]), []);
+        Config::save(array_merge($defaultConfig, ['profiling.enable' => true]), []);
 
         // Create a new logger instance
         $logger = new Logger(['test', true]);
         $this->assertInstanceOf(Logger::class, $logger, 'Logger interface');
         $logger->addLog('Test', \Monolog\Level::Debug);
         $logger = null;
-        unset($defaultConfig['logger.memory']);
         Config::save($defaultConfig, []);
     }
 
@@ -115,4 +114,63 @@ class LoggerTest extends TestCase
         }
     }
 
+    public function testChannelLevelControlsWhatReachesTheLogFile(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $defaultConfig = $configProperty->getValue($config);
+        $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'psfs-log-' . uniqid('', true);
+        mkdir($dir, 0777, true);
+        $configProperty->setValue($config, array_merge($defaultConfig, [
+            'log.output' => 'file',
+            'default.log.path' => $dir,
+            'log.level' => 'DEBUG',
+            'log.level.cache' => 'ERROR',
+        ]));
+
+        try {
+            Logger::dropInstance();
+            Logger::log('cache debug must be skipped', LOG_DEBUG, null, false, 'cache');
+            Logger::log('cache error must be written', LOG_ERR, null, false, 'cache');
+            Logger::log('other debug must be written', LOG_DEBUG);
+            Logger::dropInstance();
+
+            $files = glob($dir . '/*/*/*/*.log') ?: [];
+            $this->assertNotEmpty($files, 'Log file not created');
+            $content = implode('', array_map('file_get_contents', $files));
+            $this->assertStringNotContainsString('cache debug must be skipped', $content);
+            $this->assertStringContainsString('cache error must be written', $content);
+            $this->assertStringContainsString('"channel":"cache"', $content);
+            $this->assertStringContainsString('other debug must be written', $content);
+        } finally {
+            Logger::dropInstance();
+            $configProperty->setValue($config, $defaultConfig);
+            foreach (glob($dir . '/*/*/*/*.log') ?: [] as $file) {
+                unlink($file);
+            }
+        }
+    }
+
+    public function testDisabledLevelDoesNotOpenTheLogFile(): void
+    {
+        $config = Config::getInstance();
+        $configProperty = new \ReflectionProperty(Config::class, 'config');
+        $defaultConfig = $configProperty->getValue($config);
+        $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'psfs-log-' . uniqid('', true);
+        mkdir($dir, 0777, true);
+        $configProperty->setValue($config, array_merge($defaultConfig, [
+            'log.output' => 'file',
+            'default.log.path' => $dir,
+            'log.level' => 'ERROR',
+        ]));
+
+        try {
+            Logger::dropInstance();
+            Logger::log('ignored', LOG_DEBUG);
+            $this->assertSame([], glob($dir . '/*') ?: [], 'Suppressed logs must not touch the filesystem');
+        } finally {
+            Logger::dropInstance();
+            $configProperty->setValue($config, $defaultConfig);
+        }
+    }
 }

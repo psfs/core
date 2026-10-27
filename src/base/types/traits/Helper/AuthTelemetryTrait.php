@@ -29,7 +29,7 @@ trait AuthTelemetryTrait
             return;
         }
         self::$legacyFallbackTelemetry[$context] = true;
-        Logger::log('[LegacyFallback] ' . $context, LOG_NOTICE);
+        Logger::log('[LegacyFallback] ' . $context, LOG_NOTICE, null, false, 'security');
     }
 
     private static function logInvalidAuthInput(string $context): void
@@ -38,6 +38,6 @@ trait AuthTelemetryTrait
             return;
         }
         self::$invalidInputTelemetry[$context] = true;
-        Logger::log('[AuthInvalid] ' . $context, LOG_WARNING);
+        Logger::log('[AuthInvalid] ' . $context, LOG_WARNING, null, false, 'security');
     }
 }

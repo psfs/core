@@ -91,7 +91,7 @@ trait RouterExecutionTrait
             $this->checkPreActions($class, $action['method']);
             $return = call_user_func_array([$class, $action['method']], $params);
             if (false === $return) {
-                Logger::log(t('An error occurred trying to execute the action'), LOG_ERR, [error_get_last()]);
+                Logger::log(t('An error occurred trying to execute the action'), LOG_WARNING, [error_get_last()]);
             }
         }
         return $return;
@@ -112,14 +112,9 @@ trait RouterExecutionTrait
         $params = RouterHelper::extractComponents($route, $routePattern);
 
         $class = RouterHelper::getClassToCall($action);
-        try {
-            if ($this->checkRequirements($action, $params)) {
-                return $this->executeCachedRoute($route, $action, $class, $params);
-            }
-            throw new RouterException(t('Preconditions failed'), 412);
-        } catch (\Throwable $e) {
-            Logger::log($e->getMessage(), LOG_ERR);
-            throw $e;
+        if ($this->checkRequirements($action, $params)) {
+            return $this->executeCachedRoute($route, $action, $class, $params);
         }
+        throw new RouterException(t('Preconditions failed'), 412);
     }
 }
