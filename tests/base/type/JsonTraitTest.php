@@ -63,6 +63,19 @@ class JsonTraitTest extends TestCase
         $this->assertArrayHasKey('profiling', $decoded);
     }
 
+    public function testJsonThatCannotBeEncodedIsLoggedAndStillAnswers(): void
+    {
+        Config::save(['profiling.enable' => false, 'output.json.strict_numbers' => false, 'json.encodeUTF8' => false], []);
+        Config::getInstance()->loadConfigData(true);
+
+        $harness = new JsonTraitHarness();
+        $result = $harness->json(['value' => NAN], 200);
+
+        $this->assertSame(200, $harness->lastStatus);
+        $this->assertSame('application/json', $harness->lastContentType);
+        $this->assertNotSame('{"value":NAN}', (string)$result);
+    }
+
     public function testJsonpUsesJavascriptContentType(): void
     {
         Config::save(['profiling.enable' => false], []);

@@ -186,6 +186,31 @@ class LogHelperTest extends TestCase
         self::assertSame(Level::Warning, LogHelper::reportPhpError(E_WARNING, 'w', 'a.php', 1));
     }
 
+    public function testEveryLevelMapsBackToItsSyslogPriority(): void
+    {
+        $toSyslog = new \ReflectionMethod(LogHelper::class, 'toSyslog');
+        $expected = [
+            [Level::Debug, LOG_DEBUG], [Level::Info, LOG_INFO], [Level::Notice, LOG_NOTICE], [Level::Warning, LOG_WARNING],
+            [Level::Error, LOG_ERR], [Level::Critical, LOG_CRIT], [Level::Alert, LOG_ALERT], [Level::Emergency, LOG_EMERG],
+        ];
+        foreach ($expected as [$level, $priority]) {
+            self::assertSame($priority, $toSyslog->invoke(null, $level), $level->name);
+            self::assertSame($level, LogHelper::calculateLogLevel($priority), 'the mapping is symmetric for ' . $level->name);
+        }
+    }
+
+    public function testTheSeenDeprecationsSetIsBoundedAndKeepsWorking(): void
+    {
+        $this->setConfig(['log.level.deprecation' => 'EMERGENCY', 'log.deprecation.mode' => 'once']);
+        for ($i = 0; $i < 1001; $i++) {
+            LogHelper::reportPhpError(E_DEPRECATED, 'deprecation ' . $i, 'a.php', 1);
+        }
+
+        // The set was reset after reaching its limit: an old message is accepted again, a repeated recent one is not
+        self::assertSame(Level::Notice, LogHelper::reportPhpError(E_DEPRECATED, 'deprecation 0', 'a.php', 1));
+        self::assertNull(LogHelper::reportPhpError(E_DEPRECATED, 'deprecation 0', 'a.php', 1));
+    }
+
     public function testSettingPrefersTheEnvironmentOverTheConfiguration(): void
     {
         $this->setConfig(['log.output' => 'file']);

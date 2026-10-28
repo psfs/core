@@ -30,6 +30,21 @@ as the rest of the project does. The results are a Markdown table on stdout; pro
 
 The repository is never modified.
 
+## Layout
+
+`bench.php` is only the entry point. The code lives in `lib/`, one small class per responsibility
+(namespace `Psfs\Bench`, loaded by the autoloader in `bench.php`):
+
+| Class | Responsibility |
+|---|---|
+| `Options`, `Scenarios`, `Matrix` | Command line options, the requests to send, and the cells (the product of every dimension) |
+| `Sandbox`, `SandboxScripts`, `Dataset` | The isolated copy of the framework, the scripts that run inside it, and the rows of the API table |
+| `Server`, `Probe`, `Services` | The `php -S` process, the HTTP requests, and the Redis and MySQL counters |
+| `CellRunner`, `Stats`, `Reporter` | Measuring a cell, the statistics, and the Markdown/JSON report |
+| `Application` | The run itself and its cleanup |
+
+The pure logic (options, matrix, statistics, report) is covered by `tests/scripts/bench`.
+
 ## Scenarios
 
 | Scenario | Request | What it exercises |

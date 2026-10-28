@@ -105,18 +105,23 @@ class RedisJobQueue implements JobQueueInterface
         $port = (int)(getenv('PSFS_REDIS_PORT') ?: Config::getParam('redis.port', self::REDIS_DEFAULT_PORT));
         $timeout = (float)(getenv('PSFS_REDIS_TIMEOUT') ?: Config::getParam('redis.timeout', self::REDIS_DEFAULT_TIMEOUT));
 
+        $reason = '';
+        error_clear_last();
         try {
             $redis = new \Redis();
-            if ($redis->connect($host, $port, $timeout)) {
+            // phpredis reports an unreachable host as a PHP warning on top of the false/exception: keep only ours
+            if (@$redis->connect($host, $port, $timeout)) {
                 $this->unavailableLogged = false;
                 return $redis;
             }
+            $reason = (string)(error_get_last()['message'] ?? 'connection failed');
         } catch (\Throwable $exception) {
-            // Reconnection attempts must not repeat the same warning for the whole outage
-            if (!$this->unavailableLogged) {
-                $this->unavailableLogged = true;
-                Logger::log('[RedisJobQueue] redis unavailable: ' . $exception->getMessage(), LOG_WARNING);
-            }
+            $reason = $exception->getMessage();
+        }
+        // Reconnection attempts must not repeat the same warning for the whole outage
+        if (!$this->unavailableLogged) {
+            $this->unavailableLogged = true;
+            Logger::log('[RedisJobQueue] redis unavailable: ' . $reason, LOG_WARNING);
         }
         return null;
     }

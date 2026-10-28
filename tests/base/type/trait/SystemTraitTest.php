@@ -49,9 +49,7 @@ class SystemTraitTest extends TestCase
         (new \ReflectionProperty(self::hostClass(), 'shutdownHandlerBound'))->setValue(null, $this->shutdownFlagBackup);
         Logger::dropInstance();
         $this->configProperty()->setValue($this->config, $this->configBackup);
-        foreach ($this->logFiles() as $file) {
-            unlink($file);
-        }
+        exec('rm -rf ' . escapeshellarg($this->logDir));
         LogHelper::resetSeenDeprecations();
     }
 

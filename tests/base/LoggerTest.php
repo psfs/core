@@ -145,9 +145,7 @@ class LoggerTest extends TestCase
         } finally {
             Logger::dropInstance();
             $configProperty->setValue($config, $defaultConfig);
-            foreach (glob($dir . '/*/*/*/*.log') ?: [] as $file) {
-                unlink($file);
-            }
+            exec('rm -rf ' . escapeshellarg($dir));
         }
     }
 
@@ -171,6 +169,7 @@ class LoggerTest extends TestCase
         } finally {
             Logger::dropInstance();
             $configProperty->setValue($config, $defaultConfig);
+            exec('rm -rf ' . escapeshellarg($dir));
         }
     }
 
@@ -258,9 +257,7 @@ class LoggerTest extends TestCase
         } finally {
             Logger::dropInstance();
             $configProperty->setValue($config, $defaultConfig);
-            foreach (glob($dir . '/*/*/*/*.log') ?: [] as $file) {
-                unlink($file);
-            }
+            exec('rm -rf ' . escapeshellarg($dir));
         }
     }
 }
