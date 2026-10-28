@@ -12,6 +12,7 @@ PSFS treats request headers, cookies, query parameters, bodies, uploads and exte
 |---|---|
 | [Security policy](../../SECURITY.md) | Reporting, threat model, required security properties, CI checks |
 | [Admin auth cookie secret](./auth-cookie-secret.md) | Configure and rotate `auth.cookie.secret` |
+| [Hardening and compatibility switches](./hardening-switches.md) | Behaviours closed by default and the deprecated switches that restore them |
 
 ## Required properties at a glance
 

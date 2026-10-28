@@ -30,5 +30,5 @@ The authoritative version is the [phase 0 specification](../superpowers/specs/20
 <!-- nav:start -->
 ---
 
-← Previous: [Admin auth cookie secret](../security/auth-cookie-secret.md) · Next: [UI development](./development.md) →
+← Previous: [Hardening and compatibility switches](../security/hardening-switches.md) · Next: [UI development](./development.md) →
 <!-- nav:end -->

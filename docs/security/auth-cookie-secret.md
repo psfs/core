@@ -56,5 +56,5 @@ fallback requires a separate compatibility decision.
 <!-- nav:start -->
 ---
 
-← Previous: [Security policy](../../SECURITY.md) · Next: [Admin UI overview](../admin-ui/README.md) →
+← Previous: [Security policy](../../SECURITY.md) · Next: [Hardening and compatibility switches](./hardening-switches.md) →
 <!-- nav:end -->

@@ -106,9 +106,10 @@ trait JsTrait
                     if (file_exists($file)) {
                         if ($debug) {
                             $data = $this->putDebugJs($pathParts, $base, $file, $hash, $compiledFiles);
-                        } elseif (!file_exists($base . $hash . ".js")) {
+                        } else {
+                            // The bundle is rebuilt here, so the sources are always added: skipping them when an
+                            // older bundle exists minified nothing and overwrote the bundle with an empty file
                             $minifier->add($file);
-                            //$data = $this->putProductionJs($base, $file, $data);
                         }
                     }
                 }

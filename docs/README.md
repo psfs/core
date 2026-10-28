@@ -38,6 +38,7 @@ Contributing to the core? Add [PHP compatibility](./php-compatibility.md) and th
 |---|---|
 | [Security overview](./security/README.md) | Required properties, policy, gates and contracts |
 | [Admin auth cookie secret](./security/auth-cookie-secret.md) | Configure and rotate `auth.cookie.secret` |
+| [Hardening and compatibility switches](./security/hardening-switches.md) | Behaviours closed by default and the deprecated switches that restore them |
 
 ## Admin UI
 

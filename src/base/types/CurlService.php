@@ -5,6 +5,7 @@ namespace PSFS\base\types;
 use PSFS\base\config\Config;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\types\helpers\CompatHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\helpers\ServiceHelper;
 use PSFS\base\types\traits\CurlTrait;
@@ -129,7 +130,8 @@ abstract class CurlService extends SimpleService
         $this->applyCurlBehavior(
             !array_key_exists(CURLOPT_RETURNTRANSFER, $this->options) || (bool)$this->options[CURLOPT_RETURNTRANSFER],
             !array_key_exists(CURLOPT_FOLLOWLOCATION, $this->options) || (bool)$this->options[CURLOPT_FOLLOWLOCATION],
-            array_key_exists(CURLOPT_SSL_VERIFYPEER, $this->options) ? (int)$this->options[CURLOPT_SSL_VERIFYPEER] : 0
+            array_key_exists(CURLOPT_SSL_VERIFYHOST, $this->options) ? (int)$this->options[CURLOPT_SSL_VERIFYHOST] : 2,
+            !array_key_exists(CURLOPT_SSL_VERIFYPEER, $this->options) || (bool)$this->options[CURLOPT_SSL_VERIFYPEER]
         );
     }
 
@@ -159,22 +161,34 @@ abstract class CurlService extends SimpleService
     }
 
     /**
+     * Outbound HTTPS calls verify the certificate and the host name by default. curl.sslVerifyPeer=false and
+     * curl.sslVerifyHost=0 (or the per-service CURLOPT_SSL_VERIFY* options) turn it off and are reported as deprecated.
+     *
      * @param bool $returnTransfer
      * @param bool $followLocation
+     * @param int|bool $sslVerifyHost
      * @param bool $sslVerifyPeer
      */
     protected function applyCurlBehavior(
         $returnTransfer = true,
         $followLocation = true,
-        $sslVerifyHost = false,
-        $sslVerifyPeer = false
+        $sslVerifyHost = 2,
+        $sslVerifyPeer = true
     ) {
         $this->addOption(CURLOPT_RETURNTRANSFER, Config::getParam('curl.returnTransfer', $returnTransfer));
         $this->addOption(CURLOPT_FOLLOWLOCATION, Config::getParam('curl.followLocation', $followLocation));
         $this->addOption(CURLOPT_CONNECTTIMEOUT, (int)Config::getParam('curl.connectTimeout', 3));
         $this->addOption(CURLOPT_TIMEOUT, (int)Config::getParam('curl.timeout', 10));
-        $this->addOption(CURLOPT_SSL_VERIFYPEER, Config::getParam('curl.sslVerifyPeer', $sslVerifyPeer));
-        $this->addOption(CURLOPT_SSL_VERIFYHOST, Config::getParam('curl.sslVerifyHost', $sslVerifyHost));
+        $verifyPeer = (bool)Config::getParam('curl.sslVerifyPeer', $sslVerifyPeer);
+        $verifyHost = (int)Config::getParam('curl.sslVerifyHost', $sslVerifyHost);
+        $this->addOption(CURLOPT_SSL_VERIFYPEER, $verifyPeer);
+        $this->addOption(CURLOPT_SSL_VERIFYHOST, $verifyHost);
+        if ((!$verifyPeer || 2 !== $verifyHost) && str_starts_with(strtolower((string)$this->getUrl()), 'https://')) {
+            CompatHelper::warnOnce(
+                'curl.tls',
+                'TLS verification is disabled for outbound HTTPS calls (curl.sslVerifyPeer/curl.sslVerifyHost); enable it, this switch will be removed'
+            );
+        }
     }
 
     /**

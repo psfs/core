@@ -6,6 +6,8 @@ use PSFS\base\exception\RouterException;
 use PSFS\base\Router;
 use PSFS\base\config\Config;
 use PSFS\base\types\Controller;
+use PSFS\base\types\helpers\CompatHelper;
+use PSFS\base\types\helpers\LogHelper;
 use PSFS\base\types\helpers\attributes\Cacheable;
 use PSFS\base\types\helpers\attributes\HttpMethod;
 use PSFS\base\types\helpers\attributes\Injectable;
@@ -24,6 +26,17 @@ class DocumentorController extends Controller
     /**
      * @var array<string, array{doc:array, expires:int}>
      */
+    private const DOC_TYPES = [
+        ApiController::PSFS_DOC,
+        ApiController::SWAGGER_DOC,
+        ApiController::POSTMAN_DOC,
+        ApiController::OPENAPI_DOC,
+        ApiController::HTML_DOC,
+    ];
+    private const DOC_MEMORY_LIMIT = '512M';
+    private const DOC_MAX_EXECUTION_TIME = 120;
+    private const DOC_CACHE_ENTRIES = 16;
+
     private static array $docsCache = [];
 
     #[Injectable(class: DocumentorService::class)]
@@ -66,10 +79,38 @@ class DocumentorController extends Controller
         return $this->json($doc, 200);
     }
 
+    /**
+     * The type comes from the query string and is part of the cache key: only the known ones are accepted
+     */
+    public static function resolveDocType(string $type): string
+    {
+        $type = strtolower(trim($type));
+        return in_array($type, self::DOC_TYPES, true) ? $type : ApiController::PSFS_DOC;
+    }
+
+    /**
+     * Generating the documentation needs more resources than a normal request, but not unlimited ones on a public
+     * endpoint: api.doc.memory_limit (512M) and api.doc.max_execution_time (120). -1 restores the old behaviour.
+     */
     private function prepareDocumentationRuntime(): void
     {
-        ini_set('memory_limit', -1);
-        ini_set('max_execution_time', -1);
+        $memory = (string)(LogHelper::setting('api.doc.memory_limit') ?? self::DOC_MEMORY_LIMIT);
+        $wanted = ini_parse_quantity($memory);
+        $current = ini_parse_quantity((string)ini_get('memory_limit'));
+        if (-1 === $wanted) {
+            CompatHelper::warnOnce('api.doc.unlimited', 'api.doc.memory_limit=-1 leaves /api/doc without a memory limit; this setting will be removed');
+            ini_set('memory_limit', '-1');
+        } elseif (-1 !== $current && $current < $wanted) {
+            ini_set('memory_limit', $memory);
+        }
+        $time = CompatHelper::int('api.doc.max_execution_time', self::DOC_MAX_EXECUTION_TIME);
+        $currentTime = (int)ini_get('max_execution_time');
+        if ($time <= 0) {
+            CompatHelper::warnOnce('api.doc.time', 'api.doc.max_execution_time<=0 leaves /api/doc without a time limit; this setting will be removed');
+            ini_set('max_execution_time', '0');
+        } elseif (0 !== $currentTime && $currentTime < $time) {
+            ini_set('max_execution_time', (string)$time);
+        }
     }
 
     /**
@@ -77,7 +118,7 @@ class DocumentorController extends Controller
      */
     private function documentationRequest(string $domain): array
     {
-        $type = strtolower((string)($this->getRequest()->get('type') ?: ApiController::PSFS_DOC));
+        $type = self::resolveDocType((string)($this->getRequest()->get('type') ?: ApiController::PSFS_DOC));
         $cacheVersion = (string)Config::getParam('cache.var', 'v1');
 
         return [
@@ -141,6 +182,9 @@ class DocumentorController extends Controller
             || in_array($request['type'], [ApiController::PSFS_DOC, ApiController::HTML_DOC], true)
         ) {
             return;
+        }
+        if (count(self::$docsCache) >= self::DOC_CACHE_ENTRIES) {
+            array_shift(self::$docsCache);
         }
         self::$docsCache[$request['cache_key']] = [
             'doc' => $doc,

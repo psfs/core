@@ -25,12 +25,23 @@ class SecurityHelper
      * @throws AccessDeniedException
      * @throws AdminCredentialsException
      */
+    /**
+     * The router matches the path of the URI (a leading "//x" is a host for parse_url) and tolerates repeated
+     * slashes, so the admin-area check has to look at the same normalised path and not at the raw request URI.
+     */
+    public static function isAdminAreaRoute(string $route): bool
+    {
+        $path = parse_url($route, PHP_URL_PATH);
+        $path = preg_replace('#/{2,}#', '/', is_string($path) && '' !== $path ? $path : $route);
+        return 1 === preg_match('/^\/(admin|setup\-admin)/i', (string)$path);
+    }
+
     public static function checkRestrictedAccess(string $route): void
     {
         Inspector::stats('[SecurityHelper] Checking admin zone', Inspector::SCOPE_DEBUG);
         // Check whether access is in the admin area.
         if (!Config::getInstance()->checkTryToSaveConfig()
-            && (preg_match('/^\/(admin|setup\-admin)/i', $route) || Config::getParam('restricted', false))
+            && (self::isAdminAreaRoute($route) || Config::getParam('restricted', false))
         ) {
             if (!self::isTest() &&
                 null === Cache::getInstance()->getDataFromFile(

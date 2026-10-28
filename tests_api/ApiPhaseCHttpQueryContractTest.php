@@ -74,6 +74,40 @@ class ApiPhaseCHttpQueryContractTest extends TestCase
         $this->assertIsSortedById($page2['data']);
     }
 
+    public function testApiMaxLimitCapsLargeLimitsAndTheWholeTableRequest(): void
+    {
+        $order = rawurlencode(json_encode(['Id' => 'asc']));
+        putenv('PSFS_API_MAX_LIMIT=5');
+        try {
+            $large = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test?__limit=1000&__page=1&__order=' . $order));
+            $everything = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test?__limit=-1&__order=' . $order));
+            $allowed = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test?__limit=5&__page=1&__order=' . $order));
+        } finally {
+            putenv('PSFS_API_MAX_LIMIT');
+        }
+
+        $this->assertCount(5, $large['data'], 'A limit above api.max.limit is capped');
+        $this->assertGreaterThan(40, (int)$large['total'], 'The total still reports the whole table');
+        $this->assertCount(5, $everything['data'], '__limit=-1 no longer returns the whole table');
+        $this->assertCount(5, $allowed['data']);
+        $this->assertSame($this->extractIds($large['data']), $this->extractIds($everything['data']));
+    }
+
+    public function testUnboundedListsCanBeRestoredWithTheCompatibilitySwitch(): void
+    {
+        $order = rawurlencode(json_encode(['Id' => 'asc']));
+        putenv('PSFS_API_MAX_LIMIT=5');
+        putenv('PSFS_API_LIMIT_UNBOUNDED=true');
+        try {
+            $everything = $this->decodeJsonResponse(ClientModuleHarness::dispatch('GET', '/client/api/test?__limit=-1&__order=' . $order));
+        } finally {
+            putenv('PSFS_API_MAX_LIMIT');
+            putenv('PSFS_API_LIMIT_UNBOUNDED');
+        }
+
+        $this->assertGreaterThan(40, count($everything['data']));
+    }
+
     public function testListSupportsExactAndCompoundFilters(): void
     {
         $this->assertGreaterThan(0, ClientModuleHarness::countRows('CLIENT_TEST', 'TYPE', 'DEV'));

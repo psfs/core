@@ -5,6 +5,8 @@ namespace PSFS\base\types\traits\Security;
 use PSFS\base\Logger;
 use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\types\helpers\AuthHelper;
+use PSFS\base\types\helpers\ResponseHelper;
+use PSFS\base\types\helpers\SessionCookieHelper;
 
 /**
  * @package PSFS\base\types\traits\Security
@@ -59,6 +61,7 @@ trait SessionTrait
     {
         $canStartSession = RuntimeMode::isLongRunningServer() || !headers_sent();
         if (PHP_SESSION_NONE === session_status() && $canStartSession) {
+            SessionCookieHelper::apply(ResponseHelper::isSecureRequest());
             session_start();
         }
         // Fix for phpunits

@@ -71,6 +71,9 @@ class LogHelper
             return $env;
         }
         $value = Config::getParam($key);
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
         return null !== $value && '' !== trim((string)$value) ? (string)$value : $default;
     }
 

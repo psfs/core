@@ -139,14 +139,32 @@ class AuthApiTest extends TestCase
         $this->assertArrayHasKey('cookie', $telemetry['sources']);
     }
 
-    public function testCheckAuthAcceptsNoSecretOrAdminBypass(): void
+    public function testCheckAuthDeniesWithoutSecretByDefault(): void
     {
         $api = $this->newAuthApiWithoutConstructor();
         $this->setQuery($api, []);
         Config::save($this->withoutSecretConfig(), []);
         Config::getInstance()->loadConfigData(true);
-        $this->assertTrue($this->callPrivate($api, 'checkAuth'));
 
+        $this->assertFalse($this->callPrivate($api, 'checkAuth'), 'An AuthApi without api.secret must not be open');
+
+        $api->admin = true;
+        $this->assertTrue($this->callPrivate($api, 'checkAuth'), 'An authenticated admin keeps access');
+    }
+
+    public function testCompatibilitySwitchRestoresTheOpenAccessWithoutSecret(): void
+    {
+        $api = $this->newAuthApiWithoutConstructor();
+        $this->setQuery($api, []);
+        Config::save(array_merge($this->withoutSecretConfig(), ['api.auth.allow_unconfigured' => true]), []);
+        Config::getInstance()->loadConfigData(true);
+
+        $this->assertTrue($this->callPrivate($api, 'checkAuth'));
+    }
+
+    public function testCheckAuthRejectsInvalidTokensAndAcceptsAdminBypass(): void
+    {
+        $api = $this->newAuthApiWithoutConstructor();
         Config::save(array_merge($this->configBackup, ['api.secret' => 'test-secret']), []);
         Config::getInstance()->loadConfigData(true);
         $this->setQuery($api, ['API_TOKEN' => 'invalid']);

@@ -7,6 +7,8 @@ use PSFS\base\dto\Order;
 use PSFS\base\Logger;
 use PSFS\base\types\Api;
 use PSFS\base\types\helpers\ApiHelper;
+use PSFS\base\types\helpers\ApiLimitHelper;
+use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\traits\Api\MutationTrait;
 
@@ -64,6 +66,12 @@ trait ApiListTrait
         Logger::log(static::class . ' extract pagination start', LOG_DEBUG);
         $page = array_key_exists($this->apiPageField(), $this->query) ? $this->query[$this->apiPageField()] : 1;
         $limit = array_key_exists($this->apiLimitField(), $this->query) ? $this->query[$this->apiLimitField()] : 100;
+        [$limit, $capped] = ApiLimitHelper::resolve((int)$limit);
+        if ($capped) {
+            // The client asked for more rows than api.max.limit (or for "all"): tell it that the list is partial
+            ResponseHelper::setHeader('X-PSFS-Limit-Capped: ' . $limit);
+            Logger::log(static::class . ' __limit capped to ' . $limit, LOG_NOTICE, [], false, 'api');
+        }
         Logger::log(static::class . ' extract pagination end', LOG_DEBUG);
         return array($page, (int)$limit);
     }

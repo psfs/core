@@ -118,8 +118,8 @@ class Config
         'curl.followLocation', // Curl option CURLOPT_FOLLOWLOCATION
         'curl.connectTimeout', // Curl option CURLOPT_CONNECTTIMEOUT
         'curl.timeout', // Curl option CURLOPT_TIMEOUT
-        'curl.sslVerifyHost', // Curl option CURLOPT_SSL_VERIFYHOST
-        'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER
+        'curl.sslVerifyHost', // Curl option CURLOPT_SSL_VERIFYHOST (default 2; 0 disables the check, deprecated)
+        'curl.sslVerifyPeer', // Curl option CURLOPT_SSL_VERIFYPEER (default true; false disables the check, deprecated)
         'assets.obfuscate', // Allow to obfuscate and gzip js and css files
         'allow.double.slashes', // Allow // in url paths, allowed as default
         'default.log.path', // Default logger path
@@ -128,6 +128,13 @@ class Config
         'skip.route_generation', // Skip routes generation
         'auth.expiration', // Set the expiration time for the auth token
         'api.query_token.compat', // Allow legacy API_TOKEN query string fallback (deprecated)
+        'api.auth.allow_unconfigured', // Compat: AuthApi without api.secret is open to everyone (deprecated, default false)
+        'api.max.limit', // Maximum __limit of the API list endpoints and size of __limit=-1 (default 1000)
+        'api.limit.unbounded', // Compat: allow __limit above api.max.limit and -1 = the whole table (deprecated, default false)
+        'api.doc.memory_limit', // Memory limit while generating /api/doc (default 512M, -1 = unlimited, deprecated)
+        'api.doc.max_execution_time', // Seconds allowed to generate /api/doc (default 120, 0 = unlimited, deprecated)
+        'session.cookie.samesite', // PHP session cookie SameSite: Lax (default) | Strict | None | legacy (not set, deprecated)
+        'session.cookie.secure', // PHP session cookie Secure flag: auto (default, HTTPS requests) | true | false
         'api.token.cookie', // Cookie name for API token fallback
         'psfs.cache.mode', // Cache mode selector: NONE|MEMORY|OPCACHE|REDIS
         'enable.jwt', // Enable JWT auth flow fallback/compat in security checks

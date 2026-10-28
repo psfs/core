@@ -3,6 +3,7 @@
 namespace PSFS\base;
 
 use PSFS\base\config\Config;
+use PSFS\base\types\helpers\AdminFileHelper;
 use PSFS\base\types\helpers\AuthHelper;
 use PSFS\base\types\helpers\Inspector;
 use PSFS\base\types\helpers\ResponseHelper;
@@ -58,6 +59,7 @@ class Security
      */
     public function getAdmins(): array
     {
+        AdminFileHelper::tightenOnce();
         $admins = Cache::getInstance()->getDataFromFile(
             CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json',
             Cache::JSONGZ,

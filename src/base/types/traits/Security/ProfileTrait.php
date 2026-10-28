@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Security;
 use PSFS\base\Cache;
 use PSFS\base\Request;
 use PSFS\base\Security;
+use PSFS\base\types\helpers\AdminFileHelper;
 use PSFS\base\types\helpers\AuthHelper;
 
 /**
@@ -103,7 +104,7 @@ trait ProfileTrait
         $admins[$user['username']]['hash'] = sha1($user['username'] . $user['password']);
         $admins[$user['username']]['profile'] = $user['profile'];
 
-        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
+        AdminFileHelper::store($admins);
         return $saved;
     }
 
@@ -129,7 +130,7 @@ trait ProfileTrait
             true
         ) ?: [];
         unset($admins[$user]);
-        Cache::getInstance()->storeData(CONFIG_DIR . DIRECTORY_SEPARATOR . 'admins.json', $admins, Cache::JSONGZ, true);
+        AdminFileHelper::store($admins);
     }
 
     /**

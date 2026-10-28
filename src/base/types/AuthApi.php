@@ -6,6 +6,7 @@ use PSFS\base\config\Config;
 use PSFS\base\exception\ApiException;
 use PSFS\base\Logger;
 use PSFS\base\Request;
+use PSFS\base\types\helpers\CompatHelper;
 use PSFS\base\types\helpers\SecurityHelper;
 use PSFS\base\types\traits\SecureTrait;
 
@@ -45,13 +46,33 @@ abstract class AuthApi extends Api
             $secret = Config::getInstance()->get("api.secret");
         }
         if (null === $secret) {
-            $auth = true;
+            $auth = $this->allowUnconfiguredAccess($module);
         } else {
             $token = $this->resolveApiToken();
             $auth = SecurityHelper::checkToken($token ?: '', $secret, $module);
         }
 
         return $auth || $this->isAdmin();
+    }
+
+    /**
+     * Without api.secret (or <module>.api.secret) there is nothing to validate a token against. The API used to be
+     * open in that case; it is closed now unless api.auth.allow_unconfigured=true restores the old behaviour.
+     */
+    private function allowUnconfiguredAccess(string $module): bool
+    {
+        if (CompatHelper::flag('api.auth.allow_unconfigured', false)) {
+            CompatHelper::warnOnce(
+                'api.auth.allow_unconfigured',
+                'api.auth.allow_unconfigured=true leaves the AuthApi module "' . $module . '" open to everyone; set api.secret instead, this switch will be removed'
+            );
+            return true;
+        }
+        CompatHelper::warnOnce(
+            'api.auth.unconfigured.' . $module,
+            'AuthApi module "' . $module . '" denied access because no api.secret is configured; set api.secret (or ' . $module . '.api.secret)'
+        );
+        return false;
     }
 
     /**
