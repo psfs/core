@@ -51,6 +51,22 @@ class MigrationEngineResolverTest extends TestCase
         $this->assertSame('propel', $engine->getName());
     }
 
+    public function testPhinxIsNeverReplacedByPropelUnlessTheFallbackIsEnabled(): void
+    {
+        $config = $this->configBackup;
+        unset($config['migrations.legacy_fallback_enabled'], $config['client.migrations.legacy_fallback_enabled']);
+        $this->replaceConfig($config);
+        $resolver = new MigrationEngineResolver(
+            new ResolverEngineStub('phinx', false),
+            new ResolverEngineStub('propel', true)
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('fallback is disabled');
+
+        $resolver->resolve('phinx', 'client');
+    }
+
     public function testResolveThrowsWhenFallbackIsDisabled(): void
     {
         $this->replaceConfig(array_merge($this->configBackup, [

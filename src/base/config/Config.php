@@ -51,7 +51,8 @@ class Config
         'metadata.engine.opcache.enabled' => true,
         'metadata.engine.regen.lock_ttl' => 15,
         'migrations.engine' => 'phinx',
-        'migrations.legacy_fallback_enabled' => true,
+        'migrations.legacy_fallback_enabled' => false,
+        'migrations.remove_tables' => false,
     ];
     static public array $required = [
         'db.host',
@@ -161,7 +162,10 @@ class Config
         'metadata.engine.regen.lock_ttl', // Lock TTL for distributed regeneration
         'i18n.missing.report.path', // Path where missing i18n keys will be reported
         'migrations.engine', // Default migration engine (phinx|propel)
-        'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine
+        'migrations.legacy_fallback_enabled', // Allow fallback to legacy propel engine (off by default: Phinx is always used)
+        'migrations.remove_tables', // Drop the tables of the module that schema.xml no longer has (off by default)
+        'generator.migration.skip_unchanged', // Skip the database comparison when schema and migrations did not change
+        'generator.profile', // Log time and memory of every module generation phase
         'migrations.phinx.log_table_prefix', // Prefix for per-module phinx log table
         'migrations.phinx.environment', // Runtime environment name used by phinx config
     ];

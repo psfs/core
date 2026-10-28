@@ -17,6 +17,7 @@ use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\GeneratorHelper;
 use PSFS\base\types\helpers\GeneratorProfile;
 use PSFS\services\migration\MigrationSyncState;
+use PSFS\services\migration\TextColumnSizeAligner;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\ApiGenerationTrait;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
@@ -354,14 +355,36 @@ class GeneratorService extends SimpleService
      */
     protected function computeDatabaseDiff(Database $database, Database $appDataDatabase, array $excludedTables)
     {
+        TextColumnSizeAligner::align($database, $appDataDatabase);
+        $removeTables = (bool)Config::getParam('migrations.remove_tables', false);
         return DatabaseComparator::computeDiff(
             $database,
             $appDataDatabase,
             true,
             false,
-            false,
-            $excludedTables
+            $removeTables,
+            $removeTables ? $this->protectForeignTables($database, $appDataDatabase, $excludedTables) : $excludedTables
         );
+    }
+
+    /**
+     * Dropping the tables schema.xml no longer has is opt-in (migrations.remove_tables), and it only ever touches
+     * the tables of the module: a database can be shared, so every table that does not start with the table prefix
+     * of the schema (and the migration bookkeeping tables) is excluded from the comparison.
+     *
+     * @param string[] $excludedTables
+     * @return string[]
+     */
+    private function protectForeignTables(Database $database, Database $appDataDatabase, array $excludedTables): array
+    {
+        $prefix = (string)$appDataDatabase->getTablePrefix();
+        foreach ($database->getTables() as $table) {
+            $name = $table->getName();
+            if ('' === $prefix || !str_starts_with($name, $prefix) || preg_match('/^(phinxlog|propel_migration)/i', $name)) {
+                $excludedTables[] = $name;
+            }
+        }
+        return array_values(array_unique($excludedTables));
     }
 
     /**

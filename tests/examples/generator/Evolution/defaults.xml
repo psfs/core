@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="MIGLAB" defaultIdMethod="native" namespace="MIGLAB\Models" tablePrefix="MIGLAB_">
+    <vendor type="mysql">
+        <parameter name="Engine" value="InnoDB"/>
+        <parameter name="Charset" value="utf8"/>
+        <parameter name="Collate" value="utf8_unicode_ci"/>
+    </vendor>
+    <table name="AUTHOR" namespace="Author">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="NAME" type="VARCHAR" size="100" required="true"/>
+        <column name="BIO" type="LONGVARCHAR"/>
+        <column name="BORN" type="DATE"/>
+        <column name="CREATED" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+        <column name="FLAG" type="BOOLEAN" required="true" defaultValue="false"/>
+        <column name="COUNTRY" type="CHAR" size="2" required="true" defaultValue="ES"/>
+        <column name="MOTTO" type="VARCHAR" size="50" required="true" defaultValue=""/>
+        <column name="LEVEL" type="INTEGER" defaultValue="-1"/>
+        <column name="RATIO" type="DOUBLE" defaultValue="0.5"/>
+        <column name="OPENED" type="DATE"/>
+        <column name="ACTIVE" type="BOOLEAN" defaultValue="true"/>
+        <column name="SCORE" type="DECIMAL" size="10" scale="2" defaultValue="0.00"/>
+        <index name="idx_author_name"><index-column name="NAME"/></index>
+    </table>
+    <table name="BOOK" namespace="Book">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="ID_AUTHOR" type="INTEGER" required="true"/>
+        <column name="ISBN" type="VARCHAR" size="13" required="true"/>
+        <column name="TITLE" type="VARCHAR" size="200" required="true"/>
+        <column name="PRICE" type="DECIMAL" size="8" scale="2"/>
+        <column name="STATUS" type="ENUM" valueSet="DRAFT,PUBLISHED,RETIRED" required="true" defaultValue="DRAFT"/>
+        <column name="PAGES" type="SMALLINT"/>
+        <column name="PUBLISHED_AT" type="TIMESTAMP"/>
+        <unique name="uniq_book_isbn"><unique-column name="ISBN"/></unique>
+        <index name="idx_book_title_status"><index-column name="TITLE"/><index-column name="STATUS"/></index>
+        <foreign-key name="fk_book_author" foreignTable="AUTHOR" onDelete="CASCADE" onUpdate="CASCADE">
+            <reference local="ID_AUTHOR" foreign="ID"/>
+        </foreign-key>
+    </table>
+    <table name="TAG" namespace="Tag">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="LABEL" type="VARCHAR" size="50" required="true"/>
+        <unique name="uniq_tag_label"><unique-column name="LABEL"/></unique>
+    </table>
+    <table name="BOOK_TAG" namespace="BookTag" isCrossRef="true">
+        <column name="ID_BOOK" type="INTEGER" primaryKey="true"/>
+        <column name="ID_TAG" type="INTEGER" primaryKey="true"/>
+        <foreign-key name="fk_booktag_book" foreignTable="BOOK" onDelete="CASCADE">
+            <reference local="ID_BOOK" foreign="ID"/>
+        </foreign-key>
+        <foreign-key name="fk_booktag_tag" foreignTable="TAG" onDelete="CASCADE">
+            <reference local="ID_TAG" foreign="ID"/>
+        </foreign-key>
+    </table>
+    <table name="CATEGORY" namespace="Category">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="ID_PARENT" type="INTEGER"/>
+        <column name="LABEL" type="VARCHAR" size="80" required="true"/>
+        <foreign-key name="fk_category_parent" foreignTable="CATEGORY" onDelete="SETNULL">
+            <reference local="ID_PARENT" foreign="ID"/>
+        </foreign-key>
+    </table>
+    <table name="TYPES" namespace="Types">
+        <column name="ID" type="BIGINT" primaryKey="true" autoIncrement="true"/>
+        <column name="C_TINY" type="TINYINT"/>
+        <column name="C_CHAR" type="CHAR" size="3"/>
+        <column name="C_FLOAT" type="FLOAT"/>
+        <column name="C_DOUBLE" type="DOUBLE"/>
+        <column name="C_TIME" type="TIME"/>
+        <column name="C_DATETIME" type="DATETIME"/>
+        <column name="C_BLOB" type="BLOB"/>
+        <column name="C_TEXT" type="LONGVARCHAR" size="2000"/>
+    </table>
+    <table name="NOTE" namespace="Note">
+        <column name="ID" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="BODY" type="VARCHAR" size="255" required="true"/>
+        <behavior name="i18n">
+            <parameter name="i18n_columns" value="BODY"/>
+            <parameter name="default_locale" value="es"/>
+        </behavior>
+        <behavior name="timestampable"/>
+    </table>
+</database>

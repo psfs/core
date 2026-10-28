@@ -319,6 +319,102 @@ class PropelDiffToPhinxMigrationGeneratorTest extends TestCase
         );
     }
 
+    public function testAnAutoIncrementColumnJoiningTheKeyBecomesAutoIncrementOnceTheKeyExists(): void
+    {
+        $old = new PropelTable('links');
+        $book = $this->requiredKeyColumn('book_id');
+        $tag = $this->requiredKeyColumn('tag_id');
+        $old->addColumn($book);
+        $old->addColumn($tag);
+        $new = new PropelTable('links');
+        $surrogate = $this->requiredKeyColumn('id');
+        $surrogate->setAutoIncrement(true);
+        $new->addColumn($surrogate);
+        $newBook = new PropelColumn('book_id', 'INTEGER');
+        $newBook->setNotNull(true);
+        $new->addColumn($newBook);
+
+        $tableDiff = new TableDiff($old, $new);
+        $tableDiff->addAddedColumn('id', $surrogate);
+        $tableDiff->addRemovedColumn('tag_id', $tag);
+        $tableDiff->addRemovedPkColumn('book_id', $book);
+        $tableDiff->addRemovedPkColumn('tag_id', $tag);
+        $tableDiff->addAddedPkColumn('id', $surrogate);
+        $diff = new DatabaseDiff();
+        $diff->addModifiedTable('links', $tableDiff);
+
+        $up = implode("\n", (new PropelDiffToPhinxMigrationGenerator())->translate($diff)['up']);
+
+        $this->assertStringContainsString("->addColumn('id', 'integer', ['null' => false])", $up, 'created without AUTO_INCREMENT');
+        $this->assertStringContainsString("->changeColumn('id', 'integer', ['identity' => true, 'null' => false])", $up);
+        $this->assertLessThan(
+            strpos($up, "->changeColumn('id', 'integer', ['identity' => true"),
+            strpos($up, "->changePrimaryKey(['id'])->update()")
+        );
+    }
+
+    public function testAnAutoIncrementColumnThatLeavesIsReleasedBeforeTheKeyChanges(): void
+    {
+        $old = new PropelTable('links');
+        $surrogate = $this->requiredKeyColumn('id');
+        $surrogate->setAutoIncrement(true);
+        $old->addColumn($surrogate);
+        $new = new PropelTable('links');
+        $book = $this->requiredKeyColumn('book_id');
+        $new->addColumn($book);
+
+        $tableDiff = new TableDiff($old, $new);
+        $tableDiff->addRemovedColumn('id', $surrogate);
+        $tableDiff->addAddedColumn('book_id', $book);
+        $tableDiff->addRemovedPkColumn('id', $surrogate);
+        $tableDiff->addAddedPkColumn('book_id', $book);
+        $diff = new DatabaseDiff();
+        $diff->addModifiedTable('links', $tableDiff);
+
+        $up = implode("\n", (new PropelDiffToPhinxMigrationGenerator())->translate($diff)['up']);
+
+        $release = strpos($up, "->changeColumn('id', 'integer', ['null' => false])");
+        $this->assertNotFalse($release);
+        $this->assertLessThan(strpos($up, '->changePrimaryKey('), $release);
+        $this->assertLessThan(strpos($up, "->removeColumn('id')"), strpos($up, '->changePrimaryKey('));
+    }
+
+    public function testForeignKeysOfAddedTablesWaitForTheStructuralChangesOfTheExistingTables(): void
+    {
+        $users = new PropelTable('users');
+        $id = $this->requiredKeyColumn('id');
+        $users->addColumn($id);
+        $orders = new PropelTable('orders');
+        $userId = new PropelColumn('user_id', 'INTEGER');
+        $orders->addColumn($userId);
+        $foreignKey = new ForeignKey('fk_orders_users');
+        $foreignKey->setForeignTableCommonName('users');
+        $foreignKey->addReference('user_id', 'id');
+        $orders->addForeignKey($foreignKey);
+        $added = new PropelColumn('nickname', 'VARCHAR', 40);
+        $newUsers = new PropelTable('users');
+        $newUsers->addColumn($id);
+        $newUsers->addColumn($added);
+        $tableDiff = new TableDiff($users, $newUsers);
+        $tableDiff->addAddedColumn('nickname', $added);
+        $diff = new DatabaseDiff();
+        $diff->addAddedTable('orders', $orders);
+        $diff->addModifiedTable('users', $tableDiff);
+
+        $up = implode("\n", (new PropelDiffToPhinxMigrationGenerator())->translate($diff)['up']);
+
+        $this->assertLessThan(strpos($up, "addForeignKey(['user_id']"), strpos($up, "->addColumn('nickname'"));
+    }
+
+    private function requiredKeyColumn(string $name): PropelColumn
+    {
+        $column = new PropelColumn($name, 'INTEGER');
+        $column->setPrimaryKey(true);
+        $column->setNotNull(true);
+
+        return $column;
+    }
+
     public function testTableRenameIsDeclarativeAndReversible(): void
     {
         $diff = new DatabaseDiff();

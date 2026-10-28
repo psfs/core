@@ -32,7 +32,7 @@ class MigrationEngineResolver
             return $engine;
         }
 
-        $fallbackEnabled = (bool)Config::getParam('migrations.legacy_fallback_enabled', true, $module);
+        $fallbackEnabled = (bool)Config::getParam('migrations.legacy_fallback_enabled', false, $module);
         if (!$fallbackEnabled || !isset($this->engines['propel'])) {
             throw new \RuntimeException(sprintf('Migration engine "%s" is not available and fallback is disabled', $engineName));
         }

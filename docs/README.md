@@ -15,6 +15,7 @@ New to the project? Follow this path:
 1. [Operations playbook](./operations.md): boot the Docker runtime, run the key tests and the daily commands.
 2. [DTO validation engine](./dto-validation.md): how requests are validated and CSRF-protected.
 3. [Propel workflow](./propel-workflow.md): schema, model generation, migrations and rollback.
+   [Schema changes and migrations](./migrations.md): what the generator writes, ordering guarantees, switches and limits.
 
 Contributing to the core? Add [PHP compatibility](./php-compatibility.md) and the [security overview](./security/README.md) to that list, and validate every change inside Docker.
 
@@ -25,6 +26,7 @@ Contributing to the core? Add [PHP compatibility](./php-compatibility.md) and th
 | [Operations playbook](./operations.md) | First-day flow, daily loop, queues, Swoole, troubleshooting |
 | [DTO validation engine](./dto-validation.md) | Declarative validation, unknown-field policy, CSRF in DTOs |
 | [Propel workflow](./propel-workflow.md) | Schema conventions, `psfs:migrate`, engines, rollback |
+| [Schema changes and migrations](./migrations.md) | Declarative Phinx migrations: guarantees, ordering, switches, limits, tests |
 
 ## Reference
 

@@ -3,7 +3,6 @@
 namespace PSFS\services\migration;
 
 use Propel\Generator\Model\Column;
-use Propel\Generator\Model\ColumnDefaultValue;
 use Propel\Generator\Model\Diff\DatabaseDiff;
 use Propel\Generator\Model\Diff\TableDiff;
 use Propel\Generator\Model\Index;
@@ -16,6 +15,15 @@ use Propel\Generator\Model\Table;
  */
 final class PropelDiffToPhinxMigrationGenerator
 {
+    private readonly PropelColumnTranslator $columns;
+    private readonly I18nDataMigration $i18n;
+
+    public function __construct(?PropelColumnTranslator $columns = null, ?I18nDataMigration $i18n = null)
+    {
+        $this->columns = $columns ?? new PropelColumnTranslator();
+        $this->i18n = $i18n ?? new I18nDataMigration();
+    }
+
     /**
      * @return array{up: list<string>, down: list<string>}
      */
@@ -52,10 +60,14 @@ final class PropelDiffToPhinxMigrationGenerator
             $this->renderRenamedTables($diff),
             $this->renderModifiedTableForeignKeyDrops($modifiedTables),
             $this->renderRemovedTableForeignKeyDrops($diff),
-            $this->renderRemovedTables($diff),
             $this->renderAddedTables($diff),
+            $this->i18n->copyIntoTranslations($diff, $modifiedTables),
+            $this->renderModifiedTables($modifiedTables),
+            // foreign keys go last: the keys they reference may have been changed by the tables above
+            $this->renderModifiedTableForeignKeys($modifiedTables),
             $this->renderAddedTableForeignKeys($diff),
-            $this->renderModifiedTables($modifiedTables)
+            $this->i18n->copyBackFromTranslations($diff, $modifiedTables),
+            $this->renderRemovedTables($diff)
         );
     }
 
@@ -64,14 +76,40 @@ final class PropelDiffToPhinxMigrationGenerator
     {
         $table = '$this->table(' . $this->export($tableName) . ')';
 
+        return $diff->hasModifiedPk()
+            ? $this->renderTableDiffWithPrimaryKeyChange($tableName, $table, $diff)
+            : array_merge(
+                $this->renderRemovedIndices($table, $diff),
+                $this->renderModifiedIndexDrops($table, $diff),
+                $this->renderRenamedColumns($table, $diff),
+                $this->renderAddedAndModifiedColumns($tableName, $table, $diff),
+                $this->renderRemovedColumns($table, $diff),
+                $this->renderModifiedIndexAdds($table, $diff),
+                $this->renderAddedIndices($table, $diff)
+            );
+    }
+
+    /**
+     * Changing the primary key is a delicate step: a foreign key may rely on the old key as its index, and
+     * MySQL only accepts an AUTO_INCREMENT column that is already a key. So the indexes the new key does not
+     * replace are created before it changes, the ones it makes redundant are dropped after, and the columns that
+     * become AUTO_INCREMENT are changed once the new key exists.
+     *
+     * @return list<string>
+     */
+    private function renderTableDiffWithPrimaryKeyChange(string $tableName, string $table, TableDiff $diff): array
+    {
         return array_merge(
-            $this->renderRemovedAndModifiedIndices($table, $diff),
+            $this->renderModifiedIndexDrops($table, $diff),
             $this->renderRenamedColumns($table, $diff),
             $this->renderAddedAndModifiedColumns($tableName, $table, $diff),
-            $this->renderPrimaryKeyChange($tableName, $table, $diff),
-            $this->renderRemovedColumns($table, $diff),
+            $this->renderModifiedIndexAdds($table, $diff),
             $this->renderAddedIndices($table, $diff),
-            $this->renderForeignKeyChanges($table, $diff)
+            $this->renderAutoIncrementRelease($table, $diff),
+            $this->renderPrimaryKeyChange($tableName, $table, $diff),
+            $this->renderColumnsAfterPrimaryKey($table, $diff),
+            $this->renderRemovedIndices($table, $diff),
+            $this->renderRemovedColumns($table, $diff)
         );
     }
 
@@ -173,6 +211,16 @@ final class PropelDiffToPhinxMigrationGenerator
     }
 
     /** @param array<string, TableDiff> $tables @return list<string> */
+    private function renderModifiedTableForeignKeys(array $tables): array
+    {
+        $statements = [];
+        foreach ($tables as $name => $tableDiff) {
+            array_push($statements, ...$this->renderForeignKeyChanges('$this->table(' . $this->export($name) . ')', $tableDiff));
+        }
+        return $statements;
+    }
+
+    /** @param array<string, TableDiff> $tables @return list<string> */
     private function renderModifiedTables(array $tables): array
     {
         $statements = [];
@@ -183,14 +231,34 @@ final class PropelDiffToPhinxMigrationGenerator
     }
 
     /** @return list<string> */
-    private function renderRemovedAndModifiedIndices(string $table, TableDiff $diff): array
+    private function renderRemovedIndices(string $table, TableDiff $diff): array
     {
         $statements = [];
         foreach ($this->sortNamed($diff->getRemovedIndices()) as $name => $_index) {
             $statements[] = $table . '->removeIndexByName(' . $this->export((string)$name) . ')->update();';
         }
-        foreach ($this->sortNamed($diff->getModifiedIndices()) as $name => [$from, $to]) {
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderModifiedIndexDrops(string $table, TableDiff $diff): array
+    {
+        $statements = [];
+        foreach ($this->sortNamed($diff->getModifiedIndices()) as $name => $_indexes) {
             $statements[] = $table . '->removeIndexByName(' . $this->export((string)$name) . ')->update();';
+        }
+        return $statements;
+    }
+
+    /**
+     * The new version of a modified index is created after the columns it may use exist
+     *
+     * @return list<string>
+     */
+    private function renderModifiedIndexAdds(string $table, TableDiff $diff): array
+    {
+        $statements = [];
+        foreach ($this->sortNamed($diff->getModifiedIndices()) as [, $to]) {
             $statements[] = $this->renderIndexOperation($table, $to, $to->isUnique());
         }
         return $statements;
@@ -215,7 +283,7 @@ final class PropelDiffToPhinxMigrationGenerator
     {
         $statements = [];
         foreach ($this->sortNamed($diff->getAddedColumns()) as $column) {
-            $statements[] = $this->renderColumnOperation($table, 'addColumn', $column);
+            $statements[] = $this->renderColumnOperation($table, 'addColumn', $column, $this->waitsForPrimaryKey($diff, $column));
         }
         foreach ($this->sortNamed($diff->getModifiedColumns()) as $name => $columnDiff) {
             if (!$columnDiff instanceof \Propel\Generator\Model\Diff\ColumnDiff
@@ -226,7 +294,67 @@ final class PropelDiffToPhinxMigrationGenerator
                     $name
                 ));
             }
-            $statements[] = $this->renderColumnOperation($table, 'changeColumn', $columnDiff->getToColumn());
+            $column = $columnDiff->getToColumn();
+            if (!$this->leavesPrimaryKey($diff, $column)) {
+                $statements[] = $this->renderColumnOperation($table, 'changeColumn', $column, $this->waitsForPrimaryKey($diff, $column));
+            }
+        }
+        return $statements;
+    }
+
+    /**
+     * A column that stops being part of the primary key may become nullable only once the key no longer has it
+     */
+    private function leavesPrimaryKey(TableDiff $diff, Column $column): bool
+    {
+        if (!$diff->hasModifiedPk() || null === $diff->getFromTable() || null === $diff->getToTable()) {
+            return false;
+        }
+        $before = array_map(self::columnName(...), $diff->getFromTable()->getPrimaryKey());
+        $after = array_map(self::columnName(...), $diff->getToTable()->getPrimaryKey());
+
+        return in_array($column->getName(), $before, true) && !in_array($column->getName(), $after, true);
+    }
+
+    /**
+     * MySQL only accepts an AUTO_INCREMENT column that is already a key: when the primary key changes in the same
+     * migration, the column is created or changed first and becomes AUTO_INCREMENT after the new key exists
+     */
+    private function waitsForPrimaryKey(TableDiff $diff, Column $column): bool
+    {
+        return $column->isAutoIncrement() && $diff->hasModifiedPk();
+    }
+
+    /**
+     * An AUTO_INCREMENT column that is about to leave the table can not stay without a key: it stops being
+     * AUTO_INCREMENT before the primary key changes
+     *
+     * @return list<string>
+     */
+    private function renderAutoIncrementRelease(string $table, TableDiff $diff): array
+    {
+        $statements = [];
+        foreach ($this->sortNamed($diff->getRemovedColumns()) as $column) {
+            if ($column->isAutoIncrement()) {
+                $statements[] = $this->renderColumnOperation($table, 'changeColumn', $column, true);
+            }
+        }
+        return $statements;
+    }
+
+    /** @return list<string> */
+    private function renderColumnsAfterPrimaryKey(string $table, TableDiff $diff): array
+    {
+        $statements = [];
+        $columns = array_filter($diff->getAddedColumns(), fn(Column $column): bool => $this->waitsForPrimaryKey($diff, $column));
+        foreach ($diff->getModifiedColumns() as $columnDiff) {
+            $column = $columnDiff instanceof \Propel\Generator\Model\Diff\ColumnDiff ? $columnDiff->getToColumn() : null;
+            if (null !== $column && ($this->waitsForPrimaryKey($diff, $column) || $this->leavesPrimaryKey($diff, $column))) {
+                $columns[$column->getName()] = $column;
+            }
+        }
+        foreach ($this->sortNamed($columns) as $column) {
+            $statements[] = $this->renderColumnOperation($table, 'changeColumn', $column);
         }
         return $statements;
     }
@@ -279,11 +407,16 @@ final class PropelDiffToPhinxMigrationGenerator
         return $statements;
     }
 
-    private function renderColumnOperation(string $table, string $method, Column $column): string
+    private function renderColumnOperation(string $table, string $method, Column $column, bool $withoutAutoIncrement = false): string
     {
+        $options = $this->columns->options($column);
+        if ($withoutAutoIncrement) {
+            unset($options['identity']);
+        }
+
         return $table . '->' . $method . '(' . $this->export($column->getName()) . ', '
-            . $this->export($this->phinxType($column)) . ', '
-            . $this->export($this->columnOptions($column)) . ')->update();';
+            . $this->export($this->columns->type($column)) . ', '
+            . $this->export($options) . ')->update();';
     }
 
     private function renderIndexOperation(string $table, Index $index, bool $unique): string
@@ -333,8 +466,8 @@ final class PropelDiffToPhinxMigrationGenerator
 
         foreach ($table->getColumns() as $column) {
             $statement .= '->addColumn(' . $this->export($column->getName())
-                . ', ' . $this->export($this->phinxType($column))
-                . ', ' . $this->export($this->columnOptions($column)) . ')';
+                . ', ' . $this->export($this->columns->type($column))
+                . ', ' . $this->export($this->columns->options($column)) . ')';
         }
 
         foreach ($table->getIndices() as $index) {
@@ -364,98 +497,41 @@ final class PropelDiffToPhinxMigrationGenerator
         if ($unique) {
             $options['unique'] = true;
         }
+        $limits = $this->prefixLengths($index, $columns);
+        if ([] !== $limits) {
+            $options['limit'] = $limits;
+        }
 
         return '->addIndex(' . $this->export($columns) . ', ' . $this->export($options) . ')';
     }
 
-    private function phinxType(Column $column): string
+    /**
+     * Indexes over a text or binary column, or over only the first characters of a string, record the length they cover
+     *
+     * @param string[] $columns
+     * @return array<string, int>
+     */
+    private function prefixLengths(Index $index, array $columns): array
     {
-        $type = strtoupper($column->getType());
-        $mapping = [
-            'BIT' => 'integer',
-            'TINYINT' => 'integer',
-            'SMALLINT' => 'integer',
-            'INTEGER' => 'integer',
-            'INT' => 'integer',
-            'BIGINT' => 'biginteger',
-            'BOOLEAN' => 'boolean',
-            'BOOL' => 'boolean',
-            'CHAR' => 'char',
-            'VARCHAR' => 'string',
-            'VARCHAR_IGNORECASE' => 'string',
-            'LONGVARCHAR' => 'text',
-            'CLOB' => 'text',
-            'TINYTEXT' => 'text',
-            'TEXT' => 'text',
-            'BINARY' => 'binary',
-            'VARBINARY' => 'binary',
-            'BLOB' => 'blob',
-            'TINYBLOB' => 'blob',
-            'DECIMAL' => 'decimal',
-            'NUMERIC' => 'decimal',
-            'FLOAT' => 'float',
-            'DOUBLE' => 'double',
-            'REAL' => 'float',
-            'DATE' => 'date',
-            'TIME' => 'time',
-            'DATETIME' => 'datetime',
-            'TIMESTAMP' => 'timestamp',
-            'UUID' => 'uuid',
-            'JSON' => 'json',
-            // Propel stores these logical types as numeric ordinals, not as SQL ENUM/SET.
-            'ENUM' => 'tinyinteger',
-            'SET' => 'integer',
-        ];
-
-        if (!isset($mapping[$type])) {
-            throw new \InvalidArgumentException(sprintf(
-                'Unsupported Propel type "%s" for column "%s"',
-                $type,
-                $column->getFullyQualifiedName()
-            ));
-        }
-
-        return $mapping[$type];
-    }
-
-    /** @return array<string, mixed> */
-    private function columnOptions(Column $column): array
-    {
-        $type = $this->phinxType($column);
-        $options = [];
-        if ($column->hasDefaultValue()) {
-            $options['default'] = $this->defaultValue($column->getDefaultValue());
-        }
-        if ($column->isAutoIncrement()) {
-            $options['identity'] = true;
-        }
-        if (in_array($type, ['char', 'string', 'binary'], true) && null !== $column->getSize()) {
-            $options['limit'] = $column->getSize();
-        }
-        if ('decimal' === $type && null !== $column->getSize()) {
-            $options['precision'] = $column->getSize();
-            $options['scale'] = $column->getScale();
-        }
-        $options['null'] = !$column->isNotNull();
-        if ('' !== (string)$column->getDescription()) {
-            $options['comment'] = $column->getDescription();
-        }
-
-        return $options;
-    }
-
-    /** @return mixed */
-    private function defaultValue($value)
-    {
-        if ($value instanceof ColumnDefaultValue) {
-            if ($value->isExpression()) {
-                return new \Phinx\Util\Literal((string)$value->getValue());
+        $limits = [];
+        foreach ($index->getColumnObjects() as $column) {
+            $name = $column->getName();
+            if (!in_array($name, $columns, true) || !$index->hasColumnSize($name)) {
+                continue;
             }
-
-            $value = $value->getValue();
+            $length = (int)$index->getColumnSize($name);
+            if ($this->isPrefix($column, $length)) {
+                $limits[$name] = $length;
+            }
         }
 
-        return $value;
+        return $limits;
+    }
+
+    private function isPrefix(Column $column, int $length): bool
+    {
+        return 'text' === $this->columns->type($column) || 'blob' === $this->columns->type($column)
+            || null === $column->getSize() || $length < (int)$column->getSize();
     }
 
     /**
