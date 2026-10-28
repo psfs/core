@@ -183,6 +183,17 @@ scripts/bench/run.sh --quick
 scripts/bench/run.sh --scenarios=api-list --rows=1000,100000 --opcache=on --debug=false
 ```
 
+### 4.7 Regenerating modules
+
+Generating or regenerating a module builds the Propel models and SQL, writes the module files, generates the API classes and compares the database with `schema.xml` to produce a migration. Set `generator.profile=true` (or `PSFS_GENERATOR_PROFILE=true`) to log the time and the extra peak memory of each phase (`propel-models`, `propel-sql`, `base-files`, `api-files`, `migration-reverse`, `migration-diff`) in the `[GeneratorProfile]` record. `base-files` includes the Propel build, so phases overlap.
+
+`scripts/bench/regenerate.sh --tables=30,100` measures it on an isolated copy with a synthetic module and a temporary MySQL database (`initial`: no tables yet; `regen`: database up to date; `repeat`: `regen` with the switch below). On a local database, with 100 tables (200 with the i18n tables): about 0.9 s the first time and 1.5 s to regenerate, 45 % of it reading the database (`migration-reverse`: about 9 queries per table, so it grows with the latency to MySQL and with the size of a shared database). Peak memory stays near 50 MB.
+
+| Key | Environment variable | Effect |
+|---|---|---|
+| `generator.profile` | `PSFS_GENERATOR_PROFILE` | `true` logs the time and memory of every generation phase (default `false`) |
+| `generator.migration.skip_unchanged` | `PSFS_GENERATOR_MIGRATION_SKIP_UNCHANGED` | `true` skips the database comparison when neither `schema.xml` nor the migrations changed since the last comparison that found no differences (default `false`). The same 100 tables take 0.8 s instead of 1.5 s. A database changed by hand is not noticed until the schema or the migrations change; delete `cache/generator-sync-<module>.json` to force a comparison |
+
 ## 5) Troubleshooting matrix
 
 | Symptom | Likely cause | Fix command |

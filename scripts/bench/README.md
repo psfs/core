@@ -89,3 +89,17 @@ match what was requested; do not trust that row.
   six runs. Effects of 2x or more (opcache, remote Redis or MySQL, many modules) are reliable; differences under
   about 30 % between two cells are not. Use `--repeat=3` (or more) to get the median and the p50 range of every
   cell, and compare cells from the same run.
+
+## Module regeneration
+
+`scripts/bench/regenerate.sh` measures something different: how long it takes to regenerate a module with many
+tables and where the time and the peak memory go, phase by phase (see `docs/operations.md`, section 4.7).
+
+```bash
+scripts/bench/regenerate.sh                                 # 10 and 50 tables, every state
+scripts/bench/regenerate.sh --tables=30,100 --states=regen,repeat
+```
+
+Each measure runs in a fresh PHP process against the sandbox and a temporary MySQL database, both removed
+afterwards. `tree` is a checksum of the generated files (except the migrations): compare it between two runs of
+different code to prove that a change does not alter the output (`Config/propel.php` varies on its own).

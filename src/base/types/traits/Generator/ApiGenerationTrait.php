@@ -20,8 +20,7 @@ trait ApiGenerationTrait
         $modelPath = $modPath . $module . DIRECTORY_SEPARATOR . 'Models';
         $apiPath = $modPath . $module . DIRECTORY_SEPARATOR . 'Api';
         if (file_exists($modelPath)) {
-            $dir = dir($modelPath);
-            $this->generateApiFiles($module, $force, $apiClass, $dir, $apiPath);
+            $this->generateApiFiles($module, $force, $apiClass, $modelPath, $apiPath);
         }
         return $created;
     }
@@ -82,43 +81,52 @@ trait ApiGenerationTrait
     }
 
     /**
-     * @param $module
-     * @param $force
-     * @param $apiClass
-     * @param \Directory|null $dir
-     * @param string $apiPath
-     * @param string $package
+     * @param string $module
+     * @param bool $force
+     * @param string $apiClass
+     * @param string $modelPath directory with the generated models
+     * @param string $apiPath directory where the APIs are written
      * @throws \ReflectionException
      */
-    private function generateApiFiles($module, $force, $apiClass, \Directory $dir, string $apiPath, $package = null)
+    private function generateApiFiles($module, $force, $apiClass, string $modelPath, string $apiPath)
     {
-        $base = $dir->path;
-        while ($file = $dir->read()) {
-            if (!in_array(strtolower($file), ['.', '..', 'base', 'map'], true)) {
-                if (is_dir($base . DIRECTORY_SEPARATOR . $file)) {
-                    $this->generateApiFiles(
-                        $module,
-                        $force,
-                        $apiClass,
-                        dir($base . DIRECTORY_SEPARATOR . $file),
-                        $apiPath . DIRECTORY_SEPARATOR . $file,
-                        $file
-                    );
-                } else {
-                    if (!preg_match('/Query\.php$/i', $file)
-                        && !preg_match('/I18n\.php$/i', $file)
-                        && preg_match('/\.php$/i', $file)
-                    ) {
-                        $filename = str_replace(".php", "", $file);
-                        $this->log->addLog("Generating BASE APIs for {$filename}");
-                        if ($this->checkIfIsModel($module, $filename, $package)) {
-                            $this->createApiBaseFile($module, $apiPath, $filename, $apiClass, $package);
-                            $this->createApi($module, $apiPath, $force, $filename, $package);
-                        }
-                    }
-                }
+        foreach ($this->modelFiles($modelPath, $apiPath) as [$filename, $package, $targetPath]) {
+            $this->log->addLog("Generating BASE APIs for {$filename}");
+            if ($this->checkIfIsModel($module, $filename, $package)) {
+                $this->createApiBaseFile($module, $targetPath, $filename, $apiClass, $package);
+                $this->createApi($module, $targetPath, $force, $filename, $package);
             }
         }
+    }
+
+    /**
+     * Walks the generated models one at a time, so the list of models is never held in memory
+     *
+     * @param string $path directory to walk
+     * @param string $apiPath API directory that matches the directory
+     * @param string|null $package package (sub directory) the models belong to
+     * @return \Generator<int, array{0: string, 1: string|null, 2: string}> model name, package and API directory
+     */
+    private function modelFiles(string $path, string $apiPath, ?string $package = null): \Generator
+    {
+        foreach (new \DirectoryIterator($path) as $entry) {
+            $name = $entry->getFilename();
+            if ($entry->isDot() || in_array(strtolower($name), ['base', 'map'], true)) {
+                continue;
+            }
+            if ($entry->isDir()) {
+                yield from $this->modelFiles($entry->getPathname(), $apiPath . DIRECTORY_SEPARATOR . $name, $name);
+            } elseif ($this->isModelFile($name)) {
+                yield [str_replace('.php', '', $name), $package, $apiPath];
+            }
+        }
+    }
+
+    private function isModelFile(string $file): bool
+    {
+        return !preg_match('/Query\.php$/i', $file)
+            && !preg_match('/I18n\.php$/i', $file)
+            && preg_match('/\.php$/i', $file);
     }
 
     /**

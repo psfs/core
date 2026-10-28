@@ -13,9 +13,11 @@ use PSFS\base\SingletonRegistry;
 use PSFS\base\exception\ApiException;
 use PSFS\base\exception\GeneratorException;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\GeneratorProfile;
 use PSFS\base\types\traits\BoostrapTrait;
 use PSFS\services\GeneratorService as Service;
 use PSFS\services\MigrationService;
+use PSFS\services\migration\MigrationSyncState;
 
 /**
  * Class GeneratorServiceTest
@@ -53,6 +55,28 @@ class GeneratorServiceTest extends TestCase
             if (is_dir($outsidePath)) {
                 GeneratorHelper::deleteDir($outsidePath);
             }
+        }
+    }
+
+    public function testCreatingAModuleBuildsItsModelsOnlyOnce(): void
+    {
+        $module = 'PSFSBUILDONCE' . strtoupper(bin2hex(random_bytes(3)));
+        $modulePath = CORE_DIR . DIRECTORY_SEPARATOR . $module;
+        putenv('PSFS_GENERATOR_PROFILE=true');
+        GeneratorProfile::reset();
+
+        try {
+            Service::getInstance()->createStructureModule($module, true, skipMigration: true);
+
+            $report = GeneratorProfile::report();
+            self::assertSame(1, $report['propel-models']['runs']);
+            self::assertSame(1, $report['propel-sql']['runs']);
+            self::assertSame(1, $report['api-files']['runs']);
+            self::assertDirectoryExists($modulePath . DIRECTORY_SEPARATOR . 'Models');
+        } finally {
+            putenv('PSFS_GENERATOR_PROFILE');
+            GeneratorProfile::reset();
+            GeneratorHelper::deleteDir($modulePath);
         }
     }
 
@@ -292,6 +316,50 @@ class GeneratorServiceTest extends TestCase
         $result = $method->invoke($service, 'Demo', CORE_DIR . DIRECTORY_SEPARATOR);
 
         $this->assertTrue((bool)$result);
+    }
+
+    public function testCreateModuleMigrationsSkipsTheComparisonWhenTheSchemaIsUnchangedAndTheSwitchIsOn(): void
+    {
+        $directory = CACHE_DIR . DIRECTORY_SEPARATOR . 'sync-skip-' . uniqid('', true);
+        GeneratorHelper::createDir($directory . '/Config');
+        GeneratorHelper::createDir($directory . '/Migrations');
+        file_put_contents($directory . '/Config/schema.xml', '<database name="demo"/>');
+        putenv('PSFS_GENERATOR_MIGRATION_SKIP_UNCHANGED=true');
+        $module = 'SyncSkip' . bin2hex(random_bytes(3));
+        $state = new MigrationSyncState($module);
+
+        $manager = $this->createMock(MigrationManager::class);
+        $manager->method('hasPendingMigrations')->willReturn(false);
+        $manager->method('getDatabases')->willReturn([]);
+        $generatorConfig = $this->createMock(GeneratorConfig::class);
+        $generatorConfig->method('getBuildConnections')->willReturn([]);
+        $generatorConfig->method('getSection')->willReturn([
+            'phpConfDir' => CORE_DIR . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'psfs' . DIRECTORY_SEPARATOR . 'propel' . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR . 'bookstore',
+            'schemaDir' => $directory . '/Config',
+            'migrationDir' => $directory . '/Migrations',
+        ]);
+        $migrationService = $this->getMockBuilder(MigrationService::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getConnectionManager', 'checkSourceDatabase'])
+            ->getMock();
+        $migrationService->method('getConnectionManager')->willReturn([$manager, $generatorConfig]);
+        $migrationService->expects($this->never())->method('checkSourceDatabase');
+        $this->injectSingleton(MigrationService::class, $migrationService);
+        $service = $this->newServiceWithoutConstructor(Service::class);
+        $method = new \ReflectionMethod(Service::class, 'createModuleMigrations');
+
+        try {
+            $this->assertTrue((bool)$method->invoke($service, $module, CORE_DIR . DIRECTORY_SEPARATOR));
+            $this->assertFileExists($state->file(), 'a comparison without differences is remembered');
+            $this->assertTrue((bool)$method->invoke($service, $module, CORE_DIR . DIRECTORY_SEPARATOR));
+
+            file_put_contents($directory . '/Config/schema.xml', '<database name="changed"/>');
+            $this->assertFalse($state->matches(MigrationSyncState::signature($directory . '/Config', $directory . '/Migrations')));
+        } finally {
+            putenv('PSFS_GENERATOR_MIGRATION_SKIP_UNCHANGED');
+            $state->forget();
+            GeneratorHelper::deleteDir($directory);
+        }
     }
 
     public function testCreateModuleMigrationsGeneratesFileWhenDiffExists(): void

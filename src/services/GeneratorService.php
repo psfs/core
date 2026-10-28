@@ -15,6 +15,8 @@ use PSFS\base\Logger;
 use PSFS\base\Security;
 use PSFS\base\types\helpers\attributes\Injectable;
 use PSFS\base\types\helpers\GeneratorHelper;
+use PSFS\base\types\helpers\GeneratorProfile;
+use PSFS\services\migration\MigrationSyncState;
 use PSFS\base\types\SimpleService;
 use PSFS\base\types\traits\Generator\ApiGenerationTrait;
 use PSFS\base\types\traits\Generator\PropelHelperTrait;
@@ -56,12 +58,16 @@ class GeneratorService extends SimpleService
         $modPath = CORE_DIR . DIRECTORY_SEPARATOR;
         $this->createModulePath($module, $modPath);
         $this->createModulePathTree($module, $modPath);
+        GeneratorProfile::start('base-files');
         $this->createModuleBaseFiles($module, $modPath, $force, $type);
-        $this->createModuleModels($module, $modPath);
+        GeneratorProfile::stop('base-files');
+        GeneratorProfile::start('api-files');
         $this->generateBaseApiTemplate($module, $modPath, $force, $apiClass);
+        GeneratorProfile::stop('api-files');
         if (!$skipMigration) {
             $this->createModuleMigrations($module, $modPath);
         }
+        GeneratorProfile::logSummary();
         //Redireccionamos al home definido
         Logger::log("Module generated successfully");
     }
@@ -93,6 +99,7 @@ class GeneratorService extends SimpleService
      */
     public function generateConfigurationTemplates(string $module, string $modulePath, bool $force = false): void
     {
+        // This also builds the models and the Propel configuration: callers must not build them again
         $this->genereateAutoloaderTemplate($module, $modulePath, $force);
         $this->generatePropertiesTemplate($module, $modulePath, $force);
         $this->generateConfigTemplate($modulePath, $force);
@@ -166,8 +173,12 @@ class GeneratorService extends SimpleService
         $modulePath = str_replace(CORE_DIR . DIRECTORY_SEPARATOR, '', $path . $module);
         $configGenerator = $this->getConfigGenerator($modulePath);
 
+        GeneratorProfile::start('propel-models');
         $this->buildModels($configGenerator);
+        GeneratorProfile::stop('propel-models');
+        GeneratorProfile::start('propel-sql');
         $this->buildSql($configGenerator);
+        GeneratorProfile::stop('propel-sql');
 
         $configTemplate = $this->tpl->dump("generator/config.propel.template.twig", array(
             "module" => $module,
@@ -202,8 +213,18 @@ class GeneratorService extends SimpleService
             );
         }
 
+        $sync = MigrationSyncState::enabled() ? new MigrationSyncState($module) : null;
+        $signature = null === $sync ? '' : $this->migrationSignature($generatorConfig);
+        if (null !== $sync && $sync->matches($signature)) {
+            Logger::log('Schema and migrations unchanged since the database was last compared - skipping the comparison');
+            return true;
+        }
+
         $debugLogger = Config::getParam('log.level') === 'DEBUG';
+        GeneratorProfile::start('migration-reverse');
         $reversedSchema = $this->buildReversedSchema($manager, $generatorConfig, $migrationService, $debugLogger);
+        GeneratorProfile::stop('migration-reverse');
+        GeneratorProfile::start('migration-diff');
         list($migrationsUp, $migrationsDown) = $this->buildMigrationDiffs(
             $manager,
             $generatorConfig,
@@ -211,13 +232,21 @@ class GeneratorService extends SimpleService
             $reversedSchema,
             $debugLogger
         );
+        GeneratorProfile::stop('migration-diff');
         if (empty($migrationsUp)) {
             Logger::log('Same XML and database structures for all datasource - no diff to generate');
+            $sync?->remember($signature);
             return true;
         }
 
         $migrationService->generateMigrationFile($manager, $migrationsUp, $migrationsDown, $generatorConfig, $module);
         return true;
+    }
+
+    private function migrationSignature(GeneratorConfig $generatorConfig): string
+    {
+        $paths = $generatorConfig->getSection('paths');
+        return MigrationSyncState::signature((string)$paths['schemaDir'], (string)$paths['migrationDir']);
     }
 
     /**
