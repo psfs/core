@@ -5,6 +5,7 @@ namespace PSFS\base\types\traits\Security;
 use PSFS\base\Logger;
 use PSFS\base\runtime\RuntimeMode;
 use PSFS\base\types\helpers\AuthHelper;
+use PSFS\base\types\helpers\CompatHelper;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\base\types\helpers\SessionCookieHelper;
 
@@ -13,6 +14,22 @@ use PSFS\base\types\helpers\SessionCookieHelper;
  */
 trait SessionTrait
 {
+    /**
+     * Keys the framework writes on every request for its own bookkeeping. Setting them never creates a PHP session:
+     * a visitor without a session cookie has nothing to remember, and a session per request costs a round trip to the
+     * session store (Redis) and a Set-Cookie header on every response, API calls included.
+     */
+    private const EPHEMERAL_SESSION_KEYS = [
+        '__FLASH_CLEAR__',
+        'lastRequest',
+        '__CACHE__',
+        'config.cache.var',
+        '__PSFS_TRANSLATIONS__',
+        '__PSFS_LOCALE_VERSION__',
+        '__PSFS_SESSION_LANG_SELECTED__',
+        '__PSFS_SESSION_LOCALE_SELECTED__',
+    ];
+
     /**
      * @var array
      */
@@ -53,22 +70,62 @@ trait SessionTrait
     public function setSessionKey($key, $data = null)
     {
         $this->session[$key] = $data;
+        if (null !== $data && !in_array($key, self::EPHEMERAL_SESSION_KEYS, true)) {
+            $this->ensureSessionStarted();
+        }
 
         return $this;
     }
 
+    /**
+     * The session is created when something has to be remembered (a login, a token, a message, a chosen language),
+     * not for every visitor: see session.lazy. A request that carries a session cookie always resumes its session.
+     */
     protected function initSession()
     {
-        $canStartSession = RuntimeMode::isLongRunningServer() || !headers_sent();
-        if (PHP_SESSION_NONE === session_status() && $canStartSession) {
-            SessionCookieHelper::apply(ResponseHelper::isSecureRequest());
-            session_start();
+        if (PHP_SESSION_NONE === session_status() && $this->canStartSession() && $this->shouldResumeSession()) {
+            $this->startPhpSession();
         }
         // Fix for phpunits
         if (!isset($_SESSION)) {
             $_SESSION = [];
         }
         $this->session = null === $_SESSION ? [] : $_SESSION;
+    }
+
+    /**
+     * Makes sure the visitor has a PHP session, keeping what the request collected so far. It has to run before the
+     * response headers are sent, because the session cookie is one of them.
+     */
+    public function ensureSessionStarted(): static
+    {
+        if (PHP_SESSION_NONE === session_status() && $this->canStartSession()) {
+            $this->startPhpSession();
+            $_SESSION = is_array($this->session) ? $this->session : [];
+        }
+
+        return $this;
+    }
+
+    private function canStartSession(): bool
+    {
+        return RuntimeMode::isLongRunningServer() || !headers_sent();
+    }
+
+    private function startPhpSession(): void
+    {
+        SessionCookieHelper::apply(ResponseHelper::isSecureRequest());
+        session_start();
+    }
+
+    private function shouldResumeSession(): bool
+    {
+        if (!CompatHelper::flag('session.lazy', true)) {
+            return true;
+        }
+        $name = session_name();
+
+        return is_string($name) && '' !== (string)($_COOKIE[$name] ?? '');
     }
 
     /**
@@ -83,7 +140,7 @@ trait SessionTrait
         $_SESSION = $this->session;
         $_SESSION[AuthHelper::USER_ID_TOKEN] = is_array($this->user) ? $this->user : null;
         $_SESSION[AuthHelper::ADMIN_ID_TOKEN] = is_array($this->admin) ? $this->admin : null;
-        if ($closeSession) {
+        if ($closeSession && PHP_SESSION_ACTIVE === session_status()) {
             Logger::log('Close session');
 
             if (@session_write_close() === false) {
@@ -100,7 +157,13 @@ trait SessionTrait
 
     public function closeSession()
     {
-        $canStartSession = RuntimeMode::isLongRunningServer() || !headers_sent();
+        $canStartSession = $this->canStartSession();
+        if (PHP_SESSION_NONE === session_status() && !$this->shouldResumeSession()) {
+            // there is no session to close: the visitor never had one
+            $_SESSION = [];
+            $this->session = $_SESSION;
+            return;
+        }
         if (PHP_SESSION_NONE === session_status() && $canStartSession) {
             @session_start();
         }

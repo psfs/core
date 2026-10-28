@@ -127,6 +127,8 @@ class Security
         if (!$this->authorized) {
             return;
         }
+        // a login always gets a fresh session id (session fixation): the session exists from this point on
+        $this->ensureSessionStarted();
         if (null === $this->admin
             && (PHP_SESSION_ACTIVE !== session_status() || false === @session_regenerate_id(true))) {
             $this->authorized = false;

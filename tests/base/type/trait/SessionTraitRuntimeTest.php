@@ -10,11 +10,15 @@ class SessionTraitRuntimeTest extends TestCase
 {
     private string $runtimeBackup = '';
     private array $sessionBackup = [];
+    private array $cookieBackup = [];
 
     protected function setUp(): void
     {
         $this->runtimeBackup = RuntimeMode::getCurrentMode();
         $this->sessionBackup = $_SESSION ?? [];
+        $this->cookieBackup = $_COOKIE;
+        $_COOKIE = [];
+        putenv('PSFS_SESSION_LAZY');
         if (session_status() === PHP_SESSION_ACTIVE) {
             @session_write_close();
         }
@@ -35,6 +39,8 @@ class SessionTraitRuntimeTest extends TestCase
             unset($_SERVER[RuntimeMode::ENV_KEY]);
         }
         $_SESSION = $this->sessionBackup;
+        $_COOKIE = $this->cookieBackup;
+        putenv('PSFS_SESSION_LAZY');
         @session_id('');
     }
 
@@ -47,6 +53,76 @@ class SessionTraitRuntimeTest extends TestCase
 
         $this->assertNotNull($harness->sessionPayload());
         $this->assertSame($_SESSION, $harness->sessionPayload());
+    }
+
+    public function testAVisitorWithoutASessionCookieDoesNotGetASession(): void
+    {
+        $harness = new SessionTraitHarness();
+
+        $harness->bootSession();
+
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+        $this->assertSame([], $harness->sessionPayload());
+    }
+
+    public function testTheBookkeepingOfTheFrameworkDoesNotCreateASession(): void
+    {
+        $harness = new SessionTraitHarness();
+        $harness->bootSession();
+
+        $harness->setSessionKey('__FLASH_CLEAR__', microtime(true));
+        $harness->setSessionKey('lastRequest', ['url' => '/x']);
+        $harness->setSessionKey('__CACHE__', ['cache' => 10]);
+        $harness->setSessionKey('__PSFS_SESSION_LOCALE_SELECTED__', 'es_ES');
+        $harness->setSessionKey('anything', null);
+        $harness->updateSession(true);
+
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+        $this->assertSame(10, $harness->getSessionKey('__CACHE__')['cache'], 'the request can still read what it wrote');
+    }
+
+    public function testSomethingToRememberCreatesTheSessionAndKeepsWhatWasCollected(): void
+    {
+        $harness = new SessionTraitHarness();
+        $harness->bootSession();
+        $harness->setSessionKey('__CACHE__', ['cache' => 10]);
+
+        $harness->setSessionKey('csrf', 'token-1');
+
+        $this->assertSame(PHP_SESSION_ACTIVE, session_status());
+        $this->assertSame('token-1', $_SESSION['csrf']);
+        $this->assertSame(['cache' => 10], $_SESSION['__CACHE__'], 'what the request had collected is not lost');
+    }
+
+    public function testASessionCookieResumesTheSession(): void
+    {
+        $_COOKIE[session_name()] = 'existingsessionid0123456789abcdef';
+        $harness = new SessionTraitHarness();
+
+        $harness->bootSession();
+
+        $this->assertSame(PHP_SESSION_ACTIVE, session_status());
+    }
+
+    public function testTheLegacySwitchStartsOneSessionPerRequest(): void
+    {
+        putenv('PSFS_SESSION_LAZY=false');
+        $harness = new SessionTraitHarness();
+
+        $harness->bootSession();
+
+        $this->assertSame(PHP_SESSION_ACTIVE, session_status());
+    }
+
+    public function testClosingTheSessionOfAVisitorWithoutOneStartsNothing(): void
+    {
+        $harness = new SessionTraitHarness();
+        $harness->bootSession();
+
+        $harness->closeSession();
+
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+        $this->assertSame([], $harness->sessionPayload());
     }
 
     public function testCloseSessionClearsSessionPayloadAndRegeneratesState(): void

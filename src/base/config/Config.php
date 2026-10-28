@@ -136,6 +136,7 @@ class Config
         'api.doc.max_execution_time', // Seconds allowed to generate /api/doc (default 120, 0 = unlimited, deprecated)
         'session.cookie.samesite', // PHP session cookie SameSite: Lax (default) | Strict | None | legacy (not set, deprecated)
         'session.cookie.secure', // PHP session cookie Secure flag: auto (default, HTTPS requests) | true | false
+        'session.lazy', // true (default): the PHP session is created when something has to be remembered; false: one per request (legacy)
         'api.token.cookie', // Cookie name for API token fallback
         'psfs.cache.mode', // Cache mode selector: NONE|MEMORY|OPCACHE|REDIS
         'enable.jwt', // Enable JWT auth flow fallback/compat in security checks

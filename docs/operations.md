@@ -243,6 +243,23 @@ Generating or regenerating a module builds the Propel models and SQL, writes the
 | `generator.profile` | `PSFS_GENERATOR_PROFILE` | `true` logs the time and memory of every generation phase (default `false`) |
 | `generator.migration.skip_unchanged` | `PSFS_GENERATOR_MIGRATION_SKIP_UNCHANGED` | `true` skips the database comparison when neither `schema.xml` nor the migrations changed since the last comparison that found no differences (default `false`). The same 100 tables take 0.8 s instead of 1.5 s. A database changed by hand is not noticed until the schema or the migrations change; delete `cache/generator-sync-<module>.json` to force a comparison |
 
+### 4.9 Sessions
+
+The PHP session is created when something has to be remembered, not for every visitor (`session.lazy`, `true` by default).
+A request that carries the session cookie resumes its session as before; one that does not gets no session, no
+`Set-Cookie` header and no round trip to the session store (Redis) until the code sets something that has to survive the
+request: a login (which also rotates the session id), a CSRF token, a flash message, an explicit language choice. The
+bookkeeping the framework writes on every request (`lastRequest`, the route cache descriptor, the cached translations,
+the locale it derived) lives in memory for the request and never creates a session by itself.
+
+An anonymous page or API read went from 1 Redis connection and 2 commands per request to none. With a Redis that is not on
+the same host that is two round trips less on every request, and Redis is no longer needed for visitors that never log in.
+`session.lazy=false` (or `PSFS_SESSION_LAZY=false`) restores one session per request.
+
+Two things to know: the session cookie is a response header, so a session has to be started before the response is sent
+(code that sets a persistent value after the output has been flushed gets no session), and an anonymous request no longer
+keeps the translation catalogue in the session, so it reads it from the catalogue files.
+
 ## 5) Troubleshooting matrix
 
 | Symptom | Likely cause | Fix command |

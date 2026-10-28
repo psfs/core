@@ -72,6 +72,10 @@ class I18nHelper
         if (self::shouldPersistLocaleSelection($force)) {
             Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LANGUAGE_KEY, substr($locale, 0, 2));
             Security::getInstance()->setSessionKey(I18nHelper::PSFS_SESSION_LOCALE_KEY, $locale);
+            if ($force) {
+                // an explicit choice of language has to be remembered
+                Security::getInstance()->ensureSessionStarted();
+            }
         }
         if ($force) {
             t('', $customKey, true);

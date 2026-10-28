@@ -177,8 +177,16 @@ class SecurityBranchTest extends TestCase
             $this->assertSame(PHP_SESSION_ACTIVE, session_status());
             session_write_close();
 
-            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
-            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+            // the session can not be created again (its store is not writable): the login must not go through
+            $previousPath = ini_set('session.save_path', '/nonexistent/psfs-session-store');
+            set_error_handler(static fn(): bool => true);
+            try {
+                $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+                $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+            } finally {
+                restore_error_handler();
+                ini_set('session.save_path', (string)$previousPath);
+            }
 
             $this->assertNull($security->getAdmin());
             $this->assertNull($security->getSessionKey(AuthHelper::ADMIN_ID_TOKEN));
