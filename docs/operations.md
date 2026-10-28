@@ -104,6 +104,23 @@ docker exec psfs-php-1 php src/bin/psfs psfs:swoole:reload
 docker exec psfs-php-1 php src/bin/psfs psfs:swoole:stop
 ```
 
+A Swoole worker serves many requests in the same PHP process (`--max-request`, 1000 by default, recycles it), and the
+runtime resets the singletons, headers, session and request globals around each one. So whatever a request leaves
+behind accumulates, and the code that runs in a request must follow three rules:
+
+- Nothing process-wide may keep a reference to the request: `set_error_handler`, `register_shutdown_function` and
+  static caches take static methods or plain data, never `$this` of an object built per request (the Dispatcher is
+  built again for each request, and its error handler used to stack up and retain it: about 115 KB per request).
+- Static caches are bounded (the documentation cache keeps 16 entries, the deprecation log 1000).
+- Work that a shutdown function does in php-fpm is done after the response (`SwooleRuntimeStateManager::cleanupAfterRequest`):
+  the metadata stale-while-revalidate queue is drained there.
+
+`scripts/bench/swoole.sh` compares the runtime with `php -S` on the same isolated copy (opcache on, debug off) and reads
+the resident memory of every worker over a second window of requests, so a leak shows as a growth per 1000 requests
+that is not 0 (`--workers=2 --requests=2000 --concurrency=1,4,8`). On a 4 core Docker host it gives about 1.0 ms p50
+against 1.8 to 2.7 ms for `php -S` and 700 to 900 requests per second against 450 to 550; the numbers vary between runs and
+the generator, MySQL and the workers share the cores, so compare the cells of one run and not with php-fpm.
+
 ## 4) Optimization knobs (safe defaults)
 
 ### 4.1 Runtime and PHP container
@@ -182,6 +199,38 @@ With `log.format=json` CloudWatch Logs Insights can filter by `level_name`, `cha
 scripts/bench/run.sh --quick
 scripts/bench/run.sh --scenarios=api-list --rows=1000,100000 --opcache=on --debug=false
 ```
+
+### 4.8 php -S, Swoole and nginx + php-fpm
+
+`scripts/bench/runtimes.sh --docker-config=<docker dir of a project>` serves the same isolated copy of the application
+with the three runtimes and measures `/BENCHPAGE` (Twig page) and an API read at several concurrency levels. It uses the
+`nginx/*.conf` and `php/php.ini` + `php/www.conf` of a real project (copied to `cache/`, never into the repository), with
+that project's limits: the php container at 1 CPU, nginx at 0.5, php-fpm `pm.max_children=12` with `pm.max_requests=300`,
+opcache without timestamp validation and JIT, and Redis sessions. The load generator runs in a third container.
+Xdebug is switched off in the three runtimes (the image has it, and with the project's `xdebug.mode` it disables the JIT
+and slows php-fpm down by half).
+
+Reference run (PHP 8.5, 1 CPU for PHP, 1500 requests per cell, requests per second and p50 in ms):
+
+| | c=1 | c=8 | c=32 |
+|---|---|---|---|
+| page, `php -S` | 174 / 5.3 | 176 / 44 | 178 / 176 |
+| page, Swoole x2 | 244 / 3.8 | 237 / 30 | 249 / 124 |
+| page, nginx + php-fpm | 147 / 6.7 | 107 / 89 | 101 / 305 |
+| api-get, `php -S` | 159 / 6.0 | 160 / 47 | 164 / 191 |
+| api-get, Swoole x2 | 254 / 3.7 | 264 / 29 | 293 / 85 |
+| api-get, nginx + php-fpm | 126 / 7.9 | 107 / 89 | 104 / 301 |
+
+With one CPU every runtime saturates it, so the table compares how much work each does per request: Swoole serves about
+1.7x the requests of php-fpm at c=1 and 2.3x at c=8, because it does not start the framework again and does not pay the
+process churn of 12 children on one core. The numbers are a reference, not a verdict: the host is a Docker Desktop VM, the
+generator sends no `Accept-Encoding` (so nginx does not run its `gzip_comp_level 8`), nginx and Redis are on top of the
+1 CPU, every request opens a Redis session in all runtimes, and a serious comparison needs a dedicated Linux host, an
+open-loop generator (wrk or k6) and repetitions.
+
+Swoole drops requests when a worker is recycled under concurrency: with `--max-request=300` and 8 connections, 4 of 3000
+requests failed (none with 1 connection or without recycling). Run it with a large `--max-request` (the benchmark uses
+1000000) now that the per-request leak is fixed, or put a proxy that retries in front of it.
 
 ### 4.7 Regenerating modules
 

@@ -17,9 +17,13 @@ final class Sandbox
     private string $database = '';
     private int $modules = -1;
 
-    public function __construct(private readonly string $root, private readonly Options $options)
+    /**
+     * @param string|null $path where to build it; by default a new directory under /tmp. A path of your own lets other
+     *                          containers that mount the project see it (nginx and php-fpm need the same files)
+     */
+    public function __construct(private readonly string $root, private readonly Options $options, private readonly ?string $explicitPath = null)
     {
-        $this->path = self::PREFIX . bin2hex(random_bytes(4));
+        $this->path = $explicitPath ?? self::PREFIX . bin2hex(random_bytes(4));
     }
 
     public function path(): string
@@ -82,7 +86,7 @@ final class Sandbox
 
     public function remove(): void
     {
-        if (str_starts_with($this->path, self::PREFIX)) {
+        if (null !== $this->explicitPath || str_starts_with($this->path, self::PREFIX)) {
             exec('rm -rf ' . escapeshellarg($this->path));
         }
     }

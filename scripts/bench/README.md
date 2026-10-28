@@ -103,3 +103,17 @@ scripts/bench/regenerate.sh --tables=30,100 --states=regen,repeat
 Each measure runs in a fresh PHP process against the sandbox and a temporary MySQL database, both removed
 afterwards. `tree` is a checksum of the generated files (except the migrations): compare it between two runs of
 different code to prove that a change does not alter the output (`Config/propel.php` varies on its own).
+
+## Swoole runtime
+
+`scripts/bench/swoole.sh` starts `psfs:swoole:start` on the same sandbox and compares it with `php -S`: latency and
+requests per second at several concurrency levels (`--concurrency=1,4,8`, `--workers=2`, `--requests=2000`), and the
+growth of the resident memory of every worker over a second window of requests (`--leak=N` makes that window larger).
+A growth that is not 0 means a request leaves something behind in the worker.
+
+## php -S, Swoole and nginx + php-fpm
+
+`scripts/bench/runtimes.sh --docker-config=DIR` compares the three with the nginx and PHP configuration of a project (see
+`docs/operations.md`, section 4.8). The servers share the php container, limited to `--php-cpus` (1); nginx and the load
+generator have their own containers. Options: `--requests`, `--concurrency`, `--workers`, `--max-request`, `--nginx-cpus`.
+It needs the `docker` directory of the project with `nginx/default.conf`, `php/php.ini` and `php/www.conf`.

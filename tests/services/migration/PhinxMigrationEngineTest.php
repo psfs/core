@@ -208,7 +208,11 @@ class PhinxMigrationEngineTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('multiple datasources');
-        $engine->generateFromDiff('client', ['main' => $first, 'audit' => $second], ['main' => $first, 'audit' => $second], $tmpDir, 1700000000);
+        try {
+            $engine->generateFromDiff('client', ['main' => $first, 'audit' => $second], ['main' => $first, 'audit' => $second], $tmpDir, 1700000000);
+        } finally {
+            @rmdir($tmpDir);
+        }
     }
 
     public function testGenerateFromMismatchedPropelDiffKeysIsRejected(): void
