@@ -22,6 +22,8 @@ trait ProfileTrait
      */
     abstract public function setSessionKey($key, $data = null);
 
+    abstract protected function rememberInSession(string $key, mixed $data): void;
+
     /**
      * @var array
      */
@@ -151,7 +153,7 @@ trait ProfileTrait
             'alias' => $alias,
             'profile' => $profile,
         );
-        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, serialize($this->admin));
+        $this->rememberInSession(AuthHelper::ADMIN_ID_TOKEN, serialize($this->admin));
     }
 
     /**

@@ -87,11 +87,19 @@ class DispatcherTest extends TestCase
      */
     public function testConstructor()
     {
-        $dispatcher = $this->getInstance();
+        // the Dispatcher binds the error handler of the process (once): a handler of this test goes under it, so that
+        // both can be removed and the stack is left as it was found
+        set_error_handler(static fn(): bool => false);
+        Dispatcher::dropInstance();
+        try {
+            $dispatcher = $this->getInstance();
 
-        $this->assertNotNull($dispatcher);
-        $this->assertInstanceOf(Dispatcher::class, $dispatcher);
-
+            $this->assertNotNull($dispatcher);
+            $this->assertInstanceOf(Dispatcher::class, $dispatcher);
+        } finally {
+            restore_error_handler();
+            restore_error_handler();
+        }
     }
 
     /**

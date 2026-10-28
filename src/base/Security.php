@@ -115,6 +115,13 @@ class Security
         return [$user, $token];
     }
 
+    /**
+     * Credentials sent in the request headers (Basic, the PSFS token, JWT) authenticate that request and nothing more:
+     * no session is created for them, no id is rotated and no cookie is issued, so a client that sends them with every
+     * call does not leave a session in the store for each one. A session that already exists (the request carries its
+     * cookie) gets a new id when the identity is established, because the privileges change (session fixation).
+     * Credentials that were typed in ($pass is known) are a login: the session is created, rotated and the cookie issued.
+     */
     private function authorizeAdminCredentials(array $admins, $user, $token, $pass): void
     {
         if (empty($user) || empty($admins[$user])) {
@@ -127,10 +134,11 @@ class Security
         if (!$this->authorized) {
             return;
         }
-        // a login always gets a fresh session id (session fixation): the session exists from this point on
-        $this->ensureSessionStarted();
-        if (null === $this->admin
-            && (PHP_SESSION_ACTIVE !== session_status() || false === @session_regenerate_id(true))) {
+        $login = is_string($pass) && '' !== $pass;
+        if ($login) {
+            $this->ensureSessionStarted();
+        }
+        if (!$this->establishSessionIdentity($login)) {
             $this->authorized = false;
             $this->admin = null;
             $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, null);
@@ -138,20 +146,40 @@ class Security
             return;
         }
         $this->updateAdmin($user, $admins[$user]['profile']);
+        if ($login) {
+            $this->issueAdminCookie($user, (string)$pass);
+        }
+        $this->rememberInSession(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
+    }
+
+    /**
+     * @return bool false when the identity can not be bound to its session safely
+     */
+    private function establishSessionIdentity(bool $login): bool
+    {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
+            // a login needs its session; a call authenticated by headers does not
+            return !$login;
+        }
+
+        return null !== $this->admin || false !== @session_regenerate_id(true);
+    }
+
+    private function issueAdminCookie(string $user, string $pass): void
+    {
         $encrypted = AuthHelper::encryptCookieCredentials("$user:$pass");
         if (false === $encrypted) {
             Logger::log('Admin auth cookie was not issued because auth.cookie.secret is missing or invalid', LOG_ERR, null, false, 'security');
-        } else {
-            ResponseHelper::setCookieHeaders([
-                [
-                    'name' => AuthHelper::generateProfileHash(),
-                    'value' => $encrypted,
-                    'http' => true,
-                    'domain' => '',
-                ]
-            ]);
+            return;
         }
-        $this->setSessionKey(AuthHelper::ADMIN_ID_TOKEN, $this->admin);
+        ResponseHelper::setCookieHeaders([
+            [
+                'name' => AuthHelper::generateProfileHash(),
+                'value' => $encrypted,
+                'http' => true,
+                'domain' => '',
+            ]
+        ]);
     }
 
     /**

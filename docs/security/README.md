@@ -18,7 +18,7 @@ PSFS treats request headers, cookies, query parameters, bodies, uploads and exte
 
 - Invalid authentication resolves to `null/null` and stops the flow.
 - Authentication and cookies use v2 with a read-only legacy fallback; removing it needs explicit owner approval.
-- Admin session IDs are rotated on login; if rotation fails, authentication fails closed.
+- Admin session IDs are rotated when the identity is established on a request that has a session; if rotation fails, authentication fails closed. Credentials sent in the headers (Basic, JWT) authenticate that request only: they create no session and no cookie.
 - CORS uses an explicit allowlist.
 - `X-API-LANG` is validated as a locale before reaching SQL.
 

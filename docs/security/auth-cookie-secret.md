@@ -41,6 +41,10 @@ If the setting is missing or is not exactly 64 hexadecimal characters, PSFS
 does not issue a persistent admin auth cookie and logs a warning. The current
 admin session is still established.
 
+The cookie is issued only when the credentials were typed in (the password is known). A call that authenticates with
+headers (Basic, the PSFS token or JWT) is checked on every request and gets no cookie: before, it received one holding
+the user and an empty password, which could not authenticate anyone.
+
 ## Rotate the secret
 
 Replace the value with a newly generated one and restart PHP workers so they

@@ -256,6 +256,12 @@ An anonymous page or API read went from 1 Redis connection and 2 commands per re
 the same host that is two round trips less on every request, and Redis is no longer needed for visitors that never log in.
 `session.lazy=false` (or `PSFS_SESSION_LAZY=false`) restores one session per request.
 
+Credentials in the request headers (Basic, the PSFS token, JWT) authenticate that request and nothing else: no session,
+no id rotation and no cookie. Before, every such call regenerated the session id, wrote a session in Redis (10 hours of
+`gc_maxlifetime`) and returned two cookies, so a client that sends its credentials on each call left one session per call.
+A session that already exists (the request carries its cookie) still gets a new id when the identity is established
+(session fixation), and a login with typed-in credentials still creates its session and cookie.
+
 Two things to know: the session cookie is a response header, so a session has to be started before the response is sent
 (code that sets a persistent value after the output has been flushed gets no session), and an anonymous request no longer
 keeps the translation catalogue in the session, so it reads it from the catalogue files.

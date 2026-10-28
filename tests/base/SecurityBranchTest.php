@@ -201,6 +201,111 @@ class SecurityBranchTest extends TestCase
         }
     }
 
+    public function testCredentialsInTheHeadersAuthenticateTheRequestWithoutCreatingASession(): void
+    {
+        ResponseHelper::$headers_sent = [];
+        $security = Security::getInstance(true);
+        $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+
+        // no password is known here: it travels in a header and is checked, not typed in
+        $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), null]);
+
+        $this->assertSame('root', $security->getAdmin()['alias'] ?? null);
+        $this->assertTrue($this->readProperty($security, 'authorized'));
+        $this->assertSame(PHP_SESSION_NONE, session_status(), 'no session for a call authenticated by headers');
+        $this->assertArrayNotHasKey('set-cookie', ResponseHelper::$headers_sent, 'no cookie either');
+        $security->updateSession(true);
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+    }
+
+    public function testCallsWithHeaderCredentialsLeaveNoSessionBehindHoweverManyAreMade(): void
+    {
+        $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+
+        for ($call = 0; $call < 25; $call++) {
+            $security = Security::getInstance(true);
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), null]);
+            $security->updateSession(true);
+        }
+
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+    }
+
+    public function testHeaderCredentialsOnARequestThatHasASessionRotateItsIdAndKeepTheIdentity(): void
+    {
+        ResponseHelper::$headers_sent = [];
+        $previousName = session_name('PSFSSTATELESS');
+        session_start();
+        $_SESSION['preauth-state'] = 'preserved';
+        $oldSessionId = session_id();
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), null]);
+            $security->updateSession();
+
+            $this->assertNotSame($oldSessionId, session_id(), 'the privileges changed: the session id changes');
+            $this->assertSame('preserved', $_SESSION['preauth-state'] ?? null);
+            $this->assertSame('root', $_SESSION[AuthHelper::ADMIN_ID_TOKEN]['alias'] ?? null);
+            $this->assertArrayNotHasKey('set-cookie', ResponseHelper::$headers_sent, 'the credentials are not copied into a cookie');
+        } finally {
+            session_write_close();
+            session_name($previousName);
+        }
+    }
+
+    public function testHeaderCredentialsAreRejectedWhenTheSessionTheyBelongToCanNotBeRotated(): void
+    {
+        session_set_save_handler(new SessionHandlerThatCanNotDestroy(), true);
+        $previousName = session_name('PSFSROTATEFAIL');
+        session_start();
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+            set_error_handler(static fn(): bool => true);
+            try {
+                $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), null]);
+            } finally {
+                restore_error_handler();
+            }
+
+            $this->assertNull($security->getAdmin());
+            $this->assertFalse($this->readProperty($security, 'authorized'));
+        } finally {
+            session_write_close();
+            session_set_save_handler(new \SessionHandler(), true);
+            session_name($previousName);
+        }
+    }
+
+    public function testTheAuthCookieIsOnlyIssuedWhenThePasswordIsKnown(): void
+    {
+        $config = Config::getInstance();
+        $property = new \ReflectionProperty(Config::class, 'config');
+        $original = $property->getValue($config);
+        $property->setValue($config, array_merge($original, ['auth.cookie.secret' => bin2hex(random_bytes(32))]));
+        ResponseHelper::$headers_sent = [];
+
+        try {
+            $security = Security::getInstance(true);
+            $admins = ['root' => ['hash' => sha1('root:secret'), 'profile' => AuthHelper::ADMIN_ID_TOKEN]];
+
+            $this->invokePrivate($security, 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), null]);
+            $this->assertArrayNotHasKey('set-cookie', ResponseHelper::$headers_sent, 'a cookie with an empty password can not log anyone in');
+
+            $this->invokePrivate(Security::getInstance(true), 'authorizeAdminCredentials', [$admins, 'root', sha1('root:secret'), 'secret']);
+            $this->assertArrayHasKey('set-cookie', ResponseHelper::$headers_sent);
+            $this->assertSame(PHP_SESSION_ACTIVE, session_status(), 'a typed-in login creates its session');
+        } finally {
+            $property->setValue($config, $original);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+        }
+    }
+
     public function testAuthorizeAdminCredentialsEncryptsCookieWithInstallationSecret(): void
     {
         $config = Config::getInstance();
@@ -293,6 +398,11 @@ class SecurityBranchTest extends TestCase
         }
     }
 
+    private function readProperty(object $instance, string $property): mixed
+    {
+        return (new \ReflectionProperty($instance, $property))->getValue($instance);
+    }
+
     private function setProperty(object $instance, string $property, mixed $value): void
     {
         $reflection = new \ReflectionProperty($instance, $property);
@@ -303,5 +413,41 @@ class SecurityBranchTest extends TestCase
     {
         $reflection = new \ReflectionMethod($instance, $method);
         return $reflection->invokeArgs($instance, $args);
+    }
+}
+
+/**
+ * A session store that accepts everything except destroying a session, so that its id can not be rotated
+ */
+final class SessionHandlerThatCanNotDestroy implements \SessionHandlerInterface
+{
+    public function open(string $path, string $name): bool
+    {
+        return true;
+    }
+
+    public function close(): bool
+    {
+        return true;
+    }
+
+    public function read(string $id): string|false
+    {
+        return '';
+    }
+
+    public function write(string $id, string $data): bool
+    {
+        return true;
+    }
+
+    public function destroy(string $id): bool
+    {
+        return false;
+    }
+
+    public function gc(int $max_lifetime): int|false
+    {
+        return 0;
     }
 }

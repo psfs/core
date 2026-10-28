@@ -78,6 +78,15 @@ trait SessionTrait
     }
 
     /**
+     * Keeps a value for the rest of the request, and in the session only if the request already has one (it is written
+     * with the rest of the session when the request ends). Unlike setSessionKey it never creates a session.
+     */
+    protected function rememberInSession(string $key, mixed $data): void
+    {
+        $this->session[$key] = $data;
+    }
+
+    /**
      * The session is created when something has to be remembered (a login, a token, a message, a chosen language),
      * not for every visitor: see session.lazy. A request that carries a session cookie always resumes its session.
      */
