@@ -173,6 +173,16 @@ logging:
 
 With `log.format=json` CloudWatch Logs Insights can filter by `level_name`, `channel` or any `context` field. A sidecar collector (Fluent Bit, Vector) is only worth adding when you need to filter or enrich records before they leave the host.
 
+### 4.6 Measuring request performance
+
+`scripts/bench/run.sh` measures real HTTP requests against an isolated copy of the framework for every combination of opcache, `debug`, number of modules, Redis and table size, and reports latency, memory, loaded files and the Redis and MySQL round trips per request. Use it to check which knob matters for your setup before changing code (see `scripts/bench/README.md`):
+
+<!-- example-only -->
+```bash
+scripts/bench/run.sh --quick
+scripts/bench/run.sh --scenarios=api-list --rows=1000,100000 --opcache=on --debug=false
+```
+
 ## 5) Troubleshooting matrix
 
 | Symptom | Likely cause | Fix command |
