@@ -9,6 +9,7 @@ use PSFS\base\Template;
 use PSFS\base\extension\CustomTranslateExtension;
 use PSFS\base\types\helpers\EventHelper;
 use PSFS\base\types\helpers\Inspector;
+use PSFS\base\types\helpers\MetadataReader;
 use PSFS\base\types\helpers\ResponseHelper;
 use PSFS\Dispatcher;
 
@@ -29,6 +30,8 @@ class SwooleRuntimeStateManager
 
     public function cleanupAfterRequest(string $contextId): void
     {
+        // The response is already out: this is the end of the request that a shutdown function would be in php-fpm
+        MetadataReader::drainPendingRegenerations();
         if (session_status() === PHP_SESSION_ACTIVE) {
             $closed = session_write_close();
             if (false === $closed) {

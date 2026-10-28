@@ -67,8 +67,12 @@ trait SystemTrait
 		    ini_set('display_errors', 1);
 	    }
 
-	    // Warning & Notice handler
-	    set_error_handler([$this, 'handleError'], E_ALL);
+	    // Warning & Notice handler. A long-running worker (Swoole) builds the Dispatcher again for every request:
+	    // the handler is a static method, so it retains no request, and it is not stacked when it is already set
+	    $previous = set_error_handler([self::class, 'handleError'], E_ALL);
+	    if ([self::class, 'handleError'] === $previous) {
+		    restore_error_handler();
+	    }
 
 	    if (!self::$shutdownHandlerBound) {
 		    self::$shutdownHandlerBound = true;
@@ -79,7 +83,7 @@ trait SystemTrait
 	/**
 	 * Error handler for warnings, notices and deprecations: they are logged in their channel and never shown
 	 */
-	public function handleError(int $errno, string $errstr, string $errfile = '', int $errline = 0): bool
+	public static function handleError(int $errno, string $errstr, string $errfile = '', int $errline = 0): bool
 	{
 		if (!(error_reporting() & $errno)) {
 			return true;

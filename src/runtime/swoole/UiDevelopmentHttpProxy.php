@@ -100,6 +100,6 @@ final class UiDevelopmentHttpProxy implements UiDevelopmentHttpProxyInterface
 
     private function headerName(string $name): string
     {
-        return implode('-', array_map(static fn(string $part): string => ucfirst($part), explode('-', $name)));
+        return implode('-', array_map('ucfirst', explode('-', $name)));
     }
 }

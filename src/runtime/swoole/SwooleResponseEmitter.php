@@ -26,7 +26,7 @@ class SwooleResponseEmitter
             if ($headerName === '') {
                 continue;
             }
-            $headerValue = implode(', ', array_map(static fn($item) => (string)$item, $values));
+            $headerValue = implode(', ', array_map('strval', $values));
             if (method_exists($response, 'header')) {
                 $response->header($headerName, $headerValue);
             }
@@ -143,8 +143,12 @@ class SwooleResponseEmitter
             return 'WWW-Authenticate';
         }
         $parts = explode('-', $normalizedKey);
-        $parts = array_map(static fn($part) => ucfirst(strtolower(trim($part))), $parts);
+        $parts = array_map(self::capitalizeHeaderPart(...), $parts);
         return implode('-', $parts);
     }
 
+    private static function capitalizeHeaderPart(string $part): string
+    {
+        return ucfirst(strtolower(trim($part)));
+    }
 }

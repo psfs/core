@@ -95,6 +95,16 @@ class MetadataReader
         self::engine()->clearLocalCache();
     }
 
+    /**
+     * Runs the regenerations that were queued while serving stale metadata, if the engine has been used
+     */
+    public static function drainPendingRegenerations(): void
+    {
+        if (self::$engine instanceof MetadataEngine) {
+            self::$engine->drainPendingRegenerations();
+        }
+    }
+
     private static function engine(): MetadataEngineInterface
     {
         $engine = self::$engine;

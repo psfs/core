@@ -132,10 +132,10 @@ class NativeSwooleHttpServerFactory implements SwooleHttpServerFactoryInterface
 
 class SwooleCommandService
 {
-    /** @var callable */
+    /** @var callable|null */
     private $handlerFactory;
 
-    /** @var callable */
+    /** @var callable|null */
     private $webSocketBridgeFactory;
 
     public function __construct(
@@ -146,8 +146,18 @@ class SwooleCommandService
         ?callable $handlerFactory = null,
         ?callable $webSocketBridgeFactory = null
     ) {
-        $this->handlerFactory = $handlerFactory ?? static fn() => new SwooleRequestHandler();
-        $this->webSocketBridgeFactory = $webSocketBridgeFactory ?? static fn() => new UiDevelopmentWebSocketBridge();
+        $this->handlerFactory = $handlerFactory;
+        $this->webSocketBridgeFactory = $webSocketBridgeFactory;
+    }
+
+    private function createHandler(): object
+    {
+        return null !== $this->handlerFactory ? ($this->handlerFactory)() : new SwooleRequestHandler();
+    }
+
+    private function createWebSocketBridge(): object
+    {
+        return null !== $this->webSocketBridgeFactory ? ($this->webSocketBridgeFactory)() : new UiDevelopmentWebSocketBridge();
     }
 
     public function start(array $options, OutputInterface $output): int
@@ -182,35 +192,21 @@ class SwooleCommandService
             'websocket_subprotocol' => 'vite-hmr',
         ]);
 
-        $handler = ($this->handlerFactory)();
-        $webSocketBridge = ($this->webSocketBridgeFactory)();
-
-        $server->on('Start', function ($serverInstance) use ($pidFile, $output, $host, $port): void {
-            $masterPid = isset($serverInstance->master_pid) ? (int)$serverInstance->master_pid : 0;
-            if ($masterPid > 0) {
-                $this->pidStore->writePid($pidFile, $masterPid);
-            }
-            $output->writeln(
-                sprintf('PSFS Swoole started on %s:%d (master pid: %d)', $host, $port, $masterPid)
-            );
-        });
-
-        $server->on('Shutdown', function () use ($pidFile): void {
-            $this->pidStore->removePid($pidFile);
-        });
-
-        $server->on('request', function ($request, $response) use ($handler): void {
-            $handler->handle($request, $response);
-        });
-        $server->on('open', function ($serverInstance, $request) use ($webSocketBridge): void {
-            $webSocketBridge->open($serverInstance, $request);
-        });
-        $server->on('message', function ($serverInstance, $frame) use ($webSocketBridge): void {
-            $webSocketBridge->message($serverInstance, $frame);
-        });
-        $server->on('close', function ($serverInstance, int $fd) use ($webSocketBridge): void {
-            $webSocketBridge->close($serverInstance, $fd);
-        });
+        $events = new SwooleServerEvents(
+            $this->pidStore,
+            $output,
+            $pidFile,
+            $host,
+            $port,
+            $this->createHandler(),
+            $this->createWebSocketBridge()
+        );
+        $server->on('Start', $events->onStart(...));
+        $server->on('Shutdown', $events->onShutdown(...));
+        $server->on('request', $events->onRequest(...));
+        $server->on('open', $events->onOpen(...));
+        $server->on('message', $events->onMessage(...));
+        $server->on('close', $events->onClose(...));
         $output->writeln(
             sprintf(
                 'Starting PSFS Swoole runtime with workers=%d max_request=%d daemonize=%s',

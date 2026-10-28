@@ -3,6 +3,7 @@
 namespace PSFS\base\types\helpers\metadata;
 
 use PSFS\base\Logger;
+use PSFS\base\runtime\RuntimeMode;
 use ReflectionClass;
 
 /**
@@ -21,12 +22,25 @@ trait MetadataEngineRegenerationTrait
             self::$stats['metadata.lock_contention']++;
             return;
         }
-        self::$regenQueue[] = [$cacheKey, $className];
-        if ($this->shutdownRegistered) {
+        $pending = [$cacheKey, $className];
+        if (!in_array($pending, self::$regenQueue, true)) {
+            self::$regenQueue[] = $pending;
+        }
+        // A long-running worker (Swoole) never reaches the shutdown of the process: the runtime drains the queue
+        // when each request ends (see drainPendingRegenerations)
+        if ($this->shutdownRegistered || RuntimeMode::isLongRunningServer()) {
             return;
         }
         $this->shutdownRegistered = true;
         register_shutdown_function($this->drainBackgroundRegeneration(...));
+    }
+
+    /**
+     * Regenerates the entries that were served stale. The runtime of a long-running server calls it after each response
+     */
+    public function drainPendingRegenerations(): void
+    {
+        $this->drainBackgroundRegeneration();
     }
 
     protected function drainBackgroundRegeneration(): void

@@ -141,6 +141,25 @@ class SystemTraitTest extends TestCase
         self::assertStringContainsString('reported warning', $content);
     }
 
+    public function testBindingTheHandlerAgainDoesNotStackIt(): void
+    {
+        SystemTraitSentinel::$calls = 0;
+        set_error_handler(SystemTraitSentinel::handle(...));
+        try {
+            $this->bindHandler();
+            $this->bindHandler();
+            $this->bindHandler();
+            restore_error_handler();
+            $this->handlerBound = false;
+
+            trigger_error('after one restore', E_USER_WARNING);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame(1, SystemTraitSentinel::$calls, 'one restore undoes every binding and the earlier handler is back');
+    }
+
     public function testErrorHandlerLogsWarningsInThePhpChannel(): void
     {
         $this->bindHandler();
@@ -327,5 +346,19 @@ final class SystemTraitHost
     public function bind(): void
     {
         $this->bindWarningAsExceptions();
+    }
+}
+
+/**
+ * Stands for the handler that was there before PSFS bound its own
+ */
+final class SystemTraitSentinel
+{
+    public static int $calls = 0;
+
+    public static function handle(): bool
+    {
+        self::$calls++;
+        return true;
     }
 }

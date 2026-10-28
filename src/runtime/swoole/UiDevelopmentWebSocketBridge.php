@@ -52,19 +52,25 @@ final class UiDevelopmentWebSocketBridge
             return;
         }
 
-        \Swoole\Coroutine::create(function () use ($server, $fd, $client): void {
-            while (true) {
-                $frame = $client->recv(60);
-                if (!$frame instanceof \Swoole\WebSocket\Frame) {
-                    break;
-                }
-                if (!$server->push($fd, $frame->data, $frame->opcode, $frame->flags)) {
-                    break;
-                }
+        \Swoole\Coroutine::create($this->relayFrames(...), $server, $fd, $client);
+    }
+
+    /**
+     * Copies what the development server sends to the browser connection, until either of them closes
+     */
+    private function relayFrames(object $server, int $fd, object $client): void
+    {
+        while (true) {
+            $frame = $client->recv(60);
+            if (!$frame instanceof \Swoole\WebSocket\Frame) {
+                break;
             }
-            $this->discard($fd);
-            $this->disconnect($server, $fd);
-        });
+            if (!$server->push($fd, $frame->data, $frame->opcode, $frame->flags)) {
+                break;
+            }
+        }
+        $this->discard($fd);
+        $this->disconnect($server, $fd);
     }
 
     public function message(object $server, object $frame): void
