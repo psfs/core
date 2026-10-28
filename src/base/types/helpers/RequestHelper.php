@@ -37,9 +37,7 @@ class RequestHelper
             $headers = array_merge($headers, explode(',', $extraHeaders));
         }
         $headers = array_map('trim', $headers);
-        $headers = array_filter($headers, static function ($header) {
-            return $header !== '';
-        });
+        $headers = array_filter($headers, 'strlen');
         return array_unique($headers);
     }
 

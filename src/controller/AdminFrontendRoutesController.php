@@ -73,7 +73,7 @@ class AdminFrontendRoutesController extends Admin
         $domains = array_keys($domainPaths);
         $domains = array_values(array_unique(array_filter(
             $domains,
-            static fn (string $domain): bool => $domain !== '' && $domain !== 'root'
+            self::isDocumentableDomain(...)
         )));
         sort($domains, SORT_NATURAL | SORT_FLAG_CASE);
 
@@ -115,8 +115,22 @@ class AdminFrontendRoutesController extends Admin
             ];
         }
 
-        usort($rows, static fn (array $left, array $right): int => strnatcasecmp($left['slug'], $right['slug']));
+        usort($rows, self::compareBySlug(...));
         return $rows;
+    }
+
+    private static function isDocumentableDomain(string $domain): bool
+    {
+        return $domain !== '' && $domain !== 'root';
+    }
+
+    /**
+     * @param array{slug:string} $left
+     * @param array{slug:string} $right
+     */
+    private static function compareBySlug(array $left, array $right): int
+    {
+        return strnatcasecmp($left['slug'], $right['slug']);
     }
 
     private function assertAdminAuthorization(): void

@@ -100,10 +100,18 @@ trait PropelHelperTrait
             $configGenerator->getSection('paths')['schemaDir'] . DIRECTORY_SEPARATOR . 'schema.xml'
         );
         $manager->setSchemas([$schemaFile]);
-        $manager->setLoggerClosure(function ($message) {
-            Logger::log($message, LOG_INFO);
-        });
+        $manager->setLoggerClosure($this->logPropelMessage(...));
         $manager->setWorkingDirectory($workingDir);
+    }
+
+    /**
+     * Propel reports its progress through this method
+     *
+     * @param string $message
+     */
+    private function logPropelMessage($message): void
+    {
+        Logger::log($message, LOG_INFO);
     }
 
     /**

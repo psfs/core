@@ -137,14 +137,7 @@ trait OpenApiFormaterTrait
             ];
         }
 
-        usort(
-            $normalized,
-            static function (array $param1, array $param2): int {
-                $left = ($param1['in'] ?? '') . ':' . ($param1['name'] ?? '');
-                $right = ($param2['in'] ?? '') . ':' . ($param2['name'] ?? '');
-                return strcmp($left, $right);
-            }
-        );
+        usort($normalized, self::compareParameters(...));
 
         return [$normalized, $requestBody];
     }
@@ -155,5 +148,15 @@ trait OpenApiFormaterTrait
     private function resolveHost(): string
     {
         return preg_replace('/^(http|https)\:\/\/(.*)\/$/i', '$2', Router::getInstance()->getRoute('', true));
+    }
+
+    /**
+     * Orders the parameters by location and name
+     */
+    private static function compareParameters(array $param1, array $param2): int
+    {
+        $left = ($param1['in'] ?? '') . ':' . ($param1['name'] ?? '');
+        $right = ($param2['in'] ?? '') . ':' . ($param2['name'] ?? '');
+        return strcmp($left, $right);
     }
 }

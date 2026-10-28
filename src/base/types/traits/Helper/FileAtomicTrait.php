@@ -75,10 +75,10 @@ trait FileAtomicTrait
     /**
      * @template T
      * @param string $lockPath
-     * @param callable():T $callback
+     * @param callable(mixed...):T $callback
      * @return T|null
      */
-    private static function withExclusiveFileLock(string $lockPath, callable $callback): mixed
+    private static function withExclusiveFileLock(string $lockPath, callable $callback, mixed ...$arguments): mixed
     {
         $handle = fopen($lockPath, 'c+');
         if (false === $handle) {
@@ -88,7 +88,7 @@ trait FileAtomicTrait
             if (!flock($handle, LOCK_EX)) {
                 return null;
             }
-            return $callback();
+            return $callback(...$arguments);
         } finally {
             flock($handle, LOCK_UN);
             fclose($handle);

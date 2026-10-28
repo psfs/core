@@ -68,21 +68,27 @@ trait SystemTrait
 	    }
 
 	    // Warning & Notice handler
-	    set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-		    if (!(error_reporting() & $errno)) {
-			    return true;
-		    }
-
-		    LogHelper::reportPhpError($errno, (string)$errstr, (string)$errfile, (int)$errline);
-
-		    return true;
-	    }, E_ALL);
+	    set_error_handler([$this, 'handleError'], E_ALL);
 
 	    if (!self::$shutdownHandlerBound) {
 		    self::$shutdownHandlerBound = true;
 		    register_shutdown_function([$this, 'handleShutdown']);
 	    }
     }
+
+	/**
+	 * Error handler for warnings, notices and deprecations: they are logged in their channel and never shown
+	 */
+	public function handleError(int $errno, string $errstr, string $errfile = '', int $errline = 0): bool
+	{
+		if (!(error_reporting() & $errno)) {
+			return true;
+		}
+
+		LogHelper::reportPhpError($errno, $errstr, $errfile, $errline);
+
+		return true;
+	}
 
 	public function handleShutdown(): void
 	{

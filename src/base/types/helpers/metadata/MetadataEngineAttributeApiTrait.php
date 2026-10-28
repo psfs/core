@@ -145,16 +145,9 @@ trait MetadataEngineAttributeApiTrait
         return new MetadataDefinitionResolver(
             $this->attributesEnabled(),
             $this->annotationsFallbackEnabled(),
-            fn (string $tag, ReflectionMethod|ReflectionProperty $reflector): mixed => $this->readFromAttributesBundle(
-                $tag,
-                $reflector
-            ),
-            function (string $tag, ReflectionMethod|ReflectionProperty $reflector): void {
-                throw $this->legacyFallbackDisabledException($tag, $reflector);
-            },
-            function (string $fallback): void {
-                $this->rememberLegacyFallback($fallback);
-            }
+            $this->readFromAttributesBundle(...),
+            $this->rejectLegacyFallback(...),
+            $this->rememberLegacyFallback(...)
         );
     }
 
@@ -163,20 +156,20 @@ trait MetadataEngineAttributeApiTrait
         return new MetadataTagValueResolver(
             $this->attributesEnabled(),
             $this->annotationsFallbackEnabled(),
-            fn (
-                string $tag,
-                ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
-            ): mixed => $this->readFromAttributesBundle($tag, $reflector),
-            function (
-                string $tag,
-                ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
-            ): void {
-                throw $this->legacyFallbackDisabledException($tag, $reflector);
-            },
-            function (string $fallback): void {
-                $this->rememberLegacyFallback($fallback);
-            }
+            $this->readFromAttributesBundle(...),
+            $this->rejectLegacyFallback(...),
+            $this->rememberLegacyFallback(...)
         );
+    }
+
+    /**
+     * @throws MetadataContractException always: the annotation fallback is disabled
+     */
+    private function rejectLegacyFallback(
+        string $tag,
+        ReflectionClass|ReflectionMethod|ReflectionProperty|null $reflector
+    ): void {
+        throw $this->legacyFallbackDisabledException($tag, $reflector);
     }
 
     private function rememberLegacyFallback(string $context): void

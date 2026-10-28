@@ -1,0 +1,58 @@
+<?php
+
+namespace PSFS\base\command\console;
+
+use PSFS\base\queue\ParallelQueueRunner;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * psfs:queue:run-parallel: spawns several workers for the same queue
+ */
+class QueueRunParallelCommand extends Command
+{
+    use ConsoleFlagTrait;
+
+    public const NAME = 'psfs:queue:run-parallel';
+
+    public function __construct()
+    {
+        parent::__construct(self::NAME);
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption('queue', null, InputOption::VALUE_REQUIRED, 'Queue name to consume in parallel')
+            ->addOption('workers', 'w', InputOption::VALUE_OPTIONAL, 'Number of worker processes to spawn', 2)
+            ->addOption('max-jobs', null, InputOption::VALUE_OPTIONAL, 'Maximum jobs per worker (0 = unlimited)', 0)
+            ->addOption('idle-sleep', null, InputOption::VALUE_OPTIONAL, 'Sleep in microseconds while waiting for jobs', 200000)
+            ->addOption('stop-when-empty', null, InputOption::VALUE_OPTIONAL, 'Stop workers when queue is empty (1/0)', 1)
+            ->addUsage('psfs:queue:run-parallel --queue=notifications --workers=4 --stop-when-empty=1')
+            ->setDescription('Spawn multiple PSFS queue workers for the same queue');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $queueName = (string)$input->getOption('queue');
+        if ('' === $queueName) {
+            $output->writeln('<error>Option --queue is required</error>');
+            return self::FAILURE;
+        }
+        return $this->runner()->run(
+            $queueName,
+            max(1, (int)$input->getOption('workers')),
+            max(0, (int)$input->getOption('max-jobs')),
+            max(1000, (int)$input->getOption('idle-sleep')),
+            $this->isFlagOn($input->getOption('stop-when-empty')),
+            $output
+        );
+    }
+
+    protected function runner(): ParallelQueueRunner
+    {
+        return new ParallelQueueRunner();
+    }
+}

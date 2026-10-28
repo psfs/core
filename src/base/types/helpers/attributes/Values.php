@@ -15,9 +15,14 @@ class Values implements MetadataAttributeContract, DtoConstraintAttributeContrac
             return;
         }
         $this->value = array_map(
-            fn ($item) => is_string($item) ? trim($item) : $item,
+            self::trimIfString(...),
             $this->value
         );
+    }
+
+    private static function trimIfString(mixed $item): mixed
+    {
+        return is_string($item) ? trim($item) : $item;
     }
 
     public static function tag(): string

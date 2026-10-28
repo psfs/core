@@ -209,9 +209,7 @@ class CustomTranslateExtension extends AbstractExtension
     public function getFilters()
     {
         return array(
-            new TwigFilter('trans', function ($message) {
-                return self::_($message);
-            }),
+            new TwigFilter('trans', self::_(...)),
         );
     }
 

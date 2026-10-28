@@ -24,21 +24,24 @@ class FileJobQueue implements JobQueueInterface
         }
         $line .= PHP_EOL;
 
-        return true === FileHelper::withExclusiveLock($lockPath, function () use ($queueFile, $line) {
-            $dir = dirname($queueFile);
-            if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
-                return false;
-            }
-            $handle = fopen($queueFile, 'ab');
-            if (false === $handle) {
-                return false;
-            }
-            try {
-                return false !== fwrite($handle, $line);
-            } finally {
-                fclose($handle);
-            }
-        });
+        return true === FileHelper::withExclusiveLock($lockPath, $this->appendLine(...), $queueFile, $line);
+    }
+
+    private function appendLine(string $queueFile, string $line): bool
+    {
+        $dir = dirname($queueFile);
+        if (!is_dir($dir) && mkdir($dir, 0775, true) === false && !is_dir($dir)) {
+            return false;
+        }
+        $handle = fopen($queueFile, 'ab');
+        if (false === $handle) {
+            return false;
+        }
+        try {
+            return false !== fwrite($handle, $line);
+        } finally {
+            fclose($handle);
+        }
     }
 
     public function dequeue(string $queue): ?array
@@ -49,41 +52,44 @@ class FileJobQueue implements JobQueueInterface
         }
         $lockPath = $queueFile . '.lock';
 
-        return FileHelper::withExclusiveLock($lockPath, function () use ($queueFile) {
-            $input = fopen($queueFile, 'rb');
-            if (false === $input) {
-                return null;
-            }
+        return FileHelper::withExclusiveLock($lockPath, $this->popFirstLine(...), $queueFile);
+    }
 
-            $tmpPath = $this->createTempQueuePath($queueFile);
-            $output = fopen($tmpPath, 'wb');
-            if (false === $output) {
-                fclose($input);
-                return $this->dequeueUsingFullRead($queueFile);
-            }
+    private function popFirstLine(string $queueFile): ?array
+    {
+        $input = fopen($queueFile, 'rb');
+        if (false === $input) {
+            return null;
+        }
 
-            $result = $this->dequeueIntoTemp($input, $output);
-            if ($result === null) {
-                if (file_exists($tmpPath)) {
-                    unlink($tmpPath);
-                }
-                return null;
-            }
+        $tmpPath = $this->createTempQueuePath($queueFile);
+        $output = fopen($tmpPath, 'wb');
+        if (false === $output) {
+            fclose($input);
+            return $this->dequeueUsingFullRead($queueFile);
+        }
 
-            if ($result['first'] === null) {
-                if (file_exists($tmpPath)) {
-                    unlink($tmpPath);
-                }
-                return null;
+        $result = $this->dequeueIntoTemp($input, $output);
+        if ($result === null) {
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
             }
+            return null;
+        }
 
-            if (!$this->commitDequeuedState($queueFile, $tmpPath, $result['has_remaining'])) {
-                return null;
+        if ($result['first'] === null) {
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
             }
+            return null;
+        }
 
-            $decoded = json_decode($result['first'], true);
-            return is_array($decoded) ? $decoded : null;
-        });
+        if (!$this->commitDequeuedState($queueFile, $tmpPath, $result['has_remaining'])) {
+            return null;
+        }
+
+        $decoded = json_decode($result['first'], true);
+        return is_array($decoded) ? $decoded : null;
     }
 
     public function isAvailable(): bool

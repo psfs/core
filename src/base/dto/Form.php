@@ -45,21 +45,7 @@ class Form extends Dto
         foreach ($this->fields as $field) {
             $array['fields'][] = $field->__toArray();
         }
-        usort($array['fields'], function ($fieldA, $fieldB) {
-            if ((bool)$fieldA['required'] !== (bool)$fieldB['required']) {
-                if ((bool)$fieldA['required']) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-            $aOrder = Form::fieldsOrder($fieldA);
-            $bOrder = Form::fieldsOrder($fieldB);
-            if ($aOrder === $bOrder) {
-                return strcmp($fieldA['name'], $fieldB['name']);
-            }
-            return ($aOrder < $bOrder) ? -1 : 1;
-        });
+        usort($array['fields'], self::compareFields(...));
         foreach ($this->actions as $action) {
             $array['actions'][] = $action->__toArray();
         }
@@ -70,6 +56,22 @@ class Form extends Dto
      * @param array $field
      * @return int
      */
+    /**
+     * Required fields first, then by type order and finally by name
+     */
+    public static function compareFields(array $fieldA, array $fieldB): int
+    {
+        if ((bool)$fieldA['required'] !== (bool)$fieldB['required']) {
+            return (bool)$fieldA['required'] ? -1 : 1;
+        }
+        $aOrder = self::fieldsOrder($fieldA);
+        $bOrder = self::fieldsOrder($fieldB);
+        if ($aOrder === $bOrder) {
+            return strcmp($fieldA['name'], $fieldB['name']);
+        }
+        return ($aOrder < $bOrder) ? -1 : 1;
+    }
+
     public static function fieldsOrder(array $field)
     {
         $type = $field['type'] ?? '';

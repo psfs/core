@@ -21,7 +21,7 @@ class AdminApiResponse
         $normalizedErrors = [];
         foreach ($errors as $field => $fieldErrors) {
             $normalizedErrors[(string) $field] = is_array($fieldErrors)
-                ? array_map(static fn ($error): string => (string) $error, $fieldErrors)
+                ? array_map('strval', $fieldErrors)
                 : [(string) $fieldErrors];
         }
 

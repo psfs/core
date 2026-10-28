@@ -78,15 +78,16 @@ class FileHelper
 
     /**
      * @param string $lockPath
-     * @param callable $callback
+     * @param callable $callback runs holding the lock
+     * @param mixed ...$arguments passed to the callback
      * @return mixed
      */
-    public static function withExclusiveLock(string $lockPath, callable $callback): mixed
+    public static function withExclusiveLock(string $lockPath, callable $callback, mixed ...$arguments): mixed
     {
         if (!self::ensureParentDirectory($lockPath)) {
             return null;
         }
-        return self::withExclusiveFileLock($lockPath, $callback);
+        return self::withExclusiveFileLock($lockPath, $callback, ...$arguments);
     }
 
     /**

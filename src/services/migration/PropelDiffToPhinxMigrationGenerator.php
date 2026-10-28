@@ -200,10 +200,7 @@ final class PropelDiffToPhinxMigrationGenerator
     private function renderRenamedColumns(string $table, TableDiff $diff): array
     {
         $renamedColumns = $diff->getRenamedColumns();
-        usort($renamedColumns, static fn(array $left, array $right): int => strcmp(
-            $left[0]->getName(),
-            $right[0]->getName()
-        ));
+        usort($renamedColumns, self::compareRenamedColumns(...));
 
         $statements = [];
         foreach ($renamedColumns as [$from, $to]) {
@@ -245,7 +242,7 @@ final class PropelDiffToPhinxMigrationGenerator
         if (null === $toTable) {
             throw new \InvalidArgumentException(sprintf('Propel table diff for "%s" has no target table', $tableName));
         }
-        $keys = array_map(static fn(Column $column): string => $column->getName(), $toTable->getPrimaryKey());
+        $keys = array_map(self::columnName(...), $toTable->getPrimaryKey());
         return [$table . '->changePrimaryKey(' . $this->export($keys === [] ? null : $keys) . ')->update();'];
     }
 
@@ -319,10 +316,7 @@ final class PropelDiffToPhinxMigrationGenerator
 
     private function renderCreateTable(Table $table): string
     {
-        $primaryKey = array_map(
-            static fn(Column $column): string => $column->getName(),
-            $table->getPrimaryKey()
-        );
+        $primaryKey = array_map(self::columnName(...), $table->getPrimaryKey());
         $options = ['id' => false];
         if ($primaryKey !== []) {
             $options['primary_key'] = $primaryKey;
@@ -355,10 +349,7 @@ final class PropelDiffToPhinxMigrationGenerator
 
     private function renderIndex(Index $index, bool $unique): string
     {
-        $columns = array_map(
-            static fn(Column $column): string => $column->getName(),
-            $index->getColumnObjects()
-        );
+        $columns = array_map(self::columnName(...), $index->getColumnObjects());
         if ($columns === []) {
             throw new \InvalidArgumentException(sprintf(
                 'Propel index "%s" has no columns',
@@ -493,5 +484,19 @@ final class PropelDiffToPhinxMigrationGenerator
     {
         ksort($items, SORT_STRING);
         return $items;
+    }
+
+    private static function columnName(Column $column): string
+    {
+        return $column->getName();
+    }
+
+    /**
+     * @param array{0:Column,1:Column} $left
+     * @param array{0:Column,1:Column} $right
+     */
+    private static function compareRenamedColumns(array $left, array $right): int
+    {
+        return strcmp($left[0]->getName(), $right[0]->getName());
     }
 }

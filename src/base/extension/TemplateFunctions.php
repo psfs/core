@@ -187,27 +187,43 @@ class TemplateFunctions
         if (!$debug) {
             $cacheFilename = Config::getParam('cache.var', '__initial__') . '.file.cache';
             $lockPath = CACHE_DIR . DIRECTORY_SEPARATOR . $cacheFilename . '.lock';
-            FileHelper::withExclusiveLock(
+            $force = FileHelper::withExclusiveLock(
                 $lockPath,
-                function () use ($cacheFilename, $filenamePath, &$force) {
-                    $cachedFiles = Cache::getInstance()->readFromCache(
-                        $cacheFilename,
-                        1,
-                        fn() => [],
-                        Cache::JSON,
-                        true
-                    ) ?: [];
-                    // Force the resource copy
-                    if (!in_array($filenamePath, $cachedFiles, true) || $force) {
-                        $force = true;
-                        $cachedFiles[] = $filenamePath;
-                        Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
-                    }
-                }
-            );
+                self::registerResource(...),
+                $cacheFilename,
+                $filenamePath,
+                $force
+            ) ?? $force;
         }
         GeneratorHelper::copyResources($dest, $force, $filenamePath, $debug);
         return '';
+    }
+
+    /**
+     * Registers the resource in the copied files list, under the file lock
+     *
+     * @return bool whether the resource has to be copied
+     */
+    private static function registerResource(string $cacheFilename, string $filenamePath, bool $force): bool
+    {
+        $cachedFiles = Cache::getInstance()->readFromCache(
+            $cacheFilename,
+            1,
+            self::noCachedFiles(...),
+            Cache::JSON,
+            true
+        ) ?: [];
+        if (in_array($filenamePath, $cachedFiles, true) && !$force) {
+            return false;
+        }
+        $cachedFiles[] = $filenamePath;
+        Cache::getInstance()->storeData($cacheFilename, $cachedFiles, Cache::JSON);
+        return true;
+    }
+
+    private static function noCachedFiles(): array
+    {
+        return [];
     }
 
     /**

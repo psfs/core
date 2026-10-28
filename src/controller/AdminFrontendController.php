@@ -38,9 +38,14 @@ final class AdminFrontendController extends Admin
             'csrfToken' => AdminFrontendCsrf::issue(),
             'menu' => (new AdminFrontendNavigationCatalog())->build(
                 AdminHelper::getAdminRoutes($router->getRoutes()),
-                static fn(string $slug): ?string => $router->getRoute($slug)
+                $this->routeFor(...)
             ),
         ]);
+    }
+
+    private function routeFor(string $slug): ?string
+    {
+        return Router::getInstance()->getRoute($slug);
     }
 
     #[HttpMethod('PUT')]

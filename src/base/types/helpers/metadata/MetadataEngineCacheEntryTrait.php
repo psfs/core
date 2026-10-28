@@ -29,9 +29,9 @@ trait MetadataEngineCacheEntryTrait
     private function entryReader(): MetadataEntryReader
     {
         return new MetadataEntryReader(
-            fn (string $cacheKey, string $signature): ?array => $this->localEntry($cacheKey, $signature),
-            fn (string $cacheKey, string $signature): ?array => $this->opcacheEntry($cacheKey, $signature),
-            fn (string $cacheKey, string $signature): ?array => $this->redisEntry($cacheKey, $signature)
+            $this->localEntry(...),
+            $this->opcacheEntry(...),
+            $this->redisEntry(...)
         );
     }
 

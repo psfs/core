@@ -15,7 +15,7 @@ trait ValidatableDtoTrait
         $result = DtoValidationEngine::validate(
             $this,
             $context,
-            fn (mixed $value, string $type): mixed => $this->checkCastedValue($value, $type)
+            $this->checkCastedValue(...)
         );
         $this->__validationResult = $result;
         return $result;

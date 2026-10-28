@@ -133,6 +133,19 @@ class FileHelperTest extends TestCase
         $this->assertFileExists($lock);
     }
 
+    public function testExclusiveLockPassesTheArgumentsToTheCallback(): void
+    {
+        $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-lock';
+        GeneratorHelper::createDir($dir);
+        $this->cleanupDirs[] = $dir;
+        $lock = $dir . DIRECTORY_SEPARATOR . 'arguments.lock';
+        $this->cleanupFiles[] = $lock;
+
+        $value = FileHelper::withExclusiveLock($lock, 'str_repeat', 'ab', 3);
+
+        $this->assertSame('ababab', $value);
+    }
+
     public function testDeleteDirRemovesDirectoryTree(): void
     {
         $dir = BASE_DIR . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'file-helper-remove';

@@ -145,10 +145,8 @@ class PhinxMigrationEngine implements MigrationEngineInterface
      */
     private function buildDeclarativeMigrationClass(string $className, array $up, array $down): string
     {
-        $render = static fn(array $statements): string => implode("\n", array_map(
-            static fn(string $statement): string => '        ' . $statement,
-            $statements
-        ));
+        $upBody = $this->indentStatements($up);
+        $downBody = $this->indentStatements($down);
 
         return <<<PHP
 <?php
@@ -161,15 +159,46 @@ final class {$className} extends AbstractMigration
 {
     public function up(): void
     {
-{$render($up)}
+{$upBody}
     }
 
     public function down(): void
     {
-{$render($down)}
+{$downBody}
     }
 }
 PHP;
+    }
+
+    /**
+     * @param list<string> $statements
+     */
+    private function indentStatements(array $statements): string
+    {
+        return implode("\n", array_map($this->indentStatement(...), $statements));
+    }
+
+    private function indentStatement(string $statement): string
+    {
+        return '        ' . $statement;
+    }
+
+    /**
+     * @param array<int, string> $statements
+     * @return string PHP array literal with the statements
+     */
+    private function exportStatements(array $statements): string
+    {
+        return '[' . implode(', ', array_map($this->exportStatement(...), $statements)) . ']';
+    }
+
+    private function exportStatement(string $statement): string
+    {
+        if (str_contains($statement, "'")) {
+            return '"' . addcslashes($statement, "\\\"") . '"';
+        }
+
+        return "'" . str_replace(['\\', "'"], ['\\\\', "\\'"], $statement) . "'";
     }
 
     /**
@@ -178,16 +207,8 @@ PHP;
      */
     private function buildMigrationClass(string $className, array $up, array $down): string
     {
-        $export = static function (array $statements): string {
-            $encoded = array_map(static function (string $stmt): string {
-                if (str_contains($stmt, "'")) {
-                    return '"' . addcslashes($stmt, "\\\"") . '"';
-                }
-
-                return "'" . str_replace(['\\', "'"], ['\\\\', "\\'"], $stmt) . "'";
-            }, $statements);
-            return '[' . implode(', ', $encoded) . ']';
-        };
+        $upList = $this->exportStatements($up);
+        $downList = $this->exportStatements($down);
 
         return <<<PHP
 <?php
@@ -200,14 +221,14 @@ final class {$className} extends AbstractMigration
 {
     public function up(): void
     {
-        foreach ({$export($up)} as \$sql) {
+        foreach ({$upList} as \$sql) {
             \$this->execute(\$sql);
         }
     }
 
     public function down(): void
     {
-        foreach ({$export($down)} as \$sql) {
+        foreach ({$downList} as \$sql) {
             \$this->execute(\$sql);
         }
     }

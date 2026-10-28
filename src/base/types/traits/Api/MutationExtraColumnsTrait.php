@@ -137,7 +137,7 @@ trait MutationExtraColumnsTrait
     {
         $fields = explode(',', $returnFields);
         $fields[] = self::API_MODEL_KEY_FIELD;
-        $fields = array_values(array_filter(array_map('trim', $fields), static fn(string $field): bool => $field !== ''));
+        $fields = array_values(array_filter(array_map('trim', $fields), 'strlen'));
 
         return array_values(array_unique($fields));
     }

@@ -85,11 +85,7 @@ trait SwaggerFormaterTrait
             }
         }
         ksort($dtos);
-        uasort($paths, function ($path1, $path2) {
-            $key1 = array_keys($path1)[0];
-            $key2 = array_keys($path2)[0];
-            return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
-        });
+        uasort($paths, self::comparePathsByTag(...));
         $formatted['definitions'] = $dtos;
         $formatted['paths'] = $paths;
         return $formatted;
@@ -166,5 +162,15 @@ trait SwaggerFormaterTrait
         foreach ($endpoint[$section] as $query) {
             $parameters[] = $query;
         }
+    }
+
+    /**
+     * Orders the paths by the first tag of their first operation
+     */
+    private static function comparePathsByTag(array $path1, array $path2): int
+    {
+        $key1 = array_keys($path1)[0];
+        $key2 = array_keys($path2)[0];
+        return strcmp($path1[$key1]['tags'][0], $path2[$key2]['tags'][0]);
     }
 }

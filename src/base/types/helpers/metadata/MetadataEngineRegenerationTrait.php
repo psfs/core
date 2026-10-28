@@ -26,9 +26,7 @@ trait MetadataEngineRegenerationTrait
             return;
         }
         $this->shutdownRegistered = true;
-        register_shutdown_function(function (): void {
-            $this->drainBackgroundRegeneration();
-        });
+        register_shutdown_function($this->drainBackgroundRegeneration(...));
     }
 
     protected function drainBackgroundRegeneration(): void

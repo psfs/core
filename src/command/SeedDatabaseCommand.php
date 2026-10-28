@@ -2,85 +2,66 @@
 
 namespace PSFS\command;
 
+use PSFS\base\command\console\AbstractModuleCommand;
+use PSFS\services\migration\MigrationExecutionResult;
 use PSFS\services\MigrationService;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 
-final class SeedDatabaseCommand
+/**
+ * psfs:seed: runs the Phinx seeders of every module, or of the one given in --module
+ */
+final class SeedDatabaseCommand extends AbstractModuleCommand
 {
+    public const NAME = 'psfs:seed';
+
     /**
      * @param array<string, array<string, mixed>> $domains
      */
-    public static function create(MigrationService $service, array $domains): Command
+    public function __construct(private readonly MigrationService $service, private readonly array $domains)
     {
-        $command = new Command('psfs:seed');
-        $command
+        parent::__construct(self::NAME);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $domains
+     */
+    public static function create(MigrationService $service, array $domains): self
+    {
+        return new self($service, $domains);
+    }
+
+    protected function configure(): void
+    {
+        $this
             ->addOption('module', 'm', InputOption::VALUE_OPTIONAL, 'Specific module to seed')
             ->addUsage('psfs:seed')
             ->addUsage('psfs:seed --module=SHOP')
-            ->setDescription('Run Phinx seeders')
-            ->setCode(static function (InputInterface $input, OutputInterface $output) use ($service, $domains): int {
-                $module = $input->getOption('module');
-                $errors = [];
-
-                foreach ($domains as $domain => $paths) {
-                    if (str_contains($domain, 'ROOT')) {
-                        continue;
-                    }
-
-                    $moduleBase = (string)($paths['base'] ?? '');
-                    $resolvedModule = self::resolveModuleName((string)$domain, $moduleBase);
-                    if (
-                        !empty($module)
-                        && !str_contains(strtolower((string)$domain), strtolower((string)$module))
-                        && !str_contains(strtolower($resolvedModule), strtolower((string)$module))
-                    ) {
-                        continue;
-                    }
-
-                    $output->writeln(sprintf('Running seeders for module %s', $resolvedModule));
-                    if (!file_exists($moduleBase . DIRECTORY_SEPARATOR . 'Config')) {
-                        $output->writeln('Module without DB configuration, skipping process for ' . $resolvedModule);
-                        continue;
-                    }
-
-                    try {
-                        $result = $service->runSeeds($resolvedModule, $moduleBase);
-                        $output->writeln($result->getOutput());
-                        if (!$result->isSuccess()) {
-                            $errors[] = sprintf('%s (%s)', $resolvedModule, $result->getEngine());
-                        }
-                    } catch (\Throwable $exception) {
-                        $errors[] = sprintf('%s (%s)', $resolvedModule, $exception->getMessage());
-                        $output->writeln('<error>' . $exception->getMessage() . '</error>');
-                    }
-                }
-
-                if ([] !== $errors) {
-                    $output->writeln('<error>Seeding failed for: ' . implode(', ', $errors) . '</error>');
-                    return 1;
-                }
-
-                $output->writeln('Seeding completed');
-                return 0;
-            });
-
-        return $command;
+            ->setDescription('Run Phinx seeders');
     }
 
-    private static function resolveModuleName(string $domain, string $moduleBase): string
+    protected function domains(): array
     {
-        if ('' !== $moduleBase) {
-            $moduleRealPath = realpath($moduleBase) ?: $moduleBase;
-            $candidate = basename(rtrim($moduleRealPath, DIRECTORY_SEPARATOR));
-            if (!in_array($candidate, ['', '.', '..'], true)) {
-                return $candidate;
-            }
-        }
+        return $this->domains;
+    }
 
-        $module = trim($domain, '@/');
-        return '' !== $module ? $module : 'module';
+    protected function runModule(string $module, string $base, InputInterface $input): MigrationExecutionResult
+    {
+        return $this->service->runSeeds($module, $base);
+    }
+
+    protected function startMessage(string $module): string
+    {
+        return sprintf('Running seeders for module %s', $module);
+    }
+
+    protected function failureMessage(string $failures): string
+    {
+        return 'Seeding failed for: ' . $failures;
+    }
+
+    protected function successMessage(): string
+    {
+        return 'Seeding completed';
     }
 }

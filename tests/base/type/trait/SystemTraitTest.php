@@ -55,21 +55,7 @@ class SystemTraitTest extends TestCase
 
     private static function hostClass(): string
     {
-        static $class = null;
-        return $class ??= get_class(new class {
-            use SystemTrait;
-
-            public function __construct()
-            {
-                $this->ts = microtime(true);
-                $this->mem = 0;
-            }
-
-            public function bind(): void
-            {
-                $this->bindWarningAsExceptions();
-            }
-        });
+        return SystemTraitHost::class;
     }
 
     private function bindHandler(): void
@@ -137,6 +123,22 @@ class SystemTraitTest extends TestCase
         } finally {
             restore_error_handler();
         }
+    }
+
+    public function testHandleErrorIgnoresWhatErrorReportingExcludesAndLogsTheRest(): void
+    {
+        $subject = $this->host;
+        $previous = error_reporting(E_ALL & ~E_USER_NOTICE);
+        try {
+            $this->assertTrue($subject->handleError(E_USER_NOTICE, 'silenced notice', 'file.php', 3));
+            $this->assertTrue($subject->handleError(E_USER_WARNING, 'reported warning', 'file.php', 4));
+        } finally {
+            error_reporting($previous);
+        }
+
+        $content = $this->logContent();
+        self::assertStringNotContainsString('silenced notice', $content);
+        self::assertStringContainsString('reported warning', $content);
     }
 
     public function testErrorHandlerLogsWarningsInThePhpChannel(): void
@@ -306,5 +308,24 @@ class SystemTraitTest extends TestCase
         $this->host->handleShutdown();
 
         self::assertStringContainsString('DateTime errors detected', $this->logContent());
+    }
+}
+
+/**
+ * Minimal class that uses SystemTrait, to exercise its handlers
+ */
+final class SystemTraitHost
+{
+    use SystemTrait;
+
+    public function __construct()
+    {
+        $this->ts = microtime(true);
+        $this->mem = 0;
+    }
+
+    public function bind(): void
+    {
+        $this->bindWarningAsExceptions();
     }
 }

@@ -91,7 +91,7 @@ abstract class AuthApi extends Api
         $cookieCandidates = array_values(array_unique(array_filter([
             $configuredCookieName,
             self::DEFAULT_API_TOKEN_COOKIE,
-        ], static fn($name) => is_string($name) && trim($name) !== '')));
+        ], self::isNonEmptyString(...))));
 
         foreach ($cookieCandidates as $cookieName) {
             $cookieToken = $this->sanitizeToken((string)$request->getCookie($cookieName), self::TOKEN_SOURCE_COOKIE);
@@ -194,5 +194,10 @@ abstract class AuthApi extends Api
         self::$tokenSourceTelemetry = [];
         self::$invalidTokenTelemetry = [];
         self::$legacyTokenWarningLogged = false;
+    }
+
+    private static function isNonEmptyString(mixed $value): bool
+    {
+        return is_string($value) && trim($value) !== '';
     }
 }
